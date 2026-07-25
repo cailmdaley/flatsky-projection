@@ -1,0 +1,892 @@
+"""E-to-B leakage is the projection's shear, with the coefficient 2.
+
+What this establishes
+---------------------
+The 2021 suite measured BB/EE on unlensed sims -- where the true B is zero --
+for five flat-sky projections on seven apodized disks. The five span six orders
+of magnitude. This script shows that a single number computed from projection
+geometry alone predicts every one of them:
+
+    BB / EE  =  2 <g^2>,    g = (s1 - s2) / (s1 + s2),
+
+with (s1, s2) the singular values of the projection's local Jacobian and <.>
+the mask-squared-weighted mean over the footprint. The 2 is not fitted. It
+falls out of the derivation below; fitting it to the 25 usable (mask,
+projection) pairs returns 2.008, with 0.44% rms and 1.3% worst-case scatter
+over four decades in <g^2>.
+
+Why 2, exactly
+--------------
+Locally a projection is a linear map J from the sky tangent plane to the map
+plane. Polarization is sampled from HEALPix in the sky's (east, north) basis
+and then rotated into the grid basis by `maps.FlattenPol`. Write the polar
+decomposition J = R(phi) S, R a rotation and S symmetric. FlattenPol's rotation
+angle is phi -- verified numerically in `check_flattenpol` below by
+reimplementing its `rot` from `xy_to_angle`, the same call the C++ makes. The
+two agree to 0.02 deg where g = 0.07 and to 1.5 deg at a point with g = 0.31,
+an O(g^3) residual worth under 0.1% of the leakage. So the rotation is removed
+cleanly and only the symmetric part S survives.
+
+S cannot be removed. A sheared spin-2 field is not a rotated spin-2 field.
+Working in the principal frame of S, a map-plane Fourier mode k comes from the
+sky mode q = J^T k, and the two are misaligned by
+
+    dpsi(chi) = arctan((s2/s1) tan chi) - chi  ~  -g sin(2 chi),
+
+with chi the angle of k to the major axis. The sky has E only, so the plane's
+spin-2 mode acquires B = E sin(2 dpsi). NaMaster bins in |l| annuli, which
+averages over chi uniformly, and <sin^2(2 dpsi)> = 4 g^2 <sin^2 2chi> = 2 g^2.
+That is the whole law. The mask enters only as the weight: pseudo-C_l weights
+power by the apodized mask squared, so g^2 is averaged with weight mask^2 --
+and the next section shows that plain mask^2, not a plane-area version of it,
+is what the data want.
+
+Why the reduction has to be g = (s1-s2)/(s1+s2)
+----------------------------------------------
+Only the *ratio* s1/s2 can matter -- a pure magnification (s1 = s2) is
+conformal and leaks nothing -- and the leading term in the misalignment is
+(s1-s2)/(s1+s2). Reductions that agree with it to first order but not beyond
+do measurably worse: <ln^2(s1/s2)>, which differs at third order, scatters
+1.5% instead of 0.44%; <(s1/s2 - 1)^2>, which already differs at second order,
+scatters 17%. The weight matters as much as the reduction. Weighting g^2 by
+mask^2 |det J| or mask^2 |det J|^2 -- the plane-area measures one might expect
+from the pseudo-C_l normalisation -- scatters 8% and 15%. Plain mask^2 wins
+because the extra powers of |det J| are cancelled by the response of a falling
+spectrum to the same stretch; that cancellation is only near-exact, and what
+survives it is the l dependence in point 3 below.
+
+Where the law stops
+-------------------
+Three places, all real and all reported rather than smoothed over.
+
+  1. STG is conformal: s1 = s2 up to the truncation error of the finite-
+     difference Jacobian (g ~ 2e-8, falling as step^2), so the law predicts
+     zero. Its measured BB/EE is the pipeline's own E-to-B floor, 4.4e-8 on the
+     1000-3000 average but strongly l-dependent -- 2.5e-8 at 1000-1500 rising
+     to 7e-6 at 3500-4000. STG is excluded from the fit and used to state that
+     floor, which is then subtracted before any band-by-band claim. Without
+     that subtraction ZEA at 3500-4000 on the smallest disk looks like a
+     2.4-fold failure of the law; it is 1.0 once the floor is removed.
+
+  2. The 10% mask has no usable spectra for SFL, SIN or BICEP: those files are
+     all-NaN (SIN) or overflowed to ~1e246 (SFL, BICEP). They are dropped, not
+     imputed. ZEA and STG at 10% are fine and are kept.
+
+     That disk has a radius of 37.2 deg about dec -56, and the south celestial
+     pole is 34 deg away, so it swallows the pole. SFL's map x-coordinate
+     collapses there and BICEP's stretch diverges, which is the obvious reason
+     those two overflowed while the two zenithal projections did not. The
+     geometry side suffers a milder version of the same problem: the RA step of
+     geometry.jacobian goes as 1 / cos(delta), so the differenced Jacobian
+     fails inside the last fraction of a degree. Removing a 0.5 deg polar cap
+     (0.3% of the disk's weight) moves <g^2> by 0.1-0.3% for the sheared
+     projections -- and takes STG's apparent <g^2> from 2.0e-8 to 3.5e-12, i.e.
+     that whole apparent value was the polar cap. No other disk comes within
+     8 deg of a pole.
+
+  3. The band average hides an l dependence. Band by band on the 5% disk, SFL's
+     ratio rises from 1.02 to 1.07 times 2<g^2> and BICEP's falls from 1.06 to
+     0.63, even though the two agree on the 1000-3000 average to 0.5%. The
+     leading-order law is l-independent by construction and cannot describe
+     that. `predicted_spectra` restores the two terms it drops -- the exact
+     misalignment kernel, and the fact that a plane mode k reads the sky
+     spectrum at |J^T k| rather than |k| -- and reproduces both trends: over
+     all bands, masks and sheared projections that sit clear of the floor, it
+     matches the measurement to 1.004 +- 0.009. SFL is equal-area, so the
+     azimuthal stretch is symmetric about 1 and the convexity of a falling
+     spectrum lifts the high-shear pixels at high l. BICEP is not: its shear
+     comes with magnification of up to a factor of four, so the same convexity
+     pushes the other way. Same law, opposite second-order term.
+
+     The SFL/BICEP agreement on the band average is a property of the disk,
+     not of the projections. Expand both about the projection centre. SFL has
+     x = (alpha - alpha_0) cos delta, so its shear is g ~ (tan|delta_0| / 2)
+     times the *east* offset. BICEP has x = (alpha - alpha_0) cos delta_0, so
+     its shear is g ~ (tan|delta_0| / 2) times the *north* offset. Same
+     coefficient, orthogonal directions -- and over a disk centred there,
+     <east^2> = <north^2>. That is the whole of the agreement. It holds to 0.5%
+     on the 0.75% disk, degrades to 2% at 5% as higher orders enter, and breaks
+     to 12% at 10%.
+
+     It has no reason to survive a footprint that is not a disk, and it does
+     not. `report_1500d` evaluates the same law over SPT's real 1500d field,
+     which is +-50 deg in RA and 28 deg in declination: SFL leaks 7.0e-2 and
+     BICEP 1.7e-2, a factor of four apart. The 2021 disks cannot be read as a
+     statement about which projection is safer for SPT.
+
+Inputs
+------
+Masks: the 2021 run's own apodized HEALPix disks,
+/sptlocal/analysis/pol_project2020/results/masks/healpix_mask{0..6}.g3
+(Nside 4096, C2 apodization at 2.5 deg, radii 0.175 to 0.65 rad about
+RA 0, dec -56). Read, not rebuilt.
+
+Spectra: the 2021 bandpowers via `spectra.load`.
+
+Theory: `theory.load()["unlensed_EE"]`, needed only for the l-dependent
+refinement. Not Clee.dat -- see analysis/theory.py for why that file is wrong.
+
+Cost
+----
+One pass over each mask's support at full Nside 4096 (46 M pixels total across
+the seven), five Jacobians each. About five minutes and under 4 GB, single
+threaded apart from BLAS. Results are cached per `--n-bins`; `--refresh`
+recomputes. The l-dependent model adds about 30 s and needs no cache.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import geometry as G
+import spectra as S
+import theory as T
+
+from spt3g import core
+
+DEG = core.G3Units.deg
+
+MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
+CACHE_DIR = Path("/sptlocal/user/cailmdaley/pol_project")
+ROOT = Path(__file__).resolve().parent.parent
+FIGURE = ROOT / "figures" / "shear_leakage.png"
+
+# config.yaml of the 2021 run: seven concentric disks about the projection
+# centre, apodized C2 at 2.5 deg. Radii carried here only for the record --
+# the masks themselves are read from disk.
+RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]
+
+# Bands to test the law in. The first is the headline band average; the rest
+# resolve the l dependence the average hides.
+BANDS = [(1000, 3000), (1000, 1500), (1500, 2000), (2000, 2500),
+         (2500, 3000), (3000, 3500), (3500, 4000)]
+
+# The conformal projection has no shear; what it measures is the pipeline floor.
+FLOOR_PROJ = "ProjSTG"
+
+# The 10% disk (radius 37.2 deg about dec -56) swallows the south celestial
+# pole, which sits 34 deg from the centre. geometry.jacobian steps in RA by
+# step_deg / cos(delta) to keep the step a fixed angular distance, and that
+# step diverges at the pole, so the differenced Jacobian is meaningless in the
+# last fraction of a degree. Every moment is therefore also accumulated with a
+# polar cap excluded, as a check. No other disk comes within 8 deg of a pole.
+POLAR_CUT_DEG = 0.5
+
+# Reductions of (s1, s2) to a single shear scalar. All agree at leading order.
+REDUCTIONS = {
+    "g2": (r"$\langle g^2 \rangle,\ g=(s_1-s_2)/(s_1+s_2)$",
+           lambda s1, s2: ((s1 - s2) / (s1 + s2)) ** 2),
+    "q2": (r"$\langle (s_1/s_2 - 1)^2 \rangle$",
+           lambda s1, s2: (s1 / s2 - 1.0) ** 2),
+    "lnq2": (r"$\langle \ln^2(s_1/s_2) \rangle$",
+             lambda s1, s2: np.log(s1 / s2) ** 2),
+}
+
+
+# --------------------------------------------------------------------------
+# Geometry: mask-weighted shear moments
+# --------------------------------------------------------------------------
+
+def _bin_edges(proj, alpha, delta, n_bins, pad=0.05):
+    """Log-s edges for the (s1, s2) histogram, from a subsample of the mask."""
+    s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
+    out = []
+    for s in (s1, s2):
+        lo, hi = np.log(s.min()), np.log(s.max())
+        span = max(hi - lo, 1e-9)
+        out.append(np.linspace(lo - pad * span, hi + pad * span, n_bins + 1))
+    return out
+
+
+def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
+    """Mask-squared-weighted shear moments for every (mask, projection).
+
+    Returns a dict of (n_mask, n_proj) arrays of exact per-pixel moments, plus
+    a (n_mask, n_proj, n_bins, n_bins) weight histogram in (log s1, log s2)
+    with the weighted *centroid* of each occupied cell.
+
+    The centroid matters. Placing cells at their geometric midpoints biases
+    <g^2> by 4% for BICEP at n_bins = 64, because BICEP's magnification spans
+    a factor of four across the largest disks and g^2 is strongly convex in
+    log s. Carrying the first moment inside each cell drops that to 1e-4, so
+    the l-dependent model costs a few hundred cells instead of tens of
+    thousands. Bin assignment is clipped to the edges; the accumulated log s
+    values are not, so a pixel outside the subsampled range still lands at its
+    true position.
+    """
+    import healpy as hp
+
+    nm, npj = len(RADII_RAD), len(S.PROJS)
+    shape = (nm, npj)
+    out = {k: np.zeros(shape) for k in
+           ("sum_w2", "sum_w2_det", "sum_w2_det2", "sum_w2_nopole",
+            "g2_det", "g2_det2", "g2_nopole", "s1_max", "s2_min")}
+    for key in REDUCTIONS:
+        out[key] = np.zeros(shape)
+    hist = np.zeros((nm, npj, n_bins, n_bins))
+    m1 = np.zeros_like(hist)
+    m2 = np.zeros_like(hist)
+
+    for i in range(nm):
+        path = MASK_DIR / f"healpix_mask{i}.g3"
+        frame = next(core.G3File(str(path)))
+        hpm = frame["T"]
+        nside = hpm.nside
+        arr = np.asarray(hpm)
+        idx = np.flatnonzero(arr)
+        w2 = arr[idx] ** 2
+        if verbose:
+            print(f"  mask{i}: Nside {nside}, support {idx.size / 1e6:.2f} M pixels "
+                  f"({idx.size / arr.size:.4f} of the sky)", flush=True)
+
+        # Edges from a ~200k subsample; the moments themselves are exact.
+        stride = max(1, idx.size // 200_000)
+        a_s, d_s = hp.pix2ang(nside, idx[::stride], lonlat=True)
+        edges = {p: _bin_edges(p, a_s, d_s, n_bins) for p in S.PROJS}
+
+        for start in range(0, idx.size, chunk):
+            sl = slice(start, start + chunk)
+            alpha, delta = hp.pix2ang(nside, idx[sl], lonlat=True)
+            w = w2[sl]
+            off_pole = (90.0 - np.abs(delta)) > POLAR_CUT_DEG
+            for j, proj in enumerate(S.PROJS):
+                s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
+                det = s1 * s2
+                out["sum_w2"][i, j] += w.sum()
+                out["sum_w2_det"][i, j] += (w * det).sum()
+                out["sum_w2_det2"][i, j] += (w * det ** 2).sum()
+                for key, (_, f) in REDUCTIONS.items():
+                    out[key][i, j] += (w * f(s1, s2)).sum()
+                gg = REDUCTIONS["g2"][1](s1, s2)
+                out["g2_det"][i, j] += (w * det * gg).sum()
+                out["g2_det2"][i, j] += (w * det ** 2 * gg).sum()
+                out["sum_w2_nopole"][i, j] += w[off_pole].sum()
+                out["g2_nopole"][i, j] += (w[off_pole] * gg[off_pole]).sum()
+                out["s1_max"][i, j] = max(out["s1_max"][i, j], s1.max())
+                out["s2_min"][i, j] = (s2.min() if out["s2_min"][i, j] == 0
+                                       else min(out["s2_min"][i, j], s2.min()))
+
+                l1, l2 = np.log(s1), np.log(s2)
+                e1, e2 = edges[proj]
+                k1 = np.clip(((l1 - e1[0]) / (e1[1] - e1[0])).astype(np.intp),
+                             0, n_bins - 1)
+                k2 = np.clip(((l2 - e2[0]) / (e2[1] - e2[0])).astype(np.intp),
+                             0, n_bins - 1)
+                flat = k1 * n_bins + k2
+                nb2 = n_bins * n_bins
+                hist[i, j] += np.bincount(flat, weights=w, minlength=nb2).reshape(n_bins, n_bins)
+                m1[i, j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
+                m2[i, j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
+
+        del arr, frame, hpm, idx, w2
+
+    for key in REDUCTIONS:
+        out[key] /= out["sum_w2"]
+    out["g2_det"] /= out["sum_w2_det"]
+    out["g2_det2"] /= out["sum_w2_det2"]
+    out["g2_nopole"] /= out["sum_w2_nopole"]
+    out["hist"] = hist
+    out["cell_s1"] = np.exp(np.divide(m1, hist, out=np.zeros_like(m1), where=hist > 0))
+    out["cell_s2"] = np.exp(np.divide(m2, hist, out=np.zeros_like(m2), where=hist > 0))
+    return out
+
+
+def load_moments(n_bins=64, refresh=False, verbose=True):
+    """Cached `mask_moments`, one file per n_bins.
+
+    Written to a temporary name and renamed, so an interrupted run never
+    leaves a half-written cache behind for the next one to trust.
+    """
+    cache = CACHE_DIR / f"shear_leakage_moments_nb{n_bins}.npz"
+    if cache.exists() and not refresh:
+        with np.load(cache) as f:
+            if verbose:
+                print(f"shear moments: cached {cache}")
+            return {k: f[k] for k in f.files if k != "n_bins"}
+    if verbose:
+        print("shear moments: computing (one pass per mask at Nside 4096)")
+    out = mask_moments(n_bins=n_bins, verbose=verbose)
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    tmp = cache.with_suffix(".tmp.npz")
+    np.savez(tmp, n_bins=n_bins, **out)
+    tmp.replace(cache)
+    if verbose:
+        print(f"shear moments: wrote {cache}")
+    return out
+
+
+# --------------------------------------------------------------------------
+# Measurement
+# --------------------------------------------------------------------------
+
+def measured_ratios(bands=BANDS):
+    """Band-averaged BB/EE per (band, mask, proj). NaN where the run failed.
+
+    Averages the numerator and the denominator separately -- that is what the
+    quoted ratio means, and it weights low l more heavily because EE falls.
+    Any NaN inside a band poisons that entry rather than being nan-meaned
+    around: the 10% files for SFL, SIN and BICEP are not partially usable, they
+    are broken (SFL and BICEP overflow to ~1e246 where they are not NaN).
+    """
+    ee, bb = S.load("EE"), S.load("BB")
+    ell = S.ELL
+    out = np.full((len(bands), len(S.PERC), len(S.PROJS)), np.nan)
+    for b, (lo, hi) in enumerate(bands):
+        sel = (ell > lo) & (ell < hi)
+        for i in range(len(S.PERC)):
+            for j in range(len(S.PROJS)):
+                e, x = ee[i, j][:, sel], bb[i, j][:, sel]
+                if not (np.isfinite(e).all() and np.isfinite(x).all()):
+                    continue
+                if not np.isfinite(e.mean()) or e.mean() <= 0:
+                    continue
+                out[b, i, j] = x.mean() / e.mean()
+    return out
+
+
+# --------------------------------------------------------------------------
+# The l-dependent refinement
+# --------------------------------------------------------------------------
+
+def _cells(mom, i, j):
+    """Occupied (s1, s2, weight) cells of one (mask, projection)."""
+    h = mom["hist"][i, j]
+    occ = h > 0
+    return mom["cell_s1"][i, j][occ], mom["cell_s2"][i, j][occ], h[occ]
+
+
+def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
+                      band_limit=G.SIM_BAND_LIMIT, n_chi=128, chunk=64):
+    """Forward-model BB(l) and EE(l) up to a common normalisation.
+
+    Restores the two things the leading-order law drops:
+
+      * the exact misalignment kernel sin^2(2 dpsi) rather than 4 dpsi^2, and
+      * the fact that a plane mode k reads the sky spectrum at |J^T k|, which
+        depends on the angle of k to the shear's major axis.
+
+    The second is what makes the ratio depend on l at all. The pseudo-C_l
+    weight per unit *sky* area is mask^2 |det J|^2: one power of |det J|
+    because C_plane(k) = |det J| C_sky(J^T k), one more because the mask^2
+    integral runs over plane area.
+
+    `band_limit` kills sky power above l = 4000, which the 2021 sims do not
+    have; without it the topmost bands are over-predicted, and they are exactly
+    where the stretch |J^T k| / |k| pushes hardest against the cut.
+    """
+    s1, s2, w = _cells(mom, i, j)
+    chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
+    cos2, sin2 = np.cos(chi) ** 2, np.sin(chi) ** 2
+
+    chi_sky = np.arctan2(s2[:, None] * np.sin(chi), s1[:, None] * np.cos(chi))
+    dpsi = (chi_sky - chi + np.pi / 2) % np.pi - np.pi / 2
+    kern_b = np.sin(2 * dpsi) ** 2
+    kern_e = np.cos(2 * dpsi) ** 2
+    stretch = np.sqrt(s1[:, None] ** 2 * cos2 + s2[:, None] ** 2 * sin2)
+
+    cl = np.asarray(cl_theory, dtype=float)
+    if band_limit is not None:
+        cl = np.where(np.asarray(ell_theory) > band_limit, 0.0, cl)
+
+    weight = w * (s1 * s2) ** 2
+    ell = np.atleast_1d(np.asarray(ell, dtype=float))
+    bb = np.empty(ell.size)
+    ee = np.empty(ell.size)
+    for k in range(0, ell.size, chunk):
+        sl = slice(k, k + chunk)
+        sampled = np.interp(ell[sl][None, :, None] * stretch[:, None, :],
+                            ell_theory, cl, left=cl[1], right=0.0)
+        bb[sl] = weight @ (sampled * kern_b[:, None, :]).mean(-1)
+        ee[sl] = weight @ (sampled * kern_e[:, None, :]).mean(-1)
+    return bb, ee
+
+
+def predicted_ratios(mom, bands=BANDS, n_chi=128, verbose=True):
+    """Band-averaged BB/EE from `predicted_spectra`, same bands as the data."""
+    th = T.load()
+    ell_theory = th["ell"].astype(float)
+    cl_theory = th["unlensed_EE"]
+    ell = S.ELL
+    lo, hi = min(b[0] for b in bands), max(b[1] for b in bands)
+    grid = ell[(ell > lo) & (ell < hi)]
+    out = np.full((len(bands), len(S.PERC), len(S.PROJS)), np.nan)
+    for i in range(len(S.PERC)):
+        for j in range(len(S.PROJS)):
+            bb, ee = predicted_spectra(mom, i, j, grid, ell_theory, cl_theory,
+                                       n_chi=n_chi)
+            for b, (blo, bhi) in enumerate(bands):
+                sel = (grid > blo) & (grid < bhi)
+                out[b, i, j] = bb[sel].mean() / ee[sel].mean()
+        if verbose:
+            print(f"  forward model: mask {S.PERC[i]}% done", flush=True)
+    return out
+
+
+# --------------------------------------------------------------------------
+# Validation of the premise: FlattenPol removes the polar rotation, exactly
+# --------------------------------------------------------------------------
+
+def check_flattenpol(step=1e-3):
+    """Reimplement FlattenPol's rotation and compare to the polar rotation.
+
+    maputils.cxx builds rot = atan2(-da/dx, da/dy) + atan2(-dd/dy, -dd/dx) from
+    PixelToAngleGrad and applies (Q + iU) -> e^{i rot}(Q + iU), so rot is the
+    spin-2 angle and rot/2 is the frame rotation. The claim the whole law rests
+    on is that rot/2 equals the rotation part of the polar decomposition of the
+    local Jacobian -- no more, no less. Returns (proj, alpha, delta, rot/2,
+    phi, residual) in degrees; geometry.jacobian flips the x axis to make
+    det J > 0, which flips the sign of the angle, hence the minus.
+    """
+    pts = [(10.0, -56.0), (20.0, -56.0), (30.0, -56.0), (20.0, -65.0),
+           (-25.0, -48.0), (40.0, -70.0), (-40.0, -45.0)]
+    alpha = np.array([p[0] for p in pts])
+    delta = np.array([p[1] for p in pts])
+    from spt3g import maps
+    rows = []
+    for proj in S.PROJS:
+        fsm = maps.FlatSkyMap(3300, 3300, 2.0 * core.G3Units.arcmin,
+                              proj=getattr(maps.MapProjection, proj),
+                              alpha_center=0.0, delta_center=-56 * DEG,
+                              pol_conv=maps.MapPolConv.IAU)
+        x, y = fsm.angle_to_xy(core.DoubleVector(alpha * DEG),
+                               core.DoubleVector(delta * DEG))
+        x, y = np.asarray(x), np.asarray(y)
+
+        def ang(xx, yy):
+            a, d = fsm.xy_to_angle(core.DoubleVector(xx), core.DoubleVector(yy))
+            return np.asarray(a), np.asarray(d)
+
+        a1, d1 = ang(x - step, y)
+        a2, d2 = ang(x + step, y)
+        a3, d3 = ang(x, y - step)
+        a4, d4 = ang(x, y + step)
+        dax, ddx = (a2 - a1) / (2 * step), (d2 - d1) / (2 * step)
+        day, ddy = (a4 - a3) / (2 * step), (d4 - d3) / (2 * step)
+        rot = np.arctan2(-dax, day) + np.arctan2(-ddy, -ddx)
+
+        jac = G.jacobian(proj, alpha, delta)
+        a, b = jac[:, 0, 0], jac[:, 0, 1]
+        c, d = jac[:, 1, 0], jac[:, 1, 1]
+        phi = np.arctan2(c - b, a + d)          # rotation part of J = R(phi) S
+        s1, s2 = G.singular_values(jac)
+        for n in range(len(pts)):
+            rows.append((proj, alpha[n], delta[n],
+                         np.degrees(rot[n] / 2), np.degrees(-phi[n]),
+                         np.degrees(rot[n] / 2 + phi[n]),
+                         (s1[n] - s2[n]) / (s1[n] + s2[n])))
+    return rows
+
+
+# --------------------------------------------------------------------------
+# Fitting and reporting
+# --------------------------------------------------------------------------
+
+def fit_constant(x, y):
+    """Proportionality constant y = k x, fitted in log space, plus scatter.
+
+    Log space, not least squares: the points span four decades and an ordinary
+    least-squares fit through the origin is set entirely by the two largest.
+    The quantity that matters is fractional agreement, so give every point
+    equal weight in log y.
+    """
+    good = np.isfinite(x) & np.isfinite(y) & (x > 0) & (y > 0)
+    x, y = x[good], y[good]
+    k = np.exp(np.mean(np.log(y / x)))
+    resid = y / (k * x) - 1.0
+    return k, float(np.std(resid)), float(np.max(np.abs(resid))), int(good.sum())
+
+
+def _fmt_table(title, values, fmt="{: .4e}"):
+    lines = [title, "proj    " + "".join(f"{p:>11}" for p in
+                                         [f"{v:g}%" for v in S.PERC])]
+    for j, proj in enumerate(S.PROJS):
+        row = f"{S.PROJ_LABEL[proj]:<8}"
+        for i in range(len(S.PERC)):
+            v = values[i, j]
+            row += "        nan" if not np.isfinite(v) else fmt.format(v)
+        lines.append(row)
+    return "\n".join(lines)
+
+
+def law_mask(meas):
+    """(mask, proj) entries that test the law: finite, and not the floor projection."""
+    keep = np.isfinite(meas)
+    keep[:, S.PROJS.index(FLOOR_PROJ)] = False
+    return keep
+
+
+def report(mom, meas, pred=None):
+    """Everything the paper needs, printed."""
+    jstg = S.PROJS.index(FLOOR_PROJ)
+    g2 = mom["g2"]                                        # (mask, proj)
+    band0 = meas[0]
+    floor = meas[:, :, jstg]                              # (band, mask)
+
+    print()
+    print("=" * 78)
+    print("SHEAR MOMENTS AND MEASURED LEAKAGE")
+    print("=" * 78)
+    print(_fmt_table("<g^2>, g = (s1-s2)/(s1+s2), mask^2 weighted", g2))
+    print()
+    print(_fmt_table(f"measured BB/EE, {BANDS[0][0]} < l < {BANDS[0][1]}", band0))
+    print()
+    print(_fmt_table("measured BB/EE  /  <g^2>   (STG omitted: its <g^2> is a "
+                     "numerical zero)",
+                     np.where(np.arange(len(S.PROJS))[None, :] == jstg,
+                              np.nan, band0 / g2), fmt="{: 11.4f}"))
+
+    print()
+    print("=" * 78)
+    print("THE LAW")
+    print("=" * 78)
+    keep = law_mask(band0)
+    x, y = g2[keep], band0[keep]
+    k, rms, worst, n = fit_constant(x, y)
+    r2 = y / (2 * x) - 1.0
+    print("predicted coefficient   2  (exact, from <sin^2(2 dpsi)> = 2 g^2)")
+    print(f"fitted coefficient      {k:.4f}   ({n} points, STG excluded)")
+    print(f"fit / prediction        {k / 2:.4f}")
+    print(f"scatter about y = 2x    {np.std(r2) * 100:.2f}% rms, "
+          f"{np.max(np.abs(r2)) * 100:.2f}% worst")
+    print(f"scatter about the fit   {rms * 100:.2f}% rms, {worst * 100:.2f}% worst")
+    print(f"dynamic range           {np.log10(x.max() / x.min()):.2f} decades in <g^2>, "
+          f"{np.log10(y.max() / y.min()):.2f} in BB/EE")
+    slope, inter = np.polyfit(np.log(x), np.log(y), 1)
+    print(f"free power law          BB/EE = {np.exp(inter):.4f} <g^2>^{slope:.4f}")
+    print("     (the exponent is the test of linearity; 1 means the leakage is")
+    print("      linear in <g^2>, not merely monotonic in it)")
+
+    print()
+    print("STG: the floor, not the law")
+    print(f"  geometric <g^2>       {g2[:, jstg].min():.2e} to {g2[:, jstg].max():.2e}")
+    print("     (that is the finite-difference floor of geometry.jacobian at")
+    print("      step_deg = 0.02, which scales as step^2; STG is conformal, so")
+    print("      its true shear is exactly zero)")
+    print(f"  law would predict     {2 * g2[:, jstg].min():.2e} to {2 * g2[:, jstg].max():.2e}")
+    print(f"  measured BB/EE        {band0[:, jstg].min():.2e} to {band0[:, jstg].max():.2e}")
+    print(f"  -> the pipeline's own E-to-B floor is {np.median(band0[:6, jstg]):.1e} "
+          f"over 1000 < l < 3000")
+    print("  The floor is steeply l-dependent (it is what limits the top bands):")
+    print(f"     {'band':<14}" + "".join(f"{v:g}%".rjust(11) for v in S.PERC))
+    for b, (lo, hi) in enumerate(BANDS[1:], start=1):
+        print(f"     {lo}-{hi:<9}" + "".join(f" {floor[b, i]:.3e}" for i in range(len(S.PERC))))
+
+    print()
+    print("The 10% disk contains the south celestial pole (34 deg from the disk")
+    print(f"centre, radius 37.2 deg). Excluding a {POLAR_CUT_DEG} deg polar cap, which is")
+    print("0.3% of that disk's weight and is where the differenced Jacobian fails:")
+    print(f"  {'proj':<8}" + "".join(f"{v:g}%".rjust(11) for v in S.PERC))
+    for j, proj in enumerate(S.PROJS):
+        print(f"  {S.PROJ_LABEL[proj]:<8}" + "".join(
+            f"{mom['g2_nopole'][i, j] / mom['g2'][i, j] - 1:10.4f} "
+            for i in range(len(S.PERC))))
+    print("  (fractional change in <g^2>. Zero everywhere but the 10% disk; there")
+    print("   it is 0.1-0.3% for the real projections, and it takes STG's apparent")
+    print(f"   <g^2> from {mom['g2'][6, jstg]:.1e} to {mom['g2_nopole'][6, jstg]:.1e} "
+          "-- the polar cap was all of it.)")
+
+    print()
+    print("Extremes of the local Jacobian, s1_max / s2_min, over the six")
+    print("pole-free disks (the 10% column is polluted, see above):")
+    print(f"  {'proj':<8}" + "".join(f"{v:g}%".rjust(14) for v in S.PERC[:6]))
+    for j, proj in enumerate(S.PROJS):
+        print(f"  {S.PROJ_LABEL[proj]:<8}" + "".join(
+            f" {mom['s1_max'][i, j]:6.3f}/{mom['s2_min'][i, j]:<6.3f}"
+            for i in range(6)))
+
+    print()
+    print("Missing data (not imputed)")
+    for i in range(len(S.PERC)):
+        bad = [S.PROJ_LABEL[S.PROJS[j]] for j in range(len(S.PROJS))
+               if not np.isfinite(band0[i, j])]
+        if bad:
+            print(f"  {S.PERC[i]:g}% mask: no usable spectra for {', '.join(bad)}")
+
+    print()
+    print("=" * 78)
+    print("WHICH REDUCTION OF (s1, s2) COLLAPSES THE DATA BEST")
+    print("=" * 78)
+    print(f"{'reduction':<34}{'k':>9}{'rms':>9}{'worst':>9}")
+    names = {"g2": "<g^2>, g=(s1-s2)/(s1+s2)",
+             "q2": "<(s1/s2 - 1)^2>",
+             "lnq2": "<ln^2(s1/s2)>"}
+    for key in REDUCTIONS:
+        k_, rms_, worst_, _ = fit_constant(mom[key][keep], y)
+        print(f"{names[key]:<34}{k_:9.4f}{rms_ * 100:8.2f}%{worst_ * 100:8.2f}%")
+    print()
+    print("Weighting of the same reduction (mask^2 vs mask^2 |det J|^n):")
+    for key, name in [("g2", "mask^2"), ("g2_det", "mask^2 |det J|"),
+                      ("g2_det2", "mask^2 |det J|^2")]:
+        k_, rms_, worst_, _ = fit_constant(mom[key][keep], y)
+        print(f"{name:<34}{k_:9.4f}{rms_ * 100:8.2f}%{worst_ * 100:8.2f}%")
+
+    print()
+    print("=" * 78)
+    print("BAND BY BAND")
+    print("=" * 78)
+    print("(measured BB/EE - STG floor) / 2<g^2>; 1.00 means the l-independent")
+    print("law holds in that band. Raw values in parentheses where they differ.")
+    hdr = f"{'band':<14}" + "".join(f"{S.PROJ_LABEL[p]:>18}" for p in S.PROJS
+                                    if p != FLOOR_PROJ)
+    for i in [0, 4, 5]:
+        print(f"--- {S.PERC[i]:g}% mask ---")
+        print(hdr)
+        for b, (lo, hi) in enumerate(BANDS):
+            row = f"{lo}-{hi:<9}"
+            for j, proj in enumerate(S.PROJS):
+                if proj == FLOOR_PROJ:
+                    continue
+                raw = meas[b, i, j] / (2 * g2[i, j])
+                sub = (meas[b, i, j] - floor[b, i]) / (2 * g2[i, j])
+                row += "               nan" if not np.isfinite(raw) else \
+                    f"{sub:11.3f} ({raw:.2f})"
+            print(row)
+
+    if pred is not None:
+        print()
+        print("Restoring the l dependence (predicted_spectra), measured/model:")
+        for i in [4, 5]:
+            print(f"--- {S.PERC[i]:g}% mask ---")
+            print(f"{'band':<14}" + "".join(
+                f"{S.PROJ_LABEL[p]:>18}" for p in S.PROJS if p != FLOOR_PROJ))
+            for b, (lo, hi) in enumerate(BANDS):
+                row = f"{lo}-{hi:<9}"
+                for j, proj in enumerate(S.PROJS):
+                    if proj == FLOOR_PROJ:
+                        continue
+                    row += f"  {meas[b, i, j]:.5f}/{pred[b, i, j]:.5f}"
+                print(row)
+        # Only judge the model where the measurement is not floor-limited.
+        clean = (np.isfinite(meas)
+                 & (np.arange(len(S.PROJS))[None, None, :] != jstg)
+                 & (meas > 20 * floor[:, :, None]))
+        r = meas[clean] / pred[clean]
+        print(f"\n  all bands, all masks, four sheared projections, restricted to "
+              f"points\n  more than 20x above the STG floor: measured/model = "
+              f"{np.mean(r):.4f} +- {np.std(r):.4f}\n  ({clean.sum()} points, "
+              f"worst {np.max(np.abs(r - 1)) * 100:.1f}%)")
+        r0 = band0[keep] / pred[0][keep]
+        print(f"\n  and on the 1000-3000 band average alone, the same points that "
+              f"scatter\n  {np.std(r2) * 100:.2f}% about 2<g^2> scatter "
+              f"{np.std(r0) * 100:.2f}% about the model: the residual\n  structure "
+              "in the leading-order law is the l dependence, not noise.")
+
+
+def report_1500d(nside=1024):
+    """Apply the law off its training set, to SPT's real 1500d footprint.
+
+    The 2021 disks are concentric about the projection centre, which is exactly
+    the configuration that makes SFL's and BICEP's mask-averaged shear coincide
+    (see the module docstring). SPT's field is wide in RA and narrow in
+    declination, so it breaks that symmetry, and the disk sequence cannot be
+    interpolated to it.
+
+    Built at Nside 1024 through `footprints`, not 4096: <g^2> for the 0.75%
+    disk agrees with the full-resolution value to 0.2%, and nothing here
+    touches map pixels. This is the law applied, not a new measurement --
+    there are no 1500d bandpowers to check it against.
+    """
+    import healpy as hp
+    import footprints as F
+
+    def moment(mask):
+        idx = np.flatnonzero(mask)
+        w2 = mask[idx] ** 2
+        a, d = hp.pix2ang(nside, idx, lonlat=True)
+        return a, d, w2
+
+    mask = F.rect_mask(50.0, -70.0, -42.0, nside=nside)
+    alpha, delta, w2 = moment(mask)
+    # The 5% disk at the same resolution, so the ratio below is like for like.
+    a5, d5, w5 = moment(F.disk_mask(RADII_RAD[5], nside=nside))
+    disks = []
+    for proj in S.PROJS:
+        s1, s2 = G.singular_values(G.jacobian(proj, a5, d5))
+        disks.append(float(np.sum(w5 * ((s1 - s2) / (s1 + s2)) ** 2) / w5.sum()))
+    print()
+    print("=" * 78)
+    print("THE LAW OFF ITS TRAINING SET: SPT's 1500d FIELD")
+    print("=" * 78)
+    print("RA +-50 deg, dec -70 to -42, C2-apodized at 2.5 deg. Predicted, not")
+    print("measured -- there are no 1500d bandpowers in the 2021 run.")
+    print(f"  {'proj':<8}{'<g^2>':>13}{'2<g^2>':>13}{'x the 5% disk':>16}")
+    for j, proj in enumerate(S.PROJS):
+        s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
+        g2 = float(np.sum(w2 * ((s1 - s2) / (s1 + s2)) ** 2) / w2.sum())
+        print(f"  {S.PROJ_LABEL[proj]:<8}{g2:13.4e}{2 * g2:13.4e}"
+              f"{g2 / disks[j]:16.2f}")
+    print("  SFL and BICEP, which agree to 2% on the 5% disk, differ by a")
+    print("  factor of four here. Area is the wrong abscissa; shear is not.")
+
+
+# --------------------------------------------------------------------------
+# Figure
+# --------------------------------------------------------------------------
+
+def figure(mom, meas, pred, path=FIGURE):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({
+        "font.size": 10, "axes.grid": True, "grid.alpha": 0.25,
+        "figure.dpi": 130, "savefig.bbox": "tight",
+    })
+    colors = {"ProjSFL": "#d62728", "ProjSIN": "#1f77b4", "ProjSTG": "#7f7f7f",
+              "ProjZEA": "#2ca02c", "ProjBICEP": "#ff7f0e"}
+    marks = {"ProjSFL": "o", "ProjSIN": "s", "ProjSTG": "x", "ProjZEA": "^",
+             "ProjBICEP": "D"}
+
+    jstg = S.PROJS.index(FLOOR_PROJ)
+    g2 = mom["g2"]
+    band0 = meas[0]
+    floor = meas[:, :, jstg]
+    keep = law_mask(band0)
+    k, rms, worst, n = fit_constant(g2[keep], band0[keep])
+
+    fig, axes = plt.subplots(2, 2, figsize=(11.5, 9.0))
+
+    # (a) the law.
+    ax = axes[0, 0]
+    span = np.array([1e-6, 2e-1])
+    ax.plot(span, 2 * span, "k-", lw=1.3, zorder=1,
+            label=r"$BB/EE = 2\langle g^2\rangle$ (predicted, no fit)")
+    ax.plot(span, k * span, "k--", lw=1.0, zorder=1, label=rf"fit, $k = {k:.3f}$")
+    lo_f, hi_f = band0[:, jstg].min(), band0[:, jstg].max()
+    ax.axhspan(lo_f, hi_f, color=colors[FLOOR_PROJ], alpha=0.18, zorder=0,
+               label=r"STG: conformal, $\langle g^2\rangle \sim 10^{-15}$"
+                     "\n" r"$\to$ pipeline $E\!\to\!B$ floor")
+    for j, proj in enumerate(S.PROJS):
+        if proj == FLOOR_PROJ:
+            continue
+        sel = np.isfinite(band0[:, j])
+        ax.scatter(g2[sel, j], band0[sel, j], marker=marks[proj],
+                   facecolors="none", edgecolors=colors[proj], s=44, lw=1.4,
+                   zorder=3, label=S.PROJ_LABEL[proj])
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(*span)
+    ax.set_ylim(1e-8, 4e-1)
+    ax.set_xlabel(r"$\langle g^2\rangle$, mask$^2$-weighted")
+    ax.set_ylabel(r"measured $BB/EE$")
+    ax.set_title(r"One line, four decades of $\langle g^2\rangle$"
+                 "\n" r"\small unlensed sims, $1000 < \ell < 3000$", fontsize=11)
+    ax.legend(fontsize=7.5, loc="upper left", framealpha=0.9)
+
+    # (b) residual about the predicted coefficient.
+    ax = axes[0, 1]
+    for j, proj in enumerate(S.PROJS):
+        if proj == FLOOR_PROJ:
+            continue
+        sel = np.isfinite(band0[:, j])
+        ax.plot(S.PERC[sel], 100 * (band0[sel, j] / (2 * g2[sel, j]) - 1),
+                marker=marks[proj], color=colors[proj], lw=1.1, ms=5,
+                label=S.PROJ_LABEL[proj])
+    ax.axhline(0, color="k", lw=1.0)
+    ax.axhspan(-100 * rms, 100 * rms, color="k", alpha=0.07,
+               label=rf"fit scatter, $\pm${100 * rms:.1f}\%")
+    ax.set_xscale("log")
+    ax.set_xticks([0.75, 1.5, 3, 5, 10])
+    ax.set_xticklabels(["0.75", "1.5", "3", "5", "10"])
+    ax.set_xticks([], minor=True)
+    ax.set_xlabel(r"disk $f_{\rm sky}$ [\%]")
+    ax.set_ylabel(r"$BB/EE \,/\, 2\langle g^2\rangle - 1$ [\%]")
+    ax.set_title("Residual about the predicted coefficient"
+                 "\n" r"\small every point within 1.7\% of the parameter-free line",
+                 fontsize=11)
+    ax.legend(fontsize=8, ncol=2)
+
+    # (c) the l dependence the band average hides.
+    ax = axes[1, 0]
+    centres = np.array([0.5 * (lo + hi) for lo, hi in BANDS[1:]])
+    i = 5
+    for j, proj in enumerate(S.PROJS):
+        if proj == FLOOR_PROJ:
+            continue
+        y = (meas[1:, i, j] - floor[1:, i]) / (2 * g2[i, j])
+        if not np.isfinite(y).any():
+            continue
+        ax.plot(centres, y, marker=marks[proj], color=colors[proj], lw=1.3, ms=5,
+                label=S.PROJ_LABEL[proj])
+        ax.plot(centres, pred[1:, i, j] / (2 * g2[i, j]), color=colors[proj],
+                lw=1.2, ls=":", alpha=0.9)
+    ax.axhline(1.0, color="k", lw=1.0)
+    ax.set_xlabel(r"$\ell$")
+    ax.set_ylabel(r"$(BB/EE)(\ell) \,/\, 2\langle g^2\rangle$")
+    ax.set_title(r"5\% disk: the law is flat in $\ell$, the data are not"
+                 "\n" r"\small solid: measured (STG floor removed)~~~"
+                 r"dotted: forward model", fontsize=11)
+    ax.legend(fontsize=8, ncol=2)
+
+    # (d) which reduction collapses the data.
+    ax = axes[1, 1]
+    labels = {"g2": r"$\langle g^2 \rangle$",
+              "q2": r"$\langle (s_1/s_2-1)^2 \rangle$",
+              "lnq2": r"$\langle \ln^2 (s_1/s_2) \rangle$"}
+    for key, lab in labels.items():
+        xx = mom[key][keep]
+        kk, _, _, _ = fit_constant(xx, band0[keep])
+        r = band0[keep] / (kk * xx) - 1
+        order = np.argsort(xx)
+        ax.plot(xx[order], 100 * r[order], "o-", ms=4, lw=1.0,
+                label=rf"{lab}: rms {100 * np.std(r):.1f}\%, "
+                      rf"$k = {kk:.3f}$")
+    ax.axhline(0, color="k", lw=1.0)
+    ax.set_xscale("log")
+    ax.set_xlabel(r"shear reduction, mask$^2$-weighted")
+    ax.set_ylabel(r"residual about own best fit [\%]")
+    ax.set_title("Only one reduction collapses the data"
+                 "\n" r"\small all three agree at first order in $s_1-s_2$",
+                 fontsize=11)
+    ax.legend(fontsize=8, loc="lower left")
+
+    fig.tight_layout(pad=1.4, w_pad=2.2, h_pad=2.2)
+    path.parent.mkdir(exist_ok=True)
+    fig.savefig(path)
+    print(f"\nwrote {path}")
+
+
+# --------------------------------------------------------------------------
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--n-bins", type=int, default=64,
+                    help="(log s1, log s2) histogram resolution for the "
+                         "l-dependent model (default 64)")
+    ap.add_argument("--refresh", action="store_true",
+                    help="recompute the shear moments instead of using the cache")
+    ap.add_argument("--no-model", action="store_true",
+                    help="skip the l-dependent forward model (it is the slow part)")
+    ap.add_argument("--check-flattenpol", action="store_true",
+                    help="print the FlattenPol rotation against the polar "
+                         "rotation of the local Jacobian, and stop")
+    ap.add_argument("--no-figure", action="store_true")
+    args = ap.parse_args()
+
+    if args.check_flattenpol:
+        print(f"{'proj':<10}{'alpha':>7}{'delta':>7}{'rot/2':>10}{'-phi':>10}"
+              f"{'resid':>12}{'g':>11}")
+        for proj, a, d, half, mphi, res, g in check_flattenpol():
+            print(f"{S.PROJ_LABEL[proj]:<10}{a:7.1f}{d:7.1f}{half:10.4f}"
+                  f"{mphi:10.4f}{res:12.2e}{g:11.3e}")
+        print("\nAngles in degrees. rot/2 tracks -phi to well under a degree,")
+        print("with a residual that scales as g^3 and is worth under 0.1% of")
+        print("the leakage: FlattenPol removes the polar rotation of the local")
+        print("Jacobian and nothing else. The symmetric part stays, and it is")
+        print("the whole of the leakage.")
+        return
+
+    mom = load_moments(n_bins=args.n_bins, refresh=args.refresh)
+    meas = measured_ratios()
+    pred = None if args.no_model else predicted_ratios(mom)
+    report(mom, meas, pred)
+    report_1500d()
+    if not args.no_figure and pred is not None:
+        figure(mom, meas, pred)
+
+
+if __name__ == "__main__":
+    main()
