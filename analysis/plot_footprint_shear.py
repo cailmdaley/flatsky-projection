@@ -62,10 +62,17 @@ plt.rcParams.update({
 
 
 def theory():
-    """The sims' own unlensed EE input, as raw C_l on integer l."""
-    cl = np.loadtxt(ROOT / "Clee.dat")
-    cl[0] = 0.0
-    return np.arange(len(cl)), cl
+    """Unlensed EE for the sims' own cosmology, as raw C_l on integer l.
+
+    Not Clee.dat. That file carries a 9.5% amplitude deficit and an off-by-one
+    in l (row i holds l = i+1), both established in analysis/theory.py against
+    the Planck 2018 best-fit parameters the sims were actually drawn from. The
+    amplitude cancels in a ratio, but the l shift does not, and there is no
+    reason to keep a known-wrong file in the loop.
+    """
+    import theory as T
+    cl = T.load()["unlensed_EE"]
+    return np.arange(len(cl), dtype=float), cl
 
 
 def band_mean(ell, y, lo, hi):
