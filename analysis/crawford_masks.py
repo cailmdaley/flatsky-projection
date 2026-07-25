@@ -143,11 +143,21 @@ def cached_arrays(variant, ngrid, res_arcmin):
     CACHE.mkdir(parents=True, exist_ok=True)
     path = CACHE / f"maskarr_{variant}_n{ngrid}_r{res_arcmin:g}.npz"
     if path.exists():
-        d = np.load(path)
-        return d["m5"], d["m0"]
+        try:
+            d = np.load(path)
+            return d["m5"], d["m0"]
+        except (EOFError, ValueError, OSError):
+            # A run killed mid-write leaves a truncated npz that loads as an
+            # empty archive. Rebuild rather than making every caller defensive.
+            path.unlink(missing_ok=True)
     m5, m0, _ = build(variant, ngrid, res_arcmin)
-    np.savez(path, m5=m5.astype(np.float32), m0=m0.astype(np.float32))
-    return m5.astype(np.float32), m0.astype(np.float32)
+    m5, m0 = m5.astype(np.float32), m0.astype(np.float32)
+    # The suffix must stay .npz: np.savez silently appends it otherwise, and
+    # the rename below would then chase a file that was never written.
+    tmp = path.with_name(path.stem + ".tmp.npz")
+    np.savez(tmp, m5=m5, m0=m0)
+    tmp.replace(path)   # atomic, so an interrupted write leaves no cache at all
+    return m5, m0
 
 
 def cached(variant, ngrid, res_arcmin):

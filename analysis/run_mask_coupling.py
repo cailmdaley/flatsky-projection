@@ -47,18 +47,21 @@ def model_proj0(variant, spec, ell_fine):
 
 def main():
     ell_fine = np.arange(1.0, 6001.0)
+    ell2d = MC.ell_grid(NGRID, RES)
     results = {}
 
-    for spec in ("tt", "ee"):
-        ell_th, cl_th = M.theory_input(spec)
-        f_in = MC.spectrum_interpolator(ell_th, cl_th, band_limit=M.BAND_LIMIT)
+    # Variant outer, spectrum inner: the masks and their kernels are the
+    # expensive part and do not depend on the spectrum.
+    for variant in CM.VARIANTS:
+        m5, m0 = CM.cached_arrays(variant, NGRID, RES)
+        k5 = MC.kernel(m5.astype(float))
+        k0 = MC.kernel(m0.astype(float))
+        del m5, m0
 
-        for variant in CM.VARIANTS:
-            m5, m0 = CM.cached_arrays(variant, NGRID, RES)
-            k5 = MC.kernel(m5.astype(float))
-            k0 = MC.kernel(m0.astype(float))
-
-            ell2d = MC.ell_grid(NGRID, RES)
+        for spec in ("tt", "ee"):
+            ell_th, cl_th = M.theory_input(spec)
+            f_in = MC.spectrum_interpolator(ell_th, cl_th,
+                                            band_limit=M.BAND_LIMIT)
             in2d = f_in(ell2d)
 
             p0 = model_proj0(variant, spec, ell_fine)
