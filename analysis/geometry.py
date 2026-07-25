@@ -150,6 +150,47 @@ def shear_and_magnification(proj, alpha_deg, delta_deg, **kw):
     return s1 * s2, s1 / s2
 
 
+def _inv2x2(m):
+    """Inverse of a stack of 2x2 matrices, closed form."""
+    m = np.asarray(m, dtype=float)
+    a, b, c, d = m[..., 0, 0], m[..., 0, 1], m[..., 1, 0], m[..., 1, 1]
+    det = a * d - b * c
+    out = np.empty_like(m)
+    out[..., 0, 0], out[..., 0, 1] = d, -b
+    out[..., 1, 0], out[..., 1, 1] = -c, a
+    return out / det[..., None, None]
+
+
+def relative_jacobian(proj_to, proj_from, alpha_deg, delta_deg,
+                      to_kw=None, from_kw=None, step_deg=0.02):
+    """A = J_to . J_from^-1 -- how one map plane stretches relative to another.
+
+    Use this whenever the *input* field is defined on a map plane rather than
+    on the sky. Crawford's simulation is the case that forces it: he draws a
+    Gaussian random field directly on a ZEA grid, declares it to be the proj5
+    map, and reprojects it to proj0. The sky field is then a derived object,
+    and the only operator that acts is the plane-to-plane map C = Z . S^-1.
+
+    Writing h = g . C for the SFL map h and the ZEA map g, the same derivation
+    as in the module docstring gives P_h(k) = |det A| P_g(A^T k) with
+    A = C^-1 = J_S . J_Z^-1. So `A` slots straight into `project_spectrum` in
+    place of a single-projection Jacobian, and the predicted ratio
+    P_proj0 / P_proj5 needs no separate model of the sky spectrum at all --
+    the denominator *is* the input spectrum, exactly.
+
+    Doing it this way removes an approximation. Modelling P_SFL/P_sky and
+    P_ZEA/P_sky separately and dividing is only equal to the composite when
+    ZEA is exactly isotropic; over the 1500d footprint it is isotropic to
+    about 2%, so the two agree at that level, and the composite is the one
+    that is right by construction.
+    """
+    j_to = jacobian(proj_to, alpha_deg, delta_deg, step_deg=step_deg,
+                    **(to_kw or {}))
+    j_from = jacobian(proj_from, alpha_deg, delta_deg, step_deg=step_deg,
+                      **(from_kw or {}))
+    return j_to @ _inv2x2(j_from)
+
+
 def project_spectrum(ell, s1, s2, ell_theory, cl_theory,
                      band_limit=None, n_psi=64):
     """P_plane(l) for one (s1, s2), on the grid `ell`. Shape broadcasts.
@@ -182,7 +223,7 @@ def project_spectrum(ell, s1, s2, ell_theory, cl_theory,
 
 
 def predicted_spectrum(ell, s1, s2, weights, ell_theory, cl_theory,
-                       band_limit=None, n_bins=48, n_psi=64):
+                       band_limit=None, n_bins=48, n_psi=64, chunk=400):
     """Mask-weighted P_plane(l) over a whole footprint.
 
     `weights` should be the mask *squared* (NaMaster's pseudo-Cl estimator
@@ -205,7 +246,16 @@ def predicted_spectrum(ell, s1, s2, weights, ell_theory, cl_theory,
     g1, g2 = np.meshgrid(c1, c2, indexing="ij")
 
     occupied = counts > 0
-    spec = project_spectrum(ell, g1[occupied], g2[occupied],
-                            ell_theory, cl_theory,
-                            band_limit=band_limit, n_psi=n_psi)
-    return np.average(spec, axis=0, weights=counts[occupied])
+    o1, o2, ow = g1[occupied], g2[occupied], counts[occupied]
+
+    # project_spectrum materialises an (n_cell, n_ell, n_psi) array. Over a
+    # real footprint that is tens of gigabytes if `ell` is sampled finely, so
+    # walk `ell` in chunks -- the result is identical, the peak is bounded.
+    ell = np.atleast_1d(np.asarray(ell, dtype=float))
+    out = np.empty(ell.size)
+    for i in range(0, ell.size, chunk):
+        sl = slice(i, i + chunk)
+        spec = project_spectrum(ell[sl], o1, o2, ell_theory, cl_theory,
+                                band_limit=band_limit, n_psi=n_psi)
+        out[sl] = np.average(spec, axis=0, weights=ow)
+    return out
