@@ -133,6 +133,23 @@ def build(variant, ngrid, res_arcmin, orig=None):
     return np.array(np.asarray(m5)), np.array(np.asarray(m0)), m0
 
 
+def cached_arrays(variant, ngrid, res_arcmin):
+    """The two full 2D masks, memoized. What the coupling kernel needs.
+
+    Stored float32: the masks are apodization weights in [0, 1] and nothing
+    downstream needs more than 7 digits, while float64 would double a 100 MB
+    file for nothing.
+    """
+    CACHE.mkdir(parents=True, exist_ok=True)
+    path = CACHE / f"maskarr_{variant}_n{ngrid}_r{res_arcmin:g}.npz"
+    if path.exists():
+        d = np.load(path)
+        return d["m5"], d["m0"]
+    m5, m0, _ = build(variant, ngrid, res_arcmin)
+    np.savez(path, m5=m5.astype(np.float32), m0=m0.astype(np.float32))
+    return m5.astype(np.float32), m0.astype(np.float32)
+
+
 def cached(variant, ngrid, res_arcmin):
     """As `build`, memoized to disk; also returns the proj0 sky coordinates.
 
