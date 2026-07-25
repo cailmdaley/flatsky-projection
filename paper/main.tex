@@ -1,0 +1,239 @@
+\documentclass[modern,]{aastex63}
+
+
+\usepackage{booktabs}
+\usepackage{savesym}
+\savesymbol{tablenum}
+\usepackage[
+  separate-uncertainty=true,
+  multi-part-units=single,
+  bracket-numbers=false]{siunitx}
+\restoresymbol{SIX}{tablenum}
+\usepackage{physics}
+
+\DeclareMathOperator{\atantwo}{atan2}
+\newcommand{\CD}[1]{\textcolor{blue}{[CD: #1]}}
+\newcommand{\vbell}{\vb*{\ell}}
+
+
+
+\begin{document}
+
+\title{E $\to$ B Leakage from Flat-Sky Projection}
+
+\author[0000-0002-3760-2086]{Cail Daley}
+\affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
+
+\author{Caterina Umilta}
+\affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
+
+\author{Gil Holder}
+\affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
+
+\begin{abstract}
+
+\end{abstract}
+
+
+\section{Introduction} \label{sec:intro}
+
+
+The CMB can be observed in total intensity $T$, or in polarization via Stokes $Q$ and $U$ for a total of three distinct observable fields.
+It is often more convenient to decompose the spin-two $Q$ and $U$ polarization field into a curl-free $E$ component and divergence-free $B$ component.
+Scalar density perturbations in the primordial plasma are only capable of generating $E$-modes, so any $B$-mode power in the primordial CMB is expected to come from tensor perturbations from primordial gravitational waves \citep{zal01}.
+A detection of such gravitational waves, whose amplitude is parameterized by the tensor-to-scalar ratio $r$, would confirm one of the main predictions of inflation.
+To date the tightest constraint on $r$ comes from \citet{bicep18}, who estimate $r < 0.06$ at 95\% confidence.
+
+Photons from the primordial CMB are lensed by the gravitational potential of large scale structure as they propagate across the universe, and this affects the properties of the observed CMB in several key ways.
+Lensing deflects photons according to the integrated gravitational potential along the line of sight, introducing correlations in harmonic space between modes on different spatial scales and mixing $E$ into $B$.
+As a result any $B$-mode signal from primordial gravitational waves will be contaminated by lensing, and removing these lensing $B$-modes (``delensing'') is crucial for future efforts to constrain $r$.
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{figures/fig_survey_footprint_SPTonly.png}
+    \caption{
+        The SPT survey footprints overlaid on thermal dust emission from \citet{planck15_X}.
+        The SPTpol \SI{100}{deg^2} \citep{story15} and \SI{500}{deg^2} \citep{wu19} lensing analyses were performed on the flat-sky ZEA projection, while the SPT-SZ analysis \citep{omori17} was performed directly on the curved sky.
+    }
+  \label{fig:footprint}
+\end{figure}
+
+The CMB is an all-sky spherical dataset, and a host of software packages have been developed to store and analyze CMB data directly on the sphere \citep[notably HEALPix,][]{gorski05}.
+However for ground-based experiments with relatively small sky fractions, it is usually much more convenient to analyze CMB in the ``flat-sky'' approximation by projecting a spherical map with celestial coordinates $(\theta, \phi)$ to a $(x, y)$ grid that treats the observed patch of the
+spherical sky as a Euclidean plane.
+This allows computationally expensive spherical harmonic transforms (SHTs) to be replaced with highly-optimized fast Fourier transforms (FFTs), and may dramatically reduce the map memory footprint for ground-based experiments that observe only a fraction of the sky. Many people also find Fourier modes conceptually easier to work with than spherical harmonics.
+
+SPT-3G, which has a sky coverage of about \SI{3.5}{\percent} (Figure \ref{fig:footprint}), usually uses the Lambert azimuthal equal-area projection.
+Equal-area projections are particularly well-suited to Fourier analyses of CMB maps, as projections with a pixel area that varies across the map tend to distort and broaden acoustic peaks.
+
+The flat-sky approximation becomes worse as the sky area is increased, and more sensitive experiments have more stringent requirements on systematic errors.
+%However as ground-based experiments push to larger sky areas the validity of the flat-sky approximation begins breaks down.
+Here we present a study of projection effects on CMB maps and spectra.
+
+\citet{wallis17} consider a similar problem in the context of optical weak lensing, investigating how the flat-sky approximation affects the accuracy of $E$- and $B$-mode convergence maps reconstructed from weak lensing shear maps with the Kaiser-Squires technique.
+The authors experiment with a variety of equatorial and polar projections, finding relative errors from projection to range between $\sim \SI{2.5}{\percent}$ and $\SI{10}{\percent}$ on the $\gtrsim \SI[]{70}{\degree}$ scales of the Dark Energy Survey patch.
+Angle-preserving conformal projections tend to work particularly well, with the stereographic projection yielding the lowest errors, at least in terms of spurious B mode power.
+
+\section{Methods} \label{sec:methods}
+
+
+To quantify the projection properties relevant for CMB analyses, we make CMB maps in several projections and compare the spectra of these maps to theory signal and effective noise spectra.
+We start with Healpix NSIDE $8192$ unlensed $TQU$ maps, and project to flat-sky via bilinear interpolation of the Healpix grid.
+We oversample the flat-sky grid by a factor of 8, and then rebin to \SI{2}{\arcmin} pixels.
+The unlensed input maps have no $B$-modes, so any $B$-mode power in the projected maps must come from the projection, or the $QU \to EB$ rotation.
+The projected map is centered on the center of the SPT-3G field, $(\SI[]{0}{\degree}, \SI{-57.5}{\degree})$.
+A summary of the projections used can be found in Table \ref{table:projs}.
+We rotate the flat-sky $Q$ and $U$ into $E$ and $B$ as
+\begin{align}
+  \label{eq:qu_to_eb}
+  \mqty[E_{\vbell} \\ B_{\vbell}] =
+    \mqty[\cos 2\phi_{\vbell} & \sin 2\phi_{\vbell} \\
+          -\sin 2\phi_{\vbell}  & \cos 2\phi_{\vbell}]
+    \mqty[Q_{\vbell} \\ U_{\vbell}]
+\end{align}
+where $\tan \phi_{\vbell} = \ell_y / \ell_x$ is the slope of a Fourier mode $\vbell$.
+\CD{Should we also have at least a sentence outlining NaMaster's $EB$ estimator here?}
+We take power spectra with \href{https://github.com/LSSTDESC/NaMaster}{NaMaster} \citep{alonso19}, first applying apodized circular masks of varying sky fractions $f_{\rm sky}$ to the maps (Figure \ref{fig:masks}).
+We apply no pixel window function correction, and all spectra are computed using 100 realizations of the input maps.
+\CD{Some of this paragraph are still up in the air--do we also want to do rebinnning, since that seems to help with the roll-off at high $\ell$? And what about PWF corrections?}
+
+\begin{deluxetable}{lcl}
+  \tablecaption{Summary of Projections Used \label{table:projs}}
+  \tablehead{\colhead{Projection} & \colhead{Abbreviation} & \colhead{Properties}}
+  \startdata
+  Samson-Flamsteed            & SFL   & Pseudocylindrical, Equal-area \\
+  Zenithal Equidistant        & ARC   & Distances to map center preserved \\
+  Stereograhic                & STG   & Conformal \\
+  Lambert zenithal equal-area & ZEA   & Equal-area \\
+  Equidistant Cylindrical, $\phi_{ts} = \phi_0$ & BICEP & Cylindrical, Conformal
+  \enddata
+\end{deluxetable}
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/All_masks.png}
+  \caption{Masks with varying sky coverage projected to each of the projections used in this study.}
+  \label{fig:masks}
+\end{figure}
+
+
+\subsection{Polarization Flattening} \label{subsec:flatten_pol}
+
+Additional steps must be taken before calculating power spectra of non-cylindrical projections, which apply a spatially-varying \textit{effective} rotation such that ``true'' North and ``grid'' North are not in general aligned with each other.
+In contrast to a proper rotation of the spin-2 $QU$ polarization field, this effective rotation is applied to $Q$ and $U$ separately as if they were scalar fields.
+Since the orientation of $Q$ and $U$ are defined relative to cardinal directions on the sphere, this spatially-varying rotation changes the alignment of the $Q$ $+$s and $U$ $\times$s across the map.
+
+When dealing with polarized $QU$ data, in most cases one wants to undo the rotation induced by projection, or ``flatten'' the $QU$ field.
+A spin-$s$ field $f_s(\theta, \phi)$ on the sphere is transformed under a local rotation $\psi$ as
+\begin{equation}
+    \label{eq:rot}
+    f_s'(\theta, \phi)  = e^{-i s \psi}f_s(\theta, \phi)
+\end{equation}
+where $f_s'$ is the rotated field.
+As a result, applying this flattening operation to the spin-2 $QU$ fields rotates $Q$ into $U$ and vice versa.
+The rotation itself is easily accomplished using the equation above, but the calculation of the rotation angle itself is more delicate.
+One could define the rotation angle as the angle between ``true'' North $\hat{\theta}$ and flat-sky ``grid'' North $\hat{y}$, or as the angle between ``true'' East $\hat{\phi}$ and flat-sky ``grid'' East $\hat{x}$.
+We use an equal weighting of both, such that
+\begin{equation} \label{eq:rot_angle}
+    2\psi = \atantwo \qty(\frac{\pdv*{\theta}{y}}{\pdv*{\theta}{x}}) + \atantwo \qty(-\frac{\pdv*{\phi}{x}}{\pdv*{\phi}{y}})
+\end{equation}
+Note that here we are taking derivatives of the spherical coordinates with respect to the planar coordinates; taking the derivatives of the planar coordinates with respect to the spherical coordidnates yields equivalent results.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/Bmap_ZEA.png}
+  \caption{
+    $E \to B$ leakage from the projection after ``flattening'' the polarization.
+    As the input maps are $E$-only, any power in the $B$ map should be from projection.
+    We note that the leaked $B$ is strongest at the edges of the map as one would expect, and has a $Q$/$U$ pattern.
+    \label{fig:Bmap_ZEA}
+  }
+\end{figure}
+
+For conformal (angle-preserving) projections, the accuracy of the polarization flattening operation is limited only by the accuracy of the method for taking gradients.
+But for non-conformal projections such as the fiducial ZEA, residual $E \to B$ leakage remains even after flattening (Figure \ref{fig:Bmap_ZEA}).
+Non-conformal projections in general do not preserve \SI[]{90}{\degree} angles between e.g. celestial North and East, so there does not exist a single rotation angle than can be applied to align celestial North with grid North \textit{and} celestial East with grid East.
+As a result non-conformal projections introduce a small curl field into the projected data that is picked out by the $B$-mode estimator.
+Figure \ref{fig:Bfourier} compares 2D Fourier maps of $E \to B$ leakage for the non-conformal ZEA and confromal STG, showing that the leakage is both larger and more isotropic in the ZEA case.
+
+\begin{figure}
+  \gridline{
+    \fig{figures/Bfourier_ZEA.png}{0.5\textwidth}{ZEA}
+    \fig{figures/Bfourier_STG.png}{0.5\textwidth}{STG}
+  }
+  \caption{
+    Fourier maps of leaked $B$ in the ZEA (left) and STG (right) projections.
+    The non-conformal ZEA projections results in higher levels of leakage.
+    \label{fig:Bfourier}}
+\end{figure}
+
+\section{Results} \label{sec:results}
+
+Figure \ref{fig:fsky_comparison} shows $EE$ and $BB$ power spectra in the fiducial ZEA projection for a range of sky coverage from \SIrange{0.75}{5}{\percent}.
+The breakdown of the flat-sky approximation manifests in different ways for $EE$ and $BB$, although both effects are strongest at the edges of the masked region.
+The ZEA projection is equal-area but not distance-preserving, so $EE$ peaks will tend to be smoothed as the flat-sky modes associated with a given $\ell$ will be a mixture of multiple curved-sky modes.
+Since there is no $B$-mode power in the curved-sky maps we do not see a similar effect for the $BB$ spectra; instead we see $E \to B$ leakage caused by the curl field from non-conformal projections discussed in Section \ref{subsec:flatten_pol}.
+While the amount of leakage increases with sky coverage, it remains more than an order of magnitude below the lensing $B$-mode effective noise floor for all coverage fractions.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/Allsizes_proj=5_res=2_figtype=EE_BB_Cl}
+  \caption{
+    $EE$ and $BB$ power spectra of ZEA projected maps for a range of sky coverages in units of $D_{\ell}$.
+    The spectra of the projected maps (dashed lines) are plotted along with theory curves (black lines).
+    For $BB$ we plot the \textit{lensed} theory spectrum, as we are interested in the comparing noise from projection to the ``effective`` lensing $B$-mode noise.
+    The $B$-mode power introduced by projection, which has the same shape as the $EE$ spectrum, is at least an order or magnitude below the lensing $B$-mode floor at all scales.
+    \CD{Why does the EE 5\% curve remain more or less unbiased while smaller sky fractions drift up at high $\ell$?}
+  }
+  \label{fig:fsky_comparison}
+\end{figure}
+
+Figure \ref{fig:proj_comparison} shows spectra for each projection at a fixed sky coverage of \SI{1.5}{\percent}.
+SFL and BICEP, the (pseudo)cylindrical projections that map lines of constant latitude to straight horizontal lines on flat-sky, perform the worst for both $EE$ and $BB$.
+For $EE$ the equal-area ZEA performs best, with the distance-to-center preserving SIN resulting in slightly larger residuals.
+The STG projection, which is neither distance- nor area-preserving, slightly shifts the location of the $EE$ peaks to lower $\ell$ and gives residuals several times larger than SIN.
+However because STG is conformal and the polarization flattening can be done to arbitrary precision, it gives the lowest level of $E \to B$ leakage by several orders of magnitude.
+ZEA and SIN perform similarly for $BB$ (ZEA is slightly better), with leaked $E \to B$ power remaining almost two orders of magnitude below the lensing $B$-mode floor.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/Allprojs_1p5perc_res=2_figtype=EE_BB_Cl.png}
+  \caption{
+    $EE$ and $BB$ power spectra for all the projections with $f_{\rm sky} = 1.5\%$.
+    The spectra of the projected maps (dashed lines) are plotted along with theory curves (black lines).
+    For $BB$ we plot the \textit{lensed} theory spectrum, as we are interested in the comparing noise from projection to the ``effective`` lensing $B$-mode noise.
+    The cylindrical projections have much higher $E \to B$ leakage, while the conformal STG projection has the least.
+  }
+  \label{fig:proj_comparison}
+\end{figure}
+
+To asses the amount of mode-mixing induced by projection, we also plot slices of the $EE$ and $BB$ spectra covariance matrices in Figure \ref{fig:cov}.
+For $EE$, we can see that mode-mixing from projection is relatively insensitive to the choice of projection; however this is not the case for $BB$, which should be totally uncorrelated for input maps with no $B$-modes.
+All projections except for the conformal STG projection induce both diagonal and off-diagonal correlations, with the effects being worst for the (pseudo)cylindrical SFL and BICEP projection.
+The SIN and ZEA projections, best for $EE$, introduce $BB$ correlations out to $\ell \sim 1000$.
+
+\begin{figure}
+  \gridline{\fig{figures/Lincovmat_res=2_figtype=Covmat_150_EE.png}{\textwidth}{$EE$}}
+  \gridline{\fig{figures/Lincovmat_res=2_figtype=Covmat_150_BB.png}{\textwidth}{$BB$}}
+  \caption{
+    Sliced and stacked covariance matrices of $EE$ and $BB$ $C_{\ell}$ spectra.
+    For each projection we plot the diagonal of the covariance matrix and the 9 bins directly below the diagonal at a bin resolution of $\Delta \ell = 10$.
+    The projections are sorted by decreasing amount of $E \to B$ leakage.
+  }
+  \label{fig:cov}
+\end{figure}
+
+\section{Discussion} \label{sec:discussion}
+
+We find that the SIN and ZEA projections are sufficient for $EE$ power spectrum estimation, but induce $E \to B$ leakage that scales with $f_{\rm sky}$.
+However, the amplitude of $E \to B$ leakage should remain below the lensing $B$-mode effective noise floor considering the sky fractions of current and upcoming CMB experiments.
+The STG projection, while inaccurate for $E$-modes, results in negligible $E\ \to B$ leakage and thus may be an appealing option for $B$-mode-only power spectrum estimation in the flat-sky approximation.
+
+While the input shear fields and Kaiser-Squires technique in \citet{wallis17} differ from the input CMB fields and $QU \to EB$ rotation described in this work, in both cases the E- and B-mode statistics of the output maps are the same. As such, we find \citet{wallis17} to be a useful point of qualitative comparison to the results presented here.
+In accordance with the authors' previous work we find that the conformal STG projection produces the smallest $B$-mode errors.
+However STG does not perform as well for CMB $E$-modes because it is not equal-area; the varying pixel size across the map tends to smooth the acoustic peaks of the CMB.
+Since convergence $E$-modes have no acoustic peaks this is less of a problem in \citet{wallis17}, although their relative error for convergence $E$-modes is still slightly larger than for $B$-modes.
+We find that the equal-area ZEA projection, which was not considered in  \citet{wallis17}, performs best for $E$-modes; this projection may be of use to future flat-sky optical weak lensing studies.
+
+\clearpage
+
+\bibliographystyle{aasjournal}
+\bibliography{pol_project}
+
+
+\end{document}

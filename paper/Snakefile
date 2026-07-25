@@ -1,0 +1,103 @@
+from pathlib import Path
+
+PROJS=[0, 3, 4, 5, 9] 
+
+pager_dir = Path("/sptlocal/user/cailmdaley/public_html/pol_project/")
+analysis_dir = Path("/sptlocal/analysis/pol_project2020")
+
+configfile: "config.yaml"
+
+include: "rules/namaster.smk"
+
+rule all:
+    input:
+        pager_dir / "index.html"
+
+rule pager:
+    input:
+        "pager.md",
+        plots = [
+            pager_dir / "wallis_plot.png",
+            expand("{{pager_dir}}/projectedQU_{pol}_seed1_{proj}_vlim=dynamic.png", 
+                    pol=["Q", "U", "E", "B"], proj=config['projs']),
+            expand("{{pager_dir}}/projectedEB_{pol}_seed1_{proj}_vlim=dynamic.png", 
+                    pol=["E", "B"], proj=config['projs']),
+            expand("{{pager_dir}}/residuals_{pol}_seed1_{proj}_vlim=dynamic.png", 
+                    pol=["E", "B"], proj=config['projs']),
+            expand("{{pager_dir}}/leakageQU_seed1_{proj}_vlim={vlim}.png", 
+                    proj=config['projs'], vlim=["fixed", "dynamic"]),
+            ],
+        css = ["writing_tools/pager/pager.css", "writing_tools/pandoc/pandoc.css"],
+        js = "writing_tools/pager/pager.js",
+    output:
+        "{pager_dir}/index.html",
+        css = ["{pager_dir}/pager.css", "{pager_dir}/pandoc.css"],
+        js = "{pager_dir}/pager.js",
+    shell:
+        "cp {input.css} {input.js} {pager_dir} "
+        "&& pandoc {input[0]} -o {output[0]} "
+        "   -s "   
+        "   -V header-includes:'<script src={input.js}></script>' "
+        "   --css=pager.css --css=pandoc.css"
+
+rule wallis_plot:
+    input:
+        QU = expand(analysis_dir / "projected_maps/seed1_{proj}_QU.g3", proj=config['projs']),
+        EB = expand(analysis_dir / "projected_maps/seed1_{proj}_EB.g3", proj=config['projs'])
+    threads: 1
+    output:
+        pager_dir / "wallis_plot.png"
+    script:   
+        "scripts/wallis_plot.jl"
+
+rule plot_leakage_QU:
+    input:
+        projected_QU = analysis_dir / "projected_maps/seed{seed}_{proj}_QU.g3",
+        mask = "/sptlocal/user/ddutcher/masks/3band_res2_bundle_apod_mask.pkl"
+    output:
+        fixed = pager_dir / "leakageQU_seed{seed}_{proj}_vlim=fixed.png",
+        dynamic = pager_dir / "leakageQU_seed{seed}_{proj}_vlim=dynamic.png",
+    script:   
+        "scripts/plot_leakage_QU.py"
+
+rule plot_map_QU:
+    input:
+        analysis_dir / "projected_maps/seed{seed}_{proj}_QU.g3"
+    output:
+        Q = pager_dir / "projectedQU_Q_seed{seed}_{proj}_vlim=dynamic.png", 
+        U = pager_dir / "projectedQU_U_seed{seed}_{proj}_vlim=dynamic.png", 
+        E = pager_dir / "projectedQU_E_seed{seed}_{proj}_vlim=dynamic.png", 
+        B = pager_dir / "projectedQU_B_seed{seed}_{proj}_vlim=dynamic.png", 
+    script:   
+        "scripts/plot_maps.py"
+
+rule plot_map_EB:
+    input:
+        analysis_dir / "projected_maps/seed{seed}_{proj}_EB.g3"
+    output:
+        E = pager_dir / "projectedEB_E_seed{seed}_{proj}_vlim=dynamic.png", 
+        B = pager_dir / "projectedEB_B_seed{seed}_{proj}_vlim=dynamic.png", 
+    script:   
+        "scripts/plot_maps.py"
+
+rule plot_residuals:
+    input:
+        QU = analysis_dir / "projected_maps/seed{seed}_{proj}_QU.g3",
+        EB = analysis_dir / "projected_maps/seed{seed}_{proj}_EB.g3",
+        mask = "/sptlocal/user/ddutcher/masks/3band_res2_bundle_apod_mask.pkl"
+    output:
+        E = pager_dir / "residuals_E_seed{seed}_{proj}_vlim=dynamic.png", 
+        B = pager_dir / "residuals_B_seed{seed}_{proj}_vlim=dynamic.png", 
+    script:   
+        "scripts/plot_residuals.py"
+
+rule project:
+    input:
+        "/sptgrid/simulation/lensing_maps/unlensed_TQU1/TQU1_planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_seed{seed}.fits"
+    threads: 
+        16
+    output:
+        QU = expand(analysis_dir / "projected_maps/seed{{seed}}_{proj}_QU.g3", proj=config['projs']),
+        EB = expand(analysis_dir / "projected_maps/seed{{seed}}_{proj}_EB.g3", proj=config['projs'])
+    script:   
+        "scripts/project_maps.py"

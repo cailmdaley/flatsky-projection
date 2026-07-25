@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "~/.local/bin/python-sing",
+    "jupyter.jupyterServerType": "remote"
+}

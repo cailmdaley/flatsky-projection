@@ -1,0 +1,42 @@
+# Vendored third-party checkouts (each is its own git repo)
+paper/resources/NaMaster/
+paper/writing_tools/
+analysis_telecon/pandoc-2.9.2.1/
+analysis_telecon/pandoc-2.9.2.1-linux-amd64.tar.gz
+
+# Snakemake state
+.snakemake/
+**/.snakemake/
+
+# Notebook cruft
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Data products live on /sptlocal, never in the repo
+*.fits
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pkl
+
+# LaTeX build detritus
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Editor / OS
+.DS_Store
+*.swp
