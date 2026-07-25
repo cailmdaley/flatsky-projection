@@ -9,7 +9,12 @@ slot ends up holding the last projection read. Nothing here reuses it.
 
 What the 2021 pipeline actually computed, for the record:
   - Input: HEALPix Nside 8192 *unlensed* TQU sims (so the true B is zero).
-  - map2alm to lmax 4000, monopole and dipole filtered.
+  - map2alm to lmax 4000, monopole and dipole filtered. There is therefore NO
+    sky power above ell = 4000; the topmost bandpowers sit against that hard
+    band limit and must not be quoted without saying so.
+  - alm2map back to an Nside 4096 *intermediate* grid (config `nside`), which
+    is lossless below ell 4000. The 8192 and the 4096 describe different
+    stages and are not in conflict.
   - Projected to a flat grid with bilinear interpolation, oversampled 8x,
     rebinned to 2 arcmin pixels.
   - spt3g maps.FlattenPol applied, i.e. the projection-induced spin-2
