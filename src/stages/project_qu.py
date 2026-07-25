@@ -49,7 +49,15 @@ def _postprocess(flatsky_frame):
     # that survives at O(shear - 1) is exactly what this project measures,
     # and it only shows up on this leg because only this leg ever treats
     # Q/U as a spin-2 quantity.
-    maps.FlattenPol(flatsky_frame)
+    #
+    # The 2021 script called maps.FlattenPol(frame) here. That no longer works:
+    # today's FlattenPol does `frame.pop("T")` unconditionally, and this frame
+    # carries only Q and U, so it raises KeyError: 'T'. FlattenPol is a thin
+    # frame-level wrapper whose only real work is the call below, so calling
+    # flatten_pol directly is the same rotation with no T required. (The 2021
+    # maps on disk do carry flat_pol=True, so the build of the day tolerated a
+    # T-less frame; the wrapper has tightened since.)
+    maps.flatten_pol(flatsky_frame["Q"], flatsky_frame["U"])
 
 
 def main(argv=None):
