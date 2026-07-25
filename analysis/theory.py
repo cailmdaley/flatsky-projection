@@ -40,13 +40,15 @@ likely an early placeholder spectrum, not the one synfast actually used for
 the seeds this repo analyzes -- or synfast was handed the same flawed file.
 Either way, Clee.dat should not be trusted as ground truth; the parameters
 below, cross-checked against the preserved Fortran CAMB output, are the
-better record of the sims' actual input.
+better record of the sims' actual input. (Residual after removing the
+constant scale: std ~0.2%, worst 10-ell window ~0.9%, over 100 < ell < 3000 --
+so the two remaining knobs, index and amplitude, really do close the gap.)
 
 TRAPS.
   - raw_cl vs D_l: CAMB's natural output is D_l = l(l+1)C_l/2pi in uK^2. This
     module stores raw C_l (divide that out) because that is what synfast-style
     consumers and NaMaster comparisons want; do not re-introduce D_l here,
-    convert it at plot time instead (see figures/plot_theory.py).
+    convert it at plot time instead (see analysis/plot_theory.py).
   - ell=0,1 are physically undefined for polarization (and l=0,1 for TT are
     the monopole/dipole, conventionally excluded). CAMB's raw_cl output
     already zeros indices 0 and 1; we keep that convention rather than NaN,
