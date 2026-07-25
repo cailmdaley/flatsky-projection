@@ -1,40 +1,51 @@
-"""Predict Tom Crawford's 2026 proj0/proj5 measurement from projection geometry.
+"""Crawford's proj0/proj5 ratio: what geometry explains, and what his estimator adds.
 
-This is the test that matters. Everything else in the revival is validation on
-2021 simulations we also made; this is the model meeting somebody else's data,
-taken five years later on a different footprint with a different pipeline.
+The figure this makes
+---------------------
+Six cells, TT above EE, one column per mask. Each cell is a ratio panel over a
+strip showing the mode-coupling bias of the two masks that went into it.
 
-The setup has no free parameters and no fitting. Inputs: the 1500d field
-geometry (RA +-50 deg, dec -70..-42, ZEA centred at 0, -57.5), and Tom's own
-measured proj5 bandpowers standing in for the sky spectrum -- legitimate
-because the model puts ZEA's own bias well under a percent, so his proj5 is the
-sky as seen through his beam, pixel window and binning, all of which then
-cancel in the ratio. Output: his proj0.
+Read it column by column.
 
-What comes out
---------------
-The model reproduces the size of the excess, the fact that EE is affected more
-than TT, and the turnover at the top of his range -- all three from spectral
-slope and sky geometry alone. It sits about 20% low at the peak (23% for EE, 19%
-for TT), which is the right sign and roughly the right size for the
-reprojection aliasing Caterina Umilta measured separately and which this model
-does not contain.
+  full mask     Projection geometry alone lands on his measurement: 1.026 for
+                TT and 0.997 for EE at l = 4050. The coupling correction is
+                sub-percent, and the bias strip is flat at one. Nothing else is
+                needed, and nothing else is claimed.
 
-Where it does not work
-----------------------
-His cut-corner and iso-shrink variants drop much further than a change in shear
-can explain (see the third panel). Either those masks are far more aggressive
-than the shapes guessed here, or something beyond shear responds to mask
-surgery. Resolving it needs his actual masks; this script states the gap rather
-than tuning a shape until it closes.
+  cut corner    Geometry alone over-predicts by 19% (TT). His mask surgery
+  iso shrink    zeroes pixels outright, destroying the apodization along the
+                new boundary, and `cl_flatsky` corrects only by <mask^2> --
+                no mode decoupling at all. Folding in the exact coupling of
+                his own masks closes both variants: 0.996 and 0.976 for TT,
+                0.988 and 1.010 for EE.
 
-One plotting artifact to know about: below l ~ 2500 the model curve oscillates
-harder than the data. That is the input spectrum, not the physics. His
-bandpowers are 100 wide, the model stretches them by up to 1.5 in l, and a
-peak stretched onto a trough of a coarsely binned spectrum exaggerates the
-swing. The high-l regime, where the whole question lives, is unaffected.
+So the apparent failure of the model on the variants is not a failure of the
+projection model. It is the estimator, and it is calculable in closed form
+from the masks themselves.
+
+Why the bias strip earns its space
+----------------------------------
+The strip shows the multiplicative error the estimator makes on each spectrum
+separately: Ctilde/C for the proj0 mask and for the proj5 mask. By l = 5000
+those reach 2 (cut corner) and 8 (iso shrink) for TT. Neither spectrum is
+usable on its own. The ratio survives only because the two errors are similar
+and largely divide out -- the residual, bias0/bias5, is exactly the factor
+between the dashed and solid curves above.
+
+The caveat that travels with the two right-hand columns
+-------------------------------------------------------
+`mask_coupling` evaluates the isotropic part of the coupling, which it argues
+is safe when the correction is small. On the full mask that argument holds
+completely. On iso_shrink it does not: a correction of a factor of eight has
+an anisotropic partner that is not negligible, and the strip is what shows
+this. The variant columns should be read as "mode coupling of this size is
+present and is the right explanation", not as a percent-level prediction.
+
+Input is the JSON written by `run_mask_coupling.py`; this script computes
+nothing and will refuse to run if that file is missing.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -44,123 +55,187 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import crawford as C
-import footprints as F
-import geometry as G
+import crawford as C          # noqa: E402
+import crawford_masks as CM   # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "figures"
 OUT.mkdir(exist_ok=True)
+COUPLING = CM.CACHE / "mask_coupling.json"
 
-ELL_FINE = np.arange(50.0, 6001.0, 20.0)
-DEC_MID = -56.0          # centre of the dec range, for the variant shapes
-RA_HALF, DEC_HALF = 50.0, 14.0
+SPECS = ("tt", "ee")
+COLUMNS = (("full", "full mask"),
+           ("cutcorner", "cut corner (hard edge)"),
+           ("iso_shrink", "iso shrink (hard edge)"))
+L_QUOTE = 4050.0                      # the multipole the annotations quote
+
+DATA = "#2E2A26"      # measured bandpowers -- the anchor, kept neutral
+GEOM = "#5A8B8B"      # geometry only
+FULL = "#A05638"      # geometry + mask coupling
+BIAS0 = "#C08B5C"     # estimator bias of the proj0 mask
+BIAS5 = "#5B4B6B"     # estimator bias of the proj5 mask
+RULE = "0.55"
 
 plt.rcParams.update({
-    "font.size": 11, "axes.grid": True, "grid.alpha": 0.25,
-    "figure.dpi": 130, "savefig.bbox": "tight",
+    "font.size": 10, "axes.titlesize": 12, "axes.labelsize": 11,
+    "xtick.labelsize": 9.5, "ytick.labelsize": 9.5, "legend.fontsize": 8,
+    "axes.grid": True, "grid.alpha": 0.22, "grid.linewidth": 0.6,
+    "axes.spines.top": False, "axes.spines.right": False,
+    "axes.linewidth": 0.8, "lines.linewidth": 1.6,
+    "figure.dpi": 200, "savefig.bbox": "tight", "figure.autolayout": False,
 })
 
 
-def predict(mask, cl_proj5):
-    """Predicted proj0/proj5, binned onto Tom's bandpowers, plus mean shear."""
-    ell_th, cl_th, _ = C.as_input_spectrum(cl_proj5)
-    got = {}
-    for proj in ("ProjSFL", "ProjZEA"):
-        s1, s2, w = F.mask_geometry(mask, proj, **C.FIELD_CENTER)
-        got[proj] = G.predicted_spectrum(ELL_FINE, s1, s2, w, ell_th, cl_th)
-    s1, s2, w = F.mask_geometry(mask, "ProjSFL", **C.FIELD_CENTER)
-    ratio = C.bin_to_his_bandpowers(ELL_FINE, got["ProjSFL"] / got["ProjZEA"])
-    return ratio, float(np.average(s1 / s2, weights=w)), F.f_sky(mask) * 41253
+def load():
+    """The cached coupling results, keyed '{spec}/{variant}'."""
+    if not COUPLING.exists():
+        raise SystemExit(
+            f"missing {COUPLING}\nrun `python analysis/run_mask_coupling.py` "
+            "(about 10 minutes) before plotting.")
+    d = json.loads(COUPLING.read_text())
+    want = {f"{s}/{v}" for s in SPECS for v, _ in COLUMNS}
+    missing = want - set(d)
+    if missing:
+        raise SystemExit(f"{COUPLING} is missing keys: {sorted(missing)}")
+    for key in sorted(want):
+        for field in ("measured", "uncoupled", "coupled", "bias0", "bias5"):
+            arr = np.asarray(d[key][field], dtype=float)
+            if arr.shape != (C.N_BINS,):
+                raise SystemExit(f"{COUPLING}: {key}/{field} has shape "
+                                 f"{arr.shape}, expected ({C.N_BINS},)")
+            d[key][field] = arr
+    return d
 
 
-def superellipse(power=None, shrink=None):
-    """Mask family: power -> rounded corners, shrink -> isotropic contraction.
+def ratio_panel(ax, r):
+    """Measured, geometry-only and geometry+coupling on one set of bandpowers."""
+    ax.axhline(1.0, color=RULE, lw=0.7, zorder=0)
+    # The shaded wedge is the whole argument of the figure: it is what mode
+    # coupling moves. It has no width in the full column and opens up in the
+    # other two.
+    ax.fill_between(C.ELL, r["uncoupled"], r["coupled"], color=FULL,
+                    alpha=0.16, lw=0, zorder=1)
+    ax.plot(C.ELL, r["coupled"], "-", color=FULL, lw=1.9, zorder=3,
+            label=r"geometry $+$ mask coupling")
+    ax.plot(C.ELL, r["uncoupled"], "--", color=GEOM, lw=1.7, dashes=(5, 2.6),
+            zorder=4, label="geometry only")
+    ax.plot(C.ELL, r["measured"], "-", color=DATA, lw=0.7, alpha=0.35, zorder=5)
+    ax.plot(C.ELL, r["measured"], "o", color=DATA, ms=2.9, mew=0, zorder=6,
+            label="Crawford 2026, measured")
 
-    Guesses at what Tom's 'cut corner' and 'iso shrink' variants are. They are
-    labelled as guesses everywhere they appear.
-    """
-    import healpy as hp
-    nside = F.NSIDE
-    ra, dec = hp.pix2ang(nside, np.arange(hp.nside2npix(nside)), lonlat=True)
-    ra = np.where(ra > 180.0, ra - 360.0, ra)
-    u, v = np.abs(ra) / RA_HALF, np.abs(dec - DEC_MID) / DEC_HALF
-    if power is not None:
-        keep = u ** power + v ** power <= 1.0
-    else:
-        keep = (u <= shrink) & (v <= shrink)
-    m = np.zeros(len(ra))
-    m[keep] = 1.0
-    return F.apodize(m)
+
+def bias_panel(ax, r):
+    """The estimator's own multiplicative error, mask by mask."""
+    ax.axhline(1.0, color=RULE, lw=0.7, zorder=0)
+    ax.plot(C.ELL, r["bias0"], "-", color=BIAS0, lw=1.4, label="proj0 mask")
+    ax.plot(C.ELL, r["bias5"], "-", color=BIAS5, lw=1.4, label="proj5 mask")
+    ax.set_yscale("log")
+
+
+def annotate(ax, r):
+    """measured/model at one multipole, coloured to key onto the two curves."""
+    i = int(L_QUOTE // C.DELTA_L)
+    geom = r["measured"][i] / r["uncoupled"][i]
+    full = r["measured"][i] / r["coupled"][i]
+    ax.text(0.035, 0.960, rf"measured\,/\,model at $\ell = {L_QUOTE:.0f}$",
+            transform=ax.transAxes, va="top", fontsize=8, color="0.35")
+    for dy, name, val, colour in ((0.865, "geometry only", geom, GEOM),
+                                  (0.775, r"$+$ mask coupling", full, FULL)):
+        ax.text(0.075, dy, name, transform=ax.transAxes, va="top",
+                fontsize=8.5, color=colour)
+        ax.text(0.395, dy, f"${val:.3f}$", transform=ax.transAxes, va="top",
+                ha="right", fontsize=8.5, color=colour)
 
 
 def main():
-    full = F.rect_mask(**C.FIELD_1500D)
+    d = load()
 
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.4))
+    fig = plt.figure(figsize=(13.6, 8.9))
+    blocks = {
+        "tt": fig.add_gridspec(2, 3, height_ratios=[3.0, 1.15], top=0.893,
+                               bottom=0.505, hspace=0.07, wspace=0.075,
+                               left=0.062, right=0.988),
+        "ee": fig.add_gridspec(2, 3, height_ratios=[3.0, 1.15], top=0.452,
+                               bottom=0.064, hspace=0.07, wspace=0.075,
+                               left=0.062, right=0.988),
+    }
 
-    # ---- panels 1 and 2: EE and TT on the full footprint -------------------
-    for ax, spec, colour in zip(axes[:2], ("ee", "tt"), ("crimson", "steelblue")):
-        p0, p5 = C.load(spec)
-        pred, qbar, area = predict(full, p5)
-        meas = p0 / p5
-        sel = (C.ELL > 300) & (C.ELL < 5800)
-        ax.plot(C.ELL[sel], meas[sel], "o", ms=4, color=colour,
-                label="Crawford 2026, measured")
-        ax.plot(C.ELL[sel], pred[sel], "-", lw=2, color="k",
-                label="shear model, no free parameters")
-        ax.axhline(1.0, color="0.3", lw=0.8)
-        ax.set(xlim=(300, 5800), ylim=(0.7, 2.8), xlabel=r"$\ell$",
-               title=f"{spec.upper()}")
-        ax.legend(fontsize=8, loc="upper left")
-        peak = np.nanmax(meas[sel]) / np.nanmax(pred[sel])
-        ax.text(0.97, 0.05, f"model low by {100*(peak-1):.0f}\\%\nat the peak",
-                transform=ax.transAxes, ha="right", fontsize=8, color="0.35")
-    axes[0].set_ylabel(r"$C_\ell(\mathrm{proj0})\,/\,C_\ell(\mathrm{proj5})$")
+    axes = {}
+    for spec in SPECS:
+        gs = blocks[spec]
+        main_ref = bias_ref = None
+        for j, (variant, _) in enumerate(COLUMNS):
+            a = fig.add_subplot(gs[0, j], sharey=main_ref)
+            b = fig.add_subplot(gs[1, j], sharey=bias_ref, sharex=a)
+            main_ref = main_ref or a
+            bias_ref = bias_ref or b
+            axes[spec, variant] = (a, b)
 
-    # ---- panel 3: the mask variants, where the model does not close --------
-    ax = axes[2]
-    p0, p5 = C.load("tt")
-    scan = []
-    for power in (4, 3, 2):
-        scan.append(predict(superellipse(power=power), p5))
-    for shrink in (0.9, 0.8, 0.7, 0.6, 0.5):
-        scan.append(predict(superellipse(shrink=shrink), p5))
-    scan.append(predict(full, p5))
-    areas = np.array([s[2] for s in scan])
-    vals = np.array([s[0][40] for s in scan])
-    order = np.argsort(areas)
-    ax.plot(areas[order], vals[order], "o-", color="k", ms=4,
-            label="shear model vs. mask size")
+    for spec in SPECS:
+        for j, (variant, title) in enumerate(COLUMNS):
+            a, b = axes[spec, variant]
+            r = d[f"{spec}/{variant}"]
+            ratio_panel(a, r)
+            bias_panel(b, r)
+            annotate(a, r)
+            a.tick_params(labelbottom=False)
+            a.set_xlim(0, 6000)
+            b.set_xticks([0, 2000, 4000, 6000])
+            if spec == "tt":
+                a.set_title(title, pad=7)
+            if spec == "ee":
+                b.set_xlabel(r"$\ell$", labelpad=1)
+            if j:
+                a.tick_params(labelleft=False)
+                b.tick_params(labelleft=False)
 
-    styles = {"": ("full mask", "crimson"),
-              "_cutcorner": ("his cut-corner", "darkorange"),
-              "_iso_shrink": ("his iso-shrink", "seagreen")}
-    for variant, (label, colour) in styles.items():
-        a, b = C.load("tt", variant)
-        ax.axhline((a / b)[40], color=colour, lw=1.6, ls="--",
-                   label=f"{label}, measured")
-    ax.set(xlabel="mask area (deg$^2$)", ylim=(1.0, 2.2),
-           ylabel=r"$C_\ell(\mathrm{proj0})/C_\ell(\mathrm{proj5})$ at $\ell=4050$",
-           title="TT variants: the model does not close")
-    ax.legend(fontsize=7.5, loc="lower right")
+    # Row identity lives in the y-axis label, so the two blocks never need a
+    # separate row heading.
+    for spec in SPECS:
+        a, b = axes[spec, "full"]
+        up = spec.upper()
+        a.set_ylabel(rf"$C_\ell^{{{up}}}(\mathrm{{proj0}})\,/\,"
+                     rf"C_\ell^{{{up}}}(\mathrm{{proj5}})$")
+        b.set_ylabel(r"$\tilde{C}_\ell/C_\ell$", labelpad=2)
+        b.set_ylim(0.85, 16.0)
+        b.set_yticks([1, 3, 10])
+        b.set_yticklabels(["1", "3", "10"])
+        b.minorticks_off()
+        lo = min(np.nanmin(d[f"{spec}/{v}"][k]) for v, _ in COLUMNS
+                 for k in ("measured", "uncoupled", "coupled"))
+        hi = max(np.nanmax(d[f"{spec}/{v}"][k]) for v, _ in COLUMNS
+                 for k in ("measured", "uncoupled", "coupled"))
+        a.set_ylim(lo - 0.06 * (hi - lo), hi + 0.13 * (hi - lo))
 
-    fig.suptitle("A zero-parameter geometry model against Crawford's 1500d "
-                 "proj0/proj5 measurement", y=1.02)
-    fig.tight_layout()
+    # Two legends, each parked where its own block has empty space.
+    a, b = axes["tt", "full"]
+    handles, labels = a.get_legend_handles_labels()
+    order = [2, 1, 0]
+    a.legend([handles[i] for i in order], [labels[i] for i in order],
+             loc="lower right", frameon=False, handlelength=2.2,
+             borderaxespad=0.6, labelspacing=0.35)
+    b.legend(loc="upper left", frameon=False, fontsize=7.5, ncol=2,
+             handlelength=1.6, columnspacing=1.4, borderaxespad=0.3)
+
+    fig.suptitle("Projection geometry predicts Crawford's full-mask "
+                 "proj0/proj5 ratio; his hard-edged variants need the "
+                 "estimator's mode coupling as well", y=0.972, fontsize=13.5)
     fig.savefig(OUT / "crawford_compare.png")
     print(f"wrote {OUT / 'crawford_compare.png'}")
 
     # ---- the numbers, for the record ---------------------------------------
-    for spec in ("ee", "tt"):
-        p0, p5 = C.load(spec)
-        pred, qbar, area = predict(full, p5)
-        meas = p0 / p5
-        print(f"\n{spec.upper()}  (footprint {area:.0f} deg^2, mean shear {qbar:.3f})")
-        print(f"{'ell':>6} {'measured':>9} {'predicted':>10} {'ratio':>7}")
-        for L in (1050, 2050, 3050, 4050, 5050):
-            i = int(L // 100)
-            print(f"{C.ELL[i]:6.0f} {meas[i]:9.2f} {pred[i]:10.2f} "
-                  f"{meas[i]/pred[i]:7.2f}")
+    show = [10, 20, 30, 40, 50]
+    for spec in SPECS:
+        for variant, _ in COLUMNS:
+            r = d[f"{spec}/{variant}"]
+            print(f"\n{spec.upper()} {variant}")
+            print("  l           " + "".join(f"{C.ELL[i]:8.0f}" for i in show))
+            print("  measured    " + "".join(f"{r['measured'][i]:8.3f}" for i in show))
+            print("  meas/geom   " + "".join(
+                f"{r['measured'][i] / r['uncoupled'][i]:8.3f}" for i in show))
+            print("  meas/+coup  " + "".join(
+                f"{r['measured'][i] / r['coupled'][i]:8.3f}" for i in show))
+            print("  bias0       " + "".join(f"{r['bias0'][i]:8.2f}" for i in show))
+            print("  bias5       " + "".join(f"{r['bias5'][i]:8.2f}" for i in show))
 
 
 if __name__ == "__main__":

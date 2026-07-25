@@ -36,6 +36,22 @@ The output to look at is `bias`, Ctilde/C after azimuthal binning: the
 multiplicative error the estimator makes on a given input spectrum and mask.
 For the projection ratio what matters is the *difference* of the two biases,
 since proj0 and proj5 are measured through differently-shaped masks.
+
+The one approximation
+---------------------
+The convolution is exact for an isotropic input C(|k|), and both things it is
+fed here are isotropic by construction: the theory spectrum, and the geometry
+model's azimuthally-averaged prediction. The *true* proj0 spectrum is not
+isotropic -- shear is a direction-dependent stretch -- and the 1500d mask
+kernel is not isotropic either, being wide in x and narrow in y. So the
+correction computed here is the isotropic part of a correction that has an
+anisotropic piece we do not evaluate.
+
+That is acceptable exactly when the correction is small, since the neglected
+term is second order in a quantity we can see. Read the full-mask numbers as
+the control: if the coupling bias there is at the percent level, its
+anisotropic partner is smaller still, and only a variant showing a *large*
+coupling correction would need the 2D treatment before being believed.
 """
 
 import numpy as np
