@@ -1,0 +1,12 @@
+universe                = vanilla
+executable              = probe.sh
+output                  = test.$(ClusterId).out
+error                   = test.$(ClusterId).err
+log                     = test.$(ClusterId).log
+request_cpus            = 1
+request_memory          = 1GB
+request_disk            = 1GB
++ProjectName            = "spt"
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+queue 1
