@@ -22,6 +22,15 @@
 # sptlab image no longer exists. Declaring a scaffold Containerfile would
 # misrepresent how this analysis runs.
 #
+# MEMORY. amundsen enforces a 60 GiB memory cgroup per UNIX user
+# (/sys/fs/cgroup/user.slice/user-<uid>.slice/memory.max), shared across every
+# process the account runs. One map2alm at Nside 8192 peaks at 45 GB (iter=0) or
+# 49 GB (iter=3, the default), so the preprocessing stage nearly fills the cap by
+# itself: run it alone. The `memory:` figures below are per-recipe intent, not a
+# budget the scheduler enforces -- nothing here may be run concurrently with
+# another Nside-8192 stage. An over-cap process is SIGKILLed with no traceback
+# and an empty log; `dmesg -T | grep oom` is the only evidence.
+#
 # INPUT FINGERPRINTING. Directory sources are recursively sha256'd on every run,
 # so any input backed by a large directory is declared as a single
 # REPRESENTATIVE file (cheap mtime+size fingerprint) and the full directory is
@@ -154,6 +163,7 @@ outputs:
         --apodization {decisions.apodization}
         --ra-deg 0 --dec-deg -56
         --radii-rad 0.175 0.2 0.225 0.25 0.35 0.45 0.65
+        --max-procs 4
         --out {output}
       resources:
         cpus: 4
@@ -242,6 +252,7 @@ outputs:
         --interpolation {decisions.interpolation}
         --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
         --cut-bounds 1320:1980 1290:2010 1230:2070 1140:2160 960:2340 780:2520 300:3000
+        --max-procs 2
         --out {output}
       resources:
         cpus: 2
@@ -326,7 +337,7 @@ outputs:
         --qu-maps {inputs.projected_qu}
         --eb-maps {inputs.projected_eb}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
-        --seed 1
+        --seed 1 --max-procs 2
         --out {output}
       resources:
         cpus: 2
@@ -346,7 +357,7 @@ outputs:
       command: >-
         /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
         python src/stages/covariance.py
-        --bandpowers {inputs.bandpowers} --out {output}
+        --bandpowers {inputs.bandpowers} --max-procs 2 --out {output}
       resources:
         cpus: 2
         memory: 16Gi
@@ -365,7 +376,8 @@ outputs:
       command: >-
         /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
         python src/stages/leakage_summary.py
-        --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
+        --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee}
+        --max-procs 1 --out {output}
       resources:
         cpus: 1
         memory: 8Gi

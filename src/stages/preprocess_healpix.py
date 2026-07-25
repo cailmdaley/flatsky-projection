@@ -62,6 +62,45 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+CGROUP_MAX = Path("/sys/fs/cgroup/user.slice")
+PEAK_RSS_GIB = {0: 45.0, 3: 49.0}  # measured at Nside 8192; see check_memory_headroom
+
+
+def check_memory_headroom(n_iter: int) -> None:
+    """Refuse to start if the user's memory cgroup cannot hold one transform.
+
+    amundsen caps memory per UNIX *user*, not per process — 60 GiB shared across
+    every process the account runs, agents and notebooks included. One map2alm at
+    Nside 8192 peaks at 45 GB with iter=0 and 49 GB with iter=3, so a single seed
+    nearly fills the cap by itself. Going over is a SIGKILL: no traceback, no log,
+    an empty output directory, and the only evidence in `dmesg -T | grep oom`.
+    That failure is expensive precisely because it looks like nothing happened,
+    so it is worth ten lines to fail loudly at the start instead.
+    """
+    import os
+
+    uid = os.getuid()
+    slice_dir = CGROUP_MAX / f"user-{uid}.slice"
+    try:
+        limit = int((slice_dir / "memory.max").read_text().strip())
+        current = int((slice_dir / "memory.current").read_text().strip())
+    except (OSError, ValueError):
+        return  # no cgroup here; nothing to check
+
+    gib = 1024 ** 3
+    headroom = (limit - current) / gib
+    needed = PEAK_RSS_GIB.get(n_iter, PEAK_RSS_GIB[3])
+    print(f"memory cgroup: {limit / gib:.0f} GiB cap, {current / gib:.1f} GiB in "
+          f"use, {headroom:.1f} GiB free; this stage peaks near {needed:.0f} GiB")
+    if headroom < needed:
+        raise SystemExit(
+            f"refusing to start: {headroom:.1f} GiB free under the {limit / gib:.0f} "
+            f"GiB per-user cgroup, but map2alm at Nside 8192 with iter={n_iter} "
+            f"peaks near {needed:.0f} GiB. Stop other work of yours on this host "
+            "(agents, notebooks, background jobs) and retry, or run this on the grid."
+        )
+
+
 def find_input_fits(sims_dir: str, seed: int) -> Path:
     """Locate the FITS file for one seed without hardcoding the filename prefix.
 
@@ -146,6 +185,8 @@ def main(argv=None) -> None:
     # Must precede importing numpy/healpy/spt3g: this is what bounds the
     # threaded runtimes those libraries spin up.
     set_threads(args.max_procs)
+
+    check_memory_headroom(args.n_iter)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
