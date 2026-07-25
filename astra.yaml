@@ -1,0 +1,658 @@
+# ASTRA Analysis Specification
+#
+# Flat-sky projection effects on CMB polarization spectra.
+#
+# EXECUTION. Recipes run on the host, with no container. Each one is invoked
+# through the SPT-3G build environment wrapper
+#   /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+# which puts the spt3g source build on PYTHONPATH and selects the cvmfs py3-v5
+# interpreter (pymaster 1.5.1, healpy 1.16.6). Verified 2026-07-25 by running
+# `env-shell.sh python <script>`: `from spt3g import core, maps` imports,
+# maps.FlattenPol is present, and spt3g.mapspectra.pixel_window.pixwin_flatsky
+# returns 0.9447 / 0.8786 / 0.7915 at ell = 2000 / 3000 / 4000 for 2 arcmin
+# pixels. Note the signature is pixwin_flatsky(ells, reso_arcmin) with ells
+# first and the resolution in bare arcmin, not G3Units. Setting the same
+# variables by hand (SPT3G_SOFTWARE_PATH, SPT3G_SOFTWARE_BUILD_PATH, PATH,
+# LD_LIBRARY_PATH, PYTHONPATH) gives identical results. A CFITSIO header/library
+# version-mismatch warning (v40100 vs v40400) is reported on some imports and is
+# harmless; it did not appear on either route in this session, so do not chase it.
+#
+# There is intentionally no `container:` key. amundsen has apptainer only,
+# lightcone's supported runtimes are docker / podman / podman-hpc, and the 2021
+# sptlab image no longer exists. Declaring a scaffold Containerfile would
+# misrepresent how this analysis runs.
+#
+# INPUT FINGERPRINTING. Directory sources are recursively sha256'd on every run,
+# so any input backed by a large directory is declared as a single
+# REPRESENTATIVE file (cheap mtime+size fingerprint) and the full directory is
+# passed to the recipe as literal text.
+
+version: "0.0.12"
+id: pol_projection
+name: "E to B leakage from flat-sky projection"
+
+description: |
+  Ground-based CMB experiments estimate polarization power spectra on a flat-sky
+  grid, but the sphere does not flatten without distortion. Projection rotates the
+  polarization basis by a position-dependent angle; we undo that rotation
+  ("flattening"), but for a non-conformal projection no single angle can align
+  grid north with true north AND grid east with true east at once. The residual
+  curl survives flattening and leaks E-mode power into B.
+
+  We measure that leakage for five flat-sky projections (SFL, SIN, STG, ZEA,
+  BICEP) across seven sky fractions (0.75% to 10%), using unlensed Healpix
+  realizations that contain no B-mode power by construction. Every BB bandpower
+  we recover is leakage.
+
+  Two legs are compared per realization. The Q/U leg projects Q and U, flattens
+  the polarization, and decomposes to E/B on the flat sky — this is what a real
+  analysis does, and it carries the leakage. The E/B leg decomposes on the sphere
+  first and projects the resulting scalar E and B maps — spin-0 projection, so no
+  leakage by construction. Their difference isolates the projection effect.
+
+  Resolution chain, since three numbers circulate and all three are correct at
+  different stages. The input sims are Healpix Nside 8192 (verified in the FITS
+  header). They are transformed to alms truncated at lmax 4000. Those alms are
+  synthesized back onto an intermediate Nside 4096 Healpix grid, which is what
+  gets resampled onto the flat sky at 2 arcmin. Nside 4096 supports lmax 8192,
+  so the round trip loses nothing below lmax 4000.
+
+  Revival scope (2026): the 2021 run used 20 realizations and stopped at
+  ell = 4000. The open collaboration question is a high-ell excess in SFL
+  ("proj0") 1500d maps, where the SFL/ZEA ratio reaches about 2.5 by ell 4500 —
+  past where this analysis has anything to say. Raising lmax is the change that
+  lets the paper speak to it.
+
+tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
+
+# ---------------------------------------------------------------------------
+# INPUTS
+# ---------------------------------------------------------------------------
+inputs:
+  - id: unlensed_sims
+    type: data
+    label: "Unlensed TQU realizations"
+    description: |
+      Healpix Nside 8192 unlensed TQU realizations in the Planck 2018
+      base-plikHM-TTTEEE-lowl-lowE-lensing cosmology, RING ordering, stored as a
+      three-column FITS binary table (TEMPERATURE, Q_POLARISATION,
+      U_POLARISATION). Nside 8192 is read directly from the header, not inferred.
+      Unlensed by construction, so the input BB power is identically zero and any
+      recovered BB is projection leakage.
+
+      Seed 0 below is the representative fingerprint; the full directory
+      (/sptgrid/simulation/lensing_maps/unlensed_TQU1, 1.5 TB across 164 seeds at
+      9.7 GB each) is passed to the recipe as literal text so lc does not
+      recursively hash a terabyte on every run.
+    source: /sptgrid/simulation/lensing_maps/unlensed_TQU1/TQU1_planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_seed0.fits
+
+  - id: theory_ee
+    type: data
+    label: "Theory EE spectrum"
+    description: |
+      Unlensed CAMB EE, one C_l per line from ell = 0, as recovered into the repo
+      in 2021. This is the reference the projected EE is compared against.
+
+      UNRESOLVED, and blocking two claims: the lensed BB curve. The 2021 plotting
+      script read both scalCls and lensedCls through
+      spt3g...read_camb('planck18_TTEEEE_lowl_lowE_lensing_highacc/...'), a path
+      relative to a data root that no longer resolves — neither that directory nor
+      any *scalCls*/*lensedCls* file is findable under /sptlocal, /sptgrid/data or
+      the cvmfs data root today, and read_camb is not present in the current
+      spt3g build. Every claim stated "relative to the lensing B-mode floor"
+      therefore has no theory curve behind it until that spectrum is regenerated
+      (CAMB in the same cosmology is the cheapest route). Do not assert those
+      numbers before it is.
+    source: Clee.dat
+
+# ---------------------------------------------------------------------------
+# OUTPUTS
+# ---------------------------------------------------------------------------
+outputs:
+  - id: preprocessed_alms
+    type: data
+    label: "Preprocessed alms"
+    description: |
+      Per-seed T/E/B spherical-harmonic coefficients from the Nside 8192 input
+      maps, truncated at lmax and with the monopole and dipole filtered out.
+      Computed once and reused by both projection legs so the two share an
+      identical sky. This stage has no Healpix resolution of its own — it consumes
+      whatever the input maps are and emits alms — so it is parameterized by
+      ell_max alone.
+    inputs: [unlensed_sims]
+    decisions: [ell_max]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/preprocess_healpix.py
+        --sims-dir /sptgrid/simulation/lensing_maps/unlensed_TQU1
+        --seed-start 0 --seed-stop 20
+        --lmax {decisions.ell_max}
+        --max-procs 4
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 64Gi
+        time_limit: 6h
+
+  - id: healpix_masks
+    type: data
+    label: "Apodized Healpix masks"
+    description: |
+      Seven circular disk masks centred on the patch, apodized on the sphere and
+      built on the same intermediate Healpix grid the maps are synthesized onto,
+      so mask and map share a pixelization before projection. Their sky fractions
+      are nominally 0.75, 1.0, 1.25, 1.5, 3, 5 and 10 percent; the 2021 config
+      carries its own note doubting those numbers, so the recipe recomputes and
+      records the realized f_sky rather than trusting the label.
+    decisions: [intermediate_nside, apodization]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/make_masks.py
+        --nside {decisions.intermediate_nside}
+        --apodization {decisions.apodization}
+        --ra-deg 0 --dec-deg -56
+        --radii-rad 0.175 0.2 0.225 0.25 0.35 0.45 0.65
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 32Gi
+
+  - id: projected_qu
+    type: data
+    label: "Projected Q/U maps (leaky leg)"
+    description: |
+      The alms synthesized to Q and U on the intermediate Healpix grid, resampled
+      onto a 110 deg, 2 arcmin flat-sky patch in each of the five projections,
+      then flattened with FlattenPol. This is the leg a real flat-sky analysis
+      produces, and the leg that carries E to B leakage. 20 seeds x 5 projections.
+    inputs: [preprocessed_alms]
+    decisions: [interpolation, intermediate_nside]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/project_qu.py
+        --alms {inputs.preprocessed_alms}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --interpolation {decisions.interpolation}
+        --nside {decisions.intermediate_nside}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --seed-start 0 --seed-stop 20
+        --max-procs 4
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 96Gi
+        time_limit: 12h
+
+  - id: projected_eb
+    type: data
+    label: "Projected E/B maps (reference leg)"
+    description: |
+      E and B synthesized on the sphere from the same alms, on the same
+      intermediate grid, and then projected as spin-0 scalars. Because no spin-2
+      rotation is involved, this leg has no projection-induced E to B mixing and
+      is the leakage-free reference the Q/U leg is differenced against.
+    inputs: [preprocessed_alms]
+    decisions: [interpolation, intermediate_nside]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/project_eb.py
+        --alms {inputs.preprocessed_alms}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --interpolation {decisions.interpolation}
+        --nside {decisions.intermediate_nside}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --seed-start 0 --seed-stop 20
+        --max-procs 4
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 96Gi
+        time_limit: 12h
+
+  - id: flatsky_masks
+    type: data
+    label: "Projected and cut masks"
+    description: |
+      The seven Healpix masks reprojected into each of the five projections, NaNs
+      zeroed, then cut to the square sub-window NaMaster analyses for that mask
+      size. Each mask size uses a different cutout, so the flat-sky field
+      dimensions Lx and Ly vary with mask index; the recipe derives them from the
+      cut rather than reading the hand-maintained table the 2021 config carried.
+    inputs: [healpix_masks]
+    decisions: [interpolation, apodization]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/project_masks.py
+        --healpix-masks {inputs.healpix_masks}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --interpolation {decisions.interpolation}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --out {output}
+      resources:
+        cpus: 2
+        memory: 32Gi
+
+  - id: coupling_matrices
+    type: data
+    label: "NaMaster mode-coupling workspaces"
+    description: |
+      Flat-sky NmtWorkspaceFlat spin-2 coupling matrices, one per (projection,
+      mask) pair. Expensive to build and independent of the realizations, so they
+      are their own output and every seed reuses them. They depend on the binning,
+      so changing ell_max invalidates all 35.
+    inputs: [flatsky_masks]
+    decisions: [apodization, b_purification, ell_max]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/coupling_matrices.py
+        --masks {inputs.flatsky_masks}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --purify-b {decisions.b_purification}
+        --lmax {decisions.ell_max} --delta-ell 10
+        --max-procs 4
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 64Gi
+        time_limit: 12h
+
+  - id: bandpowers
+    type: data
+    label: "EE and BB bandpowers"
+    description: |
+      NaMaster pseudo-C_ell EE and BB bandpowers for every (projection, mask,
+      realization), binned at delta_ell = 10. Computed for both legs: the Q/U leg
+      carries the leakage, the E/B leg is the reference. Written as one array
+      rather than the 2021 layout of 70 separate text files, so downstream code
+      cannot mis-index projections — the 2021 plotting script assigned
+      cl_flat_EE[ii] inside the projection loop and collapsed every projection
+      onto the last one read.
+    inputs: [projected_qu, projected_eb, flatsky_masks, coupling_matrices]
+    decisions: [b_purification, pixel_window, ell_max]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/namaster_spectra.py
+        --qu-maps {inputs.projected_qu}
+        --eb-maps {inputs.projected_eb}
+        --masks {inputs.flatsky_masks}
+        --workspaces {inputs.coupling_matrices}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --seed-start 0 --seed-stop 20
+        --purify-b {decisions.b_purification}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell 10
+        --max-procs 4
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 64Gi
+        time_limit: 24h
+
+  - id: eb_residual_maps
+    type: data
+    label: "Map-space E/B residuals"
+    description: |
+      Per-pixel difference between the two legs, seed 1 only. Shows where the
+      leakage lives: concentrated at the patch edge, tracing the Q/U pattern.
+      Feeds the map-space and Fourier-space leakage figures.
+    inputs: [projected_qu, projected_eb]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/eb_residuals.py
+        --qu-maps {inputs.projected_qu}
+        --eb-maps {inputs.projected_eb}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --seed 1
+        --out {output}
+      resources:
+        cpus: 2
+        memory: 32Gi
+
+  - id: bandpower_covariance
+    type: data
+    label: "Bandpower covariance"
+    description: |
+      Sample covariance of the EE and BB bandpowers across realizations, per
+      projection and mask. BB should be uncorrelated for a B-free input sky, so
+      any off-diagonal structure measures projection-induced mode coupling. With
+      only 20 realizations the covariance is noisy; the realization count is the
+      first thing to raise once the grid backend works.
+    inputs: [bandpowers]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/covariance.py
+        --bandpowers {inputs.bandpowers} --out {output}
+      resources:
+        cpus: 2
+        memory: 16Gi
+
+  - id: leakage_summary
+    type: table
+    label: "Leakage summary"
+    description: |
+      Per projection and mask: realized f_sky, the mean BB bandpower, and the
+      fractional EE residual against theory, in bands of ell. Every numerical
+      claim in the paper is read off this table, so the prose never hard-types a
+      measured value. The BB-relative-to-lensing-floor column stays empty until
+      the lensed BB spectrum noted under theory_ee is regenerated.
+    inputs: [bandpowers, theory_ee]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/leakage_summary.py
+        --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
+      resources:
+        cpus: 1
+        memory: 8Gi
+
+  - id: fig_fsky_comparison
+    type: figure
+    label: "Leakage against sky fraction"
+    description: |
+      EE and BB bandpowers in the fiducial ZEA projection across all seven sky
+      fractions, over the theory EE curve. The lensing BB floor is drawn only once
+      that spectrum exists (see theory_ee).
+    inputs: [bandpowers, theory_ee]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/plot_fsky_comparison.py
+        --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
+
+  - id: fig_proj_comparison
+    type: figure
+    label: "Leakage by projection"
+    description: |
+      EE and BB bandpowers for all five projections at fixed sky fraction, with
+      the SFL-to-ZEA ratio the collaboration is asking about plotted out to the
+      full ell range.
+    inputs: [bandpowers, theory_ee]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/plot_proj_comparison.py
+        --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
+
+  - id: fig_covariance
+    type: figure
+    label: "Covariance slices"
+    description: |
+      Diagonal plus nine sub-diagonal bands of the EE and BB covariance for each
+      projection, ordered by decreasing E to B leakage.
+    inputs: [bandpower_covariance]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/plot_covariance.py --cov {inputs.bandpower_covariance} --out {output}
+
+  - id: fig_leakage_maps
+    type: figure
+    label: "Leakage in map and Fourier space"
+    description: |
+      The residual B map and its two-dimensional Fourier transform, for the
+      non-conformal ZEA against the conformal STG. The visual statement of the
+      mechanism.
+    inputs: [eb_residual_maps]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/plot_leakage_maps.py --residuals {inputs.eb_residual_maps} --out {output}
+
+  - id: fig_masks
+    type: figure
+    label: "Mask gallery"
+    description: "The seven masks as they appear in each of the five projections."
+    inputs: [flatsky_masks]
+    recipe:
+      command: >-
+        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
+        python src/stages/plot_masks.py --masks {inputs.flatsky_masks} --out {output}
+
+# ---------------------------------------------------------------------------
+# DECISIONS
+# ---------------------------------------------------------------------------
+decisions:
+  intermediate_nside:
+    label: "Intermediate Healpix synthesis resolution"
+    tags: [resolution]
+    rationale: |
+      Not a contradiction to resolve — a genuine choice. Three resolutions appear
+      in this analysis and all three are correct at their own stage: the input
+      sims are Nside 8192 (FITS header, verified), the alms are truncated at
+      lmax 4000, and those alms are synthesized back onto an intermediate Healpix
+      grid before flat-sky resampling. This decision sets only that last grid. The
+      draft's "Nside 8192" describes the inputs and the 2021 config's "nside: 4096"
+      describes the intermediate; they are describing different things. Likewise
+      the 2021 plotting script's division by hp.pixwin(8192) is right, because the
+      input map's own pixel window is the one imprinted on the alms.
+
+      What actually varies here is how finely the band-limited field is sampled
+      before bilinear interpolation onto the flat grid. Nside 4096 supports
+      lmax 8192, so it is lossless below lmax 4000 and costs four times less
+      memory; a finer grid only matters if the interpolation, not the harmonic
+      content, is the limiting systematic. Worth testing once, not sweeping.
+    default: nside4096
+    options:
+      nside4096:
+        label: "Nside 4096 (2021 run)"
+        description: "What the pipeline used. Lossless below lmax 4000. Reproduces the existing spectra."
+      nside8192:
+        label: "Nside 8192"
+        description: "Matches the input grid, so no resynthesis onto a coarser mesh. Four times the memory; only relevant if interpolation sampling limits the result."
+
+  ell_max:
+    label: "Maximum multipole"
+    tags: [resolution, open-question]
+    rationale: |
+      The 2021 analysis truncated the alms at lmax 4000 and binned to 400 bins of
+      width 10, and the figures effectively stop near ell 3000. Tom Crawford's
+      SFL-to-ZEA ratio keeps rising to about 2.5 by ell 4500, past where this
+      analysis speaks. Raising lmax is the single change that lets the paper
+      address the question being asked of it. Two costs: the coupling-matrix build
+      grows steeply, and above lmax 4000 the intermediate Nside 4096 grid stops
+      being lossless, so l6000 should be paired with nside8192.
+    default: l4000
+    options:
+      l4000:
+        label: "lmax 4000 (2021 run)"
+        description: "400 bins of width 10. Reproduces the existing bandpowers."
+      l6000:
+        label: "lmax 6000"
+        description: "600 bins; covers the excess Tom and Gil are chasing with margin. Pair with nside8192."
+
+  interpolation:
+    label: "Healpix to flat-sky resampling"
+    tags: [systematics]
+    rationale: |
+      How map values move from the Healpix grid to the flat-sky grid. Nearest
+      neighbour is cheap but leaves pixelization noise that is anisotropic on the
+      flat grid and can masquerade as leakage; bilinear interpolation with
+      oversample-then-rebin suppresses it at a cost of rebin squared in memory.
+      This is a leading suspect for a high-ell excess, so it needs to be varied
+      rather than assumed.
+    default: interp_rebin8
+    options:
+      interp_rebin8:
+        label: "Bilinear, oversample x8 then rebin"
+        description: "The 2021 setting: interp true, rebin 8, final pixel 2 arcmin."
+      interp_rebin1:
+        label: "Bilinear, no oversampling"
+        description: "Isolates what the rebinning step contributes."
+      nearest:
+        label: "Nearest neighbour"
+        description: "No interpolation; measures the bare pixelization floor."
+
+  apodization:
+    label: "Mask apodization"
+    tags: [masking]
+    rationale: |
+      The apodization kernel and scale set how sharply the mask cuts, and mask
+      edges are the other leading suspect for the high-ell excess (Gil's "mask
+      corners"). A wider taper suppresses edge ringing at the cost of sky area.
+      The 2021 run used NaMaster's C2 kernel at 2.5 degrees for every mask,
+      including the smallest, where 2.5 degrees is a large fraction of the disk.
+    default: c2_2p5deg
+    options:
+      c2_2p5deg:
+        label: "C2, 2.5 degrees"
+        description: "The 2021 setting, applied uniformly to all seven masks."
+      c1_2p5deg:
+        label: "C1, 2.5 degrees"
+        description: "Same scale, gentler kernel; separates kernel shape from scale."
+      c2_5deg:
+        label: "C2, 5 degrees"
+        description: "Wider taper; less edge ringing, less usable sky."
+
+  b_purification:
+    label: "B-mode purification"
+    tags: [estimator, open-question]
+    rationale: |
+      The 2021 pipeline passes purify_b true to NmtFieldFlat, but the draft never
+      mentions purification. That is a real gap between what was run and what was
+      written, and it is load-bearing: purification removes ambiguous modes at the
+      mask boundary, which is exactly the population that projection leakage
+      populates. With it on, residual BB is projection-induced rather than
+      mask-induced — which is the whole claim. The paper must state which it used,
+      and ideally show both.
+    default: purify
+    options:
+      purify:
+        label: "Pure-B estimator"
+        description: "purify_b true, as the 2021 run did. Suppresses ambiguous-mode leakage."
+      standard:
+        label: "Standard pseudo-C_ell"
+        description: "purify_b false. Shows how much of the measured leakage purification is already absorbing."
+
+  pixel_window:
+    label: "Pixel window correction"
+    tags: [open-question]
+    rationale: |
+      Flagged unresolved in the draft, and the likeliest cause of its unexplained
+      high-ell drift. Two windows are in play and they are not the same thing. The
+      Healpix window of the *input* maps is imprinted on the alms and is correctly
+      removed with hp.pixwin at the input Nside — the 2021 script's pixwin(8192)
+      was right about this. The flat-sky side is the open part: rebinning an
+      oversampled grid down to 2 arcmin is a top-hat average whose transfer
+      function must be averaged around each |l| annulus because NaMaster bins in
+      annuli, and the bilinear interpolation contributes its own smoothing that is
+      not captured by either analytic window. spt3g supplies pixwin_flatsky as one
+      estimate; whether it matches the interpolate-then-rebin chain is exactly
+      what needs testing.
+    default: none
+    options:
+      none:
+        label: "No correction"
+        description: "What the 2021 run did. Spectra roll off at high ell."
+      healpix_only:
+        label: "Input Healpix window only"
+        description: "Divide out hp.pixwin at the input Nside. Isolates the flat-sky contribution as the remaining drift."
+      healpix_and_flat:
+        label: "Input Healpix and flat-sky windows"
+        description: "Also divide out the azimuthally averaged 2 arcmin top-hat window."
+
+# ---------------------------------------------------------------------------
+# FINDINGS
+#
+# Claims carried over from the 2021 draft. Each is recorded here so the report
+# can reference it by path rather than hard-typing a number, and each must be
+# re-measured under the baseline universe before it is asserted in the revived
+# paper. The two stated relative to the lensing B-mode floor additionally depend
+# on regenerating the lensed BB spectrum noted under theory_ee.
+# ---------------------------------------------------------------------------
+findings:
+  cylindrical_projections_worst:
+    label: "Cylindrical projections leak most"
+    claim: |
+      SFL and BICEP, the (pseudo)cylindrical projections that map lines of
+      constant latitude to straight horizontal lines on the flat sky, perform
+      worst for both EE and BB.
+    created_at: 2021-07-07T00:00:00Z
+    scope: "f_sky 1.5%, 2 arcmin pixels, Nside 8192 inputs via an Nside 4096 intermediate, ell below 4000, 20 realizations."
+    tags: [projection-comparison]
+    evidence:
+      - id: proj_comparison_figure
+        artifact: fig_proj_comparison
+      - id: proj_comparison_numbers
+        artifact: leakage_summary
+
+  stg_minimizes_leakage:
+    label: "Conformal STG minimizes E to B leakage"
+    claim: |
+      Because STG is conformal, the polarization flattening can be done to
+      arbitrary precision, and it gives the lowest E to B leakage by several
+      orders of magnitude. It is therefore attractive for B-mode-only estimation
+      despite being the least accurate of the five for EE.
+    created_at: 2021-07-07T00:00:00Z
+    tags: [projection-comparison, recommendation]
+    evidence:
+      - id: stg_vs_zea_fourier
+        artifact: fig_leakage_maps
+      - id: stg_covariance
+        artifact: fig_covariance
+
+  zea_sin_best_for_ee:
+    label: "ZEA and SIN are accurate for EE"
+    claim: |
+      For EE the equal-area ZEA performs best, with the distance-preserving SIN
+      giving slightly larger residuals. STG shifts the EE acoustic peaks to lower
+      ell and gives residuals several times larger than SIN.
+    created_at: 2021-07-07T00:00:00Z
+    tags: [projection-comparison]
+    evidence:
+      - id: ee_residuals
+        artifact: fig_proj_comparison
+
+  leakage_below_lensing_floor:
+    label: "Leakage stays below the lensing B-mode floor"
+    claim: |
+      E to B leakage grows with sky fraction but stays more than an order of
+      magnitude below the lensing B-mode effective noise floor at every sky
+      fraction tested, and almost two orders of magnitude below it for ZEA and
+      SIN at f_sky 1.5%.
+    created_at: 2021-07-07T00:00:00Z
+    scope: |
+      Sky fractions 0.75% to 10%, ell below 4000. Not yet tested above ell 4000.
+      Blocked on regenerating the lensed BB spectrum (see theory_ee) — the floor
+      this claim is stated against currently has no curve behind it.
+    tags: [headline, blocked]
+    evidence:
+      - id: fsky_scan
+        artifact: fig_fsky_comparison
+      - id: fsky_numbers
+        artifact: leakage_summary
+
+  bb_mode_coupling:
+    label: "Projection induces BB mode coupling"
+    claim: |
+      BB bandpowers should be uncorrelated for an input sky with no B-modes, but
+      every projection except the conformal STG induces both diagonal and
+      off-diagonal correlations. SIN and ZEA, the best projections for EE,
+      introduce BB correlations out to ell of about 1000.
+    created_at: 2021-07-07T00:00:00Z
+    scope: "Estimated from 20 realizations, so the off-diagonal structure is itself noisy."
+    tags: [covariance]
+    evidence:
+      - id: covariance_slices
+        artifact: fig_covariance
+
+  agrees_with_wallis17:
+    label: "Consistent with Wallis et al. 2017"
+    claim: |
+      That the conformal projection produces the smallest B-mode errors
+      reproduces, in the CMB setting, the conclusion Wallis et al. reached for
+      weak-lensing shear.
+    created_at: 2021-07-07T00:00:00Z
+    derived: true
+    tags: [literature]
+    evidence:
+      - id: wallis17
+        doi: 10.1093/mnras/stx1917
