@@ -122,7 +122,7 @@ def predict(variant="full", spec="tt", ngrid=5000, res_arcmin=1.0,
 
 
 def measured(variant="", spec="tt"):
-    """His measured ratio, averaged over his 4 realizations."""
+    """His measured ratio. One realization, despite the (4, 60) shape -- see `crawford.load`."""
     p0, p5 = C.load(spec=spec, variant=variant)
     return C.ELL, p0 / p5
 

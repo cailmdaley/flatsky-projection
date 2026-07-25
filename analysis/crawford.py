@@ -59,7 +59,16 @@ VARIANTS = ["", "_cutcorner", "_iso_shrink"]
 
 
 def load(spec="ee", variant=""):
-    """(proj0, proj5) mean bandpowers over his 4 realizations."""
+    """(proj0, proj5) bandpowers from his pickles.
+
+    The arrays are shaped (4, 60), but **rows 1-3 are identically zero**: his
+    pickles hold one realization, not four. The shape comes from the ancestor
+    script `proj0_distortion_check_cmbtt_20jul26.py`, which allocates four and
+    dies in the first pass on a deliberate `print(notavariable)`. Averaging over
+    the leading axis therefore divides numerator and denominator by the same 4
+    and the returned ratio is still exact -- but nothing here has any realization
+    averaging in it, so his bandpowers carry full single-realization scatter.
+    """
     path = TCRAWFOR / f"proj0_distortion_{spec}{variant}.pkl"
     with open(path, "rb") as fh:
         d = pickle.load(fh)
