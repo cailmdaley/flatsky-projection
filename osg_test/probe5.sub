@@ -1,0 +1,27 @@
+# Step 3b: in-job pull/push against the SPT dCache with the AP-issued SciToken.
+# probe4 showed HTCondor's curl_plugin cannot (no IGTF trust in the starter);
+# probe5.sh does the transfer itself using the CVMFS CA bundle and the token
+# the local credmon attaches automatically (authz read:/sptgrid write:/sptgrid).
+
+universe                = vanilla
+executable              = probe5.sh
+output                  = probe5.$(ClusterId).$(ProcId).out
+error                   = probe5.$(ClusterId).$(ProcId).err
+log                     = probe5.$(ClusterId).log
+
+request_cpus            = 1
+request_memory          = 2GB
+request_disk            = 4GB
+
++ProjectName            = "spt"
++SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = ""
+
+use_oauth_services      = scitokens
+
+queue 3

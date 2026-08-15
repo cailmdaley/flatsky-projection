@@ -1,0 +1,23 @@
+# Step 2 of the OSG ladder. Five jobs so we sample five sites: the answers that
+# matter (does py3-v5 activate, which transfer plugins exist) could plausibly
+# vary between OSPool sites, and one job cannot tell us that.
+
+universe                = vanilla
+executable              = probe2.sh
+output                  = probe2.$(ClusterId).$(ProcId).out
+error                   = probe2.$(ClusterId).$(ProcId).err
+log                     = probe2.$(ClusterId).log
+
+request_cpus            = 1
+request_memory          = 2GB
+request_disk            = 2GB
+
++ProjectName            = "spt"
+
+# The SPT stack is the whole point; do not match a node that cannot see it.
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+
+queue 5
