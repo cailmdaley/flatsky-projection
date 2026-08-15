@@ -1,6 +1,10 @@
 \documentclass[modern,]{aastex63}
 
 
+% Figures live in the repository root figures/ directory; allow building either
+% from the repository root or from paper/.
+\graphicspath{{figures/}{../figures/}}
+
 \usepackage{booktabs}
 \usepackage{savesym}
 \savesymbol{tablenum}
@@ -171,8 +175,17 @@ All are implemented in \texttt{spt3g\_software}; the BICEP entry is the equidist
 \end{deluxetable}
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/All_masks.png}
-  \caption{Masks with varying sky coverage projected to each of the projections used in this study. \CD{Regenerate to publication quality.}}
+  \includegraphics[width=\textwidth]{masks_projections.pdf}
+  \caption{
+    The seven analysis masks, as each projection sees them.
+    Every mask is the same concentric disk on the sphere, apodized with a \SI{2.5}{\degree} C2 taper and projected onto the common \ang{110} $\times$ \ang{110}, \SI{2}{\arcminute} flat-sky grid.
+    Coloured curves are the $W = 0.5$ contours of all seven masks, labelled by unapodized disk area.
+    Grey shading is the largest ($10\%$) apodized mask itself; its soft edge is the taper.
+    The dashed circle marks that disk's true angular radius, \ang{37.2} --- the outline a projection with no distortion would draw.
+    The zenithal projections keep the disk nearly round (SIN contracts radially, STG expands, ZEA is closest to the circle), while SFL and BICEP stretch it in $x$ by roughly $1/\cos\delta$ and are near-degenerate with each other.
+    Both of those run the largest disk off the edge of the grid in $x$.
+    The largest disk also encloses the south celestial pole, and in SFL a wide range of grid $x$ then deprojects back into the disk across the pole, which is the ray-like structure below $\Delta y \approx \ang{-25}$.
+  }
   \label{fig:masks}
 \end{figure}
 
@@ -188,7 +201,7 @@ The sample spans four independent geometric configurations — SFL, SIN, ZEA, an
 The choice of $W^2$ weighting is itself discriminated by the data: reweighting by $W$ or $W^4$ shifts $\gsq$ by $\mp 5$--$7\%$ on the smallest disk but only $\mp 2\%$ at 5\% sky fraction, so a wrong weight would appear as a residual trend with mask size, and none is present.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/shear_leakage.png}
+  \includegraphics[width=\textwidth]{shear_leakage.png}
   \caption{
     The shear law against the measurements.
     \CD{Four-panel figure from \texttt{analysis/shear\_leakage.py}; remake to publication quality with the highell results.}
