@@ -1,0 +1,46 @@
+# Production submit file for the highell projection stage on OSG.
+#
+# One job = one (leg, projection, seed). Job tuples come from a queue-from
+# list written by grid/launcher.sh, one line per job:
+#     stage,leg,proj,seed,seedpad,mem
+# Submit with:
+#     condor_submit grid/project.sub -a "joblist = grid/lists/seed0000.txt"
+#
+# Outputs are remapped straight onto /sptlocal (the submit host can see it;
+# the workers cannot see anything outside their scratch dir).
+
+universe                = vanilla
+executable              = grid/worker.sh
+arguments               = "$(stage) $(proj) $(seed)"
+
+output                  = grid/logs/$(leg)_$(proj)_seed$(seedpad).out
+error                   = grid/logs/$(leg)_$(proj)_seed$(seedpad).err
+log                     = grid/logs/project.log
+
+request_cpus            = 4
+# Per-leg memory, supplied by the joblist: the OSpool is memory-poor (only
+# ~56 slots offer 64 GB against ~89 at 32 GB), so each leg asks for what it
+# actually peaks at rather than one worst-case number. See grid/launcher.sh.
+request_memory          = $(mem)
+request_disk            = 4GB
+
++ProjectName            = "spt"
++SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = osg_test/scratch/spt3g_build.tar.gz, \
+                          src/stages/$(stage), \
+                          src/stages/_project.py, \
+                          src/stages/_decisions.py, \
+                          /sptlocal/user/cailmdaley/pol_project/preprocessed_alms_l6000/alms_seed$(seedpad).fits
+
+transfer_output_files   = $(leg)_$(proj)_seed$(seedpad).g3
+transfer_output_remaps  = "$(leg)_$(proj)_seed$(seedpad).g3 = /sptlocal/user/cailmdaley/pol_project/results/highell/projected_$(leg)/$(leg)_$(proj)_seed$(seedpad).g3"
+
+success_exit_code       = 0
+max_retries             = 2
+
+queue stage,leg,proj,seed,seedpad,mem from $(joblist)

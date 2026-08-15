@@ -52,3 +52,7 @@ results/
 
 # MyST build output
 _build/
+grid/logs/
+grid/lists/
+grid/launcher.log
+/results
