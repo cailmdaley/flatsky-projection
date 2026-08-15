@@ -40,3 +40,4 @@ venv/
 # Editor / OS
 .DS_Store
 *.swp
+osg_test/scratch/
