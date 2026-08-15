@@ -1,0 +1,26 @@
+# Step 6: production-shaped projection job -- seed 0, ProjSFL, nside 8192.
+universe                = vanilla
+executable              = probe9.sh
+output                  = probe9.$(ClusterId).$(ProcId).out
+error                   = probe9.$(ClusterId).$(ProcId).err
+log                     = probe9.$(ClusterId).log
+
+request_cpus            = 4
+request_memory          = 64GB
+request_disk            = 12GB
+
++ProjectName            = "spt"
++SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = scratch/spt3g_build.tar.gz, \
+                          ../src/stages/project_qu.py, \
+                          ../src/stages/_project.py, \
+                          ../src/stages/_decisions.py, \
+                          /sptlocal/user/cailmdaley/pol_project/preprocessed_alms_l6000/alms_seed0000.fits
+transfer_output_files   = out
+
+queue 1
