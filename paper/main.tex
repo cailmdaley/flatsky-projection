@@ -241,7 +241,19 @@ For the disk-like masks studied here the leakage stays more than an order of mag
 
 \citet{wallis17} found the conformal STG best for spurious $B$-modes in Kaiser--Squires convergence reconstruction; Section~\ref{subsec:stg} explains why — zero shear — and also why the finding does not make STG attractive for CMB analysis, since its area distortion smooths acoustic peaks that convergence fields do not have.
 The equal-area ZEA, absent from their comparison, pairs the smallest zenithal shear with no area distortion, and remains the sensible default for CMB work at these sky fractions.
-\CD{Add: relation to \citet{ge24} appendix A.2 (their NFFT reprojection bounds are the interpolation-error axis, orthogonal to the geometric shear axis quantified here); one paragraph on catalogue-based estimators \citep{cornish25} as the route that sidesteps pixelization but not projection geometry.}
+The closest existing treatment of projection in a CMB analysis is the reprojection validation of \citet{ge24}, whose Appendix~A.2 replaces bilinear interpolation with non-uniform FFTs (NFFTs) for every map transfer in their simulation and posterior models.
+NFFT interpolation is exact for a band-limited field and draws on all pixels rather than the nearest four, and they verify that a round trip from their Lambert grid to equirectangular or HEALPix and back changes $EE$ and $BB$ by $\lesssim 0.3\%$ out to $\ell = 3500$, and that a direct Lambert projection of an $N_{\rm side}=8192$ sky recovers the input theory spectrum to $\lesssim 0.5\%$.
+Those bounds and the law derived here measure orthogonal things.
+Their axis is interpolation fidelity: how faithfully the resampling reproduces the field it is handed, an error that can be driven arbitrarily low by a better kernel.
+Our axis is the geometry of the map itself: the shear $g$ is a property of the projection, not of the interpolant, so a perfect resampler onto a non-conformal grid still leaks $2\gsq$ of $EE$ into $BB$.
+The two are complementary, and neither bounds the other --- an analysis can be interpolation-limited, shear-limited, or both.
+
+A second route around pixel effects is to abandon the map entirely.
+\citet{cornish25} estimate angular power spectra directly from catalogues, accumulating harmonic coefficients as sums of weighted spherical harmonics over source positions, with a transfer-function treatment of deprojection bias and exact shot-noise expressions; the estimator therefore has no pixel window, no finite-resolution limit, and extends to fields of arbitrary spin.
+Because the sum runs over spherical harmonics evaluated at true sky positions, this construction is immune to the effect studied here as well: there is no Jacobian, hence no shear, hence no leakage.
+The immunity comes from staying on the sphere, not from avoiding pixels.
+Any variant that first flattens the sky --- resampling $Q$ and $U$ at catalogue positions in a projected plane, or estimating flat-sky Fourier modes from irregular samples --- reintroduces the same Jacobian and obeys the same law, since Equation~\eqref{eq:law_footprint} depends on the projection alone and never on how the plane is sampled.
+Pixelization-free and projection-free are separate properties, and only the second removes the shear.
 
 \clearpage
 
