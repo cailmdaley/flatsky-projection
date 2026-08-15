@@ -152,7 +152,8 @@ The flat-sky $E$/$B$ decomposition is
 where $\tan \phi_{\vbell} = \ell_y / \ell_x$.
 Spectra are estimated with \href{https://github.com/LSSTDESC/NaMaster}{NaMaster} \citep{alonso19} with $B$-mode purification, in bandpowers of width $\Delta\ell = 10$ to $\ell = 4000$, after apodizing (C2, \SI{2.5}{\degree}) circular masks of seven sky fractions from 0.75\% to 10\% (Figure~\ref{fig:masks}).
 The quoted sky fractions label the unapodized disk areas; the mask-squared averages that enter the law are computed from the apodized masks as used.
-\CD{Pixel-window statement to be settled here: the input carries the $N_{\rm side}=8192$ window, the intermediate imprints nothing, and the interpolate-then-rebin chain has a transfer function no analytic window captures. One defended sentence, pending the highell run where both windows are divided out.}
+Pixel windows require care in this chain but do not affect the result: the input maps carry the $N_{\rm side} = 8192$ HEALPix window (preserved by the harmonic transform; the band-limited synthesis onto the intermediate grid imprints nothing new), and the interpolate-then-rebin flattening has a transfer function that no analytic window captures — but both legs pass through the identical chain, so every such factor is common to $EE$ and $BB$ and cancels in the leakage ratio the law predicts.
+Where absolute spectra are shown, we divide out the $N_{\rm side} = 8192$ window and let the flat-sky transfer function appear as a common high-$\ell$ suppression rather than model it.
 
 Table~\ref{table:projs} summarizes the five projections.
 All are implemented in \texttt{spt3g\_software}; the BICEP entry is the equidistant cylindrical projection with standard parallel at the field center, as used by BICEP/Keck.
