@@ -6,11 +6,13 @@ rather than end to end. This check compares one seed of the new stage's output
 (`alms_seed{N:04d}.fits`) against the 2021 `almsTQU_seed{N}.fits` produced from
 the same input FITS with the same healpy defaults (iter=3, lmax=4000).
 
-Expected disagreement, and only this one: the 2021 monopole/dipole filter was
-built two entries short and healpy zero-padded it, so the 2021 alms are missing
-l = lmax-1 and l = lmax. The new stage filters only l = 0, 1. Everything below
-l = lmax-1 must agree to float32 round-off; at the top two multipoles the 2021
-alms must be exactly zero and the new ones must not be.
+Expected disagreement, and only this one: the 2021 monopole/dipole filter,
+`np.concatenate([[0,0], np.ones(lmax-2)])`, has length lmax — one short of the
+lmax+1 almxfl expects — and healpy zero-padded it, so the 2021 alms are missing
+l = lmax exactly (verified on seed 0: l = 3999 agrees to 7e-16, l = 4000 is
+exactly zero in 2021). The new stage filters only l = 0, 1. Everything below
+l = lmax must agree to round-off; at l = lmax the 2021 alms must be exactly
+zero and the new ones must not be.
 
 Usage:
     env-shell.sh python analysis/check_alms_regression.py \
@@ -43,20 +45,20 @@ def main() -> None:
         assert new.shape == old.shape, (name, new.shape, old.shape)
 
         ls, _ = hp.Alm.getlm(lmax)
-        body = ls < lmax - 1          # below the 2021 filter defect
-        top = ls >= lmax - 1          # l = lmax-1, lmax
+        body = ls < lmax              # below the 2021 filter defect
+        top = ls == lmax              # the one multipole the 2021 filter zeroed
 
         scale = np.sqrt(np.mean(np.abs(old[body]) ** 2))
         diff = np.max(np.abs(new[body] - old[body])) / scale
         old_top = np.max(np.abs(old[top]))
-        new_top = np.sqrt(np.mean(np.abs(new[top]) ** 2)) / scale
+        new_top = np.max(np.abs(new[top]))
 
         body_ok = diff < 1e-6
-        top_ok = old_top == 0.0 and new_top > 1e-3
+        top_ok = old_top == 0.0 and new_top > 0.0
         ok &= body_ok and top_ok
         print(
             f"{name}: body max|Δ|/rms = {diff:.3e} [{'OK' if body_ok else 'FAIL'}]"
-            f"   top-two-l: 2021 max = {old_top:.1e}, new rms/rms = {new_top:.3f}"
+            f"   l=lmax: 2021 max = {old_top:.1e}, new max = {new_top:.1e}"
             f" [{'OK' if top_ok else 'FAIL'}]"
         )
 

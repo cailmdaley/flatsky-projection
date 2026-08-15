@@ -123,13 +123,15 @@ def monopole_dipole_filter(lmax: int):
 
     The 2021 script built this filter as
     ``np.concatenate([[0, 0], np.ones(lmax - 2)])``, which has length
-    lmax - 1, two short of the lmax + 1 entries almxfl expects (one per l
+    lmax, one short of the lmax + 1 entries almxfl expects (one per l
     from 0 to lmax). healpy's almxfl silently zero-pads a short filter out
     to lmax, so the 2021 filter didn't just zero the monopole and dipole --
-    it also zeroed l = lmax - 1 and l = lmax. Anyone reproducing the 2021
-    bandpowers exactly needs to know the top bandpower there is missing its
-    top two multipoles; this filter reproduces the *intent* (monopole and
-    dipole only) rather than the bug.
+    it also zeroed l = lmax. Verified in the seed-0 regression (2026-08-15):
+    the 2021 alms agree with this stage's to round-off at every l up to and
+    including lmax - 1, and are exactly zero at l = lmax. Anyone reproducing
+    the 2021 bandpowers exactly needs to know the top bandpower there is
+    missing its top multipole; this filter reproduces the *intent* (monopole
+    and dipole only) rather than the bug.
     """
     import numpy as np
 
