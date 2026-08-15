@@ -42,3 +42,13 @@ venv/
 *.swp
 osg_test/scratch/
 figures/covariance/
+
+# lightcone-cli
+.lightcone/Snakefile
+.lightcone/snakefile-config.json
+.snakemake/
+.snakemake.legacy/
+results/
+
+# MyST build output
+_build/
