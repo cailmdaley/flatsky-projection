@@ -222,7 +222,14 @@ A disk concentric with the center has $\expval{\text{east}^2} = \expval{\text{no
 On SPT's real 1500d field ($\pm\SI{50}{\degree}$ in RA, \SIrange{-70}{-42}{\degree} in declination) the law gives SFL $BB/EE = 7.0 \times 10^{-2}$ against BICEP's $1.7 \times 10^{-2}$ — a factor of four apart.
 Any statement of the form ``cylindrical projections are worst'' is really a statement about round masks.
 
-\CD{Covariance / mode-mixing subsection: the 2021 covariance figures survive only as Overleaf images; recompute from stored bandpowers before reviving the claims.}
+\subsection{Leaked $B$-modes carry no anomalous bandpower correlations} \label{subsec:covariance}
+
+Projection leakage could in principle imprint long-range correlations between $BB$ bandpowers — the leaked field is a deterministic image of the shared $EE$ realization, not an independent Gaussian sky.
+The seed-to-seed covariance of the stored bandpowers says it does not: for every configuration in which the leakage is genuine, the mean off-diagonal $BB$ correlation at $\Delta\ell = 10$ binning is below 1\% across the full range, indistinguishable from the $EE$ bandpowers of the same runs.
+The shear couples mode $\vbell$ only to $EE$ modes near $\abs{J^{T}\vbell} \approx \ell(1 \pm g)$, so neighbouring $BB$ bins do share source modes; empirically the sharing is diluted below the percent level by the many independent modes each $\Delta\ell = 10$ bin averages over.
+The lone exception is diagnostic rather than worrying: STG on the largest mask, where $BB$ sits at the numerical floor ($\sim 10^{-12}$ scatter), shows off-diagonal correlations approaching unity — the signature of a seed-\emph{independent} template, not of a sky.
+That near-unit correlation is direct covariance-level evidence for the correction of Section~\ref{subsec:stg}: the ``minimum'' STG appears to attain is the pipeline's own floor, not a measurement of leakage.
+A standard diagonal-plus-mode-coupling covariance treatment therefore suffices for the leaked spectra; no extra term for projection-induced correlation is needed at these binnings.
 
 
 \section{The 1500d Field and the High-$\ell$ Regime} \label{sec:highell}

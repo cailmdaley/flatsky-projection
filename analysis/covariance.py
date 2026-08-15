@@ -114,7 +114,9 @@ def plot_diagonal_error_comparison(all_cov, spec, path):
     colors = plt.cm.viridis(np.linspace(0, 0.9, len(S.PROJS)))
     for proj, color in zip(S.PROJS, colors):
         stds = np.array([
-            np.sqrt(np.diag(all_cov[(proj, i)])) for i in range(len(S.PERC))
+            np.sqrt(np.diag(all_cov[(proj, i)]))
+            for i in range(len(S.PERC))
+            if (proj, i) in all_cov
         ])
         mean_std = np.nanmean(stds, axis=0)
         ax.plot(S.ELL, mean_std, color=color, label=S.PROJ_LABEL[proj])
@@ -139,6 +141,13 @@ def main() -> None:
         for i, perc in enumerate(S.PERC):
             for j, proj in enumerate(S.PROJS):
                 bp = data[i, j]
+                # The 10% (mask6) runs for SFL, SIN and BICEP are broken on
+                # disk (all-NaN or overflowed to ~1e246; the disk swallows the
+                # south celestial pole -- see shear_leakage.py). Drop them
+                # entirely, matching the shear-law fit, rather than nan-meaning
+                # around partial garbage.
+                if np.isnan(bp).any() or np.nanmax(np.abs(bp)) > 1e100:
+                    continue
                 cov, corr = covariance_and_correlation(bp)
                 cov_by_config[(proj, i)] = cov
                 corr_by_config[(proj, i)] = corr
