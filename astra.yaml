@@ -3,10 +3,17 @@
 # Flat-sky projection effects on CMB polarization spectra.
 #
 # EXECUTION. Recipes run on the host, with no container. Each one is invoked
-# through the SPT-3G build environment wrapper
+# through the dual-mode launcher `env.sh` (repo root): on amundsen it defers to
+# the SPT-3G build environment wrapper
 #   /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-# which puts the spt3g source build on PYTHONPATH and selects the cvmfs py3-v5
-# interpreter (pymaster 1.5.1, healpy 1.16.6). Verified 2026-07-25 by running
+# and on an OSG worker (where /home does not exist) it unpacks the transferred
+# spt3g_build.tar.gz and activates the CVMFS py3-v5 toolset — one command,
+# both places, which is what lets `lc run --executor htcondor` ship these
+# recipes to the grid unchanged. NB env-shell.sh word-splits quoted args, so
+# recipes pass scripts by path, never `python -c "..."`.
+# The environment puts the spt3g source build on PYTHONPATH and selects the
+# cvmfs py3-v5 interpreter (pymaster 1.5.1, healpy 1.16.6). Verified
+# 2026-07-25 by running
 # `env-shell.sh python <script>`: `from spt3g import core, maps` imports,
 # maps.FlattenPol is present, and spt3g.mapspectra.pixel_window.pixwin_flatsky
 # returns 0.9447 / 0.8786 / 0.7915 at ell = 2000 / 3000 / 4000 for 2 arcmin
@@ -132,8 +139,8 @@ outputs:
     decisions: [ell_max]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/preprocess_healpix.py
+        bash env.sh
+        python3 src/stages/preprocess_healpix.py
         --sims-dir /sptgrid/simulation/lensing_maps/unlensed_TQU1
         --seed-start 0 --seed-stop 20
         --lmax {decisions.ell_max}
@@ -157,8 +164,8 @@ outputs:
     decisions: [intermediate_nside, apodization]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/make_masks.py
+        bash env.sh
+        python3 src/stages/make_masks.py
         --nside {decisions.intermediate_nside}
         --apodization {decisions.apodization}
         --ra-deg 0 --dec-deg -56
@@ -181,8 +188,8 @@ outputs:
     decisions: [interpolation, intermediate_nside]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/project_qu.py
+        bash env.sh
+        python3 src/stages/project_qu.py
         --alms {inputs.preprocessed_alms}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
         --interpolation {decisions.interpolation}
@@ -208,8 +215,8 @@ outputs:
     decisions: [interpolation, intermediate_nside]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/project_eb.py
+        bash env.sh
+        python3 src/stages/project_eb.py
         --alms {inputs.preprocessed_alms}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
         --interpolation {decisions.interpolation}
@@ -245,8 +252,8 @@ outputs:
     decisions: [interpolation, apodization]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/project_masks.py
+        bash env.sh
+        python3 src/stages/project_masks.py
         --healpix-masks {inputs.healpix_masks}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
         --interpolation {decisions.interpolation}
@@ -276,8 +283,8 @@ outputs:
     decisions: [apodization, b_purification, ell_max]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/coupling_matrices.py
+        bash env.sh
+        python3 src/stages/coupling_matrices.py
         --masks {inputs.flatsky_masks}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
         --purify-b {decisions.b_purification}
@@ -304,8 +311,8 @@ outputs:
     decisions: [b_purification, pixel_window, ell_max]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/namaster_spectra.py
+        bash env.sh
+        python3 src/stages/namaster_spectra.py
         --qu-maps {inputs.projected_qu}
         --eb-maps {inputs.projected_eb}
         --masks {inputs.flatsky_masks}
@@ -332,8 +339,8 @@ outputs:
     inputs: [projected_qu, projected_eb]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/eb_residuals.py
+        bash env.sh
+        python3 src/stages/eb_residuals.py
         --qu-maps {inputs.projected_qu}
         --eb-maps {inputs.projected_eb}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
@@ -355,8 +362,8 @@ outputs:
     inputs: [bandpowers]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/covariance.py
+        bash env.sh
+        python3 src/stages/covariance.py
         --bandpowers {inputs.bandpowers} --max-procs 2 --out {output}
       resources:
         cpus: 2
@@ -374,8 +381,8 @@ outputs:
     inputs: [bandpowers, theory_ee]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/leakage_summary.py
+        bash env.sh
+        python3 src/stages/leakage_summary.py
         --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee}
         --max-procs 1 --out {output}
       resources:
@@ -392,8 +399,8 @@ outputs:
     inputs: [bandpowers, theory_ee]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/plot_fsky_comparison.py
+        bash env.sh
+        python3 src/stages/plot_fsky_comparison.py
         --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
 
   - id: fig_proj_comparison
@@ -406,8 +413,8 @@ outputs:
     inputs: [bandpowers, theory_ee]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/plot_proj_comparison.py
+        bash env.sh
+        python3 src/stages/plot_proj_comparison.py
         --bandpowers {inputs.bandpowers} --theory-ee {inputs.theory_ee} --out {output}
 
   - id: fig_covariance
@@ -419,8 +426,8 @@ outputs:
     inputs: [bandpower_covariance]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/plot_covariance.py --cov {inputs.bandpower_covariance} --out {output}
+        bash env.sh
+        python3 src/stages/plot_covariance.py --cov {inputs.bandpower_covariance} --out {output}
 
   - id: fig_leakage_maps
     type: figure
@@ -432,8 +439,8 @@ outputs:
     inputs: [eb_residual_maps]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/plot_leakage_maps.py --residuals {inputs.eb_residual_maps} --out {output}
+        bash env.sh
+        python3 src/stages/plot_leakage_maps.py --residuals {inputs.eb_residual_maps} --out {output}
 
   - id: fig_masks
     type: figure
@@ -442,8 +449,8 @@ outputs:
     inputs: [flatsky_masks]
     recipe:
       command: >-
-        /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh
-        python src/stages/plot_masks.py --masks {inputs.flatsky_masks} --out {output}
+        bash env.sh
+        python3 src/stages/plot_masks.py --masks {inputs.flatsky_masks} --out {output}
 
 # ---------------------------------------------------------------------------
 # DECISIONS
