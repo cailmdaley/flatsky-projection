@@ -14,9 +14,8 @@ pipeline (preprocess healpix sims → project QU/EB legs → masks → NaMaster
 spectra). Universes live in `universes/*.yaml` (e.g. `highell` for the
 ℓ=6000 extension). Stage scripts are `src/stages/*.py`; shared decisions in
 `src/stages/_decisions.py`. Everything scientific runs under the SPT CVMFS
-environment (see the `spt3g-software` skill). Heavy runs go to OSG via the
-snakemake htcondor9 profile (`~/.config/snakemake/htcondor9/`); `lc run
---executor htcondor` selects it.
+environment (see the `spt3g-software` skill). Heavy runs go to OSG — see
+"Running production on the grid" below.
 
 The `lc` CLI keeps the substrate in sync:
 
@@ -30,6 +29,61 @@ lc verify                 # validate the provenance chain
 Outputs land in `results/<universe>/<output_id>/` along with a sidecar
 `.lightcone-manifest.json` recording the recipe, container, decisions,
 input hashes, and output hash.
+
+## Running production on the grid
+
+OSG work goes through `lc run` with the htcondor9 profile. **The profile is
+not optional and not implied** — `--executor htcondor` alone submits jobs
+stripped of the entire recipe (no `+ProjectName`, no pinned rocky:9 image, no
+CVMFS requirement, no `wrapper.sh`), and those jobs never run.
+
+```bash
+lc run --executor htcondor --profile htcondor9 <output_id> -u <universe>
+```
+
+`-u` is repeatable, and that is how you get parallelism: one driver, several
+universes, concurrent OSG jobs.
+
+```bash
+lc run --executor htcondor --profile htcondor9 healpix_masks -u apod_c1 -u apod_wide
+```
+
+Two `lc run`s at once will not work — lightcone holds a project-level flock.
+And note ASTRA has no per-unit fan-out: one output is one rule is one job, so
+a 35-workspace coupling stage is a single fat job, not 35. Per-seed or
+per-projection parallelism still belongs to the raw `grid/` apparatus.
+
+Check the first submission of anything new:
+
+```bash
+condor_q <cluster> -l | grep -E 'Cmd|ProjectName|SingularityImage|TransferInput|TransferOutput'
+```
+
+`Cmd` must be `wrapper.sh`. Then `lc verify -u <universe>` once it lands.
+
+**What works today:** stages with no upstream ASTRA outputs — `healpix_masks`
+and anything else reading only `/cvmfs` and its own decisions. Outputs
+transfer back to `results/<universe>/<output_id>/` with a valid manifest.
+
+**What does not, and why:** stages that consume another output. Condor is
+told to stage the upstream data directory, but every such path begins with
+`results/`, which is a symlink to `/sptlocal`, and condor refuses to transfer
+symlinks to directories (symlinks to *files* are fine — the two payload
+tarballs are symlinks and work). Making `results/` a real directory does not
+help; any `/sptlocal` indirection in the path fails identically. The fix is to
+ship a `tar --sparse` archive of the upstream directory instead of the tree,
+which also solves the sparse-file problem below. Not built yet.
+
+**Sizing.** `resources.memory` and `resources.disk` in astra.yaml become
+`htcondor_request_mem_mb`/`htcondor_request_disk_mb`. Two traps: the local
+memory figure is set by amundsen's 60 GiB per-user cgroup rather than by the
+job, and a 32 GiB request can leave *zero* matching slots out of ~9000 on
+OSPool — resize from `condor_history <id> -af MemoryUsage DiskUsage`. And the
+mask/map `.g3` files are sparse: 1.6 GB apparent, ~17 MB of blocks. Condor
+transfers the apparent bytes, so size `disk:` from `ls -l`, never `du`.
+
+Hard-won condor exceptions live in the `open-science-grid` skill; add to it
+rather than to this file.
 
 ## Report
 
