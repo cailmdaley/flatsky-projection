@@ -79,6 +79,49 @@ def apodize(binary_mask, apotype, aposize_deg):
     return nmt.mask_apodization(binary_mask, aposize=aposize_deg, apotype=apotype)
 
 
+def apodize_disk_analytic(nside, center_vec, radius_rad, apotype, aposize_deg):
+    """C1/C2-apodized circular disk, computed analytically in radius.
+
+    nmt.mask_apodization segfaults inside _nmtlib at nside 8192 (805M pixels;
+    the C neighbour search appears to overflow), so for the one mask shape this
+    project uses -- a circular disk -- the taper is evaluated in closed form
+    instead. NaMaster's kernels, per its documentation, weight a pixel at
+    angular distance theta from the nearest unobserved pixel by
+        x = sqrt((1 - cos(theta)) / (1 - cos(theta_*)))
+        C1: w = x - sin(2 pi x) / (2 pi)     (x < 1, else 1)
+        C2: w = (1 - cos(pi x)) / 2          (x < 1, else 1)
+    For a disk of radius R the distance to the boundary is R - r, with r the
+    pixel's angular distance from the centre. The one approximation relative to
+    nmt is the definition of the edge: nmt measures to the nearest *pixel
+    centre* outside the disk, this measures to the geometric boundary -- a
+    half-pixel (~0.2' at nside 8192) offset over a 2.5 deg taper, validated
+    at nside 4096 against nmt's own output before adoption.
+    """
+    import numpy as np
+    import healpy as hp
+
+    disk_pixels = hp.query_disc(nside, center_vec, radius_rad)
+    vecs = np.array(hp.pix2vec(nside, disk_pixels))
+    r = np.arccos(np.clip(np.dot(center_vec, vecs), -1.0, 1.0))
+    del vecs
+
+    theta = radius_rad - r  # distance to the disk boundary
+    aposize_rad = np.radians(aposize_deg)
+    x = np.sqrt((1.0 - np.cos(theta)) / (1.0 - np.cos(aposize_rad)))
+    w = np.ones_like(x)
+    taper = x < 1.0
+    if apotype == "C2":
+        w[taper] = 0.5 * (1.0 - np.cos(np.pi * x[taper]))
+    elif apotype == "C1":
+        w[taper] = x[taper] - np.sin(2 * np.pi * x[taper]) / (2 * np.pi)
+    else:
+        raise ValueError(f"analytic apodization only supports C1/C2, got {apotype}")
+
+    mask = np.zeros(hp.nside2npix(nside))
+    mask[disk_pixels] = w
+    return mask
+
+
 def realized_fsky(binary_mask, apodized_mask):
     """The three sky-fraction weightings downstream code needs.
 
@@ -142,7 +185,8 @@ def main(argv=None) -> None:
         t_start = time.time()
 
         binary_mask = disk_mask(args.nside, center_vec, radius_rad)
-        apodized_mask = apodize(binary_mask, apotype, aposize_deg)
+        apodized_mask = apodize_disk_analytic(
+            args.nside, center_vec, radius_rad, apotype, aposize_deg)
         fsky = realized_fsky(binary_mask, apodized_mask)
 
         out_path = out_dir / f"mask_{index}.g3"
