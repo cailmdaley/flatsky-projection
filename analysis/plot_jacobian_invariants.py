@@ -31,6 +31,18 @@ PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
 
+# Paper-wide projection color identity (dataviz-skill categorical palette,
+# slots 1-5 in SFL/SIN/STG/ZEA/BICEP order). Used here only as a small
+# non-annotative accent (a tick above each column title) so the five
+# projections read as the same entities across every figure in the paper.
+PROJ_COLORS = {
+    "ProjSFL": "#2a78d6",     # slot 1 blue
+    "ProjSIN": "#eb6834",     # slot 2 orange
+    "ProjSTG": "#1baf7a",     # slot 3 aqua
+    "ProjZEA": "#eda100",     # slot 4 yellow
+    "ProjBICEP": "#e87ba4",   # slot 5 magenta
+}
+
 LIM_DEG = 55.0
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
@@ -127,7 +139,12 @@ def main():
             ax.set_yticks([-40, -20, 0, 20, 40])
             ax.tick_params(length=2.0, pad=1.5)
 
-        axg.set_title(LABELS[proj], pad=3)
+        axg.set_title(LABELS[proj], pad=5)
+        # Color-identity tick above each column title, matching this
+        # projection's hue in every other figure in the paper.
+        axg.plot([0.5], [1.0], marker="s", markersize=3.2,
+                  color=PROJ_COLORS[proj], transform=axg.transAxes,
+                  clip_on=False, zorder=10)
         axg.set_xticklabels([])
         axm.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
         if j > 0:
