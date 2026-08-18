@@ -75,11 +75,12 @@ For polarization there is more: because $Q$ and $U$ are defined relative to cele
 The shear cannot be undone by any rotation: a non-conformal projection does not preserve the \SI{90}{\degree} angle between north and east, so no single angle aligns both.
 The surviving shear is the whole effect, and Section~\ref{subsec:derivation} shows that it sets the leakage exactly.
 
-The mechanism itself is old.
-Remapping a spin-two field by a deflection whose Jacobian has a trace-free part converts $E$ into $B$: that is CMB lensing, and the flat-sky $E \to B$ kernel has been standard since \citet{lewis06} and references therein.
-What's new is the source of the shear.
-Gravitational shear is stochastic and must be reconstructed or marginalized over; cartographic shear is written down in closed form from the projection definition \citep{calabretta02} before any data is taken.
-The distortion is therefore deterministic — computable and removable a priori — and Section~\ref{subsec:derivation} shows that the leakage it produces reduces to exactly the slowly-varying limit of the lensing kernel, which we use as an independent check on the coefficient.
+The mechanism itself is old: a map projection acts on the sky as a gravitational lens does.
+Remapping a field by a deflection whose Jacobian has a trace-free part moves scalar power along $\ell$ and converts $E$ into $B$; that is CMB lensing, and the flat-sky kernels have been standard since \citet{lewis06} and references therein.
+What is new is the source of the shear, and it changes what can be done with it.
+Gravitational shear is stochastic: it must be reconstructed from the data, or marginalized over.
+Cartographic shear is a lens the analyst chooses, and its shear field follows in closed form from the projection definition \citep{calabretta02} before a single observation is made — Figure~\ref{fig:invariants} is that lens, drawn.
+The distortion is therefore deterministic, computable and removable a priori, and Section~\ref{sec:law} shows that both relations derived here are the constant-shear limits of the corresponding lensing kernels: the $TT$ kernel gives the scalar convexity relation, the $E \to B$ kernel the leakage relation.
 
 Prior work brackets this study without occupying it.
 The closest predecessor is \citet{wallis17}, who compared projections for weak-lensing convergence maps reconstructed via Kaiser--Squires, quantified the spurious $B$-modes each projection induces, and concluded empirically that ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
@@ -162,7 +163,7 @@ We take the scalar case first, because it needs none of the polarization machine
     All expressions are exact, not expansions.
     $r$ is the angular radius from the tangent point, $\delta$ the declination, $\delta_0$ the reference declination or standard parallel, and $\lambda - \lambda_0$ the longitude offset in radians.
     Near the field centre the zenithal forms give $g_{\rm SIN} \simeq r^2/4$ and $g_{\rm ZEA} \simeq r^2/8$, and the cylindrical forms give $g_{\rm SFL} \simeq \tfrac12\abs{(\lambda-\lambda_0)\sin\delta}$ and $g_{\rm BICEP} \simeq \tfrac12\abs{\tan\delta_0}\abs{\delta-\delta_0}$.
-    SFL's Jacobian is pure shear with unit determinant and off-diagonal element $t$; SIN's principal scales are $\{1, \cos r\}$, ZEA's $\{\cos(r/2), 1/\cos(r/2)\}$, STG's are equal at $\sec^2(r/2)$, and BICEP's are $\propto \{\cos\delta_0/\cos\delta,\, 1\}$.
+    SFL's Jacobian is pure shear with unit determinant and off-diagonal element of magnitude $\abs{t}$ (sign set by the longitude convention); SIN's principal scales are $\{1, \cos r\}$, ZEA's $\{\cos(r/2), 1/\cos(r/2)\}$, STG's are equal at $\sec^2(r/2)$, and BICEP's are $\propto \{\cos\delta_0/\cos\delta,\, 1\}$.
     All five are implemented in \texttt{spt3g\_software}; the BICEP entry is the equidistant cylindrical projection with standard parallel at the field centre, as used by BICEP/Keck.
   }
 \end{deluxetable*}
@@ -171,7 +172,8 @@ We take the scalar case first, because it needs none of the polarization machine
   \centering
   \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
   \caption{
-    Local shear $g$ (top) and magnification $\mu$ (bottom) of each projection's Jacobian relative to the sky, for the five projections used throughout this paper — Sanson--Flamsteed (SFL), orthographic (SIN), stereographic (STG), Lambert zenithal equal-area (ZEA), and the BICEP-style equidistant cylindrical (BICEP), defined in Table~\ref{table:projs} — evaluated on a common grid centred on the field centre $(\alpha, \delta) = (0\arcdeg, -56\arcdeg)$; the black contour marks $W = 0.5$ of the largest (10\%) apodized disk used in Section~\ref{sec:results}, the footprint the reader should focus on.
+    The shear field $g$ (top) with which each projection distorts the sky, and the magnification $\mu$ (bottom) that comes with it, both read off the projection's Jacobian relative to the sky and known in closed form before any observation.
+    Shown are the five projections used throughout this paper — Sanson--Flamsteed (SFL), orthographic (SIN), stereographic (STG), Lambert zenithal equal-area (ZEA), and the BICEP-style equidistant cylindrical (BICEP), defined in Table~\ref{table:projs} — evaluated on a common grid centred on the field centre $(\alpha, \delta) = (0\arcdeg, -56\arcdeg)$; the black contour marks $W = 0.5$ of the largest (10\%) apodized disk used in Section~\ref{sec:results}, the footprint the reader should focus on.
     SFL's shear grows with east--west offset from the field centre, as $g \approx \tfrac12 \tan\lvert\delta_0\rvert$ times the magnitude of the east offset (Table~\ref{table:projs}); SIN and ZEA shear similarly away from the field centre but in every direction, being zenithal rather than cylindrical.
     STG is conformal, so its shear is zero to within numerical precision across the whole panel: $\mu$ carries its entire distortion instead, growing radially away from the tangent point.
     ZEA and SFL are both equal-area, so $\mu \equiv 1$ up to floating-point error everywhere shown.
@@ -189,7 +191,7 @@ Because pseudo-$C_\ell$ estimators bin in annuli of $\abs{\vbell}$, the directio
   \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, r(\chi))}{C(\ell)}}_{\chi,\, W^2},
   \qquad r(\chi) = \sqrt{s_1^2 \cos^2\chi + s_2^2 \sin^2\chi},
 \end{equation}
-where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight.
+where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ --- read as the frame of the symmetric factor $\Sigma$, which for the flattened Jacobian used throughout is $A$ itself --- and the outer average runs over the footprint with the squared mask weight.
 Equation~\eqref{eq:scalar_ratio} has no free parameters: $s_1$, $s_2$ and the footprint are properties of the two projections, and $C(\ell)$ is the input spectrum.
 
 For a locally power-law spectrum $C \propto \ell^{n}$, $C(\ell r)/C(\ell) = r^{n}$.
@@ -224,6 +226,29 @@ The prediction then inherits the acoustic structure of $C(\ell)$, because the co
 Matching that shape is a much sharper test than matching an amplitude; Section~\ref{subsec:scalar_validation} makes the test.
 Figure~\ref{fig:slope}, shown alongside the measurement it predicts in Section~\ref{subsec:scalar_validation}, separates the two things the coefficient depends on by holding the geometry fixed and varying only the spectrum.
 
+The scalar coefficient has a lensing pedigree of its own, and it is worth naming here because the spin-two relation of Section~\ref{subsec:derivation} will turn out to have the same one.
+Equation~\eqref{eq:scalar_expansion} --- the $\order{g^2}$ content of Equation~\eqref{eq:scalar_ratio}, which is exact in $g$ --- is the constant-shear limit of the standard lensed $TT$ kernel \citep{lewis06} at first order in $C^{\phi\phi}$.
+Substituting $\vbell' = \vbell - \vb*{L}$ with the deflection power confined to $L \ll \ell$, the counterterm --- $-\ell^2 R^\phi$ for isotropic deflection power, and in general the tensor $-\ell_i \ell_j \expval{\partial_i \phi \partial_j \phi}$ --- cancels the $\order{L^2}$ non-derivative part of the convolution exactly, and what survives at $\order{L^4}$, written in terms of the distortion tensor $\partial_i \partial_j \phi$ decomposed in the frame of the mode as $\kappa \pm \gamma_+$ along the diagonal and $\gamma_\times$ off it, is
+\begin{equation} \label{eq:tt_collapse}
+  \tfrac12 \ell^2 C'' \expval{(\kappa + \gamma_+)^2}
+  + \ell C' \expval{3\kappa^2 + 4\kappa\gamma_+ + \gamma_+^2 + \tfrac32 \gamma_\times^2}
+  + C \expval{3\kappa^2 + \gamma_+^2 + \gamma_\times^2},
+\end{equation}
+with $\gamma_+$ and $\gamma_\times$ the shear components along and across the mode.
+This is not merely an approximation to the azimuthal remap average of Equation~\eqref{eq:scalar_ratio}: term by term in $\vb*{L}$, it \textit{is} the second-order-in-distortion part of the exact constant-Jacobian remap $\abs{\det A}^{-1} C(\abs{A^{-T}\vbell})$, the difference vanishing identically at this order.
+The scope is exactly that and no more: first order in $C^{\phi\phi}$, deflection power at $L \ll \ell$, and second order in the distortion --- and it is Equation~\eqref{eq:scalar_ratio}, not this collapse, that every numerical prediction below evaluates.
+The terms have clean identities.
+$\expval{(\kappa + \gamma_+)^2}$ is the variance of the linear stretch along the mode, and it alone pairs with the convexity $C''$: the steep-slope, order-unity part of the effect lives entirely in that one moment.
+The cross-shear $\expval{\gamma_\times^2}$ measures the transverse stretch --- the same content as the $\order{g^2}$ piece of $r(\chi)$ in Equation~\eqref{eq:scalar_expansion} --- and pairs only with $C'$ and $C$, so it corrects the coefficient at first order in the slope rather than at $n^2$.
+The correspondence between the two languages is Equation~\eqref{eq:g_gamma} below.
+Getting there requires keeping every $\order{L^4}$ piece --- the sub-leading $-L^2$ term of the vertex $\vbell' \vdot (\vbell - \vbell')$ and the magnification factor $\abs{\det A}^{-1}$ included --- because $\ell^k C^{(k)} \sim n^k C$ leaves no $L/\ell$ suppression to separate them from the $C''$ term.
+That the kernel carries $\abs{\det A}^{-1}$ intrinsically is also where the mean-dilation subtlety reappears from the lensing side, and it enters through a term Equation~\eqref{eq:tt_collapse} does not contain.
+The distortion also has a piece linear in $\kappa$, $-\expval{2C\kappa + \ell C'(\kappa + \gamma_+)}$, which vanishes for a zero-mean random potential but not for a deterministic projection Jacobian.
+Setting $\bar{s} = 1$, the normalization of Equation~\eqref{eq:scalar_expansion}, is not $\kappa = 0$: it carries $\kappa = g^2 + \order{g^4}$, and the linear term then subtracts $(2 + n)g^2$ from the $(n+2)^2/4$ that Equation~\eqref{eq:tt_collapse} returns on its own, leaving $(n^2/4 - 1)g^2$ --- the $n^2/4$ of Equation~\eqref{eq:scalar_expansion} requiring the same by-hand $\mu \to 1$ that equation declares.
+A further simplification holds only in the stochastic case: for a random potential $\expval{(\kappa + \gamma_+)(\kappa - \gamma_+)} = \expval{\gamma_\times^2}$ identically, which is what lets the isotropic literature quote the collapse in $\kappa$-and-$\gamma$ variances alone.
+A deterministic uniform shear violates it --- there $\kappa$ and $\gamma_+$ are perfectly correlated, and the same combination equals $-\expval{\gamma_\times^2}$ --- so the general form above, not its isotropic reduction, is the one that applies to a projection.
+Unlike the spin-two channel, the scalar channel is sensitive to the convergence as well as the shear, which is why the bookkeeping matters here and not there.
+
 \subsection{Polarization flattening removes the rotation} \label{subsec:flatten_pol}
 
 A flat-sky projection applies a spatially-varying \textit{effective} rotation, tilting ``grid'' north away from ``true'' north by a position-dependent angle.
@@ -248,6 +273,7 @@ For everything else, the leakage is set by $\Sigma$ alone.
 
 The scalar field of Section~\ref{subsec:scalar} felt the shear through the convexity of the spectrum; a spin-two field feels the same shear through a second, independent channel, the misalignment of the $E$/$B$ basis.
 The geometry is identical — the same $\Sigma$, the same $g$ — but the leakage this channel produces carries no spectral-slope dependence at leading order, which is what makes it the cleaner relation.
+As with the scalar channel, this one is a constant-shear limit of a standard lensing kernel --- here the $E \to B$ kernel, which gives the slope-independent $2\gsq$ derived below.
 
 With the shear $g = (s_1 - s_2)/(s_1 + s_2)$ as before, in the principal frame of $\Sigma$, a plane-wave mode $\vbell$ on the grid originates from sky mode $\vb*{q} = J^{T}\vbell$, misaligned from $\vbell$ by an angle $\delta\psi(\chi)$ — distinct from the flattening angle $\psi$ of Section~\ref{subsec:flatten_pol}, a position-space quantity that has already been removed; $\delta\psi$ instead lives in Fourier space, indexed by mode azimuth rather than sky position,
 \begin{equation}
@@ -258,9 +284,10 @@ The $E$/$B$ decomposition on the grid (Equation~\ref{eq:qu_to_eb} below) then re
 Binning in annuli of $|\vbell|$ averages $\chi$ uniformly over the circle — and because a uniform measure on the circle is shift-invariant, the position-dependent orientation of the principal axes drops out identically, for any mask shape.
 The azimuthal average of $\sin^2 2\delta\psi$ with the \textit{exact} $\delta\psi$ resums in closed form, to all orders in $g$,
 \begin{equation} \label{eq:law}
-  \frac{C_\ell^{BB}}{C_\ell^{EE}} \;=\; \expval{\sin^2 2\delta\psi}_\chi \;=\; 2 g^2 \qty(1 - \tfrac{3}{4} g^2),
+  \frac{C_\ell^{BB}}{C^{EE}_{{\rm sky},\,\ell}} \;=\; \expval{\sin^2 2\delta\psi}_\chi \;=\; 2 g^2 \qty(1 - \tfrac{3}{4} g^2),
 \end{equation}
-the linearized $\delta\psi$ being adequate only through $\order{g^2}$: fed into the same average it returns $2g^2(1 - g^2)$, and the $-\tfrac34$ requires the exact angle.
+the fraction of the sky's $E$ power that misalignment leaks; the surviving $E$ carries the complementary $\expval{\cos^2 2\delta\psi}_\chi$, which is why the forward model of Equation~\eqref{eq:forward} keeps both kernels and why the measured ratio $C_\ell^{BB}/C_\ell^{EE}$ departs from Equation~\eqref{eq:law} at $\order{g^4}$.
+The linearized $\delta\psi$ is adequate only through $\order{g^2}$: fed into the same average it returns $\tfrac12[1 - J_0(4g)] = 2g^2(1 - g^2) + \order{g^6}$, and the $-\tfrac34$ requires the exact angle.
 So at leading order the leakage from a footprint is
 \begin{equation} \label{eq:law_footprint}
   \frac{C_\ell^{BB}}{C_\ell^{EE}} = 2 \gsq,
@@ -284,7 +311,7 @@ At $s = 2$ it is $-\tfrac34 g^2$ in relative form, which is the $-\tfrac34 g^2$ 
 Since the derivation uses only the Jacobian, the spin-two rung applies verbatim to flat-sky projected galaxy-shear maps, whose $E$/$B$ decomposition is likewise spin two.
 
 The coefficient is old physics, recoverable from CMB lensing.
-Equation~\eqref{eq:law_footprint} is the constant-deflection-gradient limit of the standard flat-sky $E \to B$ lensing kernel \citep{lewis06}.
+Equation~\eqref{eq:law_footprint} is the constant-shear limit of the standard flat-sky $E \to B$ lensing kernel \citep{lewis06}.
 The flattened projection's Jacobian is exactly the symmetric factor $\Sigma$ of Section~\ref{subsec:flatten_pol}: write $\Sigma = (1+\kappa)\mathbb{1} + \gamma$, generated by a lensing potential whose power is confined to $L \ll \ell$; the first-order kernel
 \begin{equation} \label{eq:lensing_kernel}
   C_\ell^{BB} = \int \frac{\dd[2]{\vbell'}}{(2\pi)^2}
