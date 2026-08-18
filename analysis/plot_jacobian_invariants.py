@@ -21,6 +21,7 @@ import numpy as np
 from matplotlib.colors import TwoSlopeNorm
 
 import geometry as G
+from paper_style import PROJ_COLORS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -31,18 +32,9 @@ PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
 
-# Paper-wide projection color identity (dataviz-skill categorical palette,
-# slots 1-5 in SFL/SIN/STG/ZEA/BICEP order). Used here only as a small
+# Projection colour identity lives in paper_style; used here only as a small
 # non-annotative accent (a tick above each column title) so the five
 # projections read as the same entities across every figure in the paper.
-PROJ_COLORS = {
-    "ProjSFL": "#2a78d6",     # slot 1 blue
-    "ProjSIN": "#eb6834",     # slot 2 orange
-    "ProjSTG": "#1baf7a",     # slot 3 aqua
-    "ProjZEA": "#eda100",     # slot 4 yellow
-    "ProjBICEP": "#e87ba4",   # slot 5 magenta
-}
-
 LIM_DEG = 55.0
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre

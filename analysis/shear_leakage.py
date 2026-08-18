@@ -142,6 +142,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import geometry as G
+import paper_style as PS
 import spectra as S
 import theory as T
 
@@ -737,17 +738,10 @@ def figure(mom, meas, pred, path=FIGURE):
         "axes.linewidth": 0.7, "figure.dpi": 130, "savefig.bbox": "tight",
         "legend.edgecolor": "0.6", "legend.fancybox": False,
     })
-    # Validated categorical palette (dataviz skill, references/palette.md),
-    # assigned in the paper's fixed projection order SFL, SIN, STG, ZEA,
-    # BICEP and held identical across every figure in the paper. STG never
-    # appears as a scatter series (it is the floor band only), so it takes a
-    # neutral gray rather than a fifth categorical slot -- the remaining
-    # four (blue/violet/aqua/orange) pass the all-pairs CVD and
-    # normal-vision floors together in light mode.
-    colors = {"ProjSFL": "#2a78d6", "ProjSIN": "#4a3aa7", "ProjSTG": "#7f7f7f",
-              "ProjZEA": "#1baf7a", "ProjBICEP": "#eb6834"}
-    marks = {"ProjSFL": "o", "ProjSIN": "s", "ProjSTG": "x", "ProjZEA": "^",
-             "ProjBICEP": "D"}
+    # Projection identity and marker shapes come from paper_style, and are
+    # identical in every figure of the paper.
+    colors = PS.PROJ_COLORS
+    marks = PS.PROJ_MARKERS
 
     jstg = S.PROJS.index(FLOOR_PROJ)
     g2 = mom["g2"]
@@ -832,18 +826,19 @@ def figure(mom, meas, pred, path=FIGURE):
 
     # (d) which reduction collapses the data. A different categorical
     # dimension from (a)-(c) -- reductions, not projections -- so it draws
-    # from spare validated slots (red/blue/green) rather than reusing the
-    # projection identity.
+    # from the neutral SECONDARY scheme and never from a projection hue.
     ax = axes[1, 1]
-    labels = {"g2": (r"$\langle g^2 \rangle$", "#e34948"),
-              "q2": (r"$\langle (s_1/s_2-1)^2 \rangle$", "#eda100"),
-              "lnq2": (r"$\langle \ln^2 (s_1/s_2) \rangle$", "#008300")}
+    labels = {"g2": (r"$\langle g^2 \rangle$", PS.SECONDARY[0]),
+              "q2": (r"$\langle (s_1/s_2-1)^2 \rangle$", PS.SECONDARY[1]),
+              "lnq2": (r"$\langle \ln^2 (s_1/s_2) \rangle$", PS.SECONDARY[2])}
+    red_marks = {"g2": "o", "q2": "v", "lnq2": "P"}
     for key, (lab, col) in labels.items():
         xx = mom[key][keep]
         kk, _, _, _ = fit_constant(xx, band0[keep])
         r = band0[keep] / (kk * xx) - 1
         order = np.argsort(xx)
-        ax.plot(xx[order], 100 * r[order], "o-", ms=4, lw=1.0, color=col,
+        ax.plot(xx[order], 100 * r[order], "-", marker=red_marks[key], ms=4,
+                lw=1.0, color=col,
                 label=rf"{lab}: rms {100 * np.std(r):.1f}\%, "
                       rf"$k = {kk:.3f}$")
     ax.axhline(0, color="k", lw=1.0)

@@ -52,6 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import shear_leakage as SL
 import spectra as S
 import theory as T
+import paper_style as PS
 
 ROOT = Path(__file__).resolve().parent.parent
 FIGURE = ROOT / "figures" / "projection_spectra.pdf"
@@ -60,13 +61,8 @@ MASK_INDEX = 5          # PERC[5] = 5.0%, the paper's reference footprint
 REBIN = 5               # display binning: 5 x dl=10 -> dl=50
 ELL_MIN, ELL_MAX = 200.0, 3900.0
 
-# dataviz categorical palette, slots 1-5 in order {blue, orange, aqua,
-# yellow, magenta}, matching the paper-wide projection color identity
-# established in jacobian_invariants (SFL, SIN, STG, ZEA, BICEP fixed order).
-COLORS = {"ProjSFL": "#2a78d6", "ProjSIN": "#eb6834", "ProjSTG": "#1baf7a",
-          "ProjZEA": "#eda100", "ProjBICEP": "#e87ba4"}
-MARKS = {"ProjSFL": "o", "ProjSIN": "s", "ProjSTG": "x", "ProjZEA": "^",
-         "ProjBICEP": "D"}
+COLORS = PS.PROJ_COLORS
+MARKS = PS.PROJ_MARKERS
 
 
 def rebin(y, n=REBIN):
@@ -99,8 +95,8 @@ def main():
     plt.rcParams.update({
         "font.size": 9.5, "axes.grid": True, "grid.alpha": 0.18,
         "grid.linewidth": 0.6, "figure.dpi": 150, "savefig.bbox": "tight",
-        "axes.edgecolor": "#898781", "axes.linewidth": 0.7,
-        "xtick.color": "#52514e", "ytick.color": "#52514e",
+        "axes.edgecolor": PS.RULE, "axes.linewidth": 0.7,
+        "xtick.color": PS.INK_SOFT, "ytick.color": PS.INK_SOFT,
         "legend.frameon": False,
     })
 
@@ -127,7 +123,7 @@ def main():
     # ---- (a) EE bandpowers -------------------------------------------------
     ax = axes[0]
     input_line, = ax.plot(ellb[keep], (rebin(cl_ee) * dl)[keep], "-",
-                           color="#0b0b0b", lw=1.4, zorder=1)
+                           color=PS.INK, lw=1.4, zorder=1)
     for j, proj in enumerate(S.PROJS):
         y = rebin(ee[i, j].mean(0) / transfer) * dl
         ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj], ms=MS,
@@ -137,7 +133,7 @@ def main():
 
     # ---- (b) EE ratio to input, with the remap prediction ------------------
     ax = axes[1]
-    ax.axhline(1.0, color="#898781", lw=0.8, zorder=1)
+    ax.axhline(1.0, color=PS.RULE, lw=0.8, zorder=1)
     for j, proj in enumerate(S.PROJS):
         r = rebin(ee[i, j].mean(0) / transfer / cl_ee)
         ax.plot(ellb[keep], r[keep], MARKS[proj], color=COLORS[proj], ms=MS,
@@ -151,7 +147,7 @@ def main():
     # ---- (c) BB, which is all leakage --------------------------------------
     ax = axes[2]
     ref_line, = ax.plot(ellb[keep], (rebin(cl_bb_lensed) * dl)[keep], "--",
-                         color="#0b0b0b", lw=1.2, zorder=1)
+                         color=PS.INK, lw=1.2, zorder=1)
     proj_handles = []
     for j, proj in enumerate(S.PROJS):
         y = rebin(bb[i, j].mean(0) / transfer) * dl

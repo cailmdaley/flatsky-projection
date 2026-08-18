@@ -29,6 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle, Rectangle
 
+from paper_style import PROJ_COLORS as PROJ_COLOR, mask_ramp
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "figures"
 CACHE = Path(__file__).resolve().parent / ".cache" / "mask_contours.npz"
@@ -37,12 +39,6 @@ MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
 PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
-# Paper-wide projection identity (dataviz skill's validated categorical
-# palette, slots 1-5 in SFL/SIN/STG/ZEA/BICEP order; passes adjacent-pair
-# CVD + normal-vision floors on the light surface). Reconcile against
-# analysis/plot_projection_spectra.py's COLORS, which predates this set.
-PROJ_COLOR = {"ProjSFL": "#2a78d6", "ProjSIN": "#eb6834", "ProjSTG": "#1baf7a",
-              "ProjZEA": "#eda100", "ProjBICEP": "#e87ba4"}
 # From the 2021 config: disk radii (rad) and their nominal sky percentages.
 DISK_RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]
 DISK_PERC = [0.75, 1.00, 1.25, 1.5, 3.0, 5.0, 10.0]
@@ -113,8 +109,9 @@ def main():
 
     from matplotlib.colors import BoundaryNorm, ListedColormap
 
-    base = plt.get_cmap("viridis")
-    colors = [base(0.05 + 0.9 * i / (NMASK - 1)) for i in range(NMASK)]
+    # The mask ladder is a magnitude, not an identity: it takes the neutral
+    # sequential ramp, never a projection hue.
+    colors = mask_ramp(NMASK)
     lcmap = ListedColormap(colors)
     bounds = np.arange(NMASK + 1) - 0.5
     norm = BoundaryNorm(bounds, NMASK)
