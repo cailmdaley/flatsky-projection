@@ -270,13 +270,18 @@ outputs:
         --out {output}
       resources:
         cpus: 2
-        # Sized from what the stage actually holds, not from amundsen's 60 GiB
-        # cgroup. The resident cost is one intermediate Healpix mask per
-        # worker process -- 1.6 GB at nside 4096 -- so 2 procs peak near 3-4 GB;
-        # `rebin` oversampling happens inside spt3g's healpix_to_flatsky per
-        # output pixel, so the flat output stays 3300^2 (~87 MB), never a
-        # 26400^2 array. The inherited 32Gi was the binding constraint on
-        # OSPool matching, not on the job.
+        # Measured on OSG, not inherited from amundsen's 60 GiB cgroup: a
+        # completed grid run reported MemoryUsage 1954 MB. The resident cost
+        # is one intermediate Healpix mask per worker process -- 1.6 GB at
+        # nside 4096 -- and `rebin` oversampling happens inside spt3g's
+        # healpix_to_flatsky per output pixel, so the flat output stays
+        # 3300^2 (~87 MB) and no 26400^2 array is ever allocated.
+        #
+        # 8Gi keeps ~4x headroom over the sampled peak, which is the right
+        # margin because condor's MemoryUsage is a sample and undersamples
+        # true peaks. The inherited 32Gi was ~17x the real need and was the
+        # binding constraint on OSPool matching -- 1 eligible slot in 9000,
+        # against 10 at this figure.
         memory: 8Gi
         # On the grid this stage unpacks the staged healpix_masks archive,
         # which restores seven 1.6 GB-apparent masks into the job sandbox
