@@ -65,14 +65,16 @@ condor_q <cluster> -l | grep -E 'Cmd|ProjectName|SingularityImage|TransferInput|
 and anything else reading only `/cvmfs` and its own decisions. Outputs
 transfer back to `results/<universe>/<output_id>/` with a valid manifest.
 
-**What does not, and why:** stages that consume another output. Condor is
-told to stage the upstream data directory, but every such path begins with
-`results/`, which is a symlink to `/sptlocal`, and condor refuses to transfer
-symlinks to directories (symlinks to *files* are fine — the two payload
-tarballs are symlinks and work). Making `results/` a real directory does not
-help; any `/sptlocal` indirection in the path fails identically. The fix is to
-ship a `tar --sparse` archive of the upstream directory instead of the tree,
-which also solves the sparse-file problem below. Not built yet.
+**Data-consuming stages work too** (verified 2026-08-18: `flatsky_masks`
+consuming `healpix_masks` on OSPool, `lc verify` clean): upstream outputs are
+shipped as gzipped archives built by `localrules` on the access point and
+unpacked by the wrapper on the worker. Gzip rather than `tar --sparse` because
+NFS hides holes; archives live inside the project (absolute paths break
+condor's `PreserveRelativePaths`). Condor refuses symlink-to-directory
+transfer, which is why the archive mechanism exists at all — `results/` is a
+symlink to `/sptlocal`. One reliability note: OSPool preempts and restarts
+jobs from zero, so long fat stages may never converge — another reason
+per-unit fan-out (still missing from the ASTRA schema) matters.
 
 **Sizing.** `resources.memory` and `resources.disk` in astra.yaml become
 `htcondor_request_mem_mb`/`htcondor_request_disk_mb`. Two traps: the local
