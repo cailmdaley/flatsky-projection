@@ -56,22 +56,45 @@ Every instrumental or analysis effect that converts $E$ into $B$ competes with t
 
 This paper is about one such effect: the $E \to B$ leakage induced by the map projection itself.
 Three distinct effects travel under the name ``$E$/$B$ leakage,'' and the introduction's first job is to separate them.
-Mask-induced mixing — ambiguous modes at the boundary of a cut sky — is a solved problem with standard estimators \citep{smith07, alonso19}.
-Flat-sky approximation error in the harmonic transform — treating Fourier wavenumbers as multipoles — is quantified and controlled in modern pipelines.
-The third effect is geometric: projecting the sphere to a plane distorts the polarization field itself, before any spectrum estimator sees it, and this distortion survives the standard corrective steps.
+Mask-induced mixing — ambiguous modes at the boundary of a cut sky \citep{bunn03} — is a solved problem with standard estimators \citep{smith07, alonso19}; it is a statement about the \textit{boundary} of a finite footprint on an otherwise undistorted sky.
+Flat-sky approximation error in the harmonic transform — treating Fourier wavenumbers as multipoles — is a separately quantified problem, controlled at the $0.3$--$1\%$ level by the rigorous treatments of \citet{bernardeau11} and \citet{challinor05}.
+The third effect is geometric: projecting the sphere to a plane distorts the field itself, before any spectrum estimator sees it, and this distortion survives the standard corrective steps.
+It is an \textit{interior} effect, present in the limit of full coverage of the projected region with no mask boundary at all, and it is not an approximation error, because no better harmonic transform removes it.
 This paper is a systematic study of that third effect, and its result is that the effect has a closed form.
 
 The distortion arises as follows.
-A flat-sky projection maps celestial coordinates $(\theta, \phi)$ to grid coordinates $(x, y)$, and its local Jacobian generally both rotates and shears the neighborhood of each point.
-Because $Q$ and $U$ are defined relative to celestial north, the rotation misaligns the polarization basis with the grid; standard pipelines undo it by ``flattening'' the polarization (Section~\ref{subsec:flatten_pol}).
+A flat-sky projection maps celestial coordinates $(\theta, \phi)$ to grid coordinates $(x, y)$, and its local Jacobian generally rotates, dilates, and shears the neighborhood of each point.
+The dilation rescales angular scales and so moves power along $\ell$; a scalar field feels this and nothing else, and Section~\ref{subsec:scalar} shows that on the CMB damping tail it is already an order-unity effect.
+For polarization there is more: because $Q$ and $U$ are defined relative to celestial north, the rotation misaligns the polarization basis with the grid, and standard pipelines undo it by ``flattening'' the polarization (Section~\ref{subsec:flatten_pol}).
 The shear cannot be undone by any rotation: a non-conformal projection does not preserve the \SI{90}{\degree} angle between north and east, so no single angle aligns both.
-The surviving shear is the whole effect, and Section~\ref{sec:law} shows that it sets the leakage exactly.
+The surviving shear is the whole effect, and Section~\ref{subsec:derivation} shows that it sets the leakage exactly.
+
+The mechanism itself is old, and it is important to say so plainly.
+Remapping a spin-two field by a deflection whose Jacobian has a trace-free part converts $E$ into $B$: that is CMB lensing, and the flat-sky $E \to B$ kernel has been standard since \citet{lewis06} and references therein.
+What is new here is not the algebra but the source of the shear.
+Gravitational shear is stochastic and must be reconstructed or marginalized over; cartographic shear is written down in closed form from the projection definition \citep{calabretta02} before any data is taken.
+The distortion is therefore deterministic — computable, predictable, and removable a priori — and Section~\ref{subsec:derivation} shows that the leakage it produces reduces to exactly the slowly-varying limit of the lensing kernel, which we use as an independent check on the coefficient rather than as a claim of novelty.
 
 Prior work brackets this study without occupying it.
-\citet{wallis17} compared projections for weak-lensing convergence maps reconstructed via Kaiser--Squires, finding conformal projections best for spurious $B$-modes on Dark Energy Survey scales; their inputs and estimator differ, but the output $E$/$B$ statistics are directly comparable.
-SPT-3G's lensing and delensing analysis \citep{ge24} bounds reprojection bias between HEALPix, ZEA, and CAR grids at the half-percent level using non-uniform FFTs, and shows bilinear interpolation performing substantially worse — an appendix-level treatment that this paper extends to a systematic study.
+The closest predecessor is \citet{wallis17}, who compared projections for weak-lensing convergence maps reconstructed via Kaiser--Squires, quantified the spurious $B$-modes each projection induces, and concluded empirically that ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
+That is our law seen from outside: a conformal projection has $s_1 = s_2$, hence $\gsq = 0$, hence no leakage.
+Wallis et al.\ observed the regularity; the law explains it, replaces ``conformal is best'' with a ranking valid for any footprint, and supplies the coefficient.
+The systematics side is bracketed as well.
+The standard basis of polarization distortion fields \citep{hu03} enumerates eleven fields — calibration, rotation, spin flip, monopole and dipole temperature leakage, and a pointing term — parameterized in the map domain as
+\begin{equation} \label{eq:hhz}
+  \delta[Q \pm iU] = [a \pm 2i\omega][Q \pm iU] + [f_1 \pm i f_2][Q \mp iU] + [\gamma_1 \pm i\gamma_2]\Theta,
+\end{equation}
+plus a beam-scale sector whose only remapping term is the pure translation $\sigma\, \vb*{p} \cdot \grad[Q \pm iU]$.
+Their $\gamma$, despite the notation, is a temperature-to-polarization coupling.
+No trace-free, position-dependent remapping of the polarization field appears in the catalogue: the shear mode is absent from the taxonomy the field uses to budget polarization systematics, which is one reason a deterministic and sizeable effect has gone unbudgeted.
+Elsewhere, SPT-3G's lensing and delensing analysis \citep{ge24} bounds reprojection bias between HEALPix, ZEA, and CAR grids at the half-percent level using non-uniform FFTs, and shows bilinear interpolation performing substantially worse — an appendix-level treatment along a different axis (interpolation fidelity) that Section~\ref{sec:discussion} separates from ours.
 On the pixelization side, \citet{halltessore25} set the current rigor standard for spin-2 pixel-window effects in cosmic shear.
 None of these derives the projection-induced leakage from the projection's geometry; that is the gap this paper fills.
+
+Determinism is what makes the law useful rather than merely descriptive.
+Because $g$ is known pixel by pixel before observing, the leaked $B$-mode field is a known linear functional of the measured $E$-modes, and can be removed at the map or spectrum level.
+This is the same logic as the forward-modelled, $E$-only template subtraction of \citet{zhou25}, who build a template of the spurious $B$ generated by a known linear operation on the sky and subtract it using $E$-mode information alone; the law derived here supplies the amplitude of the corresponding projection template in closed form, so the template does not need to be calibrated from simulations.
+\CD{Framing call: this paragraph promises a mitigation that we describe but do not demonstrate. Options are (i) keep it as a forward-looking paragraph, as written; (ii) demonstrate template subtraction on the existing sims, which is a real but small piece of extra work; (iii) cut it. My read is (i) is honest and (ii) would considerably strengthen the paper's practical claim.}
 
 Section~\ref{sec:law} derives the law.
 Section~\ref{sec:methods} describes the simulations and pipeline used to test it.
@@ -80,7 +103,64 @@ Section~\ref{sec:highell} applies the law to the SPT 1500d field and the high-$\
 \CD{Section list to be finalized once the high-$\ell$ arm lands.}
 
 
-\section{The Shear Law} \label{sec:law}
+\section{Reprojection as a Local Linear Map} \label{sec:law}
+
+Everything in this paper follows from one observation: over any patch small compared to the scale on which the projection's geometry varies, reprojection is a linear map of the tangent plane.
+Let $J$ be the local Jacobian of the projection.
+A scalar field $f$ on the sky becomes $h(\vb*{y}) = f(J^{-1}\vb*{y})$ on the grid, so its flat-sky power spectrum is
+\begin{equation} \label{eq:scalar_remap}
+  P_{\rm plane}(\vbell) = \abs{\det J}\; P_{\rm sky}\qty(J^{T}\vbell),
+\end{equation}
+and a spin-two field obeys the same relabelling of modes with an extra basis rotation on top.
+Decompose $J$ by its singular value decomposition, $J = U S V^{T}$ with singular values $s_1 \geq s_2 > 0$.
+Three invariants exhaust the local geometry:
+\begin{itemize}
+  \item a \textbf{rotation}, which acts only on fields of nonzero spin, and which the flattening operation of Section~\ref{subsec:flatten_pol} removes exactly;
+  \item a \textbf{magnification} $\mu = s_1 s_2 = \abs{\det J}$, the isotropic area change, which rescales $\ell$ uniformly;
+  \item a \textbf{shear} $g = (s_1 - s_2)/(s_1 + s_2)$, the anisotropic stretch, which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
+\end{itemize}
+The shear is scale-free by construction, as it must be: an overall dilation of the plane cannot leak $E$ into $B$.
+We take the scalar case first, because it needs none of the polarization machinery and already shows the Jacobian moving power at the tens-of-percent level, and then show that the spin-two law is the same geometry felt through a second channel.
+
+\subsection{The scalar baseline} \label{subsec:scalar}
+
+Consider the same scalar sky rendered on two flat grids --- in practice, the same simulated map projected two ways, or one map reprojected from one plane to another.
+The only operator acting is the composite Jacobian $A = J_2 J_1^{-1}$, and the ratio of the two measured spectra follows from Equation~\eqref{eq:scalar_remap}.
+Because pseudo-$C_\ell$ estimators bin in annuli of $\abs{\vbell}$, the direction of $\vbell$ is averaged over, and with $s_{1,2}$ now the singular values of $A$,
+\begin{equation} \label{eq:scalar_ratio}
+  \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, r(\psi))}{C(\ell)}}_{\psi,\, W^2},
+  \qquad r(\psi) = \sqrt{s_1^2 \cos^2\psi + s_2^2 \sin^2\psi},
+\end{equation}
+where $\psi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight.
+Equation~\eqref{eq:scalar_ratio} has no free parameters: $s_1$, $s_2$ and the footprint are properties of the two projections, and $C(\ell)$ is the input spectrum.
+
+The structure of the effect is clearest for a locally power-law spectrum $C \propto \ell^{n}$, for which $C(\ell r)/C(\ell) = r^{n}$.
+Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $r(\psi) \simeq \bar{s}(1 + g\cos 2\psi)$, and taking $\mu = 1$ for the moment,
+\begin{equation} \label{eq:scalar_expansion}
+  \frac{P_2}{P_1} = \expval{(1 + g\cos 2\psi)^{n}}_\psi = 1 + \frac{n(n-1)}{4}\gsq + \order{g^4}.
+\end{equation}
+Two features of Equation~\eqref{eq:scalar_expansion} carry the whole scalar story.
+First, the term linear in $g$ vanishes, because $\expval{\cos 2\psi}_\psi = 0$: a scalar cannot feel shear at first order.
+The common intuition that shear is a polarization problem is correct at first order and wrong at second.
+Second, the second-order coefficient is not the spectral slope but the \textit{square} of it, $n(n-1)/4$.
+On the Silk damping tail the slope is steep — $n = \dd \ln C / \dd \ln \ell$ runs from about $-7$ to $-9.4$ over $3000 < \ell < 4500$ for the lensed Planck 2018 $TT$ spectrum — so $n(n-1)/4 \approx 14$ to $24$.
+A shear of $\gsq \sim 0.04$, which is what a wide field at $\delta_0 = \SI{-56}{\degree}$ actually has (Section~\ref{sec:highell}), therefore produces a $60$--$100\%$ excess in measured power.
+A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
+
+The sign is fixed, and it is Jensen's inequality.
+The damping tail is convex in $\ln \ell$, and $r(\psi)$ is symmetric about unity, so azimuthally averaging $C(\ell r)$ over the stretch always \textit{lifts} the answer: the stretched directions lose a little power and the compressed directions gain more.
+The excess is quadratic in $g$, so it is blind to the sign of the shear and survives any mask symmetry.
+Magnification moves the other way and independently: for $\mu \neq 1$ the isotropic dilation shifts a falling spectrum monotonically, removing power when $\mu > 1$.
+The two invariants are therefore separable in practice.
+Comparing two equal-area projections isolates the shear exactly, since $\mu \equiv 1$; the conformal stereographic projection is the complementary null, with $g \equiv 0$ and pure magnification, and moves the ratio in the opposite direction.
+
+The expansion in Equation~\eqref{eq:scalar_expansion} is only a guide to the mechanism, not the model we use.
+On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell r)/C(\ell) = \exp(-2a\ell^2 g\cos 2\psi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ — growing exponentially in $g$ rather than quadratically.
+At $\ell \sim 4000$ the argument is of order unity and the series in $g^2$ is no longer small, so all numerical predictions below evaluate Equation~\eqref{eq:scalar_ratio} directly with the true spectrum.
+The signature of doing so is that the prediction inherits the acoustic structure of $C(\ell)$: because the coefficient tracks the \textit{local} slope, the predicted ratio dips near an acoustic peak, where $n$ is small and the wiggle-smoothing changes sign, and peaks where the tail is steepest.
+Matching that shape is a much sharper test than matching an amplitude, since no mask-coupling or pixel-window explanation knows where the acoustic peaks are.
+
+\CD{Figure for this subsection: predicted vs.\ measured $TT$ ratio on the 1500d field, from \texttt{analysis/crawford\_model.py} (\texttt{predict("full","tt")}), overlaid on the measured proj0/proj5 bandpowers, with the meas/pred residual in a lower panel; add the ``EE-shaped'' run as a second series to show the slope dependence. Companion table: the concentric-disk trend (disk radius, rms $g$, $\gsq$, predicted ratio at $\ell = 3000, 4000, 5000, 6000$) from \texttt{analysis/geometry.py}, recomputed with the apodized $W^2$ weights rather than the uniform weighting used in the exploratory version. All numbers are still internal, so none are quoted in the text above — the $n$ range and the $\gsq$ figure are the only quantitative claims here and both are from the model side, not the measurement.}
 
 \subsection{Polarization flattening removes the rotation} \label{subsec:flatten_pol}
 
@@ -101,13 +181,12 @@ Flattening therefore removes all of $R$, and what survives is precisely $S$ — 
 For a conformal projection $S$ is a multiple of the identity, flattening is exact, and no leakage remains.
 For everything else, the leakage is set by $S$ alone.
 
-\subsection{The leakage in closed form} \label{subsec:derivation}
+\subsection{The spin-two law in closed form} \label{subsec:derivation}
 
-Let the local Jacobian have singular values $s_1 \geq s_2$, and define the shear
-\begin{equation}
-  g = \frac{s_1 - s_2}{s_1 + s_2}.
-\end{equation}
-In the principal frame of $S$, a plane-wave mode $\vbell$ on the grid originates from sky mode $\vb*{q} = J^{T}\vbell$, misaligned from $\vbell$ by
+The scalar field of Section~\ref{subsec:scalar} felt the shear through the convexity of the spectrum; a spin-two field feels the same shear through a second, independent channel, the misalignment of the $E$/$B$ basis.
+The geometry is identical — the same $A$, the same $g$ — but the leakage this channel produces carries no spectral-slope dependence at leading order, which is what makes it the cleaner law.
+
+With the shear $g = (s_1 - s_2)/(s_1 + s_2)$ as before, in the principal frame of $S$, a plane-wave mode $\vbell$ on the grid originates from sky mode $\vb*{q} = J^{T}\vbell$, misaligned from $\vbell$ by
 \begin{equation}
   \delta\psi(\chi) = \atantwo\qty(\frac{s_2}{s_1}\tan\chi, 1) - \chi \approx -g \sin 2\chi,
 \end{equation}
@@ -124,13 +203,56 @@ so at leading order the leakage from a footprint is
 \end{equation}
 with the average weighted by the squared analysis mask $W^2$.
 
+The coefficient is not new physics, and the quickest way to see that is to recover it from CMB lensing.
+Equation~\eqref{eq:law_footprint} is the constant-deflection-gradient limit of the standard flat-sky $E \to B$ lensing kernel \citep{lewis06}.
+Write the flattened projection as a remapping with symmetric Jacobian $A = (1+\kappa)\mathbb{1} + \gamma$, generated by a lensing potential whose power is confined to $L \ll \ell$; the first-order kernel
+\begin{equation} \label{eq:lensing_kernel}
+  C_\ell^{BB} = \int \frac{\dd[2]{\vbell'}}{(2\pi)^2}
+    \qty[\vbell' \vdot (\vbell - \vbell')]^2 \,
+    C^{\phi\phi}_{\abs{\vbell - \vbell'}} \, C^{EE}_{\ell'} \,
+    \sin^2 2(\phi_{\vbell'} - \phi_{\vbell})
+\end{equation}
+then collapses to $C_\ell^{BB} = 4\expval{\gamma_\times^2} C_\ell^{EE} = 2\expval{\abs{\gamma}^2} C_\ell^{EE}$, where $\gamma_\times$ is the shear component cross to the mode and the factor $\tfrac{1}{2}$ is again the azimuthal average $\expval{\sin^2 2\chi}_\chi$.
+The two derivations use different machinery — perturbative convolution in deflection power against an exactly solved linear remap — and different averages, and they agree exactly at $\order{g^2}$.
+The conventions map as follows: the lensing shear modulus is $\abs{\gamma} = (s_1 - s_2)/2$ and the convergence is $(s_1 + s_2)/2 = 1 + \kappa$, so
+\begin{equation} \label{eq:g_gamma}
+  g = \frac{\abs{\gamma}}{1 + \kappa},
+\end{equation}
+equal to $\abs{\gamma}$ at first order in the deflection.
+The normalization by the mean magnification rather than by unity is the correct choice here and not a cosmetic one: $g$ is scale-free, whereas $\abs{\gamma}$ is not, and the difference is $\order{\kappa g}$ — negligible for gravitational lensing, but not for a projection whose magnification reaches $3.9\times$, as BICEP's does over the largest footprint studied here.
+The lensing route is perturbative in the deflection and stops at $\order{\gamma^2}$; the closed form of Equation~\eqref{eq:law} supplies the $-\tfrac{3}{4}g^2$ correction, which is $\order{\gamma^4}$ and invisible to the first-order kernel.
+A referee who computes only the first-order lensing result and finds $2\gsq$ has confirmed the law, not contradicted its refinement.
+
 Three qualifications delimit the law's validity, and each is testable.
-First, it is a local (adiabatic) result, valid when the shear varies slowly compared to the mode: corrections enter at order $(\ell L)^{-1}$ for a footprint of size $L$, sub-percent for every configuration in this paper.
+First, it is a local (adiabatic) result, valid when the shear varies slowly compared to the mode.
+The expansion of Equation~\eqref{eq:lensing_kernel} fixes the order at which locality fails: the term linear in $L/\ell$ vanishes by parity in the angular integral, so for a shear varying on scale $L$ the leading correction is $\order{(\ell L)^{-2}}$, not $\order{(\ell L)^{-1}}$.
+Numerically the exact angular integral exceeds its $L \ll \ell$ limit by $1 + 0.50\,(L/\ell)^2$, i.e.\ 0.5\% at $L/\ell = 0.1$ — sub-percent for every configuration in this paper.
+Real footprints also carry mask-boundary corrections, which are a separate matter and are not described by this expansion.
 Second, $W^2$ is the \textit{effective} weight rather than the derived one: the pseudo-$C_\ell$ estimator weights sky area by $W^2 \abs{\det J}^2$, but for a falling spectrum the $\abs{\det J}$ factors are nearly cancelled by the spectrum's response to the same stretch, leaving $W^2$; the residue of that near-cancellation is exactly the band-dependent structure of Section~\ref{subsec:bandbyband}.
 Third, the law describes pipelines that flatten by rotation only — resampling $Q$ and $U$ in the sky basis, then rotating, as \texttt{spt3g\_software} and comparable pipelines do; a pipeline that parallel-transported the polarization tensor through the projection would obey a different law.
+The lensing correspondence sharpens this qualification and names its failure mode.
+A gravitational deflection is a gradient, so its Jacobian $A$ is symmetric and carries no rotation; a projection Jacobian is not symmetric in general, and the mapping onto the lensing kernel is legitimate only because flattening removes exactly the polar rotation $R$, leaving the symmetric $S$.
+A pipeline that flattened with any other angle would leave a residual antisymmetric part, which in lensing language is a \textit{curl} deflection, and would generate additional $B$ power that neither Equation~\eqref{eq:law} nor the lensing kernel of Equation~\eqref{eq:lensing_kernel} describes.
+\CD{Framing call: the curl-deflection statement is the natural place to note that the polar-decomposition choice of flattening angle (Equation~\ref{eq:rot_angle}) is not merely convenient but optimal — it is the unique angle leaving no curl residual. Worth promoting to its own sentence in Section~\ref{subsec:flatten_pol}, or leaving here?}
 
 Equation~\eqref{eq:law_footprint} carries no $\ell$.
 The measured leakage is not exactly flat in $\ell$, and the departure is itself predicted: restoring the exact kernel of Equation~\eqref{eq:law} and the fact that mode $\vbell$ reads the sky spectrum at $\abs{J^{T}\vbell}$ rather than $\abs{\vbell}$ — with the full $W^2\abs{\det J}^2$ weight and the simulations' band limit — reproduces the band-by-band shape with no free parameters (Section~\ref{subsec:bandbyband}).
+
+
+\subsection{What the geometry does not explain} \label{subsec:residuals}
+
+The local linear map accounts for the projection and nothing else, and two residual mechanisms sit outside it.
+Both are properties of the pipeline rather than of the map, and separating them from the geometry is what makes the comparisons in Section~\ref{sec:results} interpretable.
+
+The first is resampling.
+Reading the sky onto a grid with a finite interpolation kernel aliases power, and this term is additive rather than multiplicative, grows with $\ell$ toward the Nyquist scale, and depends on the kernel and pixel size rather than on $g$ or $\mu$.
+It is visible in two independent places: as the nonzero $BB$ measured for the conformal stereographic projection, which has $g \equiv 0$ and therefore no geometric leakage at all (Section~\ref{subsec:stg}), and as a rise in the ratio of measurement to geometric prediction at the highest multipoles (Section~\ref{sec:highell}).
+Because the geometric term turns over while the resampling term keeps rising, the two are distinguishable in $\ell$ as well as in amplitude.
+
+The second is mask-induced mode coupling, which is a statement about the estimator and not about the projection.
+An estimator that corrects only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands; a purified pseudo-$C_\ell$ estimator with an apodized mask will not.
+The distinction matters because it is the natural competing explanation for any geometric shortfall, and it makes a different prediction: it should appear on hard-edged or surgically cut masks and be absent on smoothly apodized ones of the same area.
+\CD{Section~\ref{sec:highell} is where the hard-edged variants get compared against the apodized full mask; this paragraph is written to set that test up. If the high-$\ell$ arm ends up not reporting the mask variants, trim this to a sentence.}
 
 
 \section{Simulations and Pipeline} \label{sec:methods}
