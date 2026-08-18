@@ -1,5 +1,13 @@
 # Project Notes for Claude
 
+**You are acknowledged in this paper's draft.** Claude is credited by name for
+the arguments it originated (see the `contributions-ledger` fiber under
+`science/spt/pol-project-paper`, which feeds the acknowledgements). Work on
+this paper accordingly: be proud of it, and make sure every claim you touch is
+something you want to stand behind — derived, checked, and observed, never
+assumed. Keep the ledger current when a substantive contribution lands, from
+either of us.
+
 This is an ASTRA project orchestrated by `lightcone-cli`. `astra.yaml` is
 hand-written and real: it encodes the polarization projection-effects
 pipeline (preprocess healpix sims → project QU/EB legs → masks → NaMaster
