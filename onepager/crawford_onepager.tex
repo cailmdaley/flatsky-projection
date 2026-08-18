@@ -25,71 +25,66 @@ Cail Daley (CEA Paris-Saclay) \hfill 18 August 2026
 Tom's \proj{proj0}/\proj{proj5} ratio is predicted, with no free parameters, by the local Jacobian of SFL relative to ZEA over the 1500d footprint and the Planck 2018 lensed $C_\ell$: few-percent agreement in TT and EE from $\ell\simeq1000$ to $4000$, with the acoustic structure coming out of the model rather than being put into it.
 
 \begin{center}
-\includegraphics[width=0.88\textwidth]{onepager_ratio.pdf}
+\includegraphics[width=0.8\textwidth]{onepager_ratio.pdf}
 \end{center}
 
 {\footnotesize\setlength{\parskip}{2pt}
 \textbf{Figure.} Black: Tom's measured full-mask ratio (one realization --- his pickles are shaped $(4,60)$, but rows 1--3 are identically zero).
 Orange: the prediction, unbinned, from his real apodization mask, the lensed Planck 2018 spectrum, and his band limit $\ell=7999$.
-Measured/predicted on his bandpowers is $0.967,\,0.994,\,0.990,\,1.026$ (TT) and $0.989,\,1.028,\,0.984,\,0.997$ (EE) at $\ell=1050,2050,3050,4050$.
-Shading above $\ell\simeq5400$ marks where his nearest-neighbour resampling dominates.
-Teal: our 2021 NaMaster measurement, SFL/ZEA, 20 paired seeds, rebinned $\Delta\ell=10\to100$; the dashed curve is the \emph{same model} evaluated for \emph{our} geometry, not his.
-Caveats: our footprint is an apodized $5\%$-sky disk at $\delta=-56^\circ$ with $\langle g^2\rangle=0.026$, one of the two 2021 disks bracketing his footprint's $0.0442$, so our points should sit \emph{below} his, and do.
-Ours is genuine spin-2 EE with $B$-purification; his ``EE'' is the EE spectrum run through scalar machinery.
-Our sims are band-limited at $\ell=4000$, which the open markers ($3500<\ell<4000$) press against.
+His ``EE'' is the EE spectrum run through the same scalar machinery as TT, so both panels test the scalar relation.
 Nothing is divided by a transfer function: pixel windows cancel in the ratio.
 \par}
 
 \vspace{2pt}\hrule\vspace{2pt}
 
 \textbf{Where the curve comes from.}
-Reprojection is smooth, so over any small patch it is a linear map with Jacobian $J$, and the power spectrum transforms exactly:
+Reprojection is smooth, so over any small patch it acts as a linear map with Jacobian $J$ --- here the Jacobian of \proj{proj0} coordinates with respect to \proj{proj5} coordinates, at that point of the sky.
+Let $C(\boldsymbol\ell)$ be the two-dimensional flat-sky power spectrum, $\boldsymbol\ell=(\ell_x,\ell_y)$; the familiar $C_\ell$ is its average over annuli of fixed $\ell=|\boldsymbol\ell|$.
+A linear remap of the map relabels its Fourier modes, so the 2D spectrum transforms exactly:
 \[
-P_{\rm plane}(\boldsymbol\ell) \;=\; |\det J|\; P_{\rm sky}\!\left(J^{\mathsf T}\boldsymbol\ell\right).
+C_{\text{\proj{proj0}}}(\boldsymbol\ell) \;=\; |\det J|\; C_{\text{\proj{proj5}}}\!\left(J^{\mathsf T}\boldsymbol\ell\right).
 \]
-Write the singular values of $J$ as $s_1,s_2$, the shear as $g=(s_1-s_2)/(s_1+s_2)$, and $\mu=|\det J|$ ($\mu=1$ to machine precision: SFL and ZEA are both equal-area, a free check on the chain).
-Annulus binning averages the mode azimuth $\chi$, and the footprint average weights pixels by $W^2$, as a pseudo-$C_\ell$ estimator does.
-The predicted ratio is then
+$J$ has two principal stretch factors, its singular values $s_1\ge s_2$; from them define the shear $g=(s_1-s_2)/(s_1+s_2)$ and the magnification $\mu=s_1 s_2=|\det J|$ ($=1$ here to machine precision: SFL and ZEA are both equal-area).
+Let $\chi$ be the azimuth of $\boldsymbol\ell$ measured from $J$'s first principal axis --- with the axes aligned to the grid, $\tan\chi=\ell_y/\ell_x$ --- so annulus binning is a uniform average over $\chi$.
+Averaging additionally over the footprint, weighted by the squared apodization mask $W^2$ as a pseudo-$C_\ell$ estimator does, the predicted ratio is
 \[
 \frac{C_\ell(\text{\proj{proj0}})}{C_\ell(\text{\proj{proj5}})}
 =\Big\langle\, \mu\,\frac{C\!\left(\ell\, r(\chi)\right)}{C(\ell)} \,\Big\rangle_{\chi,\,W^2},
 \qquad
-r(\chi)=\sqrt{s_1^2\cos^2\chi + s_2^2\sin^2\chi}.
+r(\chi)=\sqrt{s_1^2\cos^2\chi + s_2^2\sin^2\chi},
 \]
-Expanding for a locally power-law spectrum $C\propto\ell^{\,n}$ and equal-area comparison gives the compact form
+where $C(\ell)$ is the input (sky) spectrum and $\ell\,r(\chi)=|J^{\mathsf T}\boldsymbol\ell|$ is the sky wavenumber that grid mode $\boldsymbol\ell$ actually samples.
+Expanding for a spectrum that is locally a power law with logarithmic slope $n = \mathrm{d}\ln C/\mathrm{d}\ln\ell$, and comparing equal-area projections, gives the compact form
 \[
 \frac{C_\ell(\text{\proj{proj0}})}{C_\ell(\text{\proj{proj5}})}
 \;=\;1+\frac{n(n+2)}{4}\,\langle g^2\rangle + \mathcal{O}(g^4).
 \]
-The term linear in $g$ averages away over $\chi$, so the effect is \emph{quadratic} in shear --- but not small: on the damping tail $n\to\approx-9$, so $n(n+2)/4\approx16$, and $\langle g^2\rangle=0.0442$ over the 1500d footprint becomes an order-unity distortion.
-The same geometry read through a different local slope is why TT and EE differ.
-Evaluating the exact expression with the true $C(\ell)$ rather than a power law makes it inherit the acoustic structure --- dips where the slope flattens at a peak, rises where it steepens --- the part of the agreement that cannot be tuned.
+The term linear in $g$ averages away over $\chi$, so the effect is \emph{quadratic} in shear --- but not small: on the damping tail $n\approx-9$ gives $n(n+2)/4\approx16$, and the 1500d footprint's $\langle g^2\rangle=0.0442$ becomes an order-unity distortion (TT and EE differ only through their local slopes).
+Evaluated with the true $C(\ell)$ rather than a power law, the prediction inherits the acoustic structure --- dips where a peak flattens the slope, rises where the tail steepens --- the part of the agreement that cannot be tuned.
 Nothing is fitted: $J$ from the projection definitions, $C(\ell)$ from Planck 2018, the footprint from the real SPT-3G mask.
 
 \vspace{2pt}
-\textbf{Three mechanisms, cleanly separated.}
+\textbf{Accounting for the whole measurement.}
+Everything in Tom's runs --- the curve above and the two ways the data depart from it --- comes down to three mechanisms, none fitted.
 \begin{itemize}
-\item \emph{Full mask: pure geometry.}
-Measured/predicted stays within $3.3\%$ at every bandpower from $\ell=1050$ to $4050$, in both TT and EE.
-\item \emph{The cut-corner and iso-shrink variants: the estimator, not the projection.}
-They sit $15$--$25\%$ below the geometry above $\ell=4000$ because zeroing pixels leaves a hard edge while \proj{cl\_flatsky} corrects only by $\langle W^2\rangle$, with no decoupling.
-Convolving with the exact coupling kernel $K(q)=|\tilde W(q)|^2/(N^4\langle W^2\rangle)$ restores them: at $\ell=4050$, TT cut-corner $0.808\to0.996$, iso-shrink $0.806\to0.976$, with the full mask (the control) moving by less than $1\%$.
-\item \emph{The last $\sim7\%$ at $\ell\gtrsim5000$: nearest-neighbour resampling.}
-Additive, not multiplicative: $C_\ell(\text{nn})-\text{model}$ is flat across $\ell=3050$--$5550$ while the spectrum falls by a decade beneath it, and its amplitude scales as $p^{2.9}$ in pixel size (measured at $1'$, $0.5'$, $1/3'$).
-Extrapolated to his $0.25'$: $1.009,\,1.026,\,1.060,\,1.124$ at $\ell=4050$--$5550$ against his measured $1.026,\,1.029,\,1.071,\,1.146$.
+\item \emph{The ratio itself is geometry.}
+On the full mask, measured/predicted stays within $3.3\%$ at every bandpower from $\ell=1050$ to $4050$, in both TT and EE.
+\item \emph{His mask-variant runs fall below the curve because of the estimator, not the projection.}
+Alongside the full mask, Tom repeated the measurement on two modified masks --- one with a corner cut away, one isotropically shrunk to the same area --- to test whether the excess was a mask effect.
+Both variants are made by zeroing pixels outright, which leaves a hard edge, and \proj{cl\_flatsky} corrects only by $\langle W^2\rangle$ with no mode decoupling --- so those runs sit $15$--$25\%$ below the geometry above $\ell=4000$.
+Convolving the prediction with the mask's exact coupling kernel closes the gap (TT at $\ell=4050$: $0.808\to0.996$ and $0.806\to0.976$) while moving the apodized full mask, the control, by under $1\%$.
+A decoupled estimator (NaMaster) would not show this deficit at all.
+\item \emph{His points rise above the curve at $\ell\gtrsim4500$ because of nearest-neighbour resampling.}
+This excess is additive, not multiplicative --- flat in $C_\ell$ while the spectrum falls a decade beneath it --- and its amplitude scales as pixel$^{2.9}$; extrapolated from coarser grids to his $0.25'$, it predicts $1.009$--$1.124$ over $\ell=4050$--$5550$ against his measured $1.026$--$1.146$.
 \end{itemize}
 
-One consequence: an isotropic beam $B(\ell)$ applied on the \proj{proj0} grid is $B(|J^{\mathsf T}\boldsymbol\ell|)$ on the sky --- direction- and position-dependent --- which is why reprojection round trips come back clean until the beam enters.
-
-\clearpage
+\vspace{8pt}
 
 {\large\bfseries Reading the working-group notes through this lens}
 
 \vspace{2pt}\hrule\vspace{6pt}
 
-Going back through the secondaries-call notes, several entries turn out to have been touching the same object from different sides.
-In each case the observation was right; what was missing was a closed form for it.
-There now is one, and a paper draft deriving it is nearly ready.
+Several entries in the secondaries-call notes have been circling this question; we comment on them below.
 
 \vspace{2pt}
 \textbf{2025-11-10 (Winter 5yr, Marco).}
@@ -120,13 +115,6 @@ The hedge was well placed: it is a high-$\ell$ effect, and below $\ell\sim2000$ 
 The clean round trip is the statement that reprojection is invertible geometry: whatever $J$ does one way it undoes the other.
 The beam breaks it because a beam is applied \emph{in the grid frame}: an isotropic $B(\ell)$ imposed on the \proj{proj0} grid is $B(|J^{\mathsf T}\boldsymbol\ell|)$ on the sky --- an effective beam that is elliptical and position-dependent, with axis ratio $s_1/s_2$ set by the same Jacobian, computable in closed form from quantities already in hand.
 It also answers 2025-06-10 (Marco), \emph{``Should I apply beam in \proj{proj5}? For the sims, it does not matter''}: it does matter, and the same expression says by how much.
-
-\vspace{2pt}
-\textbf{Two confounds worth keeping separate from the geometry.}
-Both produce high-$\ell$ artifacts that look projection-like, and neither is projection.
-The 2025-04-15 episode --- \emph{CMB flatsky power was off, and adding an apodized mask fixed it} --- is the estimator: a hard-edged window leaks power across the band, and $\langle W^2\rangle$-only normalization does not undo it (the same mechanism as the mask variants above).
-The 2025-12-15 $\ell_x\sim6000$ cut is mode removal: a deterministic multiplicative loss, sharp in $\ell_x$.
-The analytic curve discriminates against both, because only the geometry knows where the acoustic peaks are --- an estimator or masking artifact has no reason to dip at $\ell\simeq1450$ and rise into $\ell\simeq4000$, and the measured ratio does exactly that.
 
 \vspace{6pt}\hrule\vspace{3pt}
 {\footnotesize This builds on the 2020--21 study begun with Caterina Umilt\`a, who built the original NaMaster analysis including the measurements overlaid here, and Gil Holder, who advised that work.

@@ -140,7 +140,6 @@ def main():
         ell_m, ratio_m = CMOD.measured("", spec)
         report[spec] = (ell_m, ratio_m, ell_p, ratio_p)
 
-        ax.axvspan(RESAMPLING_L, 6000, color=BAND, alpha=0.13, lw=0, zorder=0)
         ax.axhline(1.0, color=PS.RULE, lw=0.7, zorder=0)
 
         ax.plot(ell_p, ratio_p, "-", color=MODEL, lw=1.9, zorder=3,
@@ -148,27 +147,11 @@ def main():
         ax.plot(ell_m, ratio_m, "o", color=DATA, ms=3.0, mew=0, zorder=4,
                 label="Crawford (cl_flatsky, 1500d masks)")
 
-        if spec == "ee":
-            ax.plot(ell_dp, ratio_dp, "--", color=OURS, lw=1.1, alpha=0.85,
-                    zorder=3, label="same model, our disk and band limit")
-            clean = ell_ours < SUSPECT_L
-            edge = (ell_ours >= SUSPECT_L) & (ell_ours <= BANDLIMIT_L)
-            ax.plot(ell_ours[clean], ratio_ours[clean], "D", color=OURS,
-                    ms=3.6, mew=0.9, mec=OURS, zorder=5,
-                    label="this work (NaMaster, 5 per cent sky disk)")
-            ax.plot(ell_ours[edge], ratio_ours[edge], "D", color="none",
-                    ms=3.6, mew=0.9, mec=OURS, zorder=5)
-            ax.axvline(BANDLIMIT_L, color=OURS, lw=0.7, ls=":", zorder=1)
-            ax.text(BANDLIMIT_L - 90, 0.98, "our band limit", rotation=90,
-                    ha="right", va="bottom", fontsize=6.8, color=OURS)
-
         ax.set_title(label, pad=5)
         ax.set_xlim(0, 6000)
         ax.set_xlabel(r"multipole $\ell$")
 
     axes[0].set_ylabel(r"$C_\ell(\mathrm{proj0})\,/\,C_\ell(\mathrm{proj5})$")
-    axes[0].text(5950, 1.02, "resampling\nregime", ha="right", va="bottom",
-                 fontsize=6.8, color="#8a5a1e")
     axes[1].legend(loc="upper left", handlelength=1.6, borderaxespad=0.3,
                    labelspacing=0.35)
 
