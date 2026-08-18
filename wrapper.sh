@@ -23,4 +23,21 @@ if [ -f lightcone_py.tar.gz ] && [ ! -d lcpy ]; then
 fi
 export PYTHONPATH=$PWD/lcpy${PYTHONPATH:+:$PYTHONPATH}
 
+# Staged upstream outputs. A remote job cannot be handed `results/...`
+# directly: `results` is a symlink to /sptlocal and condor refuses to transfer
+# symlinks to directories. lightcone therefore ships each upstream output as
+# a gzipped archive named `<universe>__<output_id>.tar.gz`, whose members are
+# already rooted at `results/<universe>/<output_id>/`. Unpacking here in the
+# job sandbox recreates exactly the relative path the recipe expects, so the
+# stage scripts need no notion of being on a worker.
+#
+# The `__` in the glob is load-bearing: it distinguishes these from the
+# project's own payload tarballs (spt3g_build.tar.gz, lightcone_py.tar.gz),
+# which are unpacked elsewhere and must not be touched here.
+shopt -s nullglob
+for staged in *__*.tar.gz; do
+    tar -xzf "$staged"
+done
+shopt -u nullglob
+
 exec snakemake "$@"
