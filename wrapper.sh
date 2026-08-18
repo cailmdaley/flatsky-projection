@@ -34,8 +34,15 @@ export PYTHONPATH=$PWD/lcpy${PYTHONPATH:+:$PYTHONPATH}
 # The `__` in the glob is load-bearing: it distinguishes these from the
 # project's own payload tarballs (spt3g_build.tar.gz, lightcone_py.tar.gz),
 # which are unpacked elsewhere and must not be touched here.
+#
+# Look in both places: condor's PreserveRelativePaths recreates a relative
+# input at its relative location, so an archive declared as
+# `.lightcone/stage/<...>` lands there rather than at the sandbox root. An
+# absolute one would land at the root by basename. Extraction happens with
+# the sandbox as CWD either way, which is what puts the members at
+# `results/<universe>/<output_id>/`.
 shopt -s nullglob
-for staged in *__*.tar.gz; do
+for staged in *__*.tar.gz .lightcone/stage/*__*.tar.gz; do
     tar -xzf "$staged"
 done
 shopt -u nullglob
