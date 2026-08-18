@@ -24,12 +24,16 @@
 
 \begin{document}
 
-\title{A Shear Law for $E \to B$ Leakage from Flat-Sky Map Projection}
+\title{Closed-Form Distortion of Projected Flat-Sky CMB Spectra}
 
 \author[0000-0002-3760-2086]{Cail Daley}
 \affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
 
-\CD{Author list pending: Caterina's permission call, Gil's role.}
+\author{Caterina Umilt\`a}
+\affiliation{\CD{Caterina's affiliation — confirm current/preferred; permission call still open.}}
+
+\author{Gil Holder}
+\affiliation{Department of Physics, University of Illinois, 1110 W. Green St., Urbana, IL 61801, USA}
 
 \begin{abstract}
 Ground-based CMB experiments estimate polarization power spectra on flat-sky grids, but the sphere does not flatten without distortion.
@@ -42,22 +46,7 @@ Two folk beliefs dissolve under the law.
 The conformal stereographic projection does not ``minimize'' leakage — its shear is identically zero, and what it measures is the pipeline's own $E \to B$ floor.
 And the agreement between cylindrical and BICEP-style projections seen on circular masks is an accident of mask symmetry: on the SPT 1500d field their predicted leakage differs by a factor of four.
 \CD{Final abstract numbers pending the $\ell \le 6000$ rerun; the high-$\ell$ arm (projected-grid resampling, the 1500d proj0 excess) gets a sentence here once those results land.}
-\CD{Drafts only --- the title and abstract above are unchanged. If we want the scalar result co-equal with the spin-2 law, the framing is ``the projection Jacobian moves power in every field; two laws, one geometry: convexity $\times$ slope$^2$ for scalars, $2\gsq$ basis misalignment for spin-2.'' Three candidates:
-
-\textbf{(A) Title:} \emph{Two Laws for Flat-Sky Map Projection: Power Transfer in Scalars and $E \to B$ Leakage in Polarization}.
-\emph{Abstract opening:} Ground-based CMB experiments estimate power spectra on flat-sky grids, but the sphere does not flatten without distortion.
-The local Jacobian of any projection shears the field, and that single quantity --- the shear $g = (s_1 - s_2)/(s_1 + s_2)$ built from the Jacobian's singular values --- fixes what happens to every field on the map.
-A scalar feels it through the curvature of its own spectrum, gaining a fractional power excess $\tfrac{1}{4} n(n-1)\gsq$ that reaches tens of percent on the Silk damping tail; a spin-two field feels it through the misalignment of the $E$/$B$ basis, leaking $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ with no spectral-slope dependence at all.
-
-\textbf{(B) Title:} \emph{One Geometry, Two Laws: What Flat-Sky Projection Does to Scalar and Polarized CMB Spectra}.
-\emph{Abstract opening:} The sphere does not flatten without distortion, and the distortion is not confined to polarization.
-We show that the shear of a projection's local Jacobian sets both of its spectral effects in closed form: an excess $\tfrac{1}{4}n(n-1)\gsq$ in scalar power, quadratic in shear but multiplied by the square of the spectral slope, and a leakage $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ from polarization $E$ into $B$.
-Neither coefficient is fitted; both follow from the singular values of the Jacobian averaged over the analysis footprint.
-
-\textbf{(C) Title:} \emph{The Projection Jacobian Moves Power: Closed-Form Distortion of Flat-Sky CMB Spectra}.
-\emph{Abstract opening:} Every flat-sky CMB analysis pays a geometric price, and it has a closed form.
-Decomposing a projection's local Jacobian into magnification and shear $g = (s_1 - s_2)/(s_1 + s_2)$, we derive two parameter-free laws from the same geometry: scalar power is lifted by $\tfrac{1}{4}n(n-1)\gsq$ through the convexity of the spectrum, an order-unity effect on the damping tail where the slope is steep, and polarization leaks $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ through the misalignment of the $E$/$B$ basis.
-The first depends on the sky spectrum, the second does not; both are computable from the projection definition before any data is taken.
+\CD{Title decided (Cail, 2026-08-17): short, direct, no ``law'' yet. The abstract still leads with the spin-2 result only; when the high-$\ell$ numbers land, rework it toward the co-equal framing --- e.g.\ ``Decomposing a projection's local Jacobian into magnification and shear $g = (s_1 - s_2)/(s_1 + s_2)$, we derive two parameter-free results from the same geometry: scalar power lifted by $\tfrac{1}{4}n(n-1)\gsq$ through spectral convexity, and polarization leaking $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ through basis misalignment; the first depends on the sky spectrum, the second does not; both are computable from the projection definition before any data is taken.''
 
 \textbf{Intro opener candidate} (replacing ``The CMB can be observed in total intensity\ldots''):
 ``A flat-sky CMB analysis begins by flattening the sphere, and the sphere does not flatten without distortion.
@@ -143,6 +132,21 @@ Three invariants exhaust the local geometry:
   \item a \textbf{shear} $g = (s_1 - s_2)/(s_1 + s_2)$, the anisotropic stretch, which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
 \end{itemize}
 The shear is scale-free by construction, as it must be: an overall dilation of the plane cannot leak $E$ into $B$.
+Figure~\ref{fig:invariants} shows $g$ and $\mu$ evaluated pixel by pixel relative to the sky, for the five projections used throughout this paper, over the field on which every result below is computed.
+
+\begin{figure}[htb!]
+  \centering
+  \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
+  \caption{
+    Local shear $g$ (top) and magnification $\mu$ (bottom) of each projection's Jacobian relative to the sky, evaluated on a common grid centred on the field centre $(\alpha, \delta) = (0\arcdeg, -56\arcdeg)$; the black contour marks $W = 0.5$ of the largest (10\%) apodized disk used in Section~\ref{sec:results}, the footprint the reader should focus on.
+    SFL's shear grows eastward, as $g \approx \tfrac12 \tan\lvert\delta_0\rvert$ times the east offset (Section~\ref{subsec:scalar}); SIN and ZEA shear similarly away from the field centre but in every direction, being zenithal rather than cylindrical.
+    STG is conformal, so its shear is zero to within numerical precision across the whole panel: $\mu$ carries its entire distortion instead, growing radially away from the tangent point.
+    ZEA and SFL are both equal-area, so $\mu \equiv 1$ up to floating-point error everywhere shown.
+    BICEP's cylindrical projection fixes its $x$-scale at the reference declination, so $\mu$ grows monotonically toward the pole and reaches several times unity near the southward edge of the footprint, formally diverging where the largest disk crosses the celestial pole itself --- the same singularity documented as the reason the 10\% mask is unusable for SFL and BICEP spectra (Section~\ref{subsec:disks}).
+  }
+  \label{fig:invariants}
+\end{figure}
+
 We take the scalar case first, because it needs none of the polarization machinery and already shows the Jacobian moving power at the tens-of-percent level, and then show that the spin-two law is the same geometry felt through a second channel.
 
 \subsection{The scalar baseline} \label{subsec:scalar}
