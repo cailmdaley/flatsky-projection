@@ -71,7 +71,7 @@ For polarization there is more: because $Q$ and $U$ are defined relative to cele
 The shear cannot be undone by any rotation: a non-conformal projection does not preserve the \SI{90}{\degree} angle between north and east, so no single angle aligns both.
 The surviving shear is the whole effect, and Section~\ref{subsec:derivation} shows that it sets the leakage exactly.
 
-The mechanism itself is old, and we say so happily rather than reluctantly.
+The mechanism itself is old.
 Remapping a spin-two field by a deflection whose Jacobian has a trace-free part converts $E$ into $B$: that is CMB lensing, and the flat-sky $E \to B$ kernel has been standard since \citet{lewis06} and references therein.
 What is new here is not the algebra but the source of the shear.
 Gravitational shear is stochastic and must be reconstructed or marginalized over; cartographic shear is written down in closed form from the projection definition \citep{calabretta02} before any data is taken.
@@ -253,7 +253,7 @@ Three qualifications delimit the law's validity, and each is testable.
 First, it is a local (adiabatic) result, valid when the shear varies slowly compared to the mode.
 The expansion of Equation~\eqref{eq:lensing_kernel} fixes the order at which locality fails: the term linear in $L/\ell$ vanishes by parity in the angular integral, so for a shear varying on scale $L$ the leading correction is $\order{(\ell L)^{-2}}$, not $\order{(\ell L)^{-1}}$.
 Numerically the exact angular integral exceeds its $L \ll \ell$ limit by $1 + 0.50\,(L/\ell)^2$, i.e.\ 0.5\% at $L/\ell = 0.1$ — sub-percent for every configuration in this paper.
-Real footprints also carry mask-boundary corrections, which are a separate matter and are not described by this expansion.
+Real footprints also carry mask-boundary corrections, a separate matter this expansion does not describe.
 Second, $W^2$ is the \textit{effective} weight rather than the derived one: the pseudo-$C_\ell$ estimator weights sky area by $W^2 \abs{\det J}^2$, but for a falling spectrum the $\abs{\det J}$ factors are nearly cancelled by the spectrum's response to the same stretch, leaving $W^2$; the residue of that near-cancellation is exactly the band-dependent structure of Section~\ref{subsec:bandbyband}.
 Third, the law describes pipelines that flatten by rotation only — resampling $Q$ and $U$ in the sky basis, then rotating, as \texttt{spt3g\_software} and comparable pipelines do; a pipeline that parallel-transported the polarization tensor through the projection would obey a different law.
 The lensing correspondence sharpens this qualification and names its failure mode.
@@ -267,8 +267,8 @@ The measured leakage is not exactly flat in $\ell$, and the departure is itself 
 
 \subsection{What the geometry does not explain} \label{subsec:residuals}
 
-The local linear map accounts for the projection and nothing else, and two residual mechanisms sit outside it.
-Both are properties of the pipeline rather than of the map, and separating them from the geometry is what makes the comparisons in Section~\ref{sec:results} interpretable.
+The local linear map accounts for the projection and nothing else; two residual mechanisms sit outside it.
+Both are properties of the pipeline, not the map — separating them from the geometry is what makes the comparisons in Section~\ref{sec:results} interpretable.
 
 The first is resampling.
 Reading the sky onto a grid with a finite interpolation kernel aliases power, and this term is additive rather than multiplicative, grows with $\ell$ toward the Nyquist scale, and depends on the kernel and pixel size rather than on $g$ or $\mu$.
@@ -277,7 +277,7 @@ Because the geometric term turns over while the resampling term keeps rising, th
 
 The second is mask-induced mode coupling, which is a statement about the estimator and not about the projection.
 An estimator that corrects only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands; a purified pseudo-$C_\ell$ estimator with an apodized mask will not.
-The distinction matters because it is the natural competing explanation for any geometric shortfall, and it makes a different prediction: it should appear on hard-edged or surgically cut masks and be absent on smoothly apodized ones of the same area.
+The distinction matters: it is the natural alternative explanation for any geometric shortfall, and it makes a different prediction — it should appear on hard-edged or surgically cut masks and be absent on smoothly apodized ones of the same area.
 
 
 
@@ -425,7 +425,7 @@ Pixelization-free and projection-free are separate properties, and only the seco
 Finally, the distortion-field basis of Equation~\eqref{eq:hhz} is incomplete in a way this paper makes concrete.
 Its eleven fields contain no trace-free, position-dependent remapping of the polarization field, and the natural completion is a shear remapping field --- the symmetric trace-free part of a local deflection Jacobian --- together with its antisymmetric curl partner, the residual left by any flattening angle other than the polar one (Section~\ref{subsec:derivation}).
 For a cartographic source both entries are deterministic and computable in advance from the projection definition, so they enter a systematics budget as known amplitudes rather than as nuisance fields to be constrained; for the per-experiment distortion bases fit to real data, where the same eleven-field parameterization is deployed \citep{bk17}, the shear entry is directly budgetable alongside the existing calibration, rotation, and pointing terms.
-Its omission is why a deterministic effect of the size derived here has gone unaccounted for.
+Its omission is why an effect this size has gone unbudgeted.
 
 \clearpage
 
