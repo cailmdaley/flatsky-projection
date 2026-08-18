@@ -42,14 +42,37 @@ Two folk beliefs dissolve under the law.
 The conformal stereographic projection does not ``minimize'' leakage — its shear is identically zero, and what it measures is the pipeline's own $E \to B$ floor.
 And the agreement between cylindrical and BICEP-style projections seen on circular masks is an accident of mask symmetry: on the SPT 1500d field their predicted leakage differs by a factor of four.
 \CD{Final abstract numbers pending the $\ell \le 6000$ rerun; the high-$\ell$ arm (projected-grid resampling, the 1500d proj0 excess) gets a sentence here once those results land.}
+\CD{Drafts only --- the title and abstract above are unchanged. If we want the scalar result co-equal with the spin-2 law, the framing is ``the projection Jacobian moves power in every field; two laws, one geometry: convexity $\times$ slope$^2$ for scalars, $2\gsq$ basis misalignment for spin-2.'' Three candidates:
+
+\textbf{(A) Title:} \emph{Two Laws for Flat-Sky Map Projection: Power Transfer in Scalars and $E \to B$ Leakage in Polarization}.
+\emph{Abstract opening:} Ground-based CMB experiments estimate power spectra on flat-sky grids, but the sphere does not flatten without distortion.
+The local Jacobian of any projection shears the field, and that single quantity --- the shear $g = (s_1 - s_2)/(s_1 + s_2)$ built from the Jacobian's singular values --- fixes what happens to every field on the map.
+A scalar feels it through the curvature of its own spectrum, gaining a fractional power excess $\tfrac{1}{4} n(n-1)\gsq$ that reaches tens of percent on the Silk damping tail; a spin-two field feels it through the misalignment of the $E$/$B$ basis, leaking $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ with no spectral-slope dependence at all.
+
+\textbf{(B) Title:} \emph{One Geometry, Two Laws: What Flat-Sky Projection Does to Scalar and Polarized CMB Spectra}.
+\emph{Abstract opening:} The sphere does not flatten without distortion, and the distortion is not confined to polarization.
+We show that the shear of a projection's local Jacobian sets both of its spectral effects in closed form: an excess $\tfrac{1}{4}n(n-1)\gsq$ in scalar power, quadratic in shear but multiplied by the square of the spectral slope, and a leakage $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ from polarization $E$ into $B$.
+Neither coefficient is fitted; both follow from the singular values of the Jacobian averaged over the analysis footprint.
+
+\textbf{(C) Title:} \emph{The Projection Jacobian Moves Power: Closed-Form Distortion of Flat-Sky CMB Spectra}.
+\emph{Abstract opening:} Every flat-sky CMB analysis pays a geometric price, and it has a closed form.
+Decomposing a projection's local Jacobian into magnification and shear $g = (s_1 - s_2)/(s_1 + s_2)$, we derive two parameter-free laws from the same geometry: scalar power is lifted by $\tfrac{1}{4}n(n-1)\gsq$ through the convexity of the spectrum, an order-unity effect on the damping tail where the slope is steep, and polarization leaks $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ through the misalignment of the $E$/$B$ basis.
+The first depends on the sky spectrum, the second does not; both are computable from the projection definition before any data is taken.
+
+\textbf{Intro opener candidate} (replacing ``The CMB can be observed in total intensity\ldots''):
+``A flat-sky CMB analysis begins by flattening the sphere, and the sphere does not flatten without distortion.
+The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point; the map that results is not the sky but a sheared image of it, and every spectrum measured on that map inherits the shear.
+For the temperature field this moves power along $\ell$.
+For polarization it does something worse: it converts $E$-mode power into $B$, the observable that carries the tensor-to-scalar ratio $r$ and the lensing signal that delensing must remove, and does so at a level that competes with both.''
+}
 \end{abstract}
 
 
 \section{Introduction} \label{sec:intro}
 
 The CMB can be observed in total intensity $T$, or in polarization via Stokes $Q$ and $U$, for a total of three distinct observable fields.
-It is often more convenient to decompose the spin-two $Q$ and $U$ polarization field into a curl-free $E$ component and divergence-free $B$ component.
-Scalar density perturbations in the primordial plasma generate only $E$-modes, so any $B$-mode power in the primordial CMB is expected to come from tensor perturbations sourced by primordial gravitational waves \citep{zal01}.
+It is often more convenient to decompose the spin-two $Q$ and $U$ polarization field into a curl-free $E$ component and divergence-free $B$ component \citep{zal01}.
+Scalar density perturbations in the primordial plasma generate only $E$-modes, so any $B$-mode power in the primordial CMB is expected to come from tensor perturbations sourced by primordial gravitational waves \citep{seljak97, kamionkowski97}.
 A detection of such gravitational waves, whose amplitude is parameterized by the tensor-to-scalar ratio $r$, would confirm one of the main predictions of inflation; the tightest constraint to date comes from \citet{bicep18}.
 Gravitational lensing by large-scale structure converts $E$ into $B$ along the line of sight, so any primordial $B$-mode signal is contaminated by lensing $B$-modes, and removing them (``delensing'') is central to future constraints on $r$.
 Every instrumental or analysis effect that converts $E$ into $B$ competes with these signals, and must be understood at the level of the experiment's noise floor.
@@ -128,19 +151,19 @@ Consider the same scalar sky rendered on two flat grids --- in practice, the sam
 The only operator acting is the composite Jacobian $A = J_2 J_1^{-1}$, and the ratio of the two measured spectra follows from Equation~\eqref{eq:scalar_remap}.
 Because pseudo-$C_\ell$ estimators bin in annuli of $\abs{\vbell}$, the direction of $\vbell$ is averaged over, and with $s_{1,2}$ now the singular values of $A$,
 \begin{equation} \label{eq:scalar_ratio}
-  \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, r(\psi))}{C(\ell)}}_{\psi,\, W^2},
-  \qquad r(\psi) = \sqrt{s_1^2 \cos^2\psi + s_2^2 \sin^2\psi},
+  \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, r(\chi))}{C(\ell)}}_{\chi,\, W^2},
+  \qquad r(\chi) = \sqrt{s_1^2 \cos^2\chi + s_2^2 \sin^2\chi},
 \end{equation}
-where $\psi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight.
+where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight.
 Equation~\eqref{eq:scalar_ratio} has no free parameters: $s_1$, $s_2$ and the footprint are properties of the two projections, and $C(\ell)$ is the input spectrum.
 
 The structure of the effect is clearest for a locally power-law spectrum $C \propto \ell^{n}$, for which $C(\ell r)/C(\ell) = r^{n}$.
-Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $r(\psi) \simeq \bar{s}(1 + g\cos 2\psi)$, and taking $\mu = 1$ for the moment,
+Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $r(\chi) \simeq \bar{s}(1 + g\cos 2\chi)$, and taking $\mu = 1$ for the moment,
 \begin{equation} \label{eq:scalar_expansion}
-  \frac{P_2}{P_1} = \expval{(1 + g\cos 2\psi)^{n}}_\psi = 1 + \frac{n(n-1)}{4}\gsq + \order{g^4}.
+  \frac{P_2}{P_1} = \expval{(1 + g\cos 2\chi)^{n}}_\chi = 1 + \frac{n(n-1)}{4}\gsq + \order{g^4}.
 \end{equation}
 Two features of Equation~\eqref{eq:scalar_expansion} carry the whole scalar story.
-First, the term linear in $g$ vanishes, because $\expval{\cos 2\psi}_\psi = 0$: a scalar cannot feel shear at first order.
+First, the term linear in $g$ vanishes, because $\expval{\cos 2\chi}_\chi = 0$: a scalar cannot feel shear at first order.
 The common intuition that shear is a polarization problem is correct at first order and wrong at second.
 Second, the second-order coefficient is not the spectral slope but the \textit{square} of it, $n(n-1)/4$.
 On the Silk damping tail the slope is steep — $n = \dd \ln C / \dd \ln \ell$ runs from about $-7$ to $-9.4$ over $3000 < \ell < 4500$ for the lensed Planck 2018 $TT$ spectrum — so $n(n-1)/4 \approx 14$ to $24$.
@@ -148,14 +171,14 @@ A shear of $\gsq \sim 0.04$, which is what a wide field at $\delta_0 = \SI{-56}{
 A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
 
 The sign is fixed, and it is Jensen's inequality.
-The damping tail is convex in $\ln \ell$, and $r(\psi)$ is symmetric about unity, so azimuthally averaging $C(\ell r)$ over the stretch always \textit{lifts} the answer: the stretched directions lose a little power and the compressed directions gain more.
+The damping tail is convex in $\ln \ell$, and $r(\chi)$ is symmetric about unity, so azimuthally averaging $C(\ell r)$ over the stretch always \textit{lifts} the answer: the stretched directions lose a little power and the compressed directions gain more.
 The excess is quadratic in $g$, so it is blind to the sign of the shear and survives any mask symmetry.
 Magnification moves the other way and independently: for $\mu \neq 1$ the isotropic dilation shifts a falling spectrum monotonically, removing power when $\mu > 1$.
 The two invariants are therefore separable in practice.
 Comparing two equal-area projections isolates the shear exactly, since $\mu \equiv 1$; the conformal stereographic projection is the complementary null, with $g \equiv 0$ and pure magnification, and moves the ratio in the opposite direction.
 
 The expansion in Equation~\eqref{eq:scalar_expansion} is only a guide to the mechanism, not the model we use.
-On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell r)/C(\ell) = \exp(-2a\ell^2 g\cos 2\psi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ — growing exponentially in $g$ rather than quadratically.
+On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell r)/C(\ell) = \exp(-2a\ell^2 g\cos 2\chi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ — growing exponentially in $g$ rather than quadratically.
 At $\ell \sim 4000$ the argument is of order unity and the series in $g^2$ is no longer small, so all numerical predictions below evaluate Equation~\eqref{eq:scalar_ratio} directly with the true spectrum.
 The signature of doing so is that the prediction inherits the acoustic structure of $C(\ell)$: because the coefficient tracks the \textit{local} slope, the predicted ratio dips near an acoustic peak, where $n$ is small and the wiggle-smoothing changes sign, and peaks where the tail is steepest.
 Matching that shape is a much sharper test than matching an amplitude, since no mask-coupling or pixel-window explanation knows where the acoustic peaks are.
@@ -258,7 +281,7 @@ The distinction matters because it is the natural competing explanation for any 
 \section{Simulations and Pipeline} \label{sec:methods}
 
 We test the law against simulations that contain no $B$-modes by construction, so that every $B$-mode bandpower recovered is leakage.
-The inputs are 20 unlensed HEALPix \citep{gorski05} realizations of the Planck 2018 best-fit cosmology at $N_{\rm side} = 8192$.
+The inputs are 20 unlensed HEALPix \citep{gorski05} realizations of the Planck 2018 best-fit cosmology \citep{planck18} at $N_{\rm side} = 8192$.
 Each realization is transformed to spherical harmonics band-limited at $\ell_{\rm max} = 4000$, synthesized onto an intermediate $N_{\rm side} = 4096$ grid (lossless below the band limit), and projected to a flat-sky grid of \SI{2}{\arcmin} pixels via bilinear interpolation with $8\times$ oversampling, centered on $(\SI{0}{\degree}, \SI{-56}{\degree})$.
 \CD{The high-$\ell$ rerun pushes this chain to $\ell_{\rm max} = 6000$ with an $N_{\rm side} = 8192$ intermediate; update when those results replace the 2021 set.}
 
@@ -397,6 +420,11 @@ Because the sum runs over spherical harmonics evaluated at true sky positions, t
 The immunity comes from staying on the sphere, not from avoiding pixels.
 Any variant that first flattens the sky --- resampling $Q$ and $U$ at catalogue positions in a projected plane, or estimating flat-sky Fourier modes from irregular samples --- reintroduces the same Jacobian and obeys the same law, since Equation~\eqref{eq:law_footprint} depends on the projection alone and never on how the plane is sampled.
 Pixelization-free and projection-free are separate properties, and only the second removes the shear.
+
+Finally, the distortion-field basis of Equation~\eqref{eq:hhz} is incomplete in a way this paper makes concrete.
+Its eleven fields contain no trace-free, position-dependent remapping of the polarization field, and the natural completion is a shear remapping field --- the symmetric trace-free part of a local deflection Jacobian --- together with its antisymmetric curl partner, the residual left by any flattening angle other than the polar one (Section~\ref{subsec:derivation}).
+For a cartographic source both entries are deterministic and computable in advance from the projection definition, so they enter a systematics budget as known amplitudes rather than as nuisance fields to be constrained; for the per-experiment distortion bases fit to real data, where the same eleven-field parameterization is deployed \citep{bk17}, the shear entry is directly budgetable alongside the existing calibration, rotation, and pointing terms.
+Its omission is why a deterministic effect of the size derived here has gone unaccounted for.
 
 \clearpage
 
