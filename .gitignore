@@ -56,3 +56,6 @@ grid/logs/
 grid/lists/
 grid/launcher.log
 /results
+
+# Staged upstream archives for grid execution (lightcone writes these).
+.lightcone/stage/

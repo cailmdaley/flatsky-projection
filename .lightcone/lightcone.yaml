@@ -5,4 +5,3 @@ remote_payload:
   - src
   - spt3g_build.tar.gz
   - lightcone_py.tar.gz
-remote_stage_dir: /sptlocal/user/cailmdaley/pol_project/stage
