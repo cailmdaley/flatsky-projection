@@ -27,7 +27,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Circle
+from matplotlib.patches import Circle, Rectangle
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "figures"
@@ -37,6 +37,12 @@ MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
 PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
+# Paper-wide projection identity (dataviz skill's validated categorical
+# palette, slots 1-5 in SFL/SIN/STG/ZEA/BICEP order; passes adjacent-pair
+# CVD + normal-vision floors on the light surface). Reconcile against
+# analysis/plot_projection_spectra.py's COLORS, which predates this set.
+PROJ_COLOR = {"ProjSFL": "#2a78d6", "ProjSIN": "#eb6834", "ProjSTG": "#1baf7a",
+              "ProjZEA": "#eda100", "ProjBICEP": "#e87ba4"}
 # From the 2021 config: disk radii (rad) and their nominal sky percentages.
 DISK_RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]
 DISK_PERC = [0.75, 1.00, 1.25, 1.5, 3.0, 5.0, 10.0]
@@ -113,9 +119,9 @@ def main():
     bounds = np.arange(NMASK + 1) - 0.5
     norm = BoundaryNorm(bounds, NMASK)
 
-    fig, axes = plt.subplots(1, 5, figsize=(7.1, 1.8), sharex=True, sharey=True,
+    fig, axes = plt.subplots(1, 5, figsize=(7.1, 1.85), sharex=True, sharey=True,
                              gridspec_kw=dict(wspace=0.06, left=0.055, right=0.9,
-                                              bottom=0.20, top=0.90))
+                                              bottom=0.195, top=0.84))
     lim = 55.0
 
     for i, (ax, proj) in enumerate(zip(axes, PROJS)):
@@ -139,7 +145,10 @@ def main():
         ax.set_yticks([-40, -20, 0, 20, 40])
         ax.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
         ax.tick_params(length=2.0, pad=1.5)
-        ax.set_title(LABELS[proj], pad=3)
+        ax.set_title(LABELS[proj], pad=6, fontweight="bold")
+        ax.add_patch(Rectangle((0.0, 1.0), 1.0, 0.02, transform=ax.transAxes,
+                                facecolor=PROJ_COLOR[proj], edgecolor="none",
+                                clip_on=False, zorder=10))
         if i > 0:
             ax.tick_params(labelleft=False)
 
