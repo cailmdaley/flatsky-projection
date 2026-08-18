@@ -19,6 +19,9 @@ fi
 
 if [ -d build ] && [ ! -e /home/cailmdaley/code/python/spt3g_software/build/env-shell.sh ]; then
     export OS_ARCH=RHEL_9_x86_64
+    # setup.sh emits csh `setenv` lines when $SHELL looks like tcsh/csh, and
+    # OSPool workers do not agree on $SHELL. Pin it before the eval.
+    export SHELL=/bin/bash
     eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
     export SPT3G_SOFTWARE_PATH=$PWD
     export SPT3G_SOFTWARE_BUILD_PATH=$PWD/build
