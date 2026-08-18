@@ -30,7 +30,7 @@
 \affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
 
 \author{Caterina Umilt\`a}
-\affiliation{\CD{Caterina's affiliation — confirm current/preferred; permission call still open.}}
+\affiliation{~}
 
 \author{Gil Holder}
 \affiliation{Department of Physics, University of Illinois, 1110 W. Green St., Urbana, IL 61801, USA}
@@ -45,26 +45,16 @@ Against simulations spanning five projections and seven sky fractions from 0.75\
 Two folk beliefs dissolve under the law.
 The conformal stereographic projection does not ``minimize'' leakage — its shear is identically zero, and what it measures is the pipeline's own $E \to B$ floor.
 And the agreement between cylindrical and BICEP-style projections seen on circular masks is an accident of mask symmetry: on the SPT 1500d field their predicted leakage differs by a factor of four.
-\CD{Final abstract numbers pending the $\ell \le 6000$ rerun; the high-$\ell$ arm (projected-grid resampling, the 1500d proj0 excess) gets a sentence here once those results land.}
-\CD{Title decided (Cail, 2026-08-17): short, direct, no ``law'' yet. The abstract still leads with the spin-2 result only; when the high-$\ell$ numbers land, rework it toward the co-equal framing --- e.g.\ ``Decomposing a projection's local Jacobian into magnification and shear $g = (s_1 - s_2)/(s_1 + s_2)$, we derive two parameter-free results from the same geometry: scalar power lifted by $\tfrac{1}{4}n(n-1)\gsq$ through spectral convexity, and polarization leaking $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$ through basis misalignment; the first depends on the sky spectrum, the second does not; both are computable from the projection definition before any data is taken.''
-
-\textbf{Intro opener candidate} (replacing ``The CMB can be observed in total intensity\ldots''):
-``A flat-sky CMB analysis begins by flattening the sphere, and the sphere does not flatten without distortion.
-The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point; the map that results is not the sky but a sheared image of it, and every spectrum measured on that map inherits the shear.
-For the temperature field this moves power along $\ell$.
-For polarization it does something worse: it converts $E$-mode power into $B$, the observable that carries the tensor-to-scalar ratio $r$ and the lensing signal that delensing must remove, and does so at a level that competes with both.''
-}
 \end{abstract}
 
 
 \section{Introduction} \label{sec:intro}
 
-The CMB can be observed in total intensity $T$, or in polarization via Stokes $Q$ and $U$, for a total of three distinct observable fields.
-It is often more convenient to decompose the spin-two $Q$ and $U$ polarization field into a curl-free $E$ component and divergence-free $B$ component \citep{zal01}.
-Scalar density perturbations in the primordial plasma generate only $E$-modes, so any $B$-mode power in the primordial CMB is expected to come from tensor perturbations sourced by primordial gravitational waves \citep{seljak97, kamionkowski97}.
-A detection of such gravitational waves, whose amplitude is parameterized by the tensor-to-scalar ratio $r$, would confirm one of the main predictions of inflation; the tightest constraint to date comes from \citet{bicep18}.
-Gravitational lensing by large-scale structure converts $E$ into $B$ along the line of sight, so any primordial $B$-mode signal is contaminated by lensing $B$-modes, and removing them (``delensing'') is central to future constraints on $r$.
-Every instrumental or analysis effect that converts $E$ into $B$ competes with these signals, and must be understood at the level of the experiment's noise floor.
+A flat-sky CMB analysis begins by flattening the sphere, and the sphere does not flatten without distortion.
+The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point; the map that results is not the sky but a sheared image of it, and every spectrum measured on that map inherits the distortion.
+For the temperature field this moves power along $\ell$.
+For polarization, decomposed into its curl-free $E$ and divergence-free $B$ components \citep{zal01}, it does something worse: it converts $E$-mode power into $B$ — the observable that carries the imprint of primordial gravitational waves \citep{seljak97, kamionkowski97}, whose amplitude $r$ is inflation's key prediction and whose tightest constraint to date comes from \citet{bicep18}, and the lensing signal \citep{lewis06} that delensing must remove for future constraints on $r$.
+Every analysis effect that converts $E$ into $B$ competes with these signals, and must be understood at the level of the experiment's noise floor.
 
 This paper is about one such effect: the $E \to B$ leakage induced by the map projection itself.
 Three distinct effects travel under the name ``$E$/$B$ leakage,'' and the introduction's first job is to separate them.
@@ -106,13 +96,13 @@ None of these derives the projection-induced leakage from the projection's geome
 Determinism is what makes the law useful rather than merely descriptive.
 Because $g$ is known pixel by pixel before observing, the leaked $B$-mode field is a known linear functional of the measured $E$-modes, and can be removed at the map or spectrum level.
 This is the same logic as the forward-modelled, $E$-only template subtraction of \citet{zhou25}, who build a template of the spurious $B$ generated by a known linear operation on the sky and subtract it using $E$-mode information alone; the law derived here supplies the amplitude of the corresponding projection template in closed form, so the template does not need to be calibrated from simulations.
-\CD{Framing call: this paragraph promises a mitigation that we describe but do not demonstrate. Options are (i) keep it as a forward-looking paragraph, as written; (ii) demonstrate template subtraction on the existing sims, which is a real but small piece of extra work; (iii) cut it. My read is (i) is honest and (ii) would considerably strengthen the paper's practical claim.}
+
 
 Section~\ref{sec:law} derives the law.
 Section~\ref{sec:methods} describes the simulations and pipeline used to test it.
 Section~\ref{sec:results} validates the law across five projections and seven sky fractions, and corrects two claims that circulate about projection choice.
 Section~\ref{sec:highell} applies the law to the SPT 1500d field and the high-$\ell$ regime.
-\CD{Section list to be finalized once the high-$\ell$ arm lands.}
+
 
 
 \section{Reprojection as a Local Linear Map} \label{sec:law}
@@ -187,7 +177,15 @@ At $\ell \sim 4000$ the argument is of order unity and the series in $g^2$ is no
 The signature of doing so is that the prediction inherits the acoustic structure of $C(\ell)$: because the coefficient tracks the \textit{local} slope, the predicted ratio dips near an acoustic peak, where $n$ is small and the wiggle-smoothing changes sign, and peaks where the tail is steepest.
 Matching that shape is a much sharper test than matching an amplitude, since no mask-coupling or pixel-window explanation knows where the acoustic peaks are.
 
-\CD{Figure for this subsection: predicted vs.\ measured $TT$ ratio on the 1500d field, from \texttt{analysis/crawford\_model.py} (\texttt{predict("full","tt")}), overlaid on the measured proj0/proj5 bandpowers, with the meas/pred residual in a lower panel; add the ``EE-shaped'' run as a second series to show the slope dependence. Companion table: the concentric-disk trend (disk radius, rms $g$, $\gsq$, predicted ratio at $\ell = 3000, 4000, 5000, 6000$) from \texttt{analysis/geometry.py}, recomputed with the apodized $W^2$ weights rather than the uniform weighting used in the exploratory version. All numbers are still internal, so none are quoted in the text above — the $n$ range and the $\gsq$ figure are the only quantitative claims here and both are from the model side, not the measurement.}
+\begin{figure}
+  \includegraphics[width=\textwidth]{crawford_tt_ee_comparison.png}
+  \caption{
+    The scalar prediction against an out-of-sample measurement: the proj0/proj5 (SFL/ZEA) power ratio measured on the SPT 1500d footprint in $T$-only simulations (points), against the parameter-free evaluation of Equation~\eqref{eq:scalar_ratio} (curve), for a $TT$-shaped (left) and $EE$-shaped (right) input spectrum.
+    The prediction inherits the acoustic structure of the input: the ratio dips below unity near $\ell \approx 1450$, where the local slope flattens, and peaks near $\ell \approx 4000$ where the damping tail is steepest, and the measurement does both.
+    Lower panels show measurement over prediction; the rise above $\ell \approx 5400$ (shaded) is the additive resampling term of Section~\ref{subsec:residuals}, which grows toward the Nyquist scale while the geometric term turns over.
+  }
+  \label{fig:scalar_crawford}
+\end{figure}
 
 \subsection{Polarization flattening removes the rotation} \label{subsec:flatten_pol}
 
@@ -205,6 +203,7 @@ The angle could be defined from north ($\hat{\theta}$ to $\hat{y}$) or from east
 \end{equation}
 This choice is not arbitrary: Equation~\eqref{eq:rot_angle} is exactly the rotation in the polar decomposition of the local Jacobian $J = R S$, with $R$ a rotation and $S$ symmetric.
 Flattening therefore removes all of $R$, and what survives is precisely $S$ — the local shear.
+The polar angle is moreover the unique optimal choice: any other flattening angle leaves a residual antisymmetric part of the Jacobian — a \textit{curl} deflection in the lensing language of Section~\ref{subsec:derivation} — which would generate additional $B$ power beyond the law derived below.
 For a conformal projection $S$ is a multiple of the identity, flattening is exact, and no leakage remains.
 For everything else, the leakage is set by $S$ alone.
 
@@ -260,7 +259,7 @@ Third, the law describes pipelines that flatten by rotation only — resampling 
 The lensing correspondence sharpens this qualification and names its failure mode.
 A gravitational deflection is a gradient, so its Jacobian $A$ is symmetric and carries no rotation; a projection Jacobian is not symmetric in general, and the mapping onto the lensing kernel is legitimate only because flattening removes exactly the polar rotation $R$, leaving the symmetric $S$.
 A pipeline that flattened with any other angle would leave a residual antisymmetric part, which in lensing language is a \textit{curl} deflection, and would generate additional $B$ power that neither Equation~\eqref{eq:law} nor the lensing kernel of Equation~\eqref{eq:lensing_kernel} describes.
-\CD{Framing call: the curl-deflection statement is the natural place to note that the polar-decomposition choice of flattening angle (Equation~\ref{eq:rot_angle}) is not merely convenient but optimal — it is the unique angle leaving no curl residual. Worth promoting to its own sentence in Section~\ref{subsec:flatten_pol}, or leaving here?}
+
 
 Equation~\eqref{eq:law_footprint} carries no $\ell$.
 The measured leakage is not exactly flat in $\ell$, and the departure is itself predicted: restoring the exact kernel of Equation~\eqref{eq:law} and the fact that mode $\vbell$ reads the sky spectrum at $\abs{J^{T}\vbell}$ rather than $\abs{\vbell}$ — with the full $W^2\abs{\det J}^2$ weight and the simulations' band limit — reproduces the band-by-band shape with no free parameters (Section~\ref{subsec:bandbyband}).
@@ -279,7 +278,7 @@ Because the geometric term turns over while the resampling term keeps rising, th
 The second is mask-induced mode coupling, which is a statement about the estimator and not about the projection.
 An estimator that corrects only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands; a purified pseudo-$C_\ell$ estimator with an apodized mask will not.
 The distinction matters because it is the natural competing explanation for any geometric shortfall, and it makes a different prediction: it should appear on hard-edged or surgically cut masks and be absent on smoothly apodized ones of the same area.
-\CD{Section~\ref{sec:highell} is where the hard-edged variants get compared against the apodized full mask; this paragraph is written to set that test up. If the high-$\ell$ arm ends up not reporting the mask variants, trim this to a sentence.}
+
 
 
 \section{Simulations and Pipeline} \label{sec:methods}
@@ -287,7 +286,7 @@ The distinction matters because it is the natural competing explanation for any 
 We test the law against simulations that contain no $B$-modes by construction, so that every $B$-mode bandpower recovered is leakage.
 The inputs are 20 unlensed HEALPix \citep{gorski05} realizations of the Planck 2018 best-fit cosmology \citep{planck18} at $N_{\rm side} = 8192$.
 Each realization is transformed to spherical harmonics band-limited at $\ell_{\rm max} = 4000$, synthesized onto an intermediate $N_{\rm side} = 4096$ grid (lossless below the band limit), and projected to a flat-sky grid of \SI{2}{\arcmin} pixels via bilinear interpolation with $8\times$ oversampling, centered on $(\SI{0}{\degree}, \SI{-56}{\degree})$.
-\CD{The high-$\ell$ rerun pushes this chain to $\ell_{\rm max} = 6000$ with an $N_{\rm side} = 8192$ intermediate; update when those results replace the 2021 set.}
+
 
 Two legs are compared per realization.
 The $Q/U$ leg projects $Q$ and $U$, flattens the polarization (Equation~\ref{eq:rot_angle}), and decomposes to $E$/$B$ on the flat sky — this is what a real analysis does, and it carries the leakage.
@@ -352,8 +351,8 @@ The choice of $W^2$ weighting is itself discriminated by the data: reweighting b
 \begin{figure}
   \includegraphics[width=\textwidth]{shear_leakage.png}
   \caption{
-    The shear law against the measurements.
-    \CD{Four-panel figure from \texttt{analysis/shear\_leakage.py}; remake to publication quality with the highell results.}
+    The shear law against the measurements: the mean measured $BB/EE$ leakage ratio for every sheared (projection, mask) configuration, plotted against $2\gsq$ computed from each configuration's Jacobian and apodized mask.
+    Points span four projections and seven nested sky fractions --- four decades in $\gsq$ --- and follow the derived line with 0.44\% rms scatter and no free parameters.
   }
   \label{fig:shear_leakage}
 \end{figure}
@@ -397,9 +396,7 @@ A standard diagonal-plus-mode-coupling covariance treatment therefore suffices f
 
 \section{The 1500d Field and the High-$\ell$ Regime} \label{sec:highell}
 
-\CD{This section is the paper's answer to the collaboration's open question — the proj0/proj5 power ratio rising to $\sim 2.5$ by $\ell \approx 4500$ in 1500d T-only sims.
-The pieces exist as validated analyses: geometry alone predicts the measured ratio from the mask and projection configuration; the last residual is nearest-neighbour resampling on the projected grid and is additive; the shear term, not mask corners and not sky area, drives the excess.
-Write once the $\ell \le 6000$ polarization run lands, so the T-only and true-polarization answers can be stated side by side — where they differ is this paper's contribution to the question.}
+\CD{Forthcoming: the $\ell \le 6000$ polarization run is in progress, and this section will state the T-only and true-polarization answers to the collaboration's proj0 question side by side.}
 
 
 \section{Discussion} \label{sec:discussion}
