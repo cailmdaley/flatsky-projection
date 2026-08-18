@@ -167,7 +167,7 @@ Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $r(\chi) = \bar{s}\sqrt{1 + 2g\cos
 with $\gsq \equiv \expval{g^2}_{\chi, W^2}$ the same footprint-and-mode average defined below Equation~\eqref{eq:scalar_ratio}, written as a bare macro from here on.
 Two features of Equation~\eqref{eq:scalar_expansion} carry the whole scalar story.
 First, the term linear in $g$ vanishes, because $\expval{\cos 2\chi}_\chi = 0$: a scalar cannot feel shear at first order.
-Shear is a polarization problem at first order and everyone's problem at second.
+At first order only polarization feels the shear; at second order every field does.
 Second, the second-order coefficient is the \textit{square} of the spectral slope, $n^2/4$ — the sub-leading $O(g^2)$ piece of $r(\chi)$ itself is what makes the square exact rather than approximate.
 On the Silk damping tail the slope is steep — $n = \dd \ln C / \dd \ln \ell$ runs from about $-7$ to $-9.4$ over $3000 < \ell < 4500$ for the lensed Planck 2018 $TT$ spectrum — so $n^2/4 \approx 12$ to $22$.
 One normalization subtlety survives into the numbers.
@@ -189,6 +189,20 @@ On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, 
 At $\ell \sim 4000$ the argument is of order unity and the series in $g^2$ is no longer small, so all numerical predictions below evaluate Equation~\eqref{eq:scalar_ratio} directly with the true spectrum.
 The prediction then inherits the acoustic structure of $C(\ell)$: because the coefficient tracks the \textit{local} slope, the predicted ratio dips near an acoustic peak, where $n$ is small and the wiggle-smoothing changes sign, and peaks where the tail is steepest.
 Matching that shape is a much sharper test than matching an amplitude, since no mask-coupling or pixel-window explanation knows where the acoustic peaks are; Section~\ref{subsec:scalar_validation} makes the test.
+Figure~\ref{fig:slope} separates the two things the coefficient depends on, by holding the geometry fixed and varying only the spectrum.
+
+\begin{figure}
+  \includegraphics[width=\columnwidth]{slope_intuition.pdf}
+  \caption{
+    One projection, one footprint, three input spectra: what the shear does to a scalar spectrum is set by that spectrum's own shape.
+    Each curve is the scalar forward model --- Equation~\eqref{eq:forward} with the misalignment kernel set to unity --- evaluated on SFL's Jacobian over the 5\% disk, divided by the input spectrum it was given.
+    No simulations enter; the geometry is identical for all three, so every difference between the curves belongs to $C(\ell)$.
+    A featureless power law $C_\ell \propto \ell^{-4}$ has a constant slope and so acquires a constant offset, the $\tfrac{n(n+2)}{4}\gsq$ of Equation~\eqref{eq:scalar_expansion}, here $5.5\%$.
+    The lensed $TT$ and $EE$ spectra oscillate around unity in step with their acoustic peaks, because the coefficient follows the local slope, and climb once the damping tail sets in: $1.53$ and $1.64$ respectively at $\ell = 3800$, where the slope is steepest.
+    $EE$ swings furthest, its peaks being the sharper of the two.
+  }
+  \label{fig:slope}
+\end{figure}
 
 \subsection{Polarization flattening removes the rotation} \label{subsec:flatten_pol}
 
@@ -275,6 +289,22 @@ The $4\Delta^2$ penalty of Section~\ref{subsec:flatten_pol} is therefore the rot
 
 
 Equation~\eqref{eq:law_footprint} carries no $\ell$; the measured departure from flatness is itself predicted, and Section~\ref{subsec:bandbyband} shows the two restored terms that account for it.
+Restoring them is a matter of not averaging: keep the exact misalignment kernel of Equation~\eqref{eq:law} inside the azimuthal average, and read the sky spectrum at the sheared wavenumber $\abs{J^{T}\vbell}$ rather than at $\ell$.
+The result is the paper's forward model, an integral over the footprint with no free parameters,
+\begin{equation} \label{eq:forward}
+\begin{aligned}
+  C_\ell^{BB} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
+    \expval{\sin^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
+  C_\ell^{EE} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
+    \expval{\cos^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
+  \mathcal{N} &= \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J},
+  \qquad r(\chi) = \frac{\abs{J^{T}\vbell}}{\ell} = \sqrt{s_1^2 \cos^2\chi + s_2^2\sin^2\chi},
+\end{aligned}
+\end{equation}
+where every quantity inside the integral is evaluated at the sky position $\vu*{n}$, $\expval{\cdot}_\chi$ is the uniform average over mode azimuth that annulus binning performs, and $C^{EE}_{\rm sky}$ is set to zero above the simulations' band limit $\ell = 4000$.
+The numerator carries two powers of $\abs{\det J}$ --- one from Equation~\eqref{eq:scalar_remap}, one because the mask-squared integral runs over plane rather than sky area --- and $\mathcal{N}$ is the pseudo-$C_\ell$ mask normalization, which cancels in the ratio $C_\ell^{BB}/C_\ell^{EE}$.
+The scalar forward model is the same integral with the kernel set to unity, which is Equation~\eqref{eq:scalar_ratio} written over a footprint; and replacing $\sin^2 2\delta\psi$ by its azimuthal average and $r(\chi)$ by unity returns Equation~\eqref{eq:law_footprint}.
+Every model curve plotted in this paper is Equation~\eqref{eq:forward} evaluated on the projection's own Jacobian and the input spectrum.
 
 
 \subsection{Two Residuals Outside the Geometric Term} \label{subsec:residuals}
@@ -316,6 +346,7 @@ The flat-sky $E$/$B$ decomposition is
 where $\tan \phi_{\vbell} = \ell_y / \ell_x$.
 Spectra are estimated with \href{https://github.com/LSSTDESC/NaMaster}{NaMaster} \citep{alonso19} with $B$-mode purification, in bandpowers of width $\Delta\ell = 10$ to $\ell = 4000$, after apodizing (C2, \SI{2.5}{\degree}) circular masks of seven sky fractions from 0.75\% to 10\% (Figure~\ref{fig:masks}).
 The quoted sky fractions label the unapodized disk areas; the mask-squared averages that enter the relation are computed from the apodized masks as used.
+In area those disks run from \SI{315}{deg\squared} (0.75\%) to \SI{4206}{deg\squared} (10\%), so the suite brackets the footprints of real ground-based surveys: SPT's 1500d field falls between the 3\% disk (\SI{1251}{deg\squared}) and the 5\% disk (\SI{2053}{deg\squared}), the latter being the reference footprint of Section~\ref{sec:results}.
 Pixel windows require care in this chain, and they cancel: the input maps carry the $N_{\rm side} = 8192$ HEALPix window (preserved by the harmonic transform; the band-limited synthesis onto the intermediate grid imprints nothing new), and the interpolate-then-rebin flattening has a transfer function that no analytic window captures — but both legs pass through the identical chain, so every such factor is common to $EE$ and $BB$ and cancels in the leakage ratio the relation predicts.
 Where absolute spectra are shown, we divide out the $N_{\rm side} = 8192$ window and let the flat-sky transfer function appear as a common high-$\ell$ suppression rather than model it.
 
@@ -355,7 +386,7 @@ All are implemented in \texttt{spt3g\_software}; the BICEP entry is the equidist
 \subsection{The spectra themselves} \label{subsec:scalar_validation}
 
 Everything else in this section is a reduction — a band average, a ratio, a fit.
-Figure~\ref{fig:spectra} is the measurement itself: $EE$ and $BB$ bandpowers on the 5\% disk, one set per projection, against the forward model evaluated from each projection's Jacobian and the input spectrum alone.
+Figure~\ref{fig:spectra} is the measurement itself: $EE$ and $BB$ bandpowers on the 5\% disk, one set per projection, against the forward model of Equation~\eqref{eq:forward}, evaluated from each projection's Jacobian and the input spectrum alone.
 The 5\% disk is the paper's reference footprint: it is large enough that the shear is substantial and small enough that every projection's spectra are usable, unlike the 10\% disk of Section~\ref{subsec:disks}.
 Both spectra carry the same geometry, felt through the two channels of Section~\ref{sec:law}, and the figure shows them side by side because that is what makes the effect legible: the same $J$ that moves $EE$ around by tens of percent moves $E$ into $B$ at a level set by its shear alone.
 
@@ -385,7 +416,7 @@ For scale, the two cylindrical projections leak more $B$ power on this disk than
     Top: $EE$ bandpowers with the input spectrum in black.
     Middle: the same $EE$ divided by the input — the scalar remap of Equation~\eqref{eq:scalar_ratio}, evaluated for each projection's Jacobian, with the curve inheriting the input spectrum's acoustic structure because the coefficient follows the local slope.
     Bottom: $BB$, which is entirely leakage in these unlensed simulations, with the lensed $BB$ of the same cosmology dashed for scale.
-    The curves in both lower panels are the restored-terms model of Section~\ref{subsec:bandbyband} --- the exact $\sin^2 2\delta\psi$ and $\cos^2 2\delta\psi$ kernels of Equation~\eqref{eq:law} with the sky spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$, averaged over mode azimuth and over the footprint with weight $W^2 \abs{\det J}^2$, band-limited at the simulations' $\ell = 4000$, and normalized by the pseudo-$C_\ell$ mask integral $\expval{W^2 \abs{\det J}}$.
+    The curves in both lower panels are Equation~\eqref{eq:forward}, the restored-terms forward model, evaluated on each projection's Jacobian and the input spectrum: the exact $\sin^2 2\delta\psi$ and $\cos^2 2\delta\psi$ kernels with the sky spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$, band-limited at the simulations' $\ell = 4000$.
     Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display; both spectra are divided by the $N_{\rm side} = 8192$ HEALPix and $\SI{2}{\arcmin}$ flat-sky pixel windows.
     The residual common suppression of a few percent, growing with $\ell$ and shared by every projection and both spectra, is the bilinear interpolation transfer (Section~\ref{subsec:residuals}).
     STG, conformal and shearless, sets the pipeline's own $E \to B$ floor rather than following any prediction (Section~\ref{subsec:stg}); its $EE$ carries pure magnification and so falls monotonically.
@@ -408,7 +439,7 @@ The per-projection residuals against sky fraction (Figure~\ref{fig:shear_leakage
     Four views of the same comparison, for every sheared (projection, mask) configuration.
     Top left: the mean measured $BB/EE$ over $1000 < \ell < 3000$ against $2\gsq$ computed from each configuration's Jacobian and apodized mask, spanning four projections and seven nested sky fractions --- four decades in $\gsq$ --- against the derived, parameter-free line.
     Top right: the same points' fractional residual about that line, broken out by projection and plotted against sky fraction, showing the residual is a property of the projection and mask combination rather than a single outlying point.
-    Bottom left: on the 5\% disk, the measured ratio band by band against $\ell$, which tilts where the leading-order relation is flat; overplotted is the forward model of Section~\ref{subsec:bandbyband} that restores the two dropped terms.
+    Bottom left: on the 5\% disk, the measured ratio band by band against $\ell$, which tilts where the leading-order relation is flat; overplotted is Equation~\eqref{eq:forward}, the forward model that restores the two dropped terms.
     Bottom right: the choice of shear variable tested against three candidate reductions of $(s_1, s_2)$ --- $\gsq$, $\expval{(s_1/s_2 - 1)^2}$, and $\expval{\ln^2(s_1/s_2)}$ --- which agree at first order but not beyond; only $\gsq$ collapses the data to its rms floor.
   }
   \label{fig:shear_leakage}
@@ -418,9 +449,11 @@ The per-projection residuals against sky fraction (Figure~\ref{fig:shear_leakage
 
 Equation~\eqref{eq:law_footprint} is flat in $\ell$; the measurements tilt.
 For this comparison we rebin to six bands of $\Delta\ell = 500$ over $1000 < \ell < 4000$ (bandpower elsewhere in this paper always means the NaMaster $\Delta\ell = 10$ estimator bins of Section~\ref{sec:methods}).
-Restoring the two dropped terms — the exact kernel of Equation~\eqref{eq:law}, and the spectrum being read at the sheared wavenumber $\abs{J^{T}\vbell}$ with the full $W^2 \abs{\det J}^2$ weight and the simulations' $\ell = 4000$ band limit — reproduces the band-by-band measurements at $\text{measured}/\text{model} = \bandbybandratio$ over every band, mask, and sheared projection more than $20\times$ above the pipeline floor (\numbands\ points, worst case 4.7\%), with no free parameters.
+Equation~\eqref{eq:forward} restores the two dropped terms — the exact kernel of Equation~\eqref{eq:law}, and the spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$ with the full $W^2 \abs{\det J}^2$ weight and the simulations' $\ell = 4000$ band limit — and reproduces the band-by-band measurements at $\text{measured}/\text{model} = \bandbybandratio$ over every band, mask, and sheared projection more than $20\times$ above the pipeline floor (\numbands\ points, worst case 4.7\%), with no free parameters.
 The mechanism of the residual $\ell$-dependence is convexity.
 SFL is equal-area, so its azimuthal stretch is symmetric about unity, and a falling spectrum's convexity lifts high-shear pixels at high $\ell$; BICEP's shear comes with magnification up to $\magfactor$ within the $W = 0.5$ contour of the largest footprint, and the same convexity pushes the other way.
+BICEP is therefore the extreme case of the band-dependent term, and it tilts in the opposite sense to the equal-area projections: on the 5\% disk its measured ratio to $2\gsq$ runs from $1.06$ in $1000 < \ell < 1500$ down to $0.63$ in $3500 < \ell < 4000$, while SFL's rises from $1.02$ to $1.07$ and ZEA's, least sheared and least magnified, stays at unity throughout.
+Equation~\eqref{eq:forward} tracks all three tilts without adjustment.
 The cleanest single test is ZEA at 5\% sky fraction, where the floor is negligible in every band: the ratio to the relation runs 1.000, 0.999, 1.002, 0.998, 1.000, 0.995 across the six bands from $\ell = 1000$ to 4000.
 
 \subsection{The stereographic projection measures the pipeline, not itself} \label{subsec:stg}
