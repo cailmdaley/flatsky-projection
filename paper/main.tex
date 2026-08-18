@@ -27,13 +27,13 @@
 \title{Closed-Form Distortion of Projected Flat-Sky CMB Spectra}
 
 \author[0000-0002-3760-2086]{Cail Daley}
-\affiliation{Department of Astronomy, University of Illinois, 1002 W. Green St., Urbana, IL 61801, USA}
+\affiliation{~}
 
 \author{Caterina Umilt\`a}
 \affiliation{~}
 
 \author{Gil Holder}
-\affiliation{Department of Physics, University of Illinois, 1110 W. Green St., Urbana, IL 61801, USA}
+\affiliation{~}
 
 \begin{abstract}
 Ground-based CMB experiments estimate polarization power spectra on flat-sky grids, but the sphere does not flatten without distortion.
@@ -50,11 +50,11 @@ And the agreement between cylindrical and BICEP-style projections seen on circul
 
 \section{Introduction} \label{sec:intro}
 
-A flat-sky CMB analysis begins by flattening the sphere, and the sphere does not flatten without distortion.
-The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point; the map that results is not the sky but a sheared image of it, and every spectrum measured on that map inherits the distortion.
-For the temperature field this moves power along $\ell$.
-For polarization, decomposed into its curl-free $E$ and divergence-free $B$ components \citep{zal01}, it does something worse: it converts $E$-mode power into $B$ — the observable that carries the imprint of primordial gravitational waves \citep{seljak97, kamionkowski97}, whose amplitude $r$ is inflation's key prediction and whose tightest constraint to date comes from \citet{bicep18}, and the lensing signal \citep{lewis06} that delensing must remove for future constraints on $r$.
-Every analysis effect that converts $E$ into $B$ competes with these signals, and must be understood at the level of the experiment's noise floor.
+A flat-sky CMB analysis begins with a small act of cartography: the sphere must be flattened, and no projection flattens it without distortion.
+The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point, and every spectrum measured on the resulting map inherits a little of the mapmaker's problem.
+For the temperature field the consequence is simply that power moves along $\ell$.
+For polarization, decomposed into its curl-free $E$ and divergence-free $B$ components \citep{zal01}, there is a second consequence: some $E$-mode power turns into $B$ — inconvenient, because $B$ is where the interesting things live, from the imprint of primordial gravitational waves \citep{seljak97, kamionkowski97} constrained through the tensor-to-scalar ratio $r$ \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
+Any analysis effect that converts $E$ into $B$ therefore needs to be understood at the level of the experiment's noise floor — and this one, it turns out, can be understood completely.
 
 This paper is about one such effect: the $E \to B$ leakage induced by the map projection itself.
 Three distinct effects travel under the name ``$E$/$B$ leakage,'' and the introduction's first job is to separate them.
@@ -62,7 +62,7 @@ Mask-induced mixing — ambiguous modes at the boundary of a cut sky \citep{bunn
 Flat-sky approximation error in the harmonic transform — treating Fourier wavenumbers as multipoles — is a separately quantified problem, controlled at the $0.3$--$1\%$ level by the rigorous treatments of \citet{bernardeau11} and \citet{challinor05}.
 The third effect is geometric: projecting the sphere to a plane distorts the field itself, before any spectrum estimator sees it, and this distortion survives the standard corrective steps.
 It is an \textit{interior} effect, present in the limit of full coverage of the projected region with no mask boundary at all, and it is not an approximation error, because no better harmonic transform removes it.
-This paper is a systematic study of that third effect, and its result is that the effect has a closed form.
+This paper is a systematic study of that third effect, and its punchline is that the effect has a closed form.
 
 The distortion arises as follows.
 A flat-sky projection maps celestial coordinates $(\theta, \phi)$ to grid coordinates $(x, y)$, and its local Jacobian generally rotates, dilates, and shears the neighborhood of each point.
@@ -71,7 +71,7 @@ For polarization there is more: because $Q$ and $U$ are defined relative to cele
 The shear cannot be undone by any rotation: a non-conformal projection does not preserve the \SI{90}{\degree} angle between north and east, so no single angle aligns both.
 The surviving shear is the whole effect, and Section~\ref{subsec:derivation} shows that it sets the leakage exactly.
 
-The mechanism itself is old, and it is important to say so plainly.
+The mechanism itself is old, and we say so happily rather than reluctantly.
 Remapping a spin-two field by a deflection whose Jacobian has a trace-free part converts $E$ into $B$: that is CMB lensing, and the flat-sky $E \to B$ kernel has been standard since \citet{lewis06} and references therein.
 What is new here is not the algebra but the source of the shear.
 Gravitational shear is stochastic and must be reconstructed or marginalized over; cartographic shear is written down in closed form from the projection definition \citep{calabretta02} before any data is taken.
