@@ -81,14 +81,17 @@ Prior work brackets this study without occupying it.
 The closest predecessor is \citet{wallis17}, who compared projections for weak-lensing convergence maps reconstructed via Kaiser--Squires, quantified the spurious $B$-modes each projection induces, and concluded empirically that ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
 That is our law seen from outside: a conformal projection has $s_1 = s_2$, hence $\gsq = 0$, hence no leakage.
 Wallis et al.\ observed the regularity; the law explains it, replaces ``conformal is best'' with a ranking valid for any footprint, and supplies the coefficient.
-The systematics side is bracketed as well.
+The systematics side is bracketed as well, and the bracket is instructive.
 The standard basis of polarization distortion fields \citep{hu03} enumerates eleven fields — calibration, rotation, spin flip, monopole and dipole temperature leakage, and a pointing term — parameterized in the map domain as
 \begin{equation} \label{eq:hhz}
   \delta[Q \pm iU] = [a \pm 2i\omega][Q \pm iU] + [f_1 \pm i f_2][Q \mp iU] + [\gamma_1 \pm i\gamma_2]\Theta,
 \end{equation}
 plus a beam-scale sector whose only remapping term is the pure translation $\sigma\, \vb*{p} \cdot \grad[Q \pm iU]$.
 Their $\gamma$, despite the notation, is a temperature-to-polarization coupling.
-No trace-free, position-dependent remapping of the polarization field appears in the catalogue: the shear mode is absent from the taxonomy the field uses to budget polarization systematics, which is one reason a deterministic and sizeable effect has gone unbudgeted.
+Those eleven fields model \textit{observational} corruption — the instrument's imprint on the sky, through calibration, beams, and pointing — and for that purpose the basis is complete.
+Distortion introduced downstream, by the analysis itself, was never its brief, so it is unsurprising that no trace-free, position-dependent remapping of the polarization field appears in the catalogue.
+The absence is nonetheless the reason the effect studied here has a natural home: the parameterization enumerates local linear distortions of $Q \pm iU$, a shear remapping is exactly such a distortion, and it has no slot among the eleven — so ``add the shear field'' is a well-posed request rather than a vague one.
+What makes it worth making is that the same basis is fit to real data \citep{bk17}, where a distortion sourced by the analysis rather than the instrument is invisible to the fit by construction.
 Elsewhere, SPT-3G's lensing and delensing analysis \citep{ge24} bounds reprojection bias between HEALPix, ZEA, and CAR grids at the half-percent level using non-uniform FFTs, and shows bilinear interpolation performing substantially worse — an appendix-level treatment along a different axis (interpolation fidelity) that Section~\ref{sec:discussion} separates from ours.
 On the pixelization side, \citet{halltessore25} set the current rigor standard for spin-2 pixel-window effects in cosmic shear.
 None of these derives the projection-induced leakage from the projection's geometry; that is the gap this paper fills.
@@ -442,11 +445,13 @@ The immunity comes from staying on the sphere, not from avoiding pixels.
 Any variant that first flattens the sky --- resampling $Q$ and $U$ at catalogue positions in a projected plane, or estimating flat-sky Fourier modes from irregular samples --- reintroduces the same Jacobian and obeys the same law, since Equation~\eqref{eq:law_footprint} depends on the projection alone and never on how the plane is sampled.
 Pixelization-free and projection-free are separate properties, and only the second removes the shear.
 
-Finally, the distortion-field basis of Equation~\eqref{eq:hhz} is incomplete in a way this paper makes concrete.
-Its eleven fields contain no trace-free, position-dependent remapping of the polarization field, and the natural completion is a single entry: a shear remapping field, the symmetric trace-free part of a local deflection Jacobian.
-Nothing else is missing --- a pipeline that flattens at the wrong angle is described by the rotation field $\omega$ the basis already carries (Section~\ref{subsec:derivation}).
-For a cartographic source this entry is deterministic and computable in advance from the projection definition, so it enters a systematics budget as known amplitudes rather than as a nuisance field to be constrained; for the per-experiment distortion bases fit to real data, where the same eleven-field parameterization is deployed \citep{bk17}, the shear entry is directly budgetable alongside the existing calibration, rotation, and pointing terms.
-With the shear entry missing from the basis, an effect of this size has no natural place in a standard polarization systematics budget.
+Finally, the distortion-field basis of Equation~\eqref{eq:hhz} extends naturally to accommodate this source.
+The eleven fields describe how the instrument corrupts the sky, and for that they want nothing; projection distortion enters somewhere else entirely, downstream of the telescope, in the analyst's choice of grid.
+It is a new source asking for a seat, not an oversight.
+The seat is well defined, because the parameterization enumerates local linear distortions of $Q \pm iU$ and contains no trace-free, position-dependent remapping: the addition is a single entry, a shear remapping field --- the symmetric trace-free part of a local deflection Jacobian.
+One entry is enough, since a pipeline that flattens at the wrong angle is already described by the rotation field $\omega$ (Section~\ref{subsec:derivation}).
+The new entry also behaves better than its neighbours.
+For a cartographic source it is deterministic and computable in advance from the projection definition, so it enters a systematics budget as a known amplitude rather than as a nuisance field to be constrained --- and where the eleven-field parameterization is fit to real data \citep{bk17}, adding it makes budgetable a distortion that the fit, built to characterize the instrument, cannot see.
 
 \clearpage
 
