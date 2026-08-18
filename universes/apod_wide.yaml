@@ -1,0 +1,22 @@
+# Apodization variant: same kernel, twice the taper width.
+#
+# The companion to apod_c1. Holding the C2 kernel and widening the taper from
+# 2.5 to 5 degrees separates the taper's WIDTH from its SHAPE. Wider tapers
+# suppress edge ringing at the cost of usable sky, so this universe also
+# measures what that trade costs in realized f_sky -- the masks stage records
+# the realized value rather than the nominal label, so the cost is read off
+# the output rather than assumed.
+#
+# Everything else is baseline: a controlled single-decision variant.
+id: apod_wide
+description: >
+  Baseline in every respect except the mask apodization scale: C2 at 5 degrees
+  instead of 2.5. Isolates the taper width from the kernel shape as a
+  contributor to edge-driven leakage.
+decisions:
+  intermediate_nside: nside4096
+  ell_max: l4000
+  interpolation: interp_rebin8
+  apodization: c2_5deg
+  b_purification: purify
+  pixel_window: none

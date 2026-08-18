@@ -1,1 +1,7 @@
 target: local
+remote_payload:
+  - .lightcone/snakefile-config.json
+  - env.sh
+  - src
+  - spt3g_build.tar.gz
+  - lightcone_py.tar.gz

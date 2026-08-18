@@ -175,6 +175,13 @@ outputs:
       resources:
         cpus: 4
         memory: 32Gi
+        # The seven masks are full-sky float64 arrays, so each .g3 is 1.6 GB
+        # apparent (they are sparse on /sptlocal, but HTCondor transfers the
+        # apparent bytes). The grid job needs room for all seven plus the
+        # unpacked spt3g build before anything is transferred back. A
+        # completed grid run of this stage reported DiskUsage 12.5 GB against
+        # a 20 GB request, so 20Gi is the measured-and-proven figure.
+        disk: 20Gi
 
   - id: projected_qu
     type: data
