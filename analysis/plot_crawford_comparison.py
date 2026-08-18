@@ -15,9 +15,11 @@ iso_shrink), where zeroing pixels outright breaks `cl_flatsky`'s <mask^2> correc
 and the measurement falls below the pure-geometry prediction.
 
 Figure 3 (crawford_mask_size_trend.png): predicted ratio at l = 3000, 4000, 5000 vs
-disk radius (concentric disks about the projection centre, SFL relative to ZEA,
-uniform weighting -- the same construction as the derivation note's table), with
-Crawford's real footprint <g^2> = 0.0442 marked and his measured l~4000 value overlaid.
+disk radius (concentric apodized C2/2.5deg disks about the projection centre, SFL
+relative to ZEA, weighted by W^2 -- the same weighting NaMaster's pseudo-Cl
+estimator uses, and what `analysis/disk_trend.py` applies at the seven actual
+paper radii), with Crawford's real footprint <g^2> = 0.0442 marked and his
+measured l~4000 value overlaid.
 
 Run inside the project container:
     systemd-run --user --scope -p MemoryMax=4G bash env.sh python3 analysis/plot_crawford_comparison.py
@@ -30,11 +32,15 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import healpy as hp
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "src" / "stages"))
 import crawford as C            # noqa: E402
 import crawford_model as CMOD   # noqa: E402
 import geometry as G            # noqa: E402
+from make_masks import apodize_disk_analytic  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "figures"
 OUT.mkdir(exist_ok=True)
@@ -178,33 +184,48 @@ CENTER_ALPHA = 0.0
 CRAWFORD_G2 = 0.0442
 
 
-def disk_geometry(radius_deg, ngrid=260):
-    """Uniform-weighted (s1, s2) samples over a disk of `radius_deg` about the
-    projection centre, SFL relative to ZEA -- both at the same centre, so
-    radius and shear are the only thing moving (the derivation note's
-    construction, section 5)."""
-    pad = radius_deg * 1.03
-    lin = np.linspace(-pad, pad, ngrid)
-    dalpha, ddelta = np.meshgrid(lin, lin, indexing="ij")
-    ang = np.sqrt(dalpha ** 2 + ddelta ** 2)
-    keep = ang <= radius_deg
-    delta = CENTER_DELTA + ddelta[keep]
-    alpha = CENTER_ALPHA + dalpha[keep] / np.cos(np.deg2rad(delta))
+DISK_NSIDE = 2048
+DISK_APOTYPE = "C2"
+DISK_APOSIZE_DEG = 2.5
+
+
+def disk_geometry(radius_rad):
+    """W^2-weighted (s1, s2, w^2) samples over an apodized (C2, 2.5 deg taper)
+    disk of `radius_rad` about the projection centre, SFL relative to ZEA --
+    both at the same centre, so radius and shear are the only thing moving.
+
+    This replaced a flat, uniform-weighted, hard-edged Euclidean-disk
+    approximation (ngrid=260 grid in tangent-plane offset degrees) that
+    disagreed with the derivation note's own table by 10-20% at matched
+    radius: an unapodized disk average of g^2 is dominated by whichever rim
+    pixels the grid quantization happens to keep, since g grows fastest right
+    at the edge. Apodizing removes that sensitivity, and querying a true
+    spherical cap (`hp.query_disc`) removes the flat-tangent-plane
+    approximation error on top of it. See `analysis/disk_trend.py` for the
+    canonical version of this calculation, at the seven actual paper radii.
+    """
+    center_vec = hp.ang2vec(CENTER_ALPHA, CENTER_DELTA, lonlat=True)
+    w_full = apodize_disk_analytic(DISK_NSIDE, center_vec, radius_rad,
+                                   DISK_APOTYPE, DISK_APOSIZE_DEG)
+    pix = np.nonzero(w_full > 0)[0]
+    w = w_full[pix].astype(float)
+    lon, lat = hp.pix2ang(DISK_NSIDE, pix, lonlat=True)
 
     a = G.relative_jacobian(
-        "ProjSFL", "ProjZEA", alpha, delta,
+        "ProjSFL", "ProjZEA", lon, lat,
         to_kw=dict(delta_center_deg=CENTER_DELTA),
         from_kw=dict(delta_center_deg=CENTER_DELTA))
     s1, s2 = G.singular_values(a)
     g = (s1 - s2) / (s1 + s2)
-    return s1, s2, float(np.mean(g ** 2))
+    w2 = w ** 2
+    g2 = float(np.average(g ** 2, weights=w2))
+    return s1, s2, w2, g2
 
 
-def disk_prediction(radius_deg, ell_targets, ell_th, cl_th, ngrid=260):
-    s1, s2, g2 = disk_geometry(radius_deg, ngrid=ngrid)
-    w = np.ones_like(s1)
+def disk_prediction(radius_rad, ell_targets, ell_th, cl_th):
+    s1, s2, w2, g2 = disk_geometry(radius_rad)
     ell = np.asarray(ell_targets, dtype=float)
-    proj0 = G.predicted_spectrum(ell, s1, s2, w, ell_th, cl_th,
+    proj0 = G.predicted_spectrum(ell, s1, s2, w2, ell_th, cl_th,
                                  band_limit=CMOD.BAND_LIMIT, n_bins=48, n_psi=64)
     proj5 = np.interp(ell, ell_th, cl_th)
     return g2, proj0 / proj5
@@ -214,9 +235,9 @@ def make_figure3():
     ell_targets = np.array([3000.0, 4000.0, 5000.0])
     ell_th, cl_th = CMOD.theory_input("tt")
 
-    radii_deg = np.linspace(6.0, 34.0, 15)
+    radii_rad = np.linspace(0.10, 0.65, 15)
     g2s, ratios = [], []
-    for r in radii_deg:
+    for r in radii_rad:
         g2, ratio = disk_prediction(r, ell_targets, ell_th, cl_th)
         g2s.append(g2)
         ratios.append(ratio)
@@ -270,9 +291,9 @@ def main():
                  f"predicted={pred[i]:6.3f}  meas/pred={resid[i]:6.3f}")
     print(f"\nCrawford full-mask footprint <g^2> = {g2_footprint:.4f}")
     print(f"measured TT ratio near l={PEAK_L:.0f}: {meas_at_4000:.3f}")
-    print("\ndisk sweep (radius trend):")
-    for r_deg, g2, row in zip(np.linspace(6.0, 34.0, 15), g2s, ratios):
-        print(f"  R={np.deg2rad(r_deg):.3f} rad  <g^2>={g2:.4f}  "
+    print("\ndisk sweep (radius trend, W^2-weighted apodized disks):")
+    for r_rad, g2, row in zip(np.linspace(0.10, 0.65, 15), g2s, ratios):
+        print(f"  R={r_rad:.3f} rad  <g^2>={g2:.4f}  "
              f"ratio(3000,4000,5000) = {row[0]:.3f} {row[1]:.3f} {row[2]:.3f}")
 
 
