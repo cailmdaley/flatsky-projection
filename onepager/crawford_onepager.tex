@@ -68,14 +68,16 @@ Nothing is fitted: $J$ from the projection definitions, $C(\ell)$ from Planck 20
 Everything in Tom's runs --- the curve above and the two ways the data depart from it --- comes down to three mechanisms, none fitted.
 \begin{itemize}
 \item \emph{The ratio itself is geometry.}
-On the full mask, measured/predicted stays within $3.3\%$ at every bandpower from $\ell=1050$ to $4050$, in both TT and EE.
+On the full mask, measured/predicted stays within $3.3\%$ at every bandpower out to $\ell\simeq4000$, in both TT and EE.
 \item \emph{His mask-variant runs fall below the curve because of the estimator, not the projection.}
 Alongside the full mask, Tom repeated the measurement on two modified masks --- one with a corner cut away, one isotropically shrunk to the same area --- to test whether the excess was a mask effect.
 Both variants are made by zeroing pixels outright, which leaves a hard edge, and \proj{cl\_flatsky} corrects only by $\langle W^2\rangle$ with no mode decoupling --- so those runs sit $15$--$25\%$ below the geometry above $\ell=4000$.
-Convolving the prediction with the mask's exact coupling kernel closes the gap (TT at $\ell=4050$: $0.808\to0.996$ and $0.806\to0.976$) while moving the apodized full mask, the control, by under $1\%$.
+Convolving the prediction with each mask's exact coupling kernel closes the gap, while moving the apodized full mask --- the control --- by under $1\%$.
 A decoupled estimator (NaMaster) would not show this deficit at all.
-\item \emph{His points rise above the curve at $\ell\gtrsim4500$ because of nearest-neighbour resampling.}
-This excess is additive, not multiplicative --- flat in $C_\ell$ while the spectrum falls a decade beneath it --- and its amplitude scales as pixel$^{2.9}$; extrapolated from coarser grids to his $0.25'$, it predicts $1.009$--$1.124$ over $\ell=4050$--$5550$ against his measured $1.026$--$1.146$.
+\item \emph{His points rise above the curve at $\ell\gtrsim4500$ because of \proj{interp=False} resampling.}
+Rerunning his map-making with \proj{interp=False} (nearest-neighbour) reproduces a steeply rising excess; \proj{interp=True} removes it.
+The excess is additive, not multiplicative --- flat in $C_\ell$ while the spectrum falls a decade beneath it --- and its amplitude follows pixel$^{2.9}$, an exponent measured from reruns at coarser pixel scales.
+Extrapolated to his $0.25'$ grid, it reproduces his high-$\ell$ residual to $1$--$2\%$, with nothing fit to his data.
 \end{itemize}
 
 \vspace{8pt}
