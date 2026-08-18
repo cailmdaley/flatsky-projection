@@ -271,6 +271,11 @@ outputs:
       resources:
         cpus: 2
         memory: 32Gi
+        # On the grid this stage unpacks the staged healpix_masks archive,
+        # which restores seven 1.6 GB-apparent masks into the job sandbox
+        # before writing its own projected cuts. A 4 GB default put the job
+        # on hold with "disk usage exceeded allocated disk".
+        disk: 24Gi
 
   - id: coupling_matrices
     type: data
