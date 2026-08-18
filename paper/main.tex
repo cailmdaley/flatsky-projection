@@ -352,26 +352,45 @@ All are implemented in \texttt{spt3g\_software}; the BICEP entry is the equidist
 
 \section{Results} \label{sec:results}
 
-\subsection{The scalar prediction against the measurements} \label{subsec:scalar_validation}
+\subsection{The spectra themselves} \label{subsec:scalar_validation}
 
-The scalar prediction is tested on a separate simulation suite from the disk suite of Section~\ref{sec:methods}: temperature-only realizations on the SPT 1500d footprint, reprojected between the two grids the collaboration actually uses.
-Those grids carry SPT-internal names, \texttt{proj0} for the Sanson--Flamsteed projection (SFL) and \texttt{proj5} for the Lambert zenithal equal-area projection (ZEA); we use SFL and ZEA from here on.
-Both are equal-area, so this is the $\mu \equiv 1$ comparison of Section~\ref{subsec:scalar} and the relevant coefficient is $n(n+2)/4$.
-The measurement is out of sample in every sense that matters: a different footprint, a different projection pair, and a spectrum shape the prediction was never tuned against.
+Everything else in this section is a reduction — a band average, a ratio, a fit.
+Figure~\ref{fig:spectra} is the measurement itself: $EE$ and $BB$ bandpowers on the 5\% disk, one set per projection, against the forward model evaluated from each projection's Jacobian and the input spectrum alone.
+The 5\% disk is the paper's reference footprint: it is large enough that the shear is substantial and small enough that every projection's spectra are usable, unlike the 10\% disk of Section~\ref{subsec:disks}.
+Both spectra carry the same geometry, felt through the two channels of Section~\ref{sec:law}, and the figure shows them side by side because that is what makes the effect legible: the same $J$ that moves $EE$ around by tens of percent moves $E$ into $B$ at a level set by its shear alone.
 
-The prediction inherits the acoustic structure of the input, and the measurement follows it (Figure~\ref{fig:scalar_crawford}): the ratio dips below unity near the acoustic feature at $\ell \approx 1450$, where the local slope flattens, and rises to its maximum near $\ell \approx 4000$ where the damping tail is steepest.
-Matching that shape, and not merely an amplitude, is what distinguishes the geometric explanation from a mask-coupling or pixel-window one — neither of which knows where the acoustic peaks are.
-The excess reaches tens of percent at high $\ell$, which is the order-unity statement of Section~\ref{subsec:scalar} realized on a real footprint: a percent-level shear read through a slope of $n \approx -8$.
+Take $EE$ first, which is the scalar story of Section~\ref{subsec:scalar} with $J_1 = \mathbb{1}$: the measurement is compared not against a second projection but against the sky it was drawn from, so Equation~\eqref{eq:scalar_ratio} is evaluated with the projection's own $(s_1, s_2, \mu)$.
+The ratios are nowhere near unity.
+At $\ell = 1000$ the two cylindrical projections have lost a third of their power — SFL measures $0.665$ of the input, BICEP $0.624$ — and by $\ell = 3000$ both have gained instead, $1.31$ and $1.23$.
+SIN runs from $0.93$ to $1.27$ over the same range.
+The conformal STG, whose shear is identically zero, moves the other way and monotonically, to $0.68$ by $\ell = 3000$: with $g = 0$ the only invariant left is the magnification, and an isotropic dilation of a falling spectrum removes power.
+ZEA, equal-area and least sheared of the four, stays within $6\%$ of unity out to $\ell = 3000$.
+That ordering is the whole practical content of the scalar relation, read off a single figure.
+
+The shape is a sharper test than the amplitude.
+The predicted ratio inherits the acoustic structure of $C(\ell)$, because the coefficient tracks the \textit{local} slope: it dips where a peak flattens the slope and rises where the damping tail steepens, oscillating with the peaks all the way out.
+The measurements oscillate with it, in phase and in amplitude, for every projection — including the sign flip between STG and the sheared four.
+No mask-coupling or pixel-window explanation knows where the acoustic peaks are.
+Measurement over model sits at $0.98$ to $0.99$ at $\ell = 1000$ and falls to $0.92$--$0.95$ by $\ell = 3000$, a common shortfall shared by all five projections and by $BB$ as well: it is the bilinear interpolation transfer of Section~\ref{subsec:residuals}, which the $N_{\rm side} = 8192$ and $\SI{2}{\arcmin}$ windows divided out here do not capture, and it is projection-independent as a resampling term should be.
+
+The $BB$ panel is pure leakage, since the simulations are unlensed and the true $B$ is zero.
+The five projections span five orders of magnitude, and the same model reproduces four of them: averaged over $500 < \ell < 3000$, measured over modelled is $1.002$ (SFL), $0.999$ (SIN), $0.998$ (ZEA) and $0.995$ (BICEP), with no free parameters.
+STG is the exception and the diagnostic — its model is $2 \times 10^{-19}\,\si{\micro\kelvin\squared}$, seven orders below its measurement, which is the subject of Section~\ref{subsec:stg}.
+For scale, the two cylindrical projections leak more $B$ power on this disk than gravitational lensing of the real sky produces.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{crawford_tt_ee_comparison.png}
+  \includegraphics[width=\textwidth]{projection_spectra.pdf}
   \caption{
-    The scalar prediction against an out-of-sample measurement: the SFL/ZEA (SPT \texttt{proj0}/\texttt{proj5}) power ratio measured on the SPT 1500d footprint in $T$-only simulations (points), against the parameter-free evaluation of Equation~\eqref{eq:scalar_ratio} (curve), for a $TT$-shaped (left) and $EE$-shaped (right) input spectrum.
-    This is a separate simulation suite from the concentric-disk suite of Section~\ref{sec:methods} used everywhere else in this section.
-    The prediction inherits the acoustic structure of the input, and the measurement follows it.
-    Lower panels show measurement over prediction; the rise above $\ell \approx 5400$ (shaded) is the additive resampling term of Section~\ref{subsec:residuals}, which grows toward the Nyquist scale while the geometric term turns over.
+    The measured spectra on the 5\% disk, one set of points per projection, against the parameter-free forward model (smooth curves).
+    Top: $EE$ bandpowers with the input spectrum in black.
+    Middle: the same $EE$ divided by the input — the scalar remap of Equation~\eqref{eq:scalar_ratio}, evaluated for each projection's Jacobian, with the curve inheriting the input spectrum's acoustic structure because the coefficient follows the local slope.
+    Bottom: $BB$, which is entirely leakage in these unlensed simulations, with the lensed $BB$ of the same cosmology dashed for scale.
+    The curves in both lower panels are the restored-terms model of Section~\ref{subsec:bandbyband} --- the exact $\sin^2 2\delta\psi$ and $\cos^2 2\delta\psi$ kernels of Equation~\eqref{eq:law} with the sky spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$, averaged over mode azimuth and over the footprint with weight $W^2 \abs{\det J}^2$, band-limited at the simulations' $\ell = 4000$, and normalized by the pseudo-$C_\ell$ mask integral $\expval{W^2 \abs{\det J}}$.
+    Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display; both spectra are divided by the $N_{\rm side} = 8192$ HEALPix and $\SI{2}{\arcmin}$ flat-sky pixel windows.
+    The residual common suppression of a few percent, growing with $\ell$ and shared by every projection and both spectra, is the bilinear interpolation transfer (Section~\ref{subsec:residuals}).
+    STG, conformal and shearless, sets the pipeline's own $E \to B$ floor rather than following any prediction (Section~\ref{subsec:stg}); its $EE$ carries pure magnification and so falls monotonically.
   }
-  \label{fig:scalar_crawford}
+  \label{fig:spectra}
 \end{figure}
 
 \subsection{The leakage prediction against the measurements} \label{subsec:validation}
