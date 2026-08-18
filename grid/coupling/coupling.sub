@@ -1,0 +1,43 @@
+# Production submit file for the highell coupling-matrix stage on OSG.
+#
+# One job = one (projection, mask_index). Job tuples come from a queue-from
+# list written by grid/coupling/launcher.sh, one line per job:
+#     proj,idx,mem
+# Submit with:
+#     condor_submit grid/coupling/coupling.sub -a "joblist = grid/coupling/lists/batch.txt"
+#
+# No spt3g build needed -- coupling_matrices.py only needs numpy + pymaster,
+# already in the pinned CVMFS py3-v5 toolset. Outputs are remapped straight
+# onto /sptlocal (the submit host can see it; the workers cannot see
+# anything outside their scratch dir).
+
+universe                = vanilla
+executable              = grid/coupling/worker.sh
+arguments               = "$(proj) $(idx)"
+
+output                  = grid/coupling/logs/$(proj)_$(idx).out
+error                   = grid/coupling/logs/$(proj)_$(idx).err
+log                     = grid/coupling/logs/coupling.log
+
+request_cpus            = 1
+request_memory          = $(mem)
+request_disk            = 4GB
+
++ProjectName            = "spt"
++SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = src/stages/coupling_matrices.py, \
+                          src/stages/_decisions.py, \
+                          /sptlocal/user/cailmdaley/pol_project/results/highell/flatsky_masks/mask_$(proj)_$(idx).npz
+
+transfer_output_files   = w22_$(proj)_$(idx).fits, w00_$(proj)_$(idx).fits
+transfer_output_remaps  = "w22_$(proj)_$(idx).fits = /sptlocal/user/cailmdaley/pol_project/results/highell/coupling_matrices/w22_$(proj)_$(idx).fits; w00_$(proj)_$(idx).fits = /sptlocal/user/cailmdaley/pol_project/results/highell/coupling_matrices/w00_$(proj)_$(idx).fits"
+
+success_exit_code       = 0
+max_retries             = 2
+
+queue proj,idx,mem from $(joblist)
