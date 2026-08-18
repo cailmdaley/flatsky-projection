@@ -44,6 +44,11 @@ ls -la
 
 say TOOLSET
 export OS_ARCH=RHEL_9_x86_64
+# setup.sh picks its output syntax from `case ${SHELL##*/}` and emits csh
+# `setenv` lines for tcsh/csh. OSPool workers do not agree on $SHELL -- some
+# hand out csh -- and the failure is `setenv: command not found` from a shell
+# that was always bash. Pin it before the eval, not after.
+export SHELL=/bin/bash
 eval $(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)
 case "$(command -v python3)" in
     /cvmfs/spt.opensciencegrid.org/py3-v5/*) echo "TOOLSET_OK yes" ;;
