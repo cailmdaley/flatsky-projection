@@ -1,30 +1,33 @@
 """The measured spectra themselves, projection by projection, against the
 parameter-free forward model.
 
-This is the paper's central figure. Everything else in the analysis is a
-reduction -- a band average, a ratio, a fit. Here the distortion is shown
-where it actually lives: in the bandpowers.
+This is the paper's central pair of figures. Everything else in the analysis
+is a reduction -- a band average, a ratio, a fit. Here the distortion is
+shown where it actually lives: in the bandpowers.
 
-One mask (the 5% disk), five projections, two spectra.
+One mask (the 5% disk), five projections, two spectra, split into two
+standalone figures so the EE story and the BB story can each live in their
+own subsection:
 
-  (a) EE, the measured bandpowers against the input spectrum. Order-unity
-      differences between projections are already visible by eye at high l.
-  (b) EE divided by the input spectrum -- the scalar remap of
+  EE figure (top) the measured bandpowers against the input spectrum.
+      Order-unity differences between projections are already visible by eye
+      at high l.
+  EE figure (bottom) EE divided by the input spectrum -- the scalar remap of
       Eq. (scalar_ratio) made visible. SFL and BICEP lose a third of their
       power at l = 1000 and gain half of it by l = 4000; STG, which has no
       shear at all, loses power monotonically to its magnification; ZEA,
       equal-area and least sheared, stays within a few percent of unity
       until the band limit.
-  (c) BB, which is pure leakage: the sims are unlensed, so the true B is
+  BB figure, which is pure leakage: the sims are unlensed, so the true B is
       zero. Five projections spread over five orders of magnitude, with STG
       -- conformal, zero shear -- sitting on the pipeline's own E-to-B floor
       rather than on any prediction.
 
-The smooth curves in (b) and (c) are the same forward model,
-`shear_leakage.predicted_spectra`: the sky spectrum read at the sheared
-wavenumber |J^T l| with the exact sin^2/cos^2(2 dpsi) kernel, averaged over
-mode azimuth and over the footprint with weight W^2 |det J|^2 per unit sky
-area, and band-limited at the sims' l = 4000. No free parameters, no fit.
+The smooth curves are the same forward model, `shear_leakage.predicted_spectra`:
+the sky spectrum read at the sheared wavenumber |J^T l| with the exact
+sin^2/cos^2(2 dpsi) kernel, averaged over mode azimuth and over the footprint
+with weight W^2 |det J|^2 per unit sky area, and band-limited at the sims'
+l = 4000. No free parameters, no fit.
 
 Normalisation. The model returns an unnormalised numerator; the pseudo-C_l
 denominator is the plane-area mask integral, sum(W^2 |det J|) per unit sky
@@ -40,7 +43,7 @@ common to every projection and to EE and BB alike, and it is why the
 measurements sit a few percent under the curves, growing toward l = 4000.
 
 Run:  bash env.sh python3 analysis/plot_projection_spectra.py
-Out:  figures/projection_spectra.pdf
+Out:  figures/projection_spectra_ee.pdf, figures/projection_spectra_bb.pdf
 """
 
 import sys
@@ -55,7 +58,8 @@ import theory as T
 import paper_style as PS
 
 ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "projection_spectra.pdf"
+FIGURE_EE = ROOT / "figures" / "projection_spectra_ee.pdf"
+FIGURE_BB = ROOT / "figures" / "projection_spectra_bb.pdf"
 
 MASK_INDEX = 5          # PERC[5] = 5.0%, the paper's reference footprint
 REBIN = 5               # display binning: 5 x dl=10 -> dl=50
@@ -63,6 +67,8 @@ ELL_MIN, ELL_MAX = 200.0, 3900.0
 
 COLORS = PS.PROJ_COLORS
 MARKS = PS.PROJ_MARKERS
+
+MS, MEW = 3.0, 0.9
 
 
 def rebin(y, n=REBIN):
@@ -87,19 +93,8 @@ def model_curves(mom, i, j, ell, ell_theory, cl_theory):
     return bb / norm, ee / norm
 
 
-def main():
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    plt.rcParams.update({
-        "font.size": 9.5, "axes.grid": True, "grid.alpha": 0.18,
-        "grid.linewidth": 0.6, "figure.dpi": 150, "savefig.bbox": "tight",
-        "axes.edgecolor": PS.RULE, "axes.linewidth": 0.7,
-        "xtick.color": PS.INK_SOFT, "ytick.color": PS.INK_SOFT,
-        "legend.frameon": False,
-    })
-
+def load_data():
+    """Everything both figures need, loaded once."""
     i = MASK_INDEX
     mom = SL.load_moments()
     ee = S.load("EE")
@@ -115,19 +110,42 @@ def main():
     keep = (ellb > ELL_MIN) & (ellb < ELL_MAX)
     dl = ellb * (ellb + 1) / (2 * np.pi)
 
-    fig, axes = plt.subplots(3, 1, figsize=(7.2, 10.2), sharex=True,
-                             gridspec_kw={"height_ratios": [1.0, 1.25, 1.0]})
+    return dict(i=i, mom=mom, ee=ee, bb=bb, ell=ell, cl_ee=cl_ee,
+                cl_bb_lensed=cl_bb_lensed, transfer=transfer,
+                ell_theory=ell_theory, cl_theory=cl_theory,
+                ellb=ellb, keep=keep, dl=dl)
 
-    MS, MEW = 3.0, 0.9
+
+def set_style(plt):
+    plt.rcParams.update({
+        "font.size": 9.5, "axes.grid": True, "grid.alpha": 0.18,
+        "grid.linewidth": 0.6, "figure.dpi": 150, "savefig.bbox": "tight",
+        "axes.edgecolor": PS.RULE, "axes.linewidth": 0.7,
+        "xtick.color": PS.INK_SOFT, "ytick.color": PS.INK_SOFT,
+        "legend.frameon": False,
+    })
+
+
+def plot_ee(plt, d):
+    """EE bandpowers (top) and EE/input ratio (bottom), self-sufficient."""
+    i, mom, ee = d["i"], d["mom"], d["ee"]
+    ell, ell_theory, cl_theory = d["ell"], d["ell_theory"], d["cl_theory"]
+    cl_ee, transfer = d["cl_ee"], d["transfer"]
+    ellb, keep, dl = d["ellb"], d["keep"], d["dl"]
+
+    fig, axes = plt.subplots(2, 1, figsize=(7.2, 6.8), sharex=True,
+                              gridspec_kw={"height_ratios": [1.0, 1.25]})
 
     # ---- (a) EE bandpowers -------------------------------------------------
     ax = axes[0]
     input_line, = ax.plot(ellb[keep], (rebin(cl_ee) * dl)[keep], "-",
-                           color=PS.INK, lw=1.4, zorder=1)
+                           color=PS.INK, lw=1.4, zorder=1, label="input $EE$")
+    proj_handles = []
     for j, proj in enumerate(S.PROJS):
         y = rebin(ee[i, j].mean(0) / transfer) * dl
-        ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj], ms=MS,
-                mfc="none", mew=MEW)
+        h, = ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj],
+                      ms=MS, mfc="none", mew=MEW, label=S.PROJ_LABEL[proj])
+        proj_handles.append(h)
     ax.set_yscale("log")
     ax.set_ylabel(r"$\ell(\ell+1)C_\ell^{EE}/2\pi$  [$\mu$K$^2$]")
 
@@ -142,12 +160,37 @@ def main():
         ax.plot(ellb[keep], rebin(m_ee / cl_ee)[keep], "-", color=COLORS[proj],
                 lw=1.3, alpha=0.9)
     ax.set_ylim(0.25, 2.05)
+    ax.set_xlabel(r"$\ell$")
     ax.set_ylabel(r"measured $C_\ell^{EE}$ / input $C_\ell^{EE}$")
 
-    # ---- (c) BB, which is all leakage --------------------------------------
-    ax = axes[2]
+    axes[0].set_xlim(ELL_MIN, ELL_MAX)
+
+    # Self-sufficient legend: five projections plus the input-EE reference.
+    handles = proj_handles + [input_line]
+    labels = [S.PROJ_LABEL[p] for p in S.PROJS] + ["input $EE$"]
+    fig.legend(handles, labels, fontsize=8.5, ncol=6, loc="upper center",
+               bbox_to_anchor=(0.5, 1.0), columnspacing=1.3,
+               handletextpad=0.5, frameon=False)
+
+    fig.tight_layout(pad=1.0, h_pad=0.6, rect=(0, 0, 1, 0.945))
+    FIGURE_EE.parent.mkdir(exist_ok=True)
+    fig.savefig(FIGURE_EE)
+    print(f"wrote {FIGURE_EE}")
+
+
+def plot_bb(plt, d):
+    """BB, pure leakage -- single-panel figure, columnwidth-friendly."""
+    i, mom = d["i"], d["mom"]
+    bb, ell = d["bb"], d["ell"]
+    ell_theory, cl_theory = d["ell_theory"], d["cl_theory"]
+    cl_bb_lensed, transfer = d["cl_bb_lensed"], d["transfer"]
+    ellb, keep, dl = d["ellb"], d["keep"], d["dl"]
+
+    fig, ax = plt.subplots(1, 1, figsize=(7.2, 4.6))
+
     ref_line, = ax.plot(ellb[keep], (rebin(cl_bb_lensed) * dl)[keep], "--",
-                         color=PS.INK, lw=1.2, zorder=1)
+                         color=PS.INK, lw=1.2, zorder=1,
+                         label="lensed $BB$ (reference)")
     proj_handles = []
     for j, proj in enumerate(S.PROJS):
         y = rebin(bb[i, j].mean(0) / transfer) * dl
@@ -160,33 +203,34 @@ def main():
                     color=COLORS[proj], lw=1.3, alpha=0.9)
     ax.set_yscale("log")
     ax.set_ylim(1e-9, 3e1)
+    ax.set_xlim(ELL_MIN, ELL_MAX)
     ax.set_xlabel(r"$\ell$")
     ax.set_ylabel(r"$\ell(\ell+1)C_\ell^{BB}/2\pi$  [$\mu$K$^2$]")
 
-    axes[0].set_xlim(ELL_MIN, ELL_MAX)
-
-    # One shared legend for the whole figure: five projections (color +
-    # marker identity, held constant across panels) plus the two black
-    # reference curves, each borrowed from wherever it was first drawn.
-    handles = proj_handles + [input_line, ref_line]
-    labels = [S.PROJ_LABEL[p] for p in S.PROJS] + ["input $EE$",
-                                                     "lensed $BB$ (reference)"]
-    fig.legend(handles, labels, fontsize=8.5, ncol=7, loc="upper center",
+    # Self-sufficient legend: five projections plus the lensed-BB reference.
+    handles = proj_handles + [ref_line]
+    labels = [S.PROJ_LABEL[p] for p in S.PROJS] + ["lensed $BB$ (reference)"]
+    fig.legend(handles, labels, fontsize=8.5, ncol=3, loc="upper center",
                bbox_to_anchor=(0.5, 1.0), columnspacing=1.3,
                handletextpad=0.5, frameon=False)
 
-    fig.tight_layout(pad=1.0, h_pad=0.6, rect=(0, 0, 1, 0.965))
-    FIGURE.parent.mkdir(exist_ok=True)
-    fig.savefig(FIGURE)
-    print(f"wrote {FIGURE}")
+    fig.tight_layout(pad=1.0, rect=(0, 0, 1, 0.88))
+    FIGURE_BB.parent.mkdir(exist_ok=True)
+    fig.savefig(FIGURE_BB)
+    print(f"wrote {FIGURE_BB}")
 
-    # A few numbers for the caption and the prose, printed rather than typed.
+
+def print_numbers(d):
+    """A few numbers for the caption and the prose, printed rather than typed."""
+    i, mom, ee, bb = d["i"], d["mom"], d["ee"], d["bb"]
+    ell, ell_theory, cl_theory = d["ell"], d["ell_theory"], d["cl_theory"]
+    cl_ee, transfer = d["cl_ee"], d["transfer"]
+
     print(f"\n5% disk, measured / input EE and measured/model, "
           f"pixel windows divided out:")
     for j, proj in enumerate(S.PROJS):
         r = ee[i, j].mean(0) / transfer / cl_ee
         _, m_ee = model_curves(mom, i, j, ell, ell_theory, cl_theory)
-        m_bb, _ = model_curves(mom, i, j, ell, ell_theory, cl_theory)
         row = []
         for L in (1000, 2000, 3000, 4000):
             k = np.argmin(abs(ell - L))
@@ -200,6 +244,18 @@ def main():
         print(f"  {S.PROJ_LABEL[proj]:<6s} measured {meas:9.3e}   "
               f"model {m_bb[sel].mean():9.3e}   "
               f"<g^2> {mom['g2'][i, j]:9.3e}")
+
+
+def main():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    set_style(plt)
+    d = load_data()
+    plot_ee(plt, d)
+    plot_bb(plt, d)
+    print_numbers(d)
 
 
 if __name__ == "__main__":

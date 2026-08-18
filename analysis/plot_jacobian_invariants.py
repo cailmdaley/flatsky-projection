@@ -23,6 +23,7 @@ from matplotlib.colors import TwoSlopeNorm
 import geometry as G
 from paper_style import PROJ_COLORS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
+from matplotlib.patches import Rectangle
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "figures"
@@ -131,12 +132,13 @@ def main():
             ax.set_yticks([-40, -20, 0, 20, 40])
             ax.tick_params(length=2.0, pad=1.5)
 
-        axg.set_title(LABELS[proj], pad=5)
-        # Color-identity tick above each column title, matching this
-        # projection's hue in every other figure in the paper.
-        axg.plot([0.5], [1.0], marker="s", markersize=3.2,
-                  color=PROJ_COLORS[proj], transform=axg.transAxes,
-                  clip_on=False, zorder=10)
+        axg.set_title(LABELS[proj], pad=6, fontweight="bold")
+        # Color-identity bar above each column title, matching this
+        # projection's hue in every other figure in the paper (see
+        # plot_masks_figure.py).
+        axg.add_patch(Rectangle((0.0, 1.0), 1.0, 0.02, transform=axg.transAxes,
+                                facecolor=PROJ_COLORS[proj], edgecolor="none",
+                                clip_on=False, zorder=10))
         axg.set_xticklabels([])
         axm.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
         if j > 0:
