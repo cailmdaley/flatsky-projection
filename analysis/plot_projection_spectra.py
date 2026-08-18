@@ -60,8 +60,11 @@ MASK_INDEX = 5          # PERC[5] = 5.0%, the paper's reference footprint
 REBIN = 5               # display binning: 5 x dl=10 -> dl=50
 ELL_MIN, ELL_MAX = 200.0, 3900.0
 
-COLORS = {"ProjSFL": "#d62728", "ProjSIN": "#1f77b4", "ProjSTG": "#7f7f7f",
-          "ProjZEA": "#2ca02c", "ProjBICEP": "#ff7f0e"}
+# dataviz categorical palette, slots 1-5 in order {blue, orange, aqua,
+# yellow, magenta}, matching the paper-wide projection color identity
+# established in jacobian_invariants (SFL, SIN, STG, ZEA, BICEP fixed order).
+COLORS = {"ProjSFL": "#2a78d6", "ProjSIN": "#eb6834", "ProjSTG": "#1baf7a",
+          "ProjZEA": "#eda100", "ProjBICEP": "#e87ba4"}
 MARKS = {"ProjSFL": "o", "ProjSIN": "s", "ProjSTG": "x", "ProjZEA": "^",
          "ProjBICEP": "D"}
 
@@ -94,8 +97,11 @@ def main():
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({
-        "font.size": 9.5, "axes.grid": True, "grid.alpha": 0.22,
-        "figure.dpi": 150, "savefig.bbox": "tight",
+        "font.size": 9.5, "axes.grid": True, "grid.alpha": 0.18,
+        "grid.linewidth": 0.6, "figure.dpi": 150, "savefig.bbox": "tight",
+        "axes.edgecolor": "#898781", "axes.linewidth": 0.7,
+        "xtick.color": "#52514e", "ytick.color": "#52514e",
+        "legend.frameon": False,
     })
 
     i = MASK_INDEX
@@ -116,52 +122,64 @@ def main():
     fig, axes = plt.subplots(3, 1, figsize=(7.2, 10.2), sharex=True,
                              gridspec_kw={"height_ratios": [1.0, 1.25, 1.0]})
 
+    MS, MEW = 3.0, 0.9
+
     # ---- (a) EE bandpowers -------------------------------------------------
     ax = axes[0]
-    ax.plot(ellb[keep], (rebin(cl_ee) * dl)[keep], "k-", lw=1.4, zorder=1,
-            label="input $EE$")
+    input_line, = ax.plot(ellb[keep], (rebin(cl_ee) * dl)[keep], "-",
+                           color="#0b0b0b", lw=1.4, zorder=1)
     for j, proj in enumerate(S.PROJS):
         y = rebin(ee[i, j].mean(0) / transfer) * dl
-        ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj], ms=2.6,
-                mfc="none", mew=0.9, label=S.PROJ_LABEL[proj])
+        ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj], ms=MS,
+                mfc="none", mew=MEW)
     ax.set_yscale("log")
     ax.set_ylabel(r"$\ell(\ell+1)C_\ell^{EE}/2\pi$  [$\mu$K$^2$]")
-    ax.legend(fontsize=8, ncol=3, loc="lower left")
 
     # ---- (b) EE ratio to input, with the remap prediction ------------------
     ax = axes[1]
-    ax.axhline(1.0, color="k", lw=1.0, zorder=1)
+    ax.axhline(1.0, color="#898781", lw=0.8, zorder=1)
     for j, proj in enumerate(S.PROJS):
         r = rebin(ee[i, j].mean(0) / transfer / cl_ee)
-        ax.plot(ellb[keep], r[keep], MARKS[proj], color=COLORS[proj], ms=2.6,
-                mfc="none", mew=0.9, label=S.PROJ_LABEL[proj])
+        ax.plot(ellb[keep], r[keep], MARKS[proj], color=COLORS[proj], ms=MS,
+                mfc="none", mew=MEW)
         _, m_ee = model_curves(mom, i, j, ell, ell_theory, cl_theory)
         ax.plot(ellb[keep], rebin(m_ee / cl_ee)[keep], "-", color=COLORS[proj],
-                lw=1.3, alpha=0.85)
+                lw=1.3, alpha=0.9)
     ax.set_ylim(0.25, 2.05)
     ax.set_ylabel(r"measured $C_\ell^{EE}$ / input $C_\ell^{EE}$")
-    ax.legend(fontsize=8, ncol=5, loc="lower left", columnspacing=1.0)
 
     # ---- (c) BB, which is all leakage --------------------------------------
     ax = axes[2]
-    ax.plot(ellb[keep], (rebin(cl_bb_lensed) * dl)[keep], "k--", lw=1.2,
-            zorder=1, label="lensed $BB$ (reference)")
+    ref_line, = ax.plot(ellb[keep], (rebin(cl_bb_lensed) * dl)[keep], "--",
+                         color="#0b0b0b", lw=1.2, zorder=1)
+    proj_handles = []
     for j, proj in enumerate(S.PROJS):
         y = rebin(bb[i, j].mean(0) / transfer) * dl
-        ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj], ms=2.6,
-                mfc="none", mew=0.9, label=S.PROJ_LABEL[proj])
+        h, = ax.plot(ellb[keep], y[keep], MARKS[proj], color=COLORS[proj],
+                      ms=MS, mfc="none", mew=MEW, label=S.PROJ_LABEL[proj])
+        proj_handles.append(h)
         m_bb, _ = model_curves(mom, i, j, ell, ell_theory, cl_theory)
         if np.nanmax(m_bb) > 0:
             ax.plot(ellb[keep], (rebin(m_bb) * dl)[keep], "-",
-                    color=COLORS[proj], lw=1.3, alpha=0.85)
+                    color=COLORS[proj], lw=1.3, alpha=0.9)
     ax.set_yscale("log")
     ax.set_ylim(1e-9, 3e1)
     ax.set_xlabel(r"$\ell$")
     ax.set_ylabel(r"$\ell(\ell+1)C_\ell^{BB}/2\pi$  [$\mu$K$^2$]")
-    ax.legend(fontsize=8, ncol=3, loc="lower right")
 
     axes[0].set_xlim(ELL_MIN, ELL_MAX)
-    fig.tight_layout(pad=1.0, h_pad=0.6)
+
+    # One shared legend for the whole figure: five projections (color +
+    # marker identity, held constant across panels) plus the two black
+    # reference curves, each borrowed from wherever it was first drawn.
+    handles = proj_handles + [input_line, ref_line]
+    labels = [S.PROJ_LABEL[p] for p in S.PROJS] + ["input $EE$",
+                                                     "lensed $BB$ (reference)"]
+    fig.legend(handles, labels, fontsize=8.5, ncol=7, loc="upper center",
+               bbox_to_anchor=(0.5, 1.0), columnspacing=1.3,
+               handletextpad=0.5, frameon=False)
+
+    fig.tight_layout(pad=1.0, h_pad=0.6, rect=(0, 0, 1, 0.965))
     FIGURE.parent.mkdir(exist_ok=True)
     fig.savefig(FIGURE)
     print(f"wrote {FIGURE}")
