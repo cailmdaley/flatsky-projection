@@ -1,0 +1,66 @@
+# Shared submit boilerplate for every pol_project grid stage.
+# Included (not submitted) by grid/stages/*.sub:  include : grid/common.sub
+#
+# Every stage's joblist rows begin with the same four columns --
+#     unit,outpath,outfile,mem
+# -- so all of the below is stage-independent. `unit` is the job's identity:
+# it names the logs and is stamped on the job as +PolUnit, which is how
+# grid/submit.sh knows a unit is already queued and must not be submitted
+# twice. The worker leaves `outfile` in its scratch dir; by default condor
+# remaps it to `outpath` on /sptlocal.
+#
+# GFAL_DEST empty (the default) = that condor remap. `grid/submit.sh --gfal`
+# instead sets GFAL_DEST and blanks the transfer, and the worker pushes the
+# file to dCache itself -- see push_output() in grid/env.sh. Verified working
+# 2026-08-19: the AP-minted SciToken in $_CONDOR_CREDS is accepted by dCache's
+# gPlazma (cluster 2679537), so in-job gfal needs no personal token.
+
+universe                = vanilla
+
+output                  = grid/logs/$(unit).out
+error                   = grid/logs/$(unit).err
+log                     = grid/logs/condor.log
+
+request_memory          = $(mem)
+
++PolUnit                = "$(unit)"
+# Recording the local destination on the job is not decorative: in gfal mode the
+# remap below is blanked, and without this condor_submit warns that the outpath
+# column is unused on every single submission.
++PolOutPath             = "$(outpath)"
++ProjectName            = "spt"
++SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+# $(siteexcl) is the community blacklist at /sptlocal/analysis/condor_exclude_sites.txt,
+# compiled by grid/submit.sh at submit time (defaults to True if the file is
+# unreadable). It is shared across SPT users -- several entries are there for
+# gfal failures specifically -- so it is worth honouring even when a given site
+# happens to work for us.
+siteexcl                = True
+Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True && $(siteexcl)
+
+# No credential configuration of any kind. amundsen's schedd puts a grid
+# credential in $_CONDOR_CREDS for every job on its own (Sasha's Sept-2025
+# auto-provisioning), and the CVMFS gfal wrapper picks it up -- so bare
+# `gfal-copy` in the job just works. Verified: cluster 2679542 (with
+# use_oauth_services) and 2679543 (without) both copied to dCache with no token
+# env set at all. spt3g_software's own cluster.condor_submit() likewise emits no
+# oauth stanza, so this is the established pattern, not a shortcut.
+gfaldest                =
+environment             = "GFAL_DEST=$(gfaldest)"
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+outfiles                = $(outfile)
+transfer_output_files   = $(outfiles)
+transfer_output_remaps  = "$(outfile) = $(outpath)"
+
+# Hold on any failure and auto-release after 10 minutes, up to 6 starts
+# (spt3g_software's cluster/python/condor_tools.py uses exactly this). Preferred
+# over condor's max_retries, which retries opaquely: a job that has exhausted
+# its releases stays *visible* as held, and since a held job still carries its
+# +PolUnit, grid/submit.sh will not quietly resubmit work that is failing
+# repeatedly. `grid/check.sh` prints hold reasons. Note the schedd wraps this in
+# its own `(NumHolds ?: 0) <= 4 && HoldReasonCode != 46/47 && ReqPeriodicRelease`,
+# so the effective release cap is the tighter of the two.
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+periodic_release        = (NumJobStarts < 6) && ((CurrentTime - EnteredCurrentStatus) > 600)

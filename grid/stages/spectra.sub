@@ -1,41 +1,18 @@
-# Production submit file for the highell namaster_spectra stage on OSG.
-#
-# One job = one (projection, seed), spanning all 7 mask indices and both
-# legs internally -- see grid/spectra/worker.sh for why. Job tuples come
-# from a queue-from list written by grid/spectra/launcher.sh, one line per
-# job:
-#     proj,seed,seedpad,mem
-# Submit with:
-#     condor_submit grid/spectra/spectra.sub -a "joblist = grid/spectra/lists/batch.txt"
-#
-# Needs the spt3g build tarball (unlike grid/coupling, which is pure
-# numpy/pymaster) because namaster_spectra.py opens the projected .g3 maps
-# via `spt3g.core.G3File`/`spt3g.maps`. Every (mask_index) input for the
-# job's projection is transferred explicitly -- condor doesn't glob -- plus
-# the one seed's qu/eb map pair. Outputs are remapped straight onto
-# /sptlocal (the submit host can see it; the workers cannot see anything
-# outside their scratch dir).
+# NaMaster bandpowers: one job = one (projection, seed), spanning all 7 mask
+# indices and both legs internally (see grid/stages/spectra.sh).
+# Submitted only via grid/submit.sh spectra [glob ...]
+include : grid/common.sub
 
-universe                = vanilla
-executable              = grid/spectra/worker.sh
+executable              = grid/stages/spectra.sh
 arguments               = "$(proj) $(seed)"
 
-output                  = grid/spectra/logs/$(proj)_seed$(seedpad).out
-error                   = grid/spectra/logs/$(proj)_seed$(seedpad).err
-log                     = grid/spectra/logs/spectra.log
-
 request_cpus            = 2
-request_memory          = $(mem)
 request_disk            = 8GB
 
-+ProjectName            = "spt"
-+SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
-
-Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True
-
-should_transfer_files   = YES
-when_to_transfer_output = ON_EXIT
-transfer_input_files    = osg_test/scratch/spt3g_build.tar.gz, \
+# Condor does not glob, so every mask index is listed. Needs the spt3g build
+# because namaster_spectra.py opens the projected maps via G3File.
+transfer_input_files    = grid/env.sh, \
+                          osg_test/scratch/spt3g_build.tar.gz, \
                           src/stages/namaster_spectra.py, \
                           src/stages/_decisions.py, \
                           /sptlocal/user/cailmdaley/pol_project/results/highell/flatsky_masks/mask_$(proj)_0.npz, \
@@ -62,10 +39,4 @@ transfer_input_files    = osg_test/scratch/spt3g_build.tar.gz, \
                           /sptlocal/user/cailmdaley/pol_project/results/highell/projected_qu/qu_$(proj)_seed$(seedpad).g3, \
                           /sptlocal/user/cailmdaley/pol_project/results/highell/projected_eb/eb_$(proj)_seed$(seedpad).g3
 
-transfer_output_files   = bandpowers_$(proj)_seed$(seedpad).npz
-transfer_output_remaps  = "bandpowers_$(proj)_seed$(seedpad).npz = /sptlocal/user/cailmdaley/pol_project/results/highell/namaster_spectra/bandpowers_$(proj)_seed$(seedpad).npz"
-
-success_exit_code       = 0
-max_retries             = 2
-
-queue proj,seed,seedpad,mem from $(joblist)
+queue unit,outpath,outfile,mem,proj,seed,seedpad from $(joblist)
