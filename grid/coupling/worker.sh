@@ -50,6 +50,9 @@ export OS_ARCH=RHEL_9_x86_64
 # that was always bash. Pin it before the eval, not after.
 export SHELL=/bin/bash
 eval $(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)
+# setup.sh exports OMP_NUM_THREADS=1; the big windows (4-6) exceed OSPool's
+# 20-hour execute-duration cap single-threaded, so thread them.
+export OMP_NUM_THREADS=8
 case "$(command -v python3)" in
     /cvmfs/spt.opensciencegrid.org/py3-v5/*) echo "TOOLSET_OK yes" ;;
     *) echo "TOOLSET_OK NO ($(command -v python3))"; exit 1 ;;
@@ -64,7 +67,7 @@ mv "mask_${PROJ}_${IDX}.npz" "masks/"
     --projections "$PROJ" \
     --purify-b purify \
     --lmax l6000 --delta-ell 10 \
-    --max-procs 1 \
+    --max-procs 8 \
     --out out
 rc=$?
 echo "run_rc=$rc"

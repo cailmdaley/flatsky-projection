@@ -19,7 +19,7 @@ output                  = grid/coupling/logs/$(proj)_$(idx).out
 error                   = grid/coupling/logs/$(proj)_$(idx).err
 log                     = grid/coupling/logs/coupling.log
 
-request_cpus            = 1
+request_cpus            = 8
 request_memory          = $(mem)
 request_disk            = 4GB
 
