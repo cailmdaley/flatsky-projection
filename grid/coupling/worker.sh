@@ -2,8 +2,9 @@
 # Production worker for the highell coupling-matrix stage on OSG.
 #
 # One job = one (projection, mask index) pair:
-#   worker.sh <projection> <mask_index>
-# e.g. worker.sh ProjSIN 0
+#   worker.sh <projection> <mask_index> [threads]
+# e.g. worker.sh ProjSIN 0        (threads defaults to 8)
+#      worker.sh ProjBICEP 6 16   (idx=6 rescue: 16-core, see coupling.sub)
 #
 # Unlike grid/worker.sh (the projection stage), this stage needs no spt3g at
 # all -- coupling_matrices.py only imports numpy and pymaster, both already
@@ -19,14 +20,21 @@
 # containing exactly one npz therefore makes it process exactly this one
 # (projection, index) pair and nothing else -- no code changes needed.
 #
-# Single-threaded (OMP_NUM_THREADS=1 etc via --max-procs 1): 35 jobs run
-# concurrently on the OSpool: threading would only fight the scheduler, not
-# speed up a job.
+# Threading: OMP_NUM_THREADS / --max-procs come from $3, defaulting to 8.
+# /usr/bin/time -v on the completed idx=4/5 windows showed ~700-734% CPU at
+# 8 cores (87-92% of ideal 8x -- an Amdahl fit puts the serial fraction at
+# ~2%), so doubling to 16 buys a genuine ~1.76x, not just contention. That's
+# the idx=6 rescue's whole point: idx=5's worst case (ProjSFL) already took
+# 18:58:15 wall at 8 cores, grazing the 20h Medium cap it was held under
+# before this file added +JobDurationCategory=Long; idx=6 is bigger still,
+# so 16 cores buys real margin under Long's 40h rather than 8 cores hoping
+# the 40h ceiling is enough. Request_cpus in coupling.sub must match $3.
 
 set -o pipefail
 
 PROJ=$1
 IDX=$2
+THREADS=${3:-8}
 OUTW22="w22_${PROJ}_${IDX}.fits"
 OUTW00="w00_${PROJ}_${IDX}.fits"
 
@@ -52,7 +60,7 @@ export SHELL=/bin/bash
 eval $(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)
 # setup.sh exports OMP_NUM_THREADS=1; the big windows (4-6) exceed OSPool's
 # 20-hour execute-duration cap single-threaded, so thread them.
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=$THREADS
 case "$(command -v python3)" in
     /cvmfs/spt.opensciencegrid.org/py3-v5/*) echo "TOOLSET_OK yes" ;;
     *) echo "TOOLSET_OK NO ($(command -v python3))"; exit 1 ;;
@@ -67,7 +75,7 @@ mv "mask_${PROJ}_${IDX}.npz" "masks/"
     --projections "$PROJ" \
     --purify-b purify \
     --lmax l6000 --delta-ell 10 \
-    --max-procs 8 \
+    --max-procs "$THREADS" \
     --out out
 rc=$?
 echo "run_rc=$rc"

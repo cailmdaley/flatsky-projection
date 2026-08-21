@@ -13,13 +13,17 @@
 
 universe                = vanilla
 executable              = grid/coupling/worker.sh
-arguments               = "$(proj) $(idx)"
+# threads defaults to 8 when a joblist has no 4th column (old batch.txt/
+# rescue2.txt/probe.txt lists stay valid); the idx=6 rescue list sets it to
+# 16 -- see worker.sh's threading comment for why that buys a real ~1.76x,
+# not just contention. request_cpus must track the same value.
+arguments               = "$(proj) $(idx) $(threads:8)"
 
 output                  = grid/coupling/logs/$(proj)_$(idx).out
 error                   = grid/coupling/logs/$(proj)_$(idx).err
 log                     = grid/coupling/logs/coupling.log
 
-request_cpus            = 8
+request_cpus            = $(threads:8)
 request_memory          = $(mem)
 request_disk            = 4GB
 
@@ -56,4 +60,7 @@ max_retries             = 2
 periodic_hold           = NumJobStarts > 4
 periodic_hold_reason    = "NumJobStarts exceeded 4 -- likely stuck in an eviction/preemption cycle, not a worker.sh failure (max_retries doesn't count evictions). Needs a human look, not another silent restart."
 
-queue proj,idx,mem from $(joblist)
+# threads is an optional 4th column; a joblist row without one leaves the
+# variable undefined for that row, so $(threads:8) above still defaults --
+# existing 3-column lists (batch.txt, rescue2.txt, probe.txt) are unaffected.
+queue proj,idx,mem,threads from $(joblist)
