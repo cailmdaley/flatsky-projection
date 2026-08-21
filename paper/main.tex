@@ -46,22 +46,13 @@
 
 \date{Received ---; accepted ---}
 
-\abstract
-% Context
-{Ground-based CMB experiments estimate polarization power spectra on flat-sky grids, but the sphere does not flatten without distortion.
-Projection rotates the polarization basis by a position-dependent angle; standard pipelines undo that rotation, but for a non-conformal projection no single angle can align grid north with true north and grid east with true east at once, and the residual leaks $E$-mode power into $B$.}
-% Aims
-{We show that this leakage has a closed form — one of two, in fact, one per spin.}
-% Methods
-{For a projection whose local Jacobian has singular values $s_1 \geq s_2$, define the shear $g = (s_1 - s_2)/(s_1 + s_2)$.
-A scalar spectrum feels that shear only through the convexity of $C(\ell)$: azimuthal averaging lifts measured power by $\tfrac{n^2}{4}\gsq$ for a local slope $n$, which on the Silk damping tail turns a percent-level distortion into an order-unity excess — $40$--$75\%$ for a wide field at $\delta_0 = \SI{-56}{\degree}$.
-A spin-two field feels the same shear a second way, through the misalignment of the $E$/$B$ basis, and that channel carries no spectral-slope dependence at all: the leaked power is $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$, with the average taken over the analysis footprint weighted by the squared mask.}
-% Results
-{The coefficient is derived, not fitted: it is the azimuthal average of $\sin^2 2\delta\psi$, the misalignment the shear imposes on each mode, with exact form $2g^2(1 - \tfrac{3}{4}g^2)$.
-Against simulations spanning five projections — four sheared, plus the conformal null — and seven sky fractions from 0.75\% to 10\%, the relation holds to \fitrms\ rms across four decades in $\gsq$, with no free parameters; restoring the two terms the leading order drops reproduces the band-by-band shape to 1\% rms, still with none.}
-% Conclusions
-{The conformal stereographic projection has shear identically zero, so its measured $BB$ records the pipeline's own $E \to B$ floor instead.
-And the agreement between cylindrical and BICEP-style projections seen on circular masks is a property of the mask's symmetry: on the SPT 1500d field their predicted leakage differs by a factor of four.}
+\abstract{Flat-sky CMB analyses begin by projecting the sphere onto a plane, and no projection does so without distortion.
+The distortion that matters is the projection's local shear $g = (s_1 - s_2)/(s_1 + s_2)$, built from the singular values of its Jacobian, and it enters measured spectra through two closed forms, one per spin.
+A scalar spectrum feels the shear through the convexity of $C(\ell)$: azimuthal averaging lifts measured power by $\tfrac{n^2}{4}\gsq$ for a local spectral slope $n$ — an order-unity effect on the damping tail of a wide field.
+A spin-two field feels it through the misalignment of the $E$/$B$ basis, with no slope dependence at all: the projection leaks $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$, averaged over the footprint with squared-mask weighting, with exact per-mode form $2g^2(1 - \tfrac{3}{4}g^2)$.
+Both coefficients are derived, not fitted.
+Against simulations spanning five projections and seven sky fractions from 0.75\% to 10\%, the leakage relation holds to \fitrms\ rms across four decades in $\gsq$ with no free parameters.
+The conformal stereographic projection has $g \equiv 0$ and instead measures the pipeline's own $E \to B$ floor, and the oft-noted agreement between Sanson--Flamsteed and BICEP-style cylindrical projections is a symmetry of circular masks: on the SPT 1500d field their predicted leakage differs by a factor of four.}
 
 \keywords{cosmic background radiation -- methods: data analysis -- techniques: image processing}
 
