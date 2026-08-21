@@ -25,6 +25,12 @@ request_disk            = 4GB
 
 +ProjectName            = "spt"
 +SingularityImage       = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
+# OSPool's default (Medium) execute-duration cap is 20h; Long raises it to
+# 40h. The threaded (8-core) idx=6 windows estimate at 12-19h/job -- inside
+# Medium's margin of error, and four of them proved it by hitting the exact
+# 20:00:00 wall on 2026-08-20/21 (see grid/coupling rescue history). Long
+# clears that with real headroom.
++JobDurationCategory    = "Long"
 
 Requirements            = HAS_CVMFS_spt_opensciencegrid_org == True && HAS_SINGULARITY == True
 
@@ -39,5 +45,15 @@ transfer_output_remaps  = "w22_$(proj)_$(idx).fits = /sptlocal/user/cailmdaley/p
 
 success_exit_code       = 0
 max_retries             = 2
+
+# max_retries only counts worker.sh exit-code failures. OSPool preemption
+# (glidein eviction, event code 004 in the job log) restarts a job from zero
+# without touching that counter at all -- confirmed against ProjBICEP,5 and
+# ProjSIN,4 in cluster 2679536, which were evicted 6-8 times over ~2 days
+# (bounced across NDCMS, IRISHEP, LIGO-Caltech, and UConn glideins) and never
+# converged. Nothing else was catching that silent cycle, so cap total start
+# attempts explicitly and surface it as a hold instead.
+periodic_hold           = NumJobStarts > 4
+periodic_hold_reason    = "NumJobStarts exceeded 4 -- likely stuck in an eviction/preemption cycle, not a worker.sh failure (max_retries doesn't count evictions). Needs a human look, not another silent restart."
 
 queue proj,idx,mem from $(joblist)
