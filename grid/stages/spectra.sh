@@ -28,7 +28,7 @@ mv "eb_${PROJ}_seed${SEEDPAD}.g3" eb/ || { echo "MISSING eb map"; exit 1; }
 python3 - "$PROJ" <<'PYEOF'
 import json, sys
 proj = sys.argv[1]
-json.dump({"lmax": 6000, "delta_ell": 10, "purify_b": True,
+json.dump({"lmax": 6000, "delta_ell": 50, "purify_b": True,
            "workspaces": [{"projection": proj, "mask_index": i,
                            "w22": f"w22_{proj}_{i}.fits",
                            "w00": f"w00_{proj}_{i}.fits"} for i in range(7)]},
@@ -42,7 +42,7 @@ say RUN
     --projections "$PROJ" \
     --seed-start "$SEED" --seed-stop "$((SEED + 1))" \
     --purify-b purify --pixel-window healpix_and_flat \
-    --lmax l6000 --delta-ell 10 --max-procs 2 --out out
+    --lmax l6000 --delta-ell 50 --max-procs 2 --out out
 rc=$?
 echo "run_rc=$rc"
 [ "$rc" -eq 0 ] || exit "$rc"
