@@ -544,7 +544,10 @@ decisions:
       logarithmically -- log bins at low ell fall below the kernel width and
       correlate neighbouring bandpowers. Width 50 also merges 2:1 onto
       Crawford's width-100 comparison bandpowers. One scheme per universe,
-      never mixed widths.
+      never mixed widths. Measured (2026-08-23, azimuthally averaged
+      |FFT|^2 of the smallest apodized disk, mask_ProjZEA_0): the coupling
+      kernel falls below 1% of peak by ell ~ 20 and 0.1% by ell ~ 45, so
+      width 50 exceeds every mask's kernel width.
     default: d10
     options:
       d10:
