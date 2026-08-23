@@ -15,3 +15,4 @@ decisions:
   apodization: c2_2p5deg
   b_purification: purify
   pixel_window: healpix_and_flat
+  bandpower_width: d50

@@ -304,7 +304,7 @@ outputs:
       regression target: a workspace built here under the baseline universe should
       reproduce the 2021 bandpowers when fed the 2021 maps.
     inputs: [flatsky_masks]
-    decisions: [apodization, b_purification, ell_max]
+    decisions: [apodization, b_purification, ell_max, bandpower_width]
     recipe:
       command: >-
         bash env.sh
@@ -312,7 +312,7 @@ outputs:
         --masks {inputs.flatsky_masks}
         --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
         --purify-b {decisions.b_purification}
-        --lmax {decisions.ell_max} --delta-ell 10
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
         --max-procs 4
         --out {output}
       resources:
@@ -325,14 +325,14 @@ outputs:
     label: "EE and BB bandpowers"
     description: |
       NaMaster pseudo-C_ell EE and BB bandpowers for every (projection, mask,
-      realization), binned at delta_ell = 10. Computed for both legs: the Q/U leg
+      realization), binned per the bandpower_width decision. Computed for both legs: the Q/U leg
       carries the leakage, the E/B leg is the reference. Written as one array
       rather than the 2021 layout of 70 separate text files, so downstream code
       cannot mis-index projections — the 2021 plotting script assigned
       cl_flat_EE[ii] inside the projection loop and collapsed every projection
       onto the last one read.
     inputs: [projected_qu, projected_eb, flatsky_masks, coupling_matrices]
-    decisions: [b_purification, pixel_window, ell_max]
+    decisions: [b_purification, pixel_window, ell_max, bandpower_width]
     recipe:
       command: >-
         bash env.sh
@@ -345,7 +345,7 @@ outputs:
         --seed-start 0 --seed-stop 20
         --purify-b {decisions.b_purification}
         --pixel-window {decisions.pixel_window}
-        --lmax {decisions.ell_max} --delta-ell 10
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
         --max-procs 4
         --out {output}
       resources:
@@ -527,6 +527,32 @@ decisions:
       l6000:
         label: "lmax 6000"
         description: "600 bins; covers the excess Tom and Gil are chasing with margin. Pair with nside8192."
+
+  bandpower_width:
+    label: "Bandpower bin width"
+    tags: [resolution]
+    rationale: |
+      Uniform linear bins fed to NmtBinFlat; flat weighting within bins. The
+      2021 analysis used width 10, inherited by the first highell coupling
+      runs, where it priced the largest mask's spin-2 workspace above OSPool's
+      hard 40 h execute-duration wall (coupling cost grows roughly with the
+      square of the bin count). The field's convention is linear and coarser:
+      SPT-3G D1 uses uniform delta_ell = 50 over its whole range
+      (arXiv:2506.20707), ACT DR6's minimum bin width is 50 (2503.14452),
+      Planck plik is 30, and BICEP/Keck chose 35 to match the mask
+      coupling-kernel width (1403.3985). No CMB analysis bins
+      logarithmically -- log bins at low ell fall below the kernel width and
+      correlate neighbouring bandpowers. Width 50 also merges 2:1 onto
+      Crawford's width-100 comparison bandpowers. One scheme per universe,
+      never mixed widths.
+    default: d10
+    options:
+      d10:
+        label: "delta_ell 10 (2021 run)"
+        description: "400 bins to lmax 4000. Reproduces the existing bandpowers; resolves the projection wiggles."
+      d50:
+        label: "delta_ell 50 (SPT-3G D1 convention)"
+        description: "120 bins to lmax 6000. ~25x cheaper coupling matrices; wider than every mask's coupling kernel."
 
   interpolation:
     label: "Healpix to flat-sky resampling"

@@ -1,0 +1,24 @@
+Matplotlib is building the font cache; this may take a moment.
+	Command being timed: "python3 coupling_matrices.py --masks masks --projections ProjSIN --purify-b purify --lmax l6000 --delta-ell 10 --max-procs 8 --out out"
+	User time (seconds): 214521.52
+	System time (seconds): 205.69
+	Percent of CPU this job got: 715%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:20:23
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1232884
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 9147
+	Minor (reclaiming a frame) page faults: 47595141
+	Voluntary context switches: 167088
+	Involuntary context switches: 608542
+	Swaps: 0
+	File system inputs: 1403120
+	File system outputs: 347560
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

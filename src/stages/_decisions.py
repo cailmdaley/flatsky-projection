@@ -41,6 +41,16 @@ def parse_lmax(value: str) -> int:
     raise _bad("--lmax", value, {"l4000", "l6000"})
 
 
+def parse_delta_ell(value: str) -> int:
+    """``d10`` | ``d50`` | ``10`` -> int."""
+    text = str(value).strip()
+    if text.startswith("d") and text[1:].isdigit():
+        return int(text[1:])
+    if text.isdigit():
+        return int(text)
+    raise _bad("--delta-ell", value, {"d10", "d50"})
+
+
 def parse_nside(value: str) -> int:
     """``nside4096`` | ``nside8192`` | ``4096`` -> int."""
     text = str(value).strip()

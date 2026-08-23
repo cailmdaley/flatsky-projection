@@ -1,0 +1,2 @@
+ProjSIN,4,8GB
+ProjBICEP,5,12GB

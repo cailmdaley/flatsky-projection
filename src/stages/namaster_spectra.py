@@ -76,6 +76,7 @@ from pathlib import Path
 
 from _decisions import (
     add_common_args,
+    parse_delta_ell,
     parse_lmax,
     parse_pixel_window,
     parse_purify_b,
@@ -102,7 +103,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--purify-b", required=True, help="purify | standard | true | false")
     p.add_argument("--pixel-window", required=True, help="none | healpix_only | healpix_and_flat")
     p.add_argument("--lmax", required=True, help="l4000 | l6000 | bare integer")
-    p.add_argument("--delta-ell", type=int, default=10)
+    p.add_argument("--delta-ell", type=parse_delta_ell, default=10)
     add_common_args(p, seeds=True)
     return p
 

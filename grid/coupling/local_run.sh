@@ -38,7 +38,7 @@ cd "$REPO/src/stages" || exit 1
     --masks "$MASKS" \
     --projections "$PROJ" \
     --purify-b purify \
-    --lmax l6000 --delta-ell 10 \
+    --lmax l6000 --delta-ell 50 \
     --max-procs 8 \
     --out "$OUT"
 rc=$?

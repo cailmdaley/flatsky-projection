@@ -74,7 +74,7 @@ mv "mask_${PROJ}_${IDX}.npz" "masks/"
     --masks masks \
     --projections "$PROJ" \
     --purify-b purify \
-    --lmax l6000 --delta-ell 10 \
+    --lmax l6000 --delta-ell 50 \
     --max-procs "$THREADS" \
     --out out
 rc=$?
