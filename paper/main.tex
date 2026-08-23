@@ -241,9 +241,11 @@ The scalar coefficient has a lensing pedigree of its own, and it is worth naming
 Equation~\eqref{eq:scalar_expansion} --- the $\order{g^2}$ content of Equation~\eqref{eq:scalar_ratio}, which is exact in $g$ --- is the constant-shear limit of the standard lensed $TT$ kernel \citep{lewis06} at first order in $C^{\phi\phi}$.
 Substituting $\vbell' = \vbell - \vb*{L}$ with the deflection power confined to $L \ll \ell$, the counterterm --- $-\ell^2 R^\phi$ for isotropic deflection power, and in general the tensor $-\ell_i \ell_j \expval{\partial_i \phi \partial_j \phi}$ --- cancels the $\order{L^2}$ non-derivative part of the convolution exactly, and what survives at $\order{L^4}$, written in terms of the distortion tensor $\partial_i \partial_j \phi$ decomposed in the frame of the mode as $\kappa \pm \gamma_+$ along the diagonal and $\gamma_\times$ off it, is
 \begin{equation} \label{eq:tt_collapse}
-  \tfrac12 \ell^2 C'' \expval{(\kappa + \gamma_+)^2}
-  + \ell C' \expval{3\kappa^2 + 4\kappa\gamma_+ + \gamma_+^2 + \tfrac32 \gamma_\times^2}
-  + C \expval{3\kappa^2 + \gamma_+^2 + \gamma_\times^2},
+\begin{aligned}
+  &\tfrac12 \ell^2 C'' \expval{(\kappa + \gamma_+)^2}
+  + \ell C' \expval{3\kappa^2 + 4\kappa\gamma_+ + \gamma_+^2 + \tfrac32 \gamma_\times^2} \\
+  &\quad + C \expval{3\kappa^2 + \gamma_+^2 + \gamma_\times^2},
+\end{aligned}
 \end{equation}
 with $\gamma_+$ and $\gamma_\times$ the shear components along and across the mode.
 This is not merely an approximation to the azimuthal remap average of Equation~\eqref{eq:scalar_ratio}: term by term in $\vb*{L}$, it \textit{is} the second-order-in-distortion part of the exact constant-Jacobian remap $\abs{\det A}^{-1} C(\abs{A^{-T}\vbell})$, the difference vanishing identically at this order.
@@ -311,8 +313,8 @@ Writing $e^{2i\delta\psi} = (1 + g e^{-2i\chi})/(1 + g e^{+2i\chi})$, that avera
 \begin{equation} \label{eq:spin-ladder}
 \begin{aligned}
   \expval{\sin^2\qty(s\,\delta\psi)}_\chi
-  &= \frac{1}{2}\qty[1 - {}_2F_1\qty(-s,\, s;\, 1;\, g^2)]
-   = \frac{1}{2}\sum_{k=1}^{s}(-1)^{k+1}\binom{s}{k}\binom{s+k-1}{k}\, g^{2k} \\
+  &= \frac{1}{2}\qty[1 - {}_2F_1\qty(-s,\, s;\, 1;\, g^2)] \\
+  &= \frac{1}{2}\sum_{k=1}^{s}(-1)^{k+1}\binom{s}{k}\binom{s+k-1}{k}\, g^{2k} \\
   &= \frac{s^2}{2}\,g^2\qty[1 - \frac{s^2-1}{4}\,g^2 + \order{g^4}].
 \end{aligned}
 \end{equation}
@@ -371,8 +373,8 @@ The result is the paper's forward model, an integral over the footprint with no 
     \expval{\sin^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
   C_\ell^{EE} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
     \expval{\cos^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
-  \mathcal{N} &= \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J},
-  \qquad r(\chi) = \frac{\abs{J^{T}\vbell}}{\ell} = \sqrt{s_1^2 \cos^2\chi + s_2^2\sin^2\chi},
+  \mathcal{N} &= \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}, \\
+  r(\chi) &= \frac{\abs{J^{T}\vbell}}{\ell} = \sqrt{s_1^2 \cos^2\chi + s_2^2\sin^2\chi},
 \end{aligned}
 \end{equation}
 where every quantity inside the integral is evaluated at the sky position $\vu*{n}$, $\expval{\cdot}_\chi$ is the uniform average over mode azimuth that annulus binning performs, and $C^{EE}_{\rm sky}$ is set to zero above the simulations' band limit $\ell = 4000$.
@@ -611,9 +613,11 @@ The curl channel is where a projection can be caught, and it splits the five cle
 A zenithal projection sends angular radius $r$ from the tangent point to plane radius $R(r)$ at fixed azimuth, so in the orthonormal polar frames on both sides its Jacobian is $\mathrm{diag}\qty(R'(r),\, R(r)/\sin r)$ --- diagonal, hence symmetric, hence rotation-free --- and so is the composite against TAN.
 The displacement is purely radial and is the gradient of a potential that integrates in closed form; referred to the radius-preserving ARC chart,
 \begin{equation} \label{eq:phicart}
-  \phi_{\rm SIN} = -\cos r - \tfrac{r^2}{2}, \qquad
-  \phi_{\rm ZEA} = -4\cos\tfrac{r}{2} - \tfrac{r^2}{2}, \qquad
-  \phi_{\rm STG} = -4\ln\cos\tfrac{r}{2} - \tfrac{r^2}{2}.
+\begin{aligned}
+  \phi_{\rm SIN} &= -\cos r - \tfrac{r^2}{2}, \qquad
+  \phi_{\rm ZEA} = -4\cos\tfrac{r}{2} - \tfrac{r^2}{2}, \\
+  \phi_{\rm STG} &= -4\ln\cos\tfrac{r}{2} - \tfrac{r^2}{2}.
+\end{aligned}
 \end{equation}
 SFL and BICEP have no such potential, because their grid axes track the local meridian rather than a single point.
 SFL's Jacobian in the sky frame is the pure shear $\qty(\begin{smallmatrix} 1 & -t \\ 0 & 1\end{smallmatrix})$ with $t = (\lambda-\lambda_0)\sin\delta$, whose antisymmetric part is $-t/2$ --- the same magnitude as its shear, a pure shear being half rotation and half symmetric stretch.
