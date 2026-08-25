@@ -41,20 +41,21 @@ Pixel window
 Two independent windows are divided out of the *power* spectrum, hence
 squared (a window multiplies the map, so it enters C_l as window**2):
 
-* ``healpix_only``: the input Nside-8192 Healpix pixel window is imprinted
-  on the alms in ``preprocess_healpix.py`` (map2alm off the real pixelized
-  input map) and stays there through every synthesis this pipeline does. It
-  is tabulated on integer ell by ``hp.pixwin``, so it is top-hat-binned onto
-  the bandpowers with ``NmtBinFlat.bin_cell`` -- the same weighted-average
-  convention NaMaster itself uses to build ``ell_eff`` -- before squaring.
-* ``healpix_and_flat``: additionally divides by
+* ``flat_only`` (production choice for high-ell work): divides by
   ``spt3g.mapspectra.pixel_window.pixwin_flatsky``, the azimuthally-averaged
   2-arcmin flat-sky top-hat window from the interpolate-then-rebin step.
-  Unlike ``hp.pixwin`` this is a smooth analytic function of ell rather than
-  a tabulated array, so it is evaluated directly at each bandpower's
-  effective ell (``NmtBinFlat.get_effective_ells()``) rather than binned from
-  a fine grid -- there is no discretization to average over in the first
-  place.
+  A smooth analytic function of ell rather than a tabulated array, so it is
+  evaluated directly at each bandpower's effective ell
+  (``NmtBinFlat.get_effective_ells()``) rather than binned from a fine grid.
+* ``healpix_only``: divides by the Nside-8192 Healpix window, tabulated on
+  integer ell by ``hp.pixwin`` and top-hat-binned onto the bandpowers with
+  ``NmtBinFlat.bin_cell``. Empirically the unlensed_TQU inputs carry NO such
+  window (Cl of the preprocessed alms matches theory flat to ell = 6000,
+  incompatible with pixwin**2 at > 50 sigma) -- the sims were synthesized
+  in harmonic space without pixelization smoothing -- so this mode
+  over-corrects and exists only for the explicit comparison.
+* ``healpix_and_flat``: both of the above; over-corrects for the same
+  reason.
 
 Resolution and pixel size are fixed for this whole analysis (see the
 README's "Grid and geometry" section and ``astra.yaml``'s resolution-chain
@@ -173,13 +174,19 @@ def compute_pixel_window(mode: str, b, ell_eff, lmax: int):
     if mode == "none":
         return np.ones_like(ell_eff)
 
-    import healpy as hp
+    correction = np.ones_like(ell_eff)
 
-    ells = np.arange(lmax + 1, dtype=float)
-    pw_hp_sq = hp.pixwin(INPUT_HEALPIX_NSIDE)[: lmax + 1] ** 2
-    correction = b.bin_cell(ells, pw_hp_sq)
+    if mode in {"healpix_only", "healpix_and_flat"}:
+        # Empirically the unlensed_TQU inputs carry NO Nside-8192 window
+        # (Cl(alms)/Cl(theory) flat to ell=6000), so these modes over-correct;
+        # they are kept for the explicit comparison, not for production.
+        import healpy as hp
 
-    if mode == "healpix_and_flat":
+        ells = np.arange(lmax + 1, dtype=float)
+        pw_hp_sq = hp.pixwin(INPUT_HEALPIX_NSIDE)[: lmax + 1] ** 2
+        correction = correction * b.bin_cell(ells, pw_hp_sq)
+
+    if mode in {"flat_only", "healpix_and_flat"}:
         from spt3g.mapspectra.pixel_window import pixwin_flatsky
 
         pw_flat = pixwin_flatsky(ell_eff, RES_ARCMIN)

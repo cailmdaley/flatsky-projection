@@ -427,8 +427,8 @@ where $\tan \phi_{\vbell} = \ell_y / \ell_x$.
 Spectra are estimated with \href{https://github.com/LSSTDESC/NaMaster}{NaMaster} \citep{alonso19} with $B$-mode purification, in bandpowers of width $\Delta\ell = 10$ to $\ell = 4000$, after apodizing (C2, \SI{2.5}{\degree}) circular masks of seven sky fractions from 0.75\% to 10\% (Fig.~\ref{fig:masks}).
 The quoted sky fractions label the unapodized disk areas; the mask-squared averages that enter the relation are computed from the apodized masks as used.
 In area those disks run from \SI{315}{deg\squared} (0.75\%) to \SI{4206}{deg\squared} (10\%), so the suite brackets the footprints of real ground-based surveys: SPT's 1500d field falls between the 3\% disk (\SI{1251}{deg\squared}) and the 5\% disk (\SI{2053}{deg\squared}), the latter being the reference footprint of Sect.~\ref{sec:results}.
-Pixel windows require care in this chain, and they cancel: the input maps carry the $N_{\rm side} = 8192$ HEALPix window (preserved by the harmonic transform; the band-limited synthesis onto the intermediate grid imprints nothing new), and the interpolate-then-rebin flattening has a transfer function that no analytic window captures --- but both legs pass through the identical chain, so every such factor is common to $EE$ and $BB$ and cancels in the leakage ratio the relation predicts.
-Where absolute spectra are shown, we divide out the $N_{\rm side} = 8192$ window and let the flat-sky transfer function appear as a common high-$\ell$ suppression rather than model it.
+Pixel windows require care in this chain, and they cancel: the input maps carry no HEALPix window (the power spectrum of the harmonic-space inputs matches theory across the full range, and the band-limited synthesis onto the intermediate grid imprints nothing new), so the only pixelization imprint is the interpolate-then-rebin flattening, whose transfer function no analytic window fully captures --- but both legs pass through the identical chain, so every such factor is common to $EE$ and $BB$ and cancels in the leakage ratio the relation predicts.
+Where absolute spectra are shown, we divide out the analytic \SI{2}{\arcminute} flat-sky window and let any residual transfer appear as a common high-$\ell$ suppression rather than model it.
 
 The five projections are those of Table~\ref{table:projs}, each applied to the same realizations on the same grid.
 One selection rule applies throughout: where the pipeline's own $E \to B$ floor (Sect.~\ref{subsec:scalar_validation}) exceeds $\sim 20\%$ of a measured $BB$ bandpower --- the smallest masks at $\ell > 3000$ --- we exclude the point rather than subtract it, since the floor's independence of projection is an assumption we have not tested at that precision.
@@ -502,7 +502,7 @@ The floor is in any case irrelevant to the fits below, which use raw bandpowers:
     Top: $EE$ bandpowers with the input spectrum in black.
     Bottom: the same $EE$ divided by the input --- the scalar remap of Eq.~\eqref{eq:scalar_ratio}, evaluated for each projection's Jacobian, with the curve inheriting the input spectrum's acoustic structure because the coefficient follows the local slope.
     The curve is Eq.~\eqref{eq:forward}, the restored-terms forward model: the exact $\cos^2 2\delta\psi$ kernel with the sky spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$, band-limited at the simulations' $\ell = 4000$.
-    Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display, and divided by the $N_{\rm side} = 8192$ HEALPix and $\SI{2}{\arcminute}$ flat-sky pixel windows.
+    Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display, and divided by the $\SI{2}{\arcminute}$ flat-sky pixel window.
     The residual common suppression of a few percent, growing with $\ell$ and shared by every projection, is the bilinear interpolation transfer (Sect.~\ref{subsec:residuals}).
     STG, conformal and shearless, carries pure magnification and so falls monotonically.
   }
@@ -521,7 +521,7 @@ For scale, the two cylindrical projections leak more $B$ power on this disk than
   \caption{
     $BB$ bandpowers on the 5\% disk, one set of points per projection, which in these unlensed simulations is entirely leakage; the lensed $BB$ of the same cosmology is dashed for scale.
     The curves are Eq.~\eqref{eq:forward}, the restored-terms forward model, evaluated on each projection's Jacobian and the input spectrum: the exact $\sin^2 2\delta\psi$ kernel with the sky spectrum read at the sheared wavenumber $\abs{J^{T}\vbell}$, band-limited at the simulations' $\ell = 4000$.
-    Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display, and divided by the $N_{\rm side} = 8192$ HEALPix and $\SI{2}{\arcminute}$ flat-sky pixel windows.
+    Bandpowers are averaged over 20 realizations and rebinned to $\Delta\ell = 50$ for display, and divided by the $\SI{2}{\arcminute}$ flat-sky pixel window.
     STG, conformal and shearless, has a predicted $BB$ of zero and so follows no curve: its points are the pipeline's own $E \to B$ floor (Sect.~\ref{subsec:scalar_validation}), not a measurement of projection leakage.
   }
   \label{fig:spectra_bb}

@@ -645,27 +645,32 @@ decisions:
     tags: [open-question]
     rationale: |
       Flagged unresolved in the draft, and the likeliest cause of its unexplained
-      high-ell drift. Two windows are in play and they are not the same thing. The
-      Healpix window of the *input* maps is imprinted on the alms and is correctly
-      removed with hp.pixwin at the input Nside — the 2021 script's pixwin(8192)
-      was right about this. The flat-sky side is the open part: rebinning an
-      oversampled grid down to 2 arcmin is a top-hat average whose transfer
-      function must be averaged around each |l| annulus because NaMaster bins in
-      annuli, and the bilinear interpolation contributes its own smoothing that is
-      not captured by either analytic window. spt3g supplies pixwin_flatsky as one
-      estimate; whether it matches the interpolate-then-rebin chain is exactly
-      what needs testing.
+      high-ell drift. Two windows could in principle be in play, but only one is:
+      the unlensed_TQU inputs carry NO Nside-8192 Healpix window (verified
+      2026-08-23: Cl of the preprocessed alms matches theory flat to ell = 6000,
+      incompatible with pixwin**2 at > 50 sigma — the sims were synthesized in
+      harmonic space without pixelization smoothing), so the 2021 script's
+      pixwin(8192) division and the draft's claim about it are wrong. What is
+      real is the flat-sky side: rebinning an oversampled grid down to 2 arcmin
+      is a top-hat average whose transfer function must be averaged around each
+      |l| annulus because NaMaster bins in annuli, and the bilinear interpolation
+      contributes its own smoothing that is not captured by the analytic window.
+      spt3g supplies pixwin_flatsky as one estimate; whether it matches the
+      interpolate-then-rebin chain is exactly what needs testing.
     default: none
     options:
       none:
         label: "No correction"
-        description: "What the 2021 run did. Spectra roll off at high ell."
+        description: "What the 2021 run did. Spectra roll off at high ell from the flat-sky window."
+      flat_only:
+        label: "Flat-sky window only"
+        description: "Divide out the azimuthally averaged 2 arcmin top-hat window. The correct choice given the inputs carry no Healpix window."
       healpix_only:
         label: "Input Healpix window only"
-        description: "Divide out hp.pixwin at the input Nside. Isolates the flat-sky contribution as the remaining drift."
+        description: "Divide out hp.pixwin at the input Nside. Over-corrects (inputs carry no such window); kept for the explicit comparison."
       healpix_and_flat:
         label: "Input Healpix and flat-sky windows"
-        description: "Also divide out the azimuthally averaged 2 arcmin top-hat window."
+        description: "Both of the above. Over-corrects for the same reason; kept for the explicit comparison."
 
 # ---------------------------------------------------------------------------
 # FINDINGS

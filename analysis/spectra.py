@@ -106,7 +106,13 @@ def flat_pixwin(ell, res_arcmin=RES_ARCMIN, n_phi=512):
 
 
 def healpix_pixwin(ell, nside=NSIDE_IN):
-    """HEALPix pixel window in C_l, interpolated onto bandpower centres."""
+    """HEALPix pixel window in C_l, interpolated onto bandpower centres.
+
+    NOT part of the production transfer: the unlensed_TQU inputs carry no
+    HEALPix window (Cl of the preprocessed alms matches theory flat to
+    ell = 6000, incompatible with pixwin**2 at > 50 sigma). Kept for the
+    explicit comparison only.
+    """
     import healpy as hp
     pw = hp.pixwin(nside, pol=True)[1]  # polarization window
     l = np.arange(len(pw))
@@ -136,5 +142,9 @@ def theory_ee():
 
 
 def transfer(ell=ELL):
-    """Total expected multiplicative suppression of C_l from pixelization."""
-    return healpix_pixwin(ell) * flat_pixwin(ell)
+    """Total expected multiplicative suppression of C_l from pixelization.
+
+    Flat-sky window only: the inputs carry no HEALPix window (see
+    healpix_pixwin's docstring).
+    """
+    return flat_pixwin(ell)

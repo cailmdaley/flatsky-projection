@@ -36,11 +36,12 @@ matters only for a projection whose magnification varies across the
 footprint -- for BICEP the wrong power moves the curve by 20%, for the two
 equal-area projections not at all.
 
-Pixel windows. Both spectra are divided by the Nside 8192 HEALPix window and
-the 2 arcmin flat-sky top-hat (`spectra.transfer`). What remains is the
-bilinear interpolation transfer, which no analytic window captures; it is
-common to every projection and to EE and BB alike, and it is why the
-measurements sit a few percent under the curves, growing toward l = 4000.
+Pixel windows. Both spectra are divided by the 2 arcmin flat-sky top-hat
+(`spectra.transfer`); the inputs carry no HEALPix window, so that is the
+only analytic factor. What remains is the bilinear interpolation transfer,
+which no analytic window captures; it is common to every projection and to
+EE and BB alike, and it is why the measurements sit a few percent under the
+curves, growing toward l = 4000.
 
 Run:  bash env.sh python3 analysis/plot_projection_spectra.py
 Out:  figures/projection_spectra_ee.pdf, figures/projection_spectra_bb.pdf

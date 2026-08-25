@@ -103,11 +103,12 @@ def parse_purify_b(value: str) -> bool:
 
 
 def parse_pixel_window(value: str) -> str:
-    """``none`` | ``healpix_only`` | ``healpix_and_flat`` -> itself."""
+    """``none`` | ``flat_only`` | ``healpix_only`` | ``healpix_and_flat`` -> itself."""
     text = str(value).strip()
-    if text in {"none", "healpix_only", "healpix_and_flat"}:
+    allowed = {"none", "flat_only", "healpix_only", "healpix_and_flat"}
+    if text in allowed:
         return text
-    raise _bad("--pixel-window", value, {"none", "healpix_only", "healpix_and_flat"})
+    raise _bad("--pixel-window", value, allowed)
 
 
 def set_threads(max_procs: int) -> None:

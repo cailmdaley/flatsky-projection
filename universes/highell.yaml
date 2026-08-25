@@ -5,14 +5,14 @@ id: highell
 description: >
   Pushes past where the 2021 analysis can speak: lmax 6000 on an Nside 8192
   intermediate grid, so the harmonic range covers the SFL excess seen near
-  ell 4500 and the intermediate grid stays lossless there. Both pixel windows are
-  divided out so a resolution artefact and a projection artefact are no longer
-  degenerate.
+  ell 4500 and the intermediate grid stays lossless there. The flat-sky pixel
+  window — the only one the maps actually carry — is divided out so a
+  resolution artefact and a projection artefact are no longer degenerate.
 decisions:
   intermediate_nside: nside8192
   ell_max: l6000
   interpolation: interp_rebin8
   apodization: c2_2p5deg
   b_purification: purify
-  pixel_window: healpix_and_flat
+  pixel_window: flat_only
   bandpower_width: d50
