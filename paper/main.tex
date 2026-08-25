@@ -200,14 +200,14 @@ Consider the same scalar sky rendered on two flat grids --- in practice, the sam
 The only operator acting is the composite Jacobian $A = J_2 J_1^{-1}$, and the ratio of the two measured spectra follows from Equation~\eqref{eq:scalar_remap}.
 Because pseudo-$C_\ell$ estimators bin in annuli of $\abs{\vbell}$, the direction of $\vbell$ is averaged over, and with $s_{1,2}$ now the singular values of $A$,
 \begin{equation} \label{eq:scalar_ratio}
-  \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, r(\chi))}{C(\ell)}}_{\chi,\, W^2},
-  \qquad r(\chi) = \sqrt{s_1^2 \cos^2\chi + s_2^2 \sin^2\chi},
+  \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, \rho(\chi))}{C(\ell)}}_{\chi,\, W^2},
+  \qquad \rho(\chi) = \sqrt{s_1^2 \cos^2\chi + s_2^2 \sin^2\chi},
 \end{equation}
 where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ --- read as the frame of the symmetric factor $\Sigma$, which for the flattened Jacobian used throughout is $A$ itself --- and the outer average runs over the footprint with the squared mask weight.
 Equation~\eqref{eq:scalar_ratio} has no free parameters: $s_1$, $s_2$ and the footprint are properties of the two projections, and $C(\ell)$ is the input spectrum.
 
-For a locally power-law spectrum $C \propto \ell^{n}$, $C(\ell r)/C(\ell) = r^{n}$.
-Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $r(\chi) = \bar{s}\sqrt{1 + 2g\cos 2\chi + g^2}$, and setting $\bar{s} = 1$ and $\mu = 1$ for the moment,
+For a locally power-law spectrum $C \propto \ell^{n}$, $C(\ell \rho)/C(\ell) = \rho^{n}$.
+Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $\rho(\chi) = \bar{s}\sqrt{1 + 2g\cos 2\chi + g^2}$, and setting $\bar{s} = 1$ and $\mu = 1$ for the moment,
 \begin{equation} \label{eq:scalar_expansion}
   \frac{P_2}{P_1} = \expval{\qty(1 + 2g\cos 2\chi + g^2)^{n/2}}_\chi = 1 + \frac{n^2}{4}\gsq + \order{g^4},
 \end{equation}
@@ -215,7 +215,7 @@ with $\gsq \equiv \expval{g^2}_{\chi, W^2}$ the same footprint-and-mode average 
 Two features of Equation~\eqref{eq:scalar_expansion} carry the whole scalar story.
 First, the term linear in $g$ vanishes, because $\expval{\cos 2\chi}_\chi = 0$: a scalar cannot feel shear at first order.
 At first order only polarization feels the shear; at second order every field does.
-Second, the second-order coefficient is the \textit{square} of the spectral slope, $n^2/4$ — the sub-leading $O(g^2)$ piece of $r(\chi)$ itself is what makes the square exact rather than approximate.
+Second, the second-order coefficient is the \textit{square} of the spectral slope, $n^2/4$ — the sub-leading $O(g^2)$ piece of $\rho(\chi)$ itself is what makes the square exact rather than approximate.
 On the Silk damping tail the slope is steep — $n = \dd \ln C / \dd \ln \ell$ runs from about $-7$ to $-9.4$ over $3000 < \ell < 4500$ for the lensed Planck 2018 $TT$ spectrum — so $n^2/4 \approx 12$ to $22$.
 One normalization subtlety survives into the numbers.
 Comparing two equal-area projections sets $\mu = s_1 s_2 \equiv 1$, which in turn forces $\bar{s} = (1-g^2)^{-1/2} = 1 + \tfrac12 g^2$, a residual mean dilation entering at the same order as the shear and shifting the coefficient to $n(n+2)/4$.
@@ -225,14 +225,14 @@ Equation~\eqref{eq:scalar_ratio}, which is what every numerical prediction below
 A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
 
 The sign is fixed, and it is Jensen's inequality.
-Convexity of $C(\ell r)$ in $r$ is all it takes, and the corrected coefficient makes the conclusion unconditional: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell r)$ over the stretch always \textit{lifts} the answer — the stretched directions lose less than the compressed directions gain.
+Convexity of $C(\ell \rho)$ in $\rho$ is all it takes, and the corrected coefficient makes the conclusion unconditional: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell \rho)$ over the stretch always \textit{lifts} the answer — the stretched directions lose less than the compressed directions gain.
 The excess is quadratic in $g$, so it is blind to the sign of the shear and survives any mask symmetry.
 Magnification moves the other way and independently: for $\mu \neq 1$ the isotropic dilation shifts a falling spectrum monotonically, removing power when $\mu > 1$.
 The two invariants are therefore separable in practice.
 Comparing two equal-area projections removes the area distortion, though not the residual mean dilation noted above; the conformal stereographic projection is the complementary null, with $g \equiv 0$ and pure magnification, and moves the ratio in the opposite direction.
 
 The expansion in Equation~\eqref{eq:scalar_expansion} is a guide to the mechanism.
-On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell r)/C(\ell) = \exp(-2a\ell^2 g\cos 2\chi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ — growing exponentially in $g$ rather than quadratically.
+On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell \rho)/C(\ell) = \exp(-2a\ell^2 g\cos 2\chi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ — growing exponentially in $g$ rather than quadratically.
 At $\ell \sim 4000$ the argument is of order unity and the series in $g^2$ is no longer small, so all numerical predictions below evaluate Equation~\eqref{eq:scalar_ratio} directly with the true spectrum.
 The prediction then inherits the acoustic structure of $C(\ell)$, because the coefficient tracks the \textit{local} slope rather than any global amplitude.
 Matching that shape is a much sharper test than matching an amplitude; Section~\ref{subsec:scalar_validation} makes the test.
@@ -253,7 +253,7 @@ This is not merely an approximation to the azimuthal remap average of Equation~\
 The scope is exactly that and no more: first order in $C^{\phi\phi}$, deflection power at $L \ll \ell$, and second order in the distortion --- and it is Equation~\eqref{eq:scalar_ratio}, not this collapse, that every numerical prediction below evaluates.
 The terms have clean identities.
 $\expval{(\kappa + \gamma_+)^2}$ is the variance of the linear stretch along the mode, and it alone pairs with the convexity $C''$: the steep-slope, order-unity part of the effect lives entirely in that one moment.
-The cross-shear $\expval{\gamma_\times^2}$ measures the transverse stretch --- the same content as the $\order{g^2}$ piece of $r(\chi)$ in Equation~\eqref{eq:scalar_expansion} --- and pairs only with $C'$ and $C$, so it corrects the coefficient at first order in the slope rather than at $n^2$.
+The cross-shear $\expval{\gamma_\times^2}$ measures the transverse stretch --- the same content as the $\order{g^2}$ piece of $\rho(\chi)$ in Equation~\eqref{eq:scalar_expansion} --- and pairs only with $C'$ and $C$, so it corrects the coefficient at first order in the slope rather than at $n^2$.
 The correspondence between the two languages is Equation~\eqref{eq:g_gamma} below.
 Getting there requires keeping every $\order{L^4}$ piece --- the sub-leading $-L^2$ term of the vertex $\vbell' \vdot (\vbell - \vbell')$ and the magnification factor $\abs{\det A}^{-1}$ included --- because $\ell^k C^{(k)} \sim n^k C$ leaves no $L/\ell$ suppression to separate them from the $C''$ term.
 That the kernel carries $\abs{\det A}^{-1}$ intrinsically is also where the mean-dilation subtlety reappears from the lensing side, and it enters through a term Equation~\eqref{eq:tt_collapse} does not contain.
@@ -371,16 +371,16 @@ The result is the paper's forward model, an integral over the footprint with no 
 \begin{equation} \label{eq:forward}
 \begin{aligned}
   C_\ell^{BB} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
-    \expval{\sin^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
+    \expval{\sin^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
   C_\ell^{EE} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
-    \expval{\cos^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, r(\chi))}_\chi, \\
+    \expval{\cos^2 2\delta\psi(\chi)\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
   \mathcal{N} &= \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}, \\
-  r(\chi) &= \frac{\abs{J^{T}\vbell}}{\ell} = \sqrt{s_1^2 \cos^2\chi + s_2^2\sin^2\chi},
+  \rho(\chi) &= \frac{\abs{J^{T}\vbell}}{\ell} = \sqrt{s_1^2 \cos^2\chi + s_2^2\sin^2\chi},
 \end{aligned}
 \end{equation}
 where every quantity inside the integral is evaluated at the sky position $\vu*{n}$, $\expval{\cdot}_\chi$ is the uniform average over mode azimuth that annulus binning performs, and $C^{EE}_{\rm sky}$ is set to zero above the simulations' band limit $\ell = 4000$.
 The numerator carries two powers of $\abs{\det J}$ --- one from Equation~\eqref{eq:scalar_remap}, one because the mask-squared integral runs over plane rather than sky area --- and $\mathcal{N}$ is the pseudo-$C_\ell$ mask normalization, which cancels in the ratio $C_\ell^{BB}/C_\ell^{EE}$.
-The scalar forward model is the same integral with the kernel set to unity, which is Equation~\eqref{eq:scalar_ratio} written over a footprint; and replacing $\sin^2 2\delta\psi$ by its azimuthal average and $r(\chi)$ by unity returns Equation~\eqref{eq:law_footprint}.
+The scalar forward model is the same integral with the kernel set to unity, which is Equation~\eqref{eq:scalar_ratio} written over a footprint; and replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho(\chi)$ by unity returns Equation~\eqref{eq:law_footprint}.
 Every model curve plotted in this paper is Equation~\eqref{eq:forward} evaluated on the projection's own Jacobian and the input spectrum.
 
 
