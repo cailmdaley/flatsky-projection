@@ -49,7 +49,7 @@
 \abstract{Flat-sky CMB analyses begin by projecting the sphere onto a plane, and no projection does so without distortion.
 The distortion that matters is the projection's local shear $g = (s_1 - s_2)/(s_1 + s_2)$, built from the singular values of its Jacobian, and it enters measured spectra through two closed forms, one per spin.
 A scalar spectrum feels the shear through the convexity of $C(\ell)$: azimuthal averaging lifts measured power by $\tfrac{n^2}{4}\gsq$ for a local spectral slope $n$ — an order-unity effect on the damping tail of a wide field.
-A spin-two field feels it through the misalignment of the $E$/$B$ basis, with no slope dependence at all: the projection leaks $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$, averaged over the footprint with squared-mask weighting, with exact per-mode form $2g^2(1 - \tfrac{3}{4}g^2)$.
+A spin-two field feels it through the misalignment of the $E$/$B$ basis, with no slope dependence at all: the projection leaks $C_\ell^{BB}/C_\ell^{EE} = 2\gsq$, averaged over the footprint with squared-mask weighting, with exact per-mode form of the misalignment kernel $2g^2(1 - \tfrac{3}{4}g^2)$.
 Both coefficients are derived, not fitted.
 Against simulations spanning five projections and seven sky fractions from 0.75\% to 10\%, the leakage relation holds to \fitrms\ rms across four decades in $\gsq$ with no free parameters.
 The conformal stereographic projection has $g \equiv 0$ and instead measures the pipeline's own $E \to B$ floor, and the close agreement between Sanson--Flamsteed and BICEP-style cylindrical projections on circular masks is a symmetry of the mask, not of the projections: on the SPT 1500d field their predicted leakage differs by a factor of four.}
@@ -137,7 +137,7 @@ and a spin-two field obeys the same relabelling of modes with an extra basis rot
 Decompose $J$ by its singular value decomposition, $J = U S V^{T}$ with singular values $s_1 \geq s_2 > 0$; below we write the polar-decomposition factor as $\Sigma = V S V^{T}$, symmetric but generally not diagonal.
 Three invariants exhaust the local geometry:
 \begin{itemize}
-  \item a \textbf{rotation}, which acts only on fields of nonzero spin, and which the flattening operation of Sect.~\ref{subsec:flatten_pol} removes;
+  \item a \textbf{rotation}, which acts only on fields of nonzero spin, and which the flattening operation of Sect.~\ref{subsec:flatten_pol} removes to first order in the distortion;
   \item a \textbf{magnification} $\mu = s_1 s_2 = \abs{\det J}$, the isotropic area change, which rescales $\ell$ uniformly;
   \item a \textbf{shear} $g = (s_1 - s_2)/(s_1 + s_2)$, the anisotropic stretch, which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
 \end{itemize}
@@ -280,8 +280,10 @@ The angle could be defined from north ($\hat{\theta}$ to $\hat{y}$) or from east
 The rotation to remove is fixed by the polar decomposition of the local Jacobian $J = R \Sigma$, with $R$ a rotation and $\Sigma$ symmetric (related to the SVD factors by $\Sigma = V S V^{T}$): flattening at the polar angle of $R$ removes all of it, leaving exactly the local shear $\Sigma$.
 Equation~\eqref{eq:rot_angle} attains that angle to first order in the distortion: the equal-weight average of the north- and east-derived angles differs from the polar rotation by a residual of magnitude $(g^2/2)\abs{\sin 4\beta} + \order{g^3}$, with $\beta$ the angle of the shear principal axes to the grid axes, so the flattened Jacobian is symmetric up to $\order{g^2}$.
 The polar angle is moreover the unique optimal choice, and the proof is one line: flattening at an angle offset by $\Delta$ from the polar one leaves a residual uniform polarization rotation, so the misalignment averaged below becomes $\expval{\sin^2 2(\delta\psi + \Delta)} \simeq 2g^2 + 4\Delta^2$, minimized at $\Delta = 0$ with a quadratic penalty on either side.
-Equation~\eqref{eq:rot_angle} therefore sits at $\Delta = \order{g^2}$ rather than at zero, contributing $\sim g^4 \sin^2 4\beta$ of extra leakage --- the same order as the $-\tfrac32 g^4$ term retained in Eq.~\eqref{eq:law}, at most a third of it once averaged over the round footprints used here, vanishing identically where the principal axes align with the grid ($\beta = 0$: BICEP everywhere, the zenithal projections along their central meridians) and suppressed to $\order{g^6}$ near $\beta = \ang{45}$ (SFL).
-And because the simulations flatten with Eq.~\eqref{eq:rot_angle} itself, this residual is included in --- not hidden from --- every numerical comparison below.
+Equation~\eqref{eq:rot_angle} therefore sits at $\Delta = \order{g^2}$ rather than at zero, adding $g^4 \sin^2 4\beta$ of leakage --- the same order as, and opposite in sign to, the $-\tfrac32 g^4$ term of Eq.~\eqref{eq:law}.
+The residual vanishes wherever $\sin 4\beta = 0$: principal axes along the grid axes (BICEP everywhere, the zenithal projections on their central meridians) or along the grid diagonals, as SFL's nearly are.
+For a round footprint of a zenithal projection, $\beta$ runs uniformly with azimuth, so $\expval{\sin^2 4\beta} = \tfrac12$ and the addition is exactly one third of the retained quartic term: a pipeline flattening with Eq.~\eqref{eq:rot_angle} realizes $2g^2(1 - \tfrac12 g^2)$ on such a footprint rather than $2g^2(1 - \tfrac34 g^2)$, a ${\sim}1\%$ shift in the ratio at $g = 0.2$.
+The simulations flatten with Eq.~\eqref{eq:rot_angle} itself, so the realized form --- residual included --- is what every numerical comparison below actually tests.
 For a conformal projection $\Sigma$ is a multiple of the identity, flattening is exact, and the leakage vanishes.
 For everything else, the leakage is set by $\Sigma$ alone.
 
@@ -362,7 +364,7 @@ Locality holds overwhelmingly.
 Real footprints also carry mask-boundary corrections, a separate matter this expansion does not describe.
 Second, $W^2$ is the \textit{effective} weight rather than the derived one: the pseudo-$C_\ell$ estimator weights sky area by $W^2 \abs{\det J}^2$, but for a falling spectrum the $\abs{\det J}$ factors are nearly cancelled by the spectrum's response to the same stretch, leaving $W^2$; the residue of that near-cancellation is exactly the band-dependent structure of Sect.~\ref{subsec:bandbyband}.
 Third, the relation describes pipelines that flatten by rotation only — resampling $Q$ and $U$ in the sky basis, then rotating, as \texttt{spt3g\_software} and comparable pipelines do; a pipeline that parallel-transported the polarization tensor through the projection would obey a different relation.
-A gravitational deflection is a gradient, so its Jacobian is symmetric and carries no rotation; a projection Jacobian is not symmetric in general, and the mapping onto the lensing kernel is legitimate only because flattening removes the polar rotation $R$ --- exactly at the polar angle, to first order as implemented (Sect.~\ref{subsec:flatten_pol}) --- leaving the symmetric $\Sigma$.
+A gravitational deflection is a gradient, so its Jacobian is symmetric and carries no rotation; a projection Jacobian is not symmetric in general, and the mapping onto the lensing kernel is legitimate only because flattening removes the polar rotation $R$ (Eq.~\ref{eq:rot_angle} attains the polar angle to first order in the distortion; Sect.~\ref{subsec:flatten_pol}), leaving the symmetric $\Sigma$.
 A pipeline flattening at any other angle $\Delta$ leaves a residual polarization rotation, not a remapping: the Jacobian is fixed by the projection, and flattening touches only the basis in which $Q$ and $U$ are expressed.
 The $4\Delta^2$ penalty of Sect.~\ref{subsec:flatten_pol} is therefore the rotation field $\omega$ already present in Eq.~\eqref{eq:hhz} — an existing entry in the distortion basis, not a new field.
 
