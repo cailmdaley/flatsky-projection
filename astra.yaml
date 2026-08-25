@@ -534,9 +534,12 @@ decisions:
     rationale: |
       Uniform linear bins fed to NmtBinFlat; flat weighting within bins. The
       2021 analysis used width 10, inherited by the first highell coupling
-      runs, where it priced the largest mask's spin-2 workspace above OSPool's
-      hard 40 h execute-duration wall (coupling cost grows roughly with the
-      square of the bin count). The field's convention is linear and coarser:
+      runs. Measured fact (2026-08-25, idx=5 suite at both widths): the
+      NmtWorkspaceFlat coupling cost is essentially independent of bin
+      count -- 15-26 h at 8 cores at width 50, same as width 10 -- it is
+      dominated by the mask's 2D Fourier grid, not the bandpower vector. The
+      rebinning is therefore a science-convention choice, not a compute
+      optimization. The field's convention is linear and coarser:
       SPT-3G D1 uses uniform delta_ell = 50 over its whole range
       (arXiv:2506.20707), ACT DR6's minimum bin width is 50 (2503.14452),
       Planck plik is 30, and BICEP/Keck chose 35 to match the mask
