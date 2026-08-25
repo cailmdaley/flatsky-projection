@@ -37,7 +37,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _decisions import add_common_args, parse_lmax, set_threads, write_index  # noqa: E402
+from _decisions import (  # noqa: E402
+    add_common_args,
+    index_name,
+    parse_lmax,
+    resolve_seeds,
+    set_threads,
+    write_index,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -195,8 +202,9 @@ def main(argv=None) -> None:
 
     filt = monopole_dipole_filter(args.lmax)
 
+    seeds = resolve_seeds(args)
     seed_records = []
-    for seed in range(args.seed_start, args.seed_stop):
+    for seed in seeds:
         out_path = out_dir / f"alms_seed{seed:04d}.fits"
         input_path = find_input_fits(args.sims_dir, seed)
 
@@ -221,11 +229,10 @@ def main(argv=None) -> None:
         "sims_dir": str(args.sims_dir),
         "lmax": args.lmax,
         "n_iter": args.n_iter,
-        "seed_start": args.seed_start,
-        "seed_stop": args.seed_stop,
+        "seeds_processed": seeds,
         "max_procs": args.max_procs,
         "seeds": seed_records,
-    })
+    }, name=index_name(args.seeds))
 
 
 if __name__ == "__main__":

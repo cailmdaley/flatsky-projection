@@ -137,19 +137,24 @@ outputs:
       ell_max alone.
     inputs: [unlensed_sims]
     decisions: [ell_max]
+    units:
+      seed: 0..20
     recipe:
       command: >-
         bash env.sh
         python3 src/stages/preprocess_healpix.py
         --sims-dir /sptgrid/simulation/lensing_maps/unlensed_TQU1
-        --seed-start 0 --seed-stop 20
+        --seeds {units.seed}
         --lmax {decisions.ell_max}
         --max-procs 4
         --out {output}
       resources:
         cpus: 4
+        # One map2alm at Nside 8192 peaks ~49 GB (lmax 4000, iter 3) and
+        # slightly higher at lmax 6000 — per-seed units need the same
+        # request the fat stage did, they just need it for one seed.
         memory: 64Gi
-        time_limit: 6h
+        time_limit: 1h
 
   - id: healpix_masks
     type: data
@@ -193,21 +198,28 @@ outputs:
       produces, and the leg that carries E to B leakage. 20 seeds x 5 projections.
     inputs: [preprocessed_alms]
     decisions: [interpolation, intermediate_nside]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
     recipe:
       command: >-
         bash env.sh
         python3 src/stages/project_qu.py
         --alms {inputs.preprocessed_alms}
-        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
         --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
-        --seed-start 0 --seed-stop 20
+        --seeds {units.seed}
         --max-procs 4
         --out {output}
       resources:
         cpus: 4
-        memory: 96Gi
+        # Per-(seed, projection) figure from the raw grid/ apparatus (QU
+        # leg 64 GB; condor's sampled MemoryUsage underreports 2-3x, so
+        # this comes from /usr/bin/time -v, not condor_history).
+        memory: 64Gi
+        disk: 8Gi
         time_limit: 12h
 
   - id: projected_eb
@@ -220,21 +232,26 @@ outputs:
       is the leakage-free reference the Q/U leg is differenced against.
     inputs: [preprocessed_alms]
     decisions: [interpolation, intermediate_nside]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
     recipe:
       command: >-
         bash env.sh
         python3 src/stages/project_eb.py
         --alms {inputs.preprocessed_alms}
-        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
         --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
-        --seed-start 0 --seed-stop 20
+        --seeds {units.seed}
         --max-procs 4
         --out {output}
       resources:
         cpus: 4
-        memory: 96Gi
+        # EB leg per-(seed, projection): 32 GB from the raw grid/ runs.
+        memory: 32Gi
+        disk: 8Gi
         time_limit: 12h
 
   - id: flatsky_masks

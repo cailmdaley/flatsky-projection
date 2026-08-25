@@ -140,14 +140,48 @@ def add_common_args(parser: argparse.ArgumentParser, *, seeds: bool = False) -> 
     if seeds:
         parser.add_argument("--seed-start", type=int, default=0)
         parser.add_argument("--seed-stop", type=int, default=20)
+        parser.add_argument(
+            "--seeds",
+            type=int,
+            nargs="+",
+            default=None,
+            help="explicit seed list; overrides --seed-start/--seed-stop. "
+            "This is how a per-unit grid job names its single seed "
+            "(recipes say --seeds {units.seed}).",
+        )
 
 
-def write_index(out_dir, payload: dict) -> None:
+def resolve_seeds(args) -> list:
+    """The seed list a stage should process: ``--seeds`` wins outright."""
+    if getattr(args, "seeds", None) is not None:
+        return list(dict.fromkeys(args.seeds))
+    return list(range(args.seed_start, args.seed_stop))
+
+
+def index_name(seeds=None, projections=None) -> str:
+    """Name of the stage's index file.
+
+    ``index.json`` for a whole-output run; a per-shard run (explicit
+    ``--seeds``, i.e. a unit job) gets a name keyed by its coordinates so
+    shard indexes never collide when the unit gather assembles the
+    canonical directory. Downstream stages only ever read the masks and
+    coupling indexes, which are not unit-fanned, so nothing consumes the
+    sharded names.
+    """
+    if seeds is None:
+        return "index.json"
+    parts = ["index"] + [f"{s:04d}" for s in seeds]
+    if projections:
+        parts += list(projections)
+    return "_".join(parts) + ".json"
+
+
+def write_index(out_dir, payload: dict, *, name: str = "index.json") -> None:
     """Write ``<out>/index.json``, the manifest downstream stages read."""
     import json
     from pathlib import Path
 
-    path = Path(out_dir) / "index.json"
+    path = Path(out_dir) / name
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 

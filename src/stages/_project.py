@@ -25,7 +25,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from _decisions import add_common_args, parse_interpolation, parse_nside, set_threads, write_index
+from _decisions import (
+    add_common_args,
+    index_name,
+    parse_interpolation,
+    parse_nside,
+    resolve_seeds,
+    set_threads,
+    write_index,
+)
 
 __all__ = [
     "PROJECTIONS_DEFAULT",
@@ -140,7 +148,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) ->
     interp_cfg = parse_interpolation(args.interpolation)
     nside = parse_nside(args.nside)
     projections = list(dict.fromkeys(args.projections))  # de-dup, preserve order
-    seeds = list(range(args.seed_start, args.seed_stop))
+    seeds = resolve_seeds(args)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -190,8 +198,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) ->
         "keys": list(leg.keys),
         "alms_dir": str(args.alms),
         "projections": projections,
-        "seed_start": args.seed_start,
-        "seed_stop": args.seed_stop,
+        "seeds_processed": seeds,
         "interpolation": args.interpolation,
         "interp": interp_cfg["interp"],
         "rebin": interp_cfg["rebin"],
@@ -206,5 +213,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) ->
         "skipped_existing": len(skipped),
         "files": files,
     }
-    write_index(out_dir, manifest)
+    write_index(
+        out_dir, manifest, name=index_name(args.seeds, args.projections if args.seeds else None)
+    )
     return manifest
