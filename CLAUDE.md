@@ -49,9 +49,13 @@ lc run --executor htcondor --profile htcondor9 healpix_masks -u apod_c1 -u apod_
 ```
 
 Two `lc run`s at once will not work — lightcone holds a project-level flock.
-And note ASTRA has no per-unit fan-out: one output is one rule is one job, so
-a 35-workspace coupling stage is a single fat job, not 35. Per-seed or
-per-projection parallelism still belongs to the raw `grid/` apparatus.
+Per-unit fan-out exists as of lightcone-cli 612d889: an `Output.units`
+mapping (axis -> list or half-open `a..b` range) in astra.yaml expands one
+output into per-unit grid jobs plus a local gather that assembles the
+canonical directory and single manifest; recipes address their shard with
+`{units.<axis>}`. Stages not yet converted (all of them today) remain one
+output = one fat job; per-seed/per-projection parallelism for those still
+belongs to the raw `grid/` apparatus.
 
 Check the first submission of anything new:
 
