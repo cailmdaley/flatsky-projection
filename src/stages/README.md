@@ -121,11 +121,15 @@ One array, explicitly indexed. The 2021 script assigned `cl_flat_EE[ii]` inside 
 projection loop and collapsed every projection onto the last one read; the shape above
 is what makes that class of bug impossible.
 
-Pixel-window handling: `healpix_only` divides by `hp.pixwin(nside_input)[:lmax+1]`
-binned onto the bandpowers **squared** (it is a C_ell, so divide by `pixwin**2`);
-`healpix_and_flat` additionally divides by the azimuthally averaged flat-sky window
-from `spt3g.mapspectra.pixel_window.pixwin_flatsky(ells, res_arcmin)` — signature is
-`(ells, reso_arcmin)` with bare arcmin, not G3Units.
+Pixel-window handling: `flat_only` (the production mode for high-ell work) divides
+by the azimuthally averaged flat-sky window from
+`spt3g.mapspectra.pixel_window.pixwin_flatsky(ells, res_arcmin)` — signature is
+`(ells, reso_arcmin)` with bare arcmin, not G3Units — **squared** (it is a C_ell).
+`healpix_only` divides by `hp.pixwin(nside_input)[:lmax+1]` binned onto the
+bandpowers, squared; `healpix_and_flat` divides by both. The healpix modes
+over-correct — the unlensed_TQU inputs carry no Healpix window (Cl of the
+preprocessed alms matches theory flat to ell = 6000) — and exist only for the
+explicit comparison.
 
 ### `eb_residuals.py`, `covariance.py`, `leakage_summary.py`
 Downstream reductions; see `astra.yaml` for their flags. They read `bandpowers.npz`

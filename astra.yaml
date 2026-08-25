@@ -507,9 +507,9 @@ decisions:
       lmax 4000, and those alms are synthesized back onto an intermediate Healpix
       grid before flat-sky resampling. This decision sets only that last grid. The
       draft's "Nside 8192" describes the inputs and the 2021 config's "nside: 4096"
-      describes the intermediate; they are describing different things. Likewise
-      the 2021 plotting script's division by hp.pixwin(8192) is right, because the
-      input map's own pixel window is the one imprinted on the alms.
+      describes the intermediate; they are describing different things. (The 2021
+      plotting script's division by hp.pixwin(8192) is nonetheless wrong: the
+      inputs carry no Healpix window — see the pixel_window rationale.)
 
       What actually varies here is how finely the band-limited field is sampled
       before bilinear interpolation onto the flat grid. Nside 4096 supports
