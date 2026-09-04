@@ -63,8 +63,7 @@ The conformal stereographic projection has $g \equiv 0$ and instead measures the
 
 A flat-sky CMB analysis begins with a small act of cartography: the sphere must be flattened, and no projection flattens it without distortion.
 The local Jacobian of any projection rotates, dilates, and shears the neighbourhood of each point, and every spectrum measured on the resulting map inherits a little of the mapmaker's problem.
-For a scalar field the consequence is that power moves along $\ell$.
-For polarization, decomposed into its curl-free $E$ and divergence-free $B$ components \citep{seljak97, kamionkowski97, zal01}, there is a second consequence: some $E$-mode power turns into $B$ --- inconvenient, because $B$ is where the interesting things live, from the imprint of primordial gravitational waves \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
+For a scalar field the consequence is that power moves along $\ell$; for polarization, decomposed into its curl-free $E$ and divergence-free $B$ components \citep{seljak97, kamionkowski97, zal01}, there is a second consequence: some $E$-mode power turns into $B$ --- inconvenient, because $B$ is where the interesting things live, from the imprint of primordial gravitational waves \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
 
 Three distinct effects travel under the name ``$E$/$B$ leakage,'' and only one of them is this paper's.
 Mask-induced mixing --- ambiguous modes at the boundary of a cut sky \citep{bunn03} --- is solved by standard estimators \citep{smith07, alonso19} and is a statement about the \textit{boundary} of a footprint on an otherwise undistorted sky.
@@ -74,10 +73,10 @@ It is an \textit{interior} effect, present under full coverage of the projected 
 It also has a closed form, which is what this paper derives.
 
 The three actions of the Jacobian enter differently.
-Dilation rescales angular scales and so moves power along $\ell$; a scalar feels this and nothing else, and on the CMB damping tail it is already an order-unity effect (Sect.~\ref{subsec:scalar}).
+Dilation is what a scalar feels, and on the CMB damping tail it is already an order-unity effect (Sect.~\ref{subsec:scalar}).
 Rotation misaligns the polarization basis with the grid, because $Q$ and $U$ are defined relative to celestial north, and standard pipelines undo it by ``flattening'' (Sect.~\ref{subsec:flatten_pol}).
 Shear cannot be undone by any rotation: a non-conformal projection does not preserve the \SI{90}{\degree} angle between north and east, so no single angle aligns both.
-The surviving shear is the whole effect, and it sets the leakage in closed form (Sect.~\ref{subsec:derivation}).
+The surviving shear is the whole effect (Sect.~\ref{subsec:derivation}).
 
 The mechanism itself is old: a map projection acts on the sky as a gravitational lens does.
 Remapping a field by a deflection whose Jacobian has a trace-free part moves scalar power along $\ell$ and converts $E$ into $B$; that is CMB lensing, and the flat-sky kernels have been standard at least since \citet{lewis06}.
@@ -191,12 +190,11 @@ At $\gsq \simeq 0.044$, which is what a wide field at $\delta_0 = \SI{-56}{\degr
 A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
 
 The sign is Jensen's inequality, and the corrected coefficient makes it unconditional: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell\rho)$ over the stretch always \textit{lifts} the answer --- the stretched directions lose less than the compressed directions gain.
-Being quadratic in $g$, the excess is blind to the sign of the shear and survives any mask symmetry.
-Magnification moves the other way and independently, an isotropic dilation removing power from a falling spectrum when $\mu > 1$, so the two invariants separate in practice: the conformal stereographic projection, with $g \equiv 0$ and pure magnification, is the complementary null.
+Being quadratic in $g$, the excess is also blind to the sign of the shear and survives any mask symmetry.
+Magnification moves the other way and independently --- an isotropic dilation removes power from a falling spectrum when $\mu > 1$ --- so the two invariants separate in practice, with the conformal stereographic projection, $g \equiv 0$ and pure magnification, as the complementary null.
 
 The expansion is a guide to the mechanism rather than the tool.
-On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and then $C(\ell \rho)/C(\ell) = \exp(-2a\ell^2 g\cos 2\chi)$, whose azimuthal average is $I_0(2a\ell^2 g)$ --- growing exponentially in $g$ rather than quadratically.
-At $\ell \sim 4000$ that argument is of order unity, so every numerical prediction below evaluates Eq.~\eqref{eq:scalar_ratio} directly with the true spectrum.
+On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and the azimuthal average becomes $I_0(2a\ell^2 g)$ --- exponential in $g$ rather than quadratic, with an argument of order unity by $\ell \sim 4000$ --- so every numerical prediction below evaluates Eq.~\eqref{eq:scalar_ratio} directly with the true spectrum.
 Holding the geometry fixed and varying only $C(\ell)$ isolates that dependence: over the 5\% disk in SFL, a featureless $C_\ell \propto \ell^{-4}$ acquires a constant $5.5\%$ offset, while the lensed $TT$ and $EE$ spectra oscillate with their acoustic peaks and climb to $1.53$ and $1.64$ at $\ell = 3800$, where the slope is steepest.
 Sect.~\ref{subsec:scalar_validation} makes the test against data.
 
@@ -211,8 +209,8 @@ The angle could be defined from north ($\hat{\theta}$ to $\hat{y}$) or from east
 \begin{equation} \label{eq:rot_angle}
     2\psi = \atantwo \qty(\pdv*{\theta}{y},\, \pdv*{\theta}{x}) + \atantwo \qty(-\pdv*{\phi}{x},\, \pdv*{\phi}{y}).
 \end{equation}
-What must be removed is fixed by the polar decomposition $J = R\Sigma$, with $R$ a rotation and $\Sigma$ symmetric: flattening at the polar angle of $R$ removes all of the rotation and leaves exactly the local shear $\Sigma$, and it is the unique optimal choice, since flattening offset by $\Delta$ leaves a residual uniform polarization rotation and the leakage below becomes $\expval{\sin^2 2(\delta\psi+\Delta)} \simeq 2g^2 + 4\Delta^2$.
-Equation~\eqref{eq:rot_angle} attains the polar angle to first order in the distortion, sitting at $\Delta = \order{g^2}$; Appendix~\ref{app:flatten} works out the residual and the ${\sim}1\%$ shift it makes to the quartic term of Eq.~\eqref{eq:law}, which the simulations therefore realize rather than the idealized form.
+What must be removed is fixed by the polar decomposition $J = R\Sigma$, with $R$ a rotation and $\Sigma$ symmetric: flattening at the polar angle of $R$ removes all of the rotation and leaves exactly the local shear $\Sigma$, and it is the unique optimal choice, since an offset $\Delta$ leaves a residual uniform polarization rotation and the leakage becomes $\expval{\sin^2 2(\delta\psi+\Delta)} \simeq 2g^2 + 4\Delta^2$.
+Equation~\eqref{eq:rot_angle} attains that angle to first order, sitting at $\Delta = \order{g^2}$; Appendix~\ref{app:flatten} gives the residual and the ${\sim}1\%$ shift it makes to the quartic term of Eq.~\eqref{eq:law}, which the simulations therefore realize rather than the idealized form.
 For a conformal projection $\Sigma$ is a multiple of the identity, flattening is exact, and the leakage vanishes.
 For everything else, the leakage is set by $\Sigma$ alone.
 
@@ -313,7 +311,7 @@ One selection rule applies throughout: where the pipeline's own $E \to B$ floor 
 Figure~\ref{fig:spectra_ee} is the measurement itself: $EE$ bandpowers on the 5\% reference disk, one set per projection, against the forward model of Eq.~\eqref{eq:forward} evaluated from each projection's Jacobian and the input spectrum alone.
 This is the scalar story of Sect.~\ref{subsec:scalar} with $J_1 = \mathbb{1}$ --- the measurement compared not against a second projection but against the sky it was drawn from.
 The ratios are nowhere near unity.
-At $\ell = 1000$ the two cylindrical projections have lost a third of their power, and by $\ell = 3000$ both have gained instead, reaching $1.31$ (SFL) and $1.23$ (BICEP); SIN runs from $0.93$ to $1.27$ across the same range, while ZEA, equal-area and least sheared, stays within $6\%$ of unity throughout.
+At $\ell = 1000$ the two cylindrical projections have lost a third of their power --- SFL measures $0.665$ of the input, BICEP $0.624$ --- and by $\ell = 3000$ both have gained instead, $1.31$ and $1.23$; SIN runs from $0.93$ to $1.27$ across the same range, while ZEA, equal-area and least sheared, stays within $6\%$ of unity throughout.
 The conformal STG moves the other way and monotonically, to $0.68$ by $\ell = 3000$: with $g = 0$ the only invariant left is magnification, and an isotropic dilation of a falling spectrum removes power.
 
 The shape is a sharper test than the amplitude.
