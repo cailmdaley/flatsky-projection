@@ -29,6 +29,10 @@
 \newcommand{\magfactor}{3.9\times}
 \newcommand{\bandbybandratio}{1.0043 \pm 0.0091}
 \newcommand{\numbands}{135}
+\newcommand{\highellLawRatio}{$1.008$--$1.012$}
+\newcommand{\highellSFLEE}{2.1}
+\newcommand{\highellSTGlow}{4\times10^{-8}}
+\newcommand{\highellSTGhigh}{1.6\times10^{-5}}
 
 
 
@@ -186,7 +190,7 @@ Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $\rho(\chi) = \bar{s}\sqrt{1 + 2g\
 The term linear in $g$ vanishes because $\expval{\cos 2\chi}_\chi = 0$: a scalar cannot feel shear at first order, which Sect.~\ref{subsec:derivation} shows to be the $s = 0$ rung of a ladder rather than an accident.
 What survives is the \textit{square} of the spectral slope, and on the Silk damping tail the slope is steep --- $n = \dd \ln C / \dd \ln \ell$ runs from about $-7$ to $-9.4$ over $3000 < \ell < 4500$ for the lensed Planck 2018 $TT$ spectrum --- so $n^2/4 \approx 12$ to $22$.
 Comparing two equal-area projections sets $\mu \equiv 1$, which forces a residual mean dilation $\bar{s} = (1-g^2)^{-1/2} \simeq 1 + \tfrac12 g^2$ and shifts the coefficient to $n(n+2)/4 \approx 8.8$ to $17.4$; that is the case plotted below.
-At $\gsq \simeq 0.044$, which is what a wide field at $\delta_0 = \SI{-56}{\degree}$ actually has (Sect.~\ref{sec:highell}), that is a $40$--$75\%$ excess in measured power.
+At $\gsq \simeq 0.035$, which is what SFL on SPT's 1500d field actually has (Sect.~\ref{subsec:disks}), that is a $30$--$60\%$ excess in measured power.
 A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
 
 The sign is Jensen's inequality, and the corrected coefficient makes it unconditional: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell\rho)$ over the stretch always \textit{lifts} the answer --- the stretched directions lose less than the compressed directions gain.
@@ -409,9 +413,34 @@ Part of the 10\% break is bookkeeping rather than shear: the largest disk runs o
 Between the clipping and the pole crossing, the 10\% disk's SFL and BICEP spectra overflow numerically and SIN's return all-NaN; all three are dropped rather than imputed, leaving 25 of 28 sheared pairs, and the 5\% disk rather than the largest is this paper's reference footprint.
 On SPT's real 1500d field ($\pm\SI{50}{\degree}$ in RA, \SIrange{-70}{-42}{\degree} in declination) the mask is not round and the degeneracy breaks: the relation gives SFL $BB/EE = 7.0\times10^{-2}$ against BICEP's $1.7\times10^{-2}$, a factor of four apart.
 
-\section{The 1500d field and the high-\texorpdfstring{$\ell$}{ell} regime} \label{sec:highell}
+\section{The high-\texorpdfstring{$\ell$}{ell} regime} \label{sec:highell}
 
-\CD{Forthcoming: the $\ell \le 6000$ polarization run is in progress, and this section will state the T-only and true-polarization answers to the collaboration's proj0 question side by side.}
+The suite of Sect.~\ref{sec:methods} stops at $\ell = 4000$, which is where a wide-field damping-tail analysis begins, and it was on a wide field that the question motivating this revival arose: a Sanson--Flamsteed map of the 1500d field carries twice the $EE$ power of its zenithal equal-area counterpart by $\ell \sim 4000$, and keeps climbing.
+Equation~\eqref{eq:scalar_ratio} says why --- at $\gsq \simeq 0.035$ the convexity of the damping tail is an order-unity effect --- and the same shear leaks $2\gsq$ of that $EE$ into $BB$.
+Neither statement had been tested past the band limit.
+The same pipeline, rerun to $\ell = 6000$, tests both: the harmonic transforms are taken to $\ell_{\rm max} = 6000$ on an $N_{\rm side} = 8192$ intermediate grid, lossless there, with the same \SI{2}{\arcminute} flat grid, the same masks, and bandpowers of $\Delta\ell = 50$; only the flat-sky pixel window is divided out, so that a resolution artefact and a projection artefact are no longer degenerate.
+Figure~\ref{fig:highell} is the result on the 5\% disk.
+
+Both relations hold until the pixel scale intervenes, and then both fail in the same way.
+In the leakage channel the forward model of Eq.~\eqref{eq:forward}, now band-limited at $\ell = 6000$, tracks $BB/EE$ at \highellLawRatio\ over $500 < \ell < 4800$ for the four sheared projections, the tilts of Sect.~\ref{subsec:bandbyband} included; in the scalar channel $EE$ follows the same model to the same multipole, SFL reaching \highellSFLEE\ times the input by $\ell = 4500$, with all five projections --- STG included --- sitting a common $1.5\%$ below it, the interpolation transfer of Sect.~\ref{subsec:scalar_validation} again.
+Above $\ell \simeq 4800$ every projection --- the shearless STG included --- rises onto a single common curve, $BB/EE \sim 0.1$--$0.3$ by $\ell = 5400$, and $EE$ departs from the input spectrum at the same place.
+A curve common to five geometries is not a property of any of them: $\ell = 5400$ is the Nyquist multipole of a \SI{2}{\arcminute} pixel, and what the maps record there is the resampling residual of Sect.~\ref{subsec:residuals} arriving at the scale where it must.
+STG's floor announces it in advance, climbing from $\highellSTGlow$ of $EE$ at $\ell = 1500$ to $\highellSTGhigh$ at $\ell = 4500$: the same mechanism, growing toward the wall.
+The usable range of a \SI{2}{\arcminute} analysis is therefore $\ell \lesssim 4800$, and extending it is a choice of pixel --- \SI{1}{\arcminute} costs four times the projection --- rather than a limitation of the law, which has no scale in it.
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{highell.pdf}
+  \caption{
+    Both relations hold to $\ell \simeq 4800$; above it the \SI{2}{\arcminute} pixel, not the projection, sets the spectra.
+    5\% disk, 20 realizations, $\ell_{\rm max} = 6000$.
+    Left: $EE$ over the input spectrum.
+    Right: $BB/EE$.
+    Smooth curves are the forward model of Eq.~\eqref{eq:forward}, band-limited at $\ell = 6000$, with no free parameters.
+    The shaded band is the approach to the pixel Nyquist multipole, $\ell = 5400$, where every projection, STG included, converges onto one curve.
+    STG's predicted $BB/EE$ is $5\times10^{-15}$, off the axis; its points are the pipeline floor.
+  }
+  \label{fig:highell}
+\end{figure*}
 
 
 \section{Cartographic lensing beyond the power spectrum} \label{sec:lensing}
