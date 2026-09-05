@@ -1,14 +1,15 @@
-"""Recompute the bandpower covariance/correlation structure from the 2021 spectra.
+"""Bandpower covariance and correlation structure of the production run.
 
-Why this exists: the 2021 analysis's covariance and correlation-matrix figures
-survive only as images pasted into Overleaf -- no code that produced them is
-in this checkout. `analysis/spectra.py` already knows how to load the raw
-bandpowers (`Cl_flatsky_namaster_unlensed_{EE,BB}_{proj}_mask{i}.txt`, each
-20 seeds x 400 bandpowers of width dl=10 out to l=4000); this module reuses
-that loader and recomputes the seed-to-seed covariance/correlation directly
-from the surviving text files, so the figures are reproducible again.
+The question this answers: the leaked B is a deterministic image of the same
+EE realization rather than an independent Gaussian field, so does it bin like
+an ordinary sky? If neighbouring bandpowers were strongly correlated, a
+diagonal-plus-mode-coupling covariance would not do.
 
-CAVEAT -- N=20 is few. A 400x400 sample correlation matrix from 20 seeds has
+It reads `spectra.load`, i.e. the highell run -- 20 seeds x 120 bandpowers of
+width dl = 50 out to l = 6000, five projections on seven masks -- and
+recomputes the seed-to-seed covariance and correlation directly.
+
+CAVEAT -- N=20 is few. A 120x120 sample correlation matrix from 20 seeds has
 only 19 degrees of freedom per entry; off-diagonal entries have sampling
 noise of order 1/sqrt(19) ~ 0.23 even when the true correlation is zero, so
 any single configuration's correlation matrix is dominated by that noise, not
@@ -21,7 +22,7 @@ config-specific structure but not the shared seed noise. Treat any single
 matrix as illustrative, and the mean as qualitative rather than definitive.
 
 Usage:
-    env-shell.sh python analysis/covariance.py
+    systemd-run --user --scope -p MemoryMax=12G bash env.sh python3 analysis/covariance.py
 """
 
 from __future__ import annotations
@@ -56,7 +57,7 @@ SPECS = ("EE", "BB")
 ELL_RANGES = [
     ("low", 0, 500),
     ("mid", 500, 2000),
-    ("high", 2000, 4000),
+    ("high", 2000, 4800),
 ]
 
 
@@ -194,6 +195,21 @@ def main() -> None:
                 f"per-config range = [{np.nanmin(per_config):+.3f}, "
                 f"{np.nanmax(per_config):+.3f}]  "
                 f"(std across configs = {np.nanstd(per_config):.3f})"
+            )
+            # The paper's claim is about configurations whose BB is genuine
+            # leakage, which excludes the conformal projection: STG's BB is a
+            # seed-independent numerical template, so its bandpowers correlate
+            # with each other almost perfectly. Split the two apart rather than
+            # quoting an average over both.
+            keys = list(corr_by_config.keys())
+            genuine = np.array([offdiag_mean(corr_by_config[k], lo, hi)
+                                for k in keys if "STG" not in str(k)])
+            floorc = np.array([offdiag_mean(corr_by_config[k], lo, hi)
+                               for k in keys if "STG" in str(k)])
+            summary_lines.append(
+                f"        sheared projections only: max {np.nanmax(genuine):+.3f}, "
+                f"mean {np.nanmean(genuine):+.3f}   |   "
+                f"STG (floor): max {np.nanmax(floorc):+.3f}"
             )
 
     print("\n".join(summary_lines))

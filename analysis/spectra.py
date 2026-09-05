@@ -1,36 +1,78 @@
-"""Re-derive the projection-comparison spectra from the surviving 2021 bandpowers.
+"""Bandpowers of the projection suite, and the theory they are compared to.
 
-Why this exists: the 2021 pipeline's own plotting script
-(/sptlocal/analysis/pol_project2020/workflow/scripts/plot_namaster_spectra.py)
-has two defects. It writes output filenames from the whole `perc_str` list
-instead of one element (the crash that parked the project), and its loading
-loop assigns `cl_flat_EE[ii]` inside the projection loop, so every projection
-slot ends up holding the last projection read. Nothing here reuses it.
+The production run
+------------------
+`results/highell/namaster_spectra/bandpowers_{proj}_seed{s:04d}.npz`, five
+projections x 20 seeds x 7 masks, produced by the ASTRA pipeline in
+`astra.yaml` under the `highell` universe. What it did:
 
-What the 2021 pipeline actually computed, for the record:
-  - Input: HEALPix Nside 8192 *unlensed* TQU sims (so the true B is zero).
-  - map2alm to lmax 4000, monopole and dipole filtered. There is therefore NO
-    sky power above ell = 4000; the topmost bandpowers sit against that hard
-    band limit and must not be quoted without saying so.
-  - alm2map back to an Nside 4096 *intermediate* grid (config `nside`), which
-    is lossless below ell 4000. The 8192 and the 4096 describe different
-    stages and are not in conflict.
-  - Projected to a flat grid with bilinear interpolation, oversampled 8x,
-    rebinned to 2 arcmin pixels.
-  - spt3g maps.FlattenPol applied, i.e. the projection-induced spin-2
-    rotation is undone before spectra are taken.
-  - NaMaster NmtFieldFlat with purify_b=True on apodized circular masks
-    (C2, 2.5 deg apodization), seven radii spanning f_sky 0.75% to 10%.
-  - 20 sims, bandpowers of width dl = 10 out to l = 4000.
+  - Input: HEALPix Nside 8192 *unlensed* TQU realizations of the Planck 2018
+    best-fit cosmology, so the true B is exactly zero and every recovered B
+    bandpower is leakage.
+  - map2alm to lmax = 6000, monopole and dipole filtered. Sky power therefore
+    exists to l = 6000, and any forward model compared to these spectra must
+    be band-limited there, not at the 4000 of the 2021 run.
+  - Synthesized to a flat grid of 2 arcmin pixels by bilinear interpolation
+    with 8x oversampling, centred on (0 deg, -56 deg).
+  - spt3g maps.FlattenPol applied: the projection-induced spin-2 rotation is
+    undone before spectra are taken, leaving only the symmetric (shear +
+    magnification) part of the Jacobian.
+  - Two legs per realization. Leg 0 is QU -- project Q and U, flatten, then
+    decompose to E/B on the plane, which is what a real analysis does and what
+    carries the leakage. Leg 1 is EB, decomposed on the sphere first. Every
+    consumer here reads leg 0.
+  - NaMaster NmtFieldFlat with purify_b=True on the seven apodized circular
+    masks (C2, 2.5 deg taper, radii 0.175 to 0.65 rad about RA 0, dec -56),
+    bandpowers of width dl = 50 out to l = 6000.
 
 purify_b=True is the load-bearing detail: mask-induced E-to-B leakage is
-removed by construction, so residual BB is projection-induced, not mask-induced.
+removed by construction, so residual BB is projection-induced.
+
+The pixel window, and why `load` multiplies something back in
+-------------------------------------------------------------
+The run was configured with `--pixel-window healpix_and_flat`, which divides
+the bandpowers by both the 2 arcmin flat-sky top-hat and the Nside-8192
+HEALPix window. Only the first is correct. The unlensed_TQU inputs carry no
+HEALPix window -- the C_l of the preprocessed alms matches theory flat to
+l = 6000, incompatible with pixwin^2 at > 50 sigma -- so that division is an
+artefact. `load` undoes it by multiplying the binned hp.pixwin(8192)^2 back
+in, and leaves the flat window divided out. Hence `transfer()` returns ones:
+the analytic correction is already in the files.
+
+That undo is conditional, and it has to be, because it is silently wrong if
+applied to files that never suffered the division. `universes/highell.yaml`
+declares `pixel_window: flat_only` while the bandpowers on disk were made with
+`healpix_and_flat` -- every one of the 100 job logs in `grid/logs/` carries
+that flag -- and there is no manifest in the output directory to arbitrate.
+`analysis/highell_provenance.json` is that arbiter: it records what the files
+actually are, `load` reads it, and the HEALPix factor is restored only when it
+says `healpix_and_flat`. `flat_only` is a no-op and anything else raises.
+The record lives in the repository rather than beside the data because
+`results/` is a symlink into /sptlocal and is gitignored.
+
+If the stage is rerun under the universe's own `flat_only` decision, change
+`pixel_window` in that file to `flat_only` and nothing else in the analysis
+needs touching.
+
+What no analytic window captures is the bilinear interpolation transfer. It is
+common to every projection and to EE and BB alike, and it is why the measured
+spectra sit a few percent under the forward model, growing toward the pixel
+scale.
+
+The 2021 run
+------------
+`load_2021` still reads the surviving 2021 bandpowers (dl = 10 to l = 4000,
+sky power band-limited at 4000) for the regression check in
+`analysis/check_highell_regression.py`. Nothing in the paper reads it.
 """
 
 import numpy as np
 from pathlib import Path
 
-SPECTRA_DIR = Path("/sptlocal/analysis/pol_project2020/results/spectra")
+ROOT = Path(__file__).resolve().parent.parent
+HIGHELL_DIR = ROOT / "results" / "highell" / "namaster_spectra"
+PROVENANCE = Path(__file__).resolve().parent / "highell_provenance.json"
+SPECTRA_DIR_2021 = Path("/sptlocal/analysis/pol_project2020/results/spectra")
 # Regenerated by analysis/theory.py in the sims' own cosmology, out to l = 10050
 # and carrying the lensed BB curve. The repo's Clee.dat is retired: it is wrong
 # twice over, and nothing should read it again.
@@ -54,48 +96,138 @@ PROJ_KIND = {
 }
 PERC = np.array([0.75, 1.00, 1.25, 1.5, 3.0, 5.0, 10.0])
 
-NSIMS, NBINS, DELTA_L = 20, 400, 10
+NSIMS, DELTA_L, LMAX = 20, 50, 6000
+NBINS = LMAX // DELTA_L                      # 120
 RES_ARCMIN = 2.0
 NSIDE_IN = 8192
+QU_LEG = 0
 
 BIN_LO = np.arange(NBINS) * DELTA_L
 BIN_HI = (np.arange(NBINS) + 1) * DELTA_L
-ELL = 0.5 * (BIN_LO + BIN_HI)
+# NmtBinFlat's effective multipoles for these edges are the bin midpoints;
+# they are read from the files rather than assumed, in `_ell_eff`.
+ELL = 0.5 * (BIN_LO + BIN_HI).astype(float)
+
+# The 2021 run, for the regression check only.
+NSIMS_2021, NBINS_2021, DELTA_L_2021 = 20, 400, 10
+BIN_LO_2021 = np.arange(NBINS_2021) * DELTA_L_2021
+BIN_HI_2021 = (np.arange(NBINS_2021) + 1) * DELTA_L_2021
+ELL_2021 = 0.5 * (BIN_LO_2021 + BIN_HI_2021).astype(float)
+
+
+def provenance():
+    """What the bandpowers on disk actually are. See the module docstring."""
+    import json
+    with open(PROVENANCE) as fh:
+        return json.load(fh)
+
+
+def _healpix_undo():
+    """The correction `load` applies, decided by the provenance record.
+
+    `healpix_and_flat` returns the binned hp.pixwin(NSIDE_IN)^2 that the run
+    wrongly divided out, built on the same NmtBinFlat edges NaMaster used so
+    that multiplying by it reverses that division bandpower by bandpower.
+    `flat_only` returns ones. Any other value is a run this loader has not
+    been taught to read, and raises rather than guessing.
+    """
+    pw_mode = provenance()["pixel_window"]
+    if pw_mode == "flat_only":
+        return np.ones(NBINS)
+    if pw_mode != "healpix_and_flat":
+        raise ValueError(
+            f"{PROVENANCE.name}: pixel_window = {pw_mode!r}. This loader "
+            "knows only 'healpix_and_flat' (HEALPix window multiplied back "
+            "in) and 'flat_only' (nothing to undo). Refusing to guess."
+        )
+    import healpy as hp
+    import pymaster as nmt
+
+    b = nmt.NmtBinFlat(np.arange(0, LMAX, DELTA_L).astype(float),
+                       np.arange(DELTA_L, LMAX + DELTA_L, DELTA_L).astype(float))
+    pw = hp.pixwin(NSIDE_IN)[: LMAX + 1] ** 2
+    return b.bin_cell(np.arange(LMAX + 1, dtype=float), pw)
+
+
+def _path(proj, seed):
+    return HIGHELL_DIR / f"bandpowers_{proj}_seed{seed:04d}.npz"
 
 
 def load(spec="EE"):
-    """Bandpowers as (n_masks, n_projs, NSIMS, NBINS)."""
+    """Bandpowers as (n_masks, n_projs, NSIMS, NBINS), QU leg.
+
+    The HEALPix pixel-window division of the production run is undone here if
+    and only if `analysis/highell_provenance.json` says the run applied it;
+    the 2 arcmin flat-sky window stays divided out (see the module docstring).
+    """
+    key = spec.lower()
+    if key not in ("ee", "bb"):
+        raise ValueError(f"spec must be EE or BB, got {spec!r}")
+    hpc = _healpix_undo()
     out = np.full((len(PERC), len(PROJS), NSIMS, NBINS), np.nan)
+    for j, proj in enumerate(PROJS):
+        for s in range(NSIMS):
+            with np.load(_path(proj, s)) as z:
+                arr = z[key][QU_LEG, 0, :, 0, :]      # (n_masks, NBINS)
+            if arr.shape != (len(PERC), NBINS):
+                raise ValueError(f"{_path(proj, s).name}: {arr.shape}")
+            out[:, j, s, :] = arr * hpc
+    return out
+
+
+def ell_eff():
+    """The NmtBinFlat effective multipoles as written by the run."""
+    with np.load(_path(PROJS[0], 0)) as z:
+        return z["ell_eff"]
+
+
+def load_2021(spec="EE"):
+    """The 2021 bandpowers, (n_masks, n_projs, NSIMS_2021, NBINS_2021).
+
+    Kept only for `analysis/check_highell_regression.py`. dl = 10 to l = 4000,
+    and the 10% disk is all-NaN (SIN) or overflowed (SFL, BICEP) there.
+    """
+    out = np.full((len(PERC), len(PROJS), NSIMS_2021, NBINS_2021), np.nan)
     for i in range(len(PERC)):
         for j, proj in enumerate(PROJS):
-            path = SPECTRA_DIR / f"Cl_flatsky_namaster_unlensed_{spec}_{proj}_mask{i}.txt"
+            path = (SPECTRA_DIR_2021 /
+                    f"Cl_flatsky_namaster_unlensed_{spec}_{proj}_mask{i}.txt")
             arr = np.loadtxt(path)
-            if arr.shape != (NSIMS, NBINS):
-                raise ValueError(f"{path.name}: {arr.shape} != {(NSIMS, NBINS)}")
+            if arr.shape != (NSIMS_2021, NBINS_2021):
+                raise ValueError(f"{path.name}: {arr.shape}")
             out[i, j] = arr
     return out
+
+
+def _bin(cl, bin_lo, bin_hi):
+    return np.array([np.nanmean(cl[lo:hi]) for lo, hi in zip(bin_lo, bin_hi)])
 
 
 def bin_theory(cl):
     """Average an unbinned C_l over each bandpower.
 
-    Binning matters: the acoustic peaks move fast compared to dl = 10, so
+    Binning matters: the acoustic peaks move fast compared to a bandpower, so
     evaluating theory at bin centres instead of averaging over the bin
     manufactures percent-level wiggles that look like a projection effect.
     """
-    binned = np.empty(NBINS)
-    for i, (lo, hi) in enumerate(zip(BIN_LO, BIN_HI)):
-        seg = cl[lo:hi]
-        binned[i] = np.nanmean(seg)
-    return binned
+    return _bin(cl, BIN_LO, BIN_HI)
 
 
-def flat_pixwin(ell, res_arcmin=RES_ARCMIN, n_phi=512):
+def bin_theory_2021(cl):
+    """`bin_theory` on the 2021 dl = 10 bins."""
+    return _bin(cl, BIN_LO_2021, BIN_HI_2021)
+
+
+def flat_pixwin(ell=ELL, res_arcmin=RES_ARCMIN, n_phi=512):
     """Azimuthally averaged square-pixel window, in C_l (i.e. already squared).
 
     Rebinning an oversampled grid down to `res_arcmin` pixels is a top-hat
     average, whose 2D transform is sinc(lx d/2) sinc(ly d/2). NaMaster bins in
     |l| annuli, so average |W|^2 around each annulus.
+
+    The production files already carry this correction -- the run divided by
+    it -- so nothing in the analysis should divide by it a second time. Kept
+    because it is the analytic statement of what was divided out.
     """
     d = np.deg2rad(res_arcmin / 60.0)
     phi = np.linspace(0, 2 * np.pi, n_phi, endpoint=False)
@@ -105,13 +237,12 @@ def flat_pixwin(ell, res_arcmin=RES_ARCMIN, n_phi=512):
     return (w ** 2).mean(axis=1)
 
 
-def healpix_pixwin(ell, nside=NSIDE_IN):
+def healpix_pixwin(ell=ELL, nside=NSIDE_IN):
     """HEALPix pixel window in C_l, interpolated onto bandpower centres.
 
-    NOT part of the production transfer: the unlensed_TQU inputs carry no
-    HEALPix window (Cl of the preprocessed alms matches theory flat to
-    ell = 6000, incompatible with pixwin**2 at > 50 sigma). Kept for the
-    explicit comparison only.
+    NOT part of the transfer: the unlensed_TQU inputs carry no HEALPix window.
+    `load` uses the binned version of this to undo the run's wrong division;
+    this interpolated form is kept for explicit comparisons only.
     """
     import healpy as hp
     pw = hp.pixwin(nside, pol=True)[1]  # polarization window
@@ -120,7 +251,7 @@ def healpix_pixwin(ell, nside=NSIDE_IN):
 
 
 def theory(spec="unlensed_EE"):
-    """A binned CAMB spectrum in the sims' cosmology.
+    """A binned CAMB spectrum in the sims' cosmology, on the production bins.
 
     `spec` names a key of theory_spectra.npz: unlensed_ or lensed_ crossed with
     TT, EE, BB, TE. The sims are unlensed, so unlensed_EE is the input the
@@ -136,15 +267,32 @@ def theory(spec="unlensed_EE"):
     return bin_theory(full)
 
 
+def theory_2021(spec="unlensed_EE"):
+    """`theory` on the 2021 dl = 10 bins."""
+    with np.load(THEORY_NPZ) as data:
+        ell = data["ell"]
+        cl = data[spec]
+    full = np.zeros(int(ell.max()) + 1)
+    full[ell] = cl
+    full[0] = 0.0
+    return bin_theory_2021(full)
+
+
 def theory_ee():
     """Binned unlensed EE, the sims' own input spectrum."""
     return theory("unlensed_EE")
 
 
 def transfer(ell=ELL):
-    """Total expected multiplicative suppression of C_l from pixelization.
+    """Multiplicative correction still to be applied to `load`'s bandpowers.
 
-    Flat-sky window only: the inputs carry no HEALPix window (see
-    healpix_pixwin's docstring).
+    None: the production run already divided by the 2 arcmin flat-sky window,
+    and `load` has undone the spurious HEALPix division. Kept as a function so
+    that consumers written against the 2021 loader keep working unchanged.
     """
+    return np.ones_like(np.atleast_1d(np.asarray(ell, dtype=float)))
+
+
+def transfer_2021(ell=ELL_2021):
+    """The 2021 files were raw: they still need the flat-sky window divided."""
     return flat_pixwin(ell)
