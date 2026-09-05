@@ -195,11 +195,24 @@ Magnification moves the other way and independently --- an isotropic dilation re
 
 The expansion is a guide to the mechanism rather than the tool.
 On the deep damping tail $C$ is closer to $\exp(-a\ell^2)$ than to a power law, and the azimuthal average becomes $I_0(2a\ell^2 g)$ --- exponential in $g$ rather than quadratic, with an argument of order unity by $\ell \sim 4000$ --- so every numerical prediction below evaluates Eq.~\eqref{eq:scalar_ratio} directly with the true spectrum.
-Holding the geometry fixed and varying only $C(\ell)$ isolates that dependence: over the 5\% disk in SFL, a featureless $C_\ell \propto \ell^{-4}$ acquires a constant $5.5\%$ offset, while the lensed $TT$ and $EE$ spectra oscillate with their acoustic peaks and climb to $1.53$ and $1.64$ at $\ell = 3800$, where the slope is steepest.
-Sect.~\ref{subsec:scalar_validation} makes the test against data.
+Figure~\ref{fig:slope} isolates that dependence, holding the geometry fixed and varying only $C(\ell)$; Sect.~\ref{subsec:scalar_validation} makes the test against data.
 
 Equation~\eqref{eq:scalar_expansion} is also the constant-shear limit of the standard lensed $TT$ kernel \citep{lewis06} at first order in $C^{\phi\phi}$ --- the same coefficient by different machinery, and the scalar half of the correspondence that Sect.~\ref{subsec:derivation} completes for spin two.
 Appendix~\ref{app:tt} carries out the collapse, and with it the one place a projection parts company with gravitational lensing: a deterministic shear correlates $\kappa$ with $\gamma_+$, so the identity that lets the isotropic literature write the collapse in shear variances alone fails, and the general form must be used.
+
+\begin{figure}
+  \includegraphics[width=\columnwidth]{slope_intuition.pdf}
+  \caption{
+    One projection, one footprint, three input spectra: what the shear does to a scalar spectrum is set by that spectrum's own shape.
+    Each curve is the scalar forward model --- Eq.~\eqref{eq:forward} with the misalignment kernel set to unity --- evaluated on SFL's Jacobian over the 5\% disk, divided by the input spectrum it was given.
+    No simulations enter, and the geometry is identical for all three, so every difference between the curves belongs to $C(\ell)$.
+    A featureless power law $C_\ell \propto \ell^{-4}$ has a constant slope and so acquires a constant offset --- Eq.~\eqref{eq:scalar_expansion}'s $n^2/4$, shifted to $\tfrac{n(n+2)}{4}\gsq$ by the equal-area mean dilation --- here $5.5\%$.
+    The lensed $TT$ and $EE$ spectra instead oscillate around unity in step with their acoustic peaks, and climb once the damping tail sets in, reaching $1.53$ and $1.64$ at $\ell = 3800$ where the slope is steepest.
+    $EE$ swings furthest, its peaks being the sharper of the two.
+  }
+  \label{fig:slope}
+\end{figure}
+
 \subsection{Polarization flattening removes the rotation} \label{subsec:flatten_pol}
 
 A flat-sky projection applies a spatially varying \textit{effective} rotation, tilting ``grid'' north away from ``true'' north by a position-dependent angle.
