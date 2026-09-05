@@ -183,6 +183,11 @@ def main():
     M.add("decades", _WORDS[int(round(np.log10(g2[keep].max() / g2[keep].min())))])
     slope, inter = np.polyfit(np.log(g2[keep]), np.log(band0[keep]), 1)
     M.add("freepowerlaw", rf"{np.exp(inter):.3f}\,\gsq^{{{slope:.4f}}}")
+    # Compare the three candidate shear reductions using their own best fits.
+    for key, macro in (("g2", "rmsGsq"), ("q2", "rmsRatio"),
+                       ("lnq2", "rmsLog")):
+        _, reduction_rms, _, _ = SL.fit_constant(mom[key][keep], band0[keep])
+        M.add(macro, pct(reduction_rms))
 
     # Same fit with the pipeline floor removed, to show it does not matter.
     sub = band0 - floor[0][:, None]

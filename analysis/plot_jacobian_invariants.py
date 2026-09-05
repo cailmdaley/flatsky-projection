@@ -33,9 +33,8 @@ PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
 
-# Projection colour identity lives in paper_style; used here only as a small
-# non-annotative accent (a tick above each column title) so the five
-# projections read as the same entities across every figure in the paper.
+# Projection colour identity lives in paper_style; the coloured bands identify
+# the five columns without adding titles to the panels.
 LIM_DEG = 55.0
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
@@ -112,7 +111,7 @@ def main():
         axg, axm = axes[0, j], axes[1, j]
 
         im_g = axg.imshow(g_maps[proj], origin="lower", extent=extent,
-                          cmap="viridis", vmin=0, vmax=g_vmax,
+                          cmap="Greys", vmin=0, vmax=g_vmax,
                           interpolation="nearest", rasterized=True, zorder=1)
         im_mu = axm.imshow(mu_maps[proj], origin="lower", extent=extent,
                            cmap="RdBu_r", norm=mu_norm,
@@ -132,13 +131,14 @@ def main():
             ax.set_yticks([-40, -20, 0, 20, 40])
             ax.tick_params(length=2.0, pad=1.5)
 
-        axg.set_title(LABELS[proj], pad=6, fontweight="bold")
-        # Color-identity bar above each column title, matching this
-        # projection's hue in every other figure in the paper (see
-        # plot_masks_figure.py).
-        axg.add_patch(Rectangle((0.0, 1.0), 1.0, 0.02, transform=axg.transAxes,
+        # A wide colour band identifies the projection without a panel title.
+        axg.add_patch(Rectangle((0.0, 1.0), 1.0, 0.045, transform=axg.transAxes,
                                 facecolor=PROJ_COLORS[proj], edgecolor="none",
                                 clip_on=False, zorder=10))
+        axg.text(0.5, 1.022, LABELS[proj], transform=axg.transAxes,
+                 ha="center", va="center", fontsize=7, fontweight="bold",
+                 color="black" if proj == "ProjZEA" else "white",
+                 clip_on=False, zorder=11)
         axg.set_xticklabels([])
         axm.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
         if j > 0:
@@ -150,16 +150,16 @@ def main():
 
     axes[0, 0].set_ylabel(r"$g$" + "\n" + r"$\Delta y$ [deg]", labelpad=1)
     axes[1, 0].set_ylabel(r"$\mu$" + "\n" + r"$\Delta y$ [deg]", labelpad=1)
-    axes[1, 2].set_xlabel(r"map coordinate offset from field centre [deg]", labelpad=2)
+    axes[1, 2].set_xlabel(r"$\Delta x$ [deg]", labelpad=2)
 
     cax_g = fig.add_axes([0.895, 0.53, 0.014, 0.39])
     cb_g = fig.colorbar(im_g, cax=cax_g)
-    cb_g.set_label(r"shear $g = (s_1-s_2)/(s_1+s_2)$", fontsize=7, labelpad=3)
+    cb_g.set_label(r"$g$", fontsize=7, labelpad=3)
     cb_g.ax.tick_params(labelsize=6.5, length=2)
 
     cax_mu = fig.add_axes([0.895, 0.11, 0.014, 0.39])
     cb_mu = fig.colorbar(im_mu, cax=cax_mu)
-    cb_mu.set_label(r"magnification $\mu = s_1 s_2$", fontsize=7, labelpad=3)
+    cb_mu.set_label(r"$\mu$", fontsize=7, labelpad=3)
     cb_mu.ax.tick_params(labelsize=6.5, length=2)
 
     OUT.mkdir(exist_ok=True)

@@ -154,12 +154,9 @@ Figure~\ref{fig:invariants} draws the same $g$ pixel by pixel alongside $\mu$, o
   \centering
   \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
   \caption{
-    The shear field $g$ (top) with which each projection distorts the sky, and the magnification $\mu$ (bottom) that comes with it, both read off the projection's Jacobian relative to the sky and known in closed form before any observation.
-    Shown are the five projections used throughout this paper --- Sanson--Flamsteed (SFL), orthographic (SIN), stereographic (STG), Lambert zenithal equal-area (ZEA), and the BICEP-style equidistant cylindrical (BICEP), defined in Table~\ref{table:projs} --- evaluated on a common grid centred on the field centre $(\alpha, \delta) = (\ang{0}, \ang{-56})$; the black contour marks $W = 0.5$ of the largest (10\%) apodized disk used in Sect.~\ref{sec:results} --- the extreme envelope of the mask suite, not the 5\% reference footprint of the results.
-    SFL's shear grows with east--west offset from the field centre, as $g \approx \tfrac12 \tan\lvert\delta_0\rvert$ times the magnitude of the east offset (Table~\ref{table:projs}); SIN and ZEA shear similarly away from the field centre but in every direction, being zenithal rather than cylindrical.
-    STG is conformal, so its shear is zero to within numerical precision across the whole panel: $\mu$ carries its entire distortion instead, growing radially away from the tangent point.
-    ZEA and SFL are both equal-area, so $\mu \equiv 1$ up to floating-point error everywhere shown.
-    BICEP's cylindrical projection fixes its $x$-scale at the reference declination, so $\mu$ grows monotonically toward the pole and reaches several times unity near the southward edge of the footprint, formally diverging where the largest disk crosses the celestial pole itself --- the same singularity for which the 10\% mask is excluded for SFL and BICEP (Sect.~\ref{subsec:disks}).
+    Maps of the local shear $g$ (top) and magnification $\mu$ (bottom) for the five projections used in this work; the coloured bands identify the columns and the black contour marks $W=0.5$ of the largest apodized disk.
+    STG is conformal and therefore shear-free, SFL and ZEA are equal-area with $\mu\simeq1$, and BICEP carries both strong shear and magnification toward the pole.
+    The fields come from the projection Jacobians on a common grid centred at $(\alpha,\delta)=(\ang{0},\ang{-56})$, while the contour is the 10\% mask boundary used in Sect.~\ref{sec:results}.
   }
   \label{fig:invariants}
 \end{figure*}
@@ -200,12 +197,9 @@ Appendix~\ref{app:tt} carries out the collapse, and with it the one place a proj
 \begin{figure}
   \includegraphics[width=\columnwidth]{slope_intuition.pdf}
   \caption{
-    One projection, one footprint, three input spectra: what the shear does to a scalar spectrum is set by that spectrum's own shape.
-    Each curve is the scalar forward model --- Eq.~\eqref{eq:forward} with the misalignment kernel set to unity --- evaluated on SFL's Jacobian over the 5\% disk, divided by the input spectrum it was given.
-    No simulations enter, and the geometry is identical for all three, so every difference between the curves belongs to $C(\ell)$.
-    A featureless power law $C_\ell \propto \ell^{-4}$ has a constant slope and so acquires a constant offset --- Eq.~\eqref{eq:scalar_expansion}'s $n^2/4$, shifted to $\tfrac{n(n+2)}{4}\gsq$ by the equal-area mean dilation --- here $5.5\%$.
-    The lensed $TT$ and $EE$ spectra instead oscillate around unity in step with their acoustic peaks, and climb once the damping tail sets in, reaching $1.53$ and $1.64$ at $\ell = 3800$ where the slope is steepest.
-    $EE$ swings furthest, its peaks being the sharper of the two.
+    Scalar-spectrum ratios $C_\ell^{\rm plane}/C_\ell^{\rm sky}$ for three input spectra passed through the same SFL geometry on the 5\% disk.
+    The power law produces a constant offset, whereas the acoustic structure of lensed $TT$ and $EE$ reappears in the ratio and grows in the damping tail.
+    The curves are the scalar forward model with its polarization kernel set to unity; no simulations enter.
   }
   \label{fig:slope}
 \end{figure}
@@ -341,12 +335,9 @@ The floor is in any case irrelevant to the fits below, which use raw bandpowers:
 \begin{figure*}
   \includegraphics[width=\textwidth]{projection_spectra_ee.pdf}
   \caption{
-    $EE$ on the 5\% reference disk, 20 realizations, one set of points per projection, with the forward model as smooth curves.
-    Top: $EE$ bandpowers, with the input spectrum in black.
-    Bottom: the same $EE$ divided by the input --- the scalar remap of Eq.~\eqref{eq:scalar_ratio}, evaluated for each projection's Jacobian, with the curve inheriting the input spectrum's acoustic structure because the coefficient follows the local slope.
-    The curve is Eq.~\eqref{eq:forward}, the restored-terms forward model, band-limited at the simulations' $\ell = \lmaxrun$ and carrying no free parameter.
-    The residual common suppression of a few percent, growing with $\ell$ and shared by every projection, is the bilinear interpolation transfer (Sect.~\ref{subsec:residuals}).
-    STG, conformal and shearless, carries pure magnification and so falls monotonically.
+    Measured $EE$ bandpowers (top) and their ratios to the input spectrum (bottom) on the 5\% reference disk, with one series for each projection and smooth model curves.
+    The projection-dependent remapping follows the acoustic structure of the input, while STG falls monotonically because its distortion is purely magnifying.
+    Points average 20 realizations and curves are the parameter-free forward model of Eq.~\eqref{eq:forward}; error bars are omitted because they are smaller than the markers.
   }
   \label{fig:spectra_ee}
 \end{figure*}
@@ -363,17 +354,16 @@ Nothing above $\ell = \lwall$ is shown, because there the \SI{2}{\arcminute} pix
 \begin{figure*}
   \includegraphics[width=\textwidth]{projection_spectra_bb.pdf}
   \caption{
-    $BB$ on the 5\% reference disk, 20 realizations, one set of points per projection; in these unlensed simulations all of it is leakage.
-    Top: $BB$ bandpowers, with the lensed $BB$ of the same cosmology dashed for scale.
-    Bottom: the same $BB$ divided by the measured $EE$, which is the relation of Eq.~\eqref{eq:law_footprint}, with lensed $BB/EE$ dashed.
-    Smooth curves are Eq.~\eqref{eq:forward}, the restored-terms forward model, band-limited at the simulations' $\ell = \lmaxrun$ and carrying no free parameter.
-    STG, conformal and shearless, has a predicted $BB$ of zero: its points in the top panel are the pipeline's own $E \to B$ floor (Sect.~\ref{subsec:scalar_validation}), and it is left off the ratio axis, where a floor divided by $EE$ would read as a leakage.
+    Measured $BB$ bandpowers (top) and $BB/EE$ ratios (bottom) on the 5\% reference disk; the unlensed simulations contain no true $B$ modes, so the signal is projection leakage.
+    The four sheared projections follow the derived relation, while STG's points expose the pipeline's own $E\to B$ floor rather than geometric leakage.
+    Curves are the parameter-free forward model of Eq.~\eqref{eq:forward}, and the dashed reference is the lensed spectrum; STG is omitted from the ratio panel.
   }
   \label{fig:spectra_bb}
 \end{figure*}
 
-Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair.
+Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair in its two panels.
 Fitting the coefficient returns $\fitcoef$ --- \fitoffset\ above the derived value of 2, the offset being the mean of the band-dependent term of Sect.~\ref{subsec:bandbyband} --- with \fitrms\ rms and \fitworst\ worst case across \decades\ decades in $\gsq$; a free power law returns $\freepowerlaw$.
+The three reductions $\gsq$, $\expval{(s_1/s_2 - 1)^2}$, and $\expval{\ln^2(s_1/s_2)}$ have rms scatters \rmsGsq, \rmsRatio, and \rmsLog, respectively, about their own best fits.
 The sample is four independent geometric configurations measured on seven nested concentric disks, \numpairs\ usable pairs in all, and it should be read that way: SFL and BICEP are near-degenerate on round masks (Sect.~\ref{subsec:disks}), so the \decades\ decades of dynamic range come from the projections while the nested disks vary the footprint at fixed geometry.
 
 The leaked $B$ could in principle bin unlike an ordinary sky, being a deterministic image of the shared $EE$ realization rather than an independent Gaussian field.
@@ -382,13 +372,11 @@ The shear couples mode $\vbell$ only to $EE$ modes near $\abs{J^T\vbell} \approx
 The lone exception is diagnostic: STG, whose $BB$ sits at the numerical floor, reaches a mean off-diagonal correlation of $\offdiagSTG$, far above the $\offdiagnoise$ per-entry sampling noise of 20 realizations --- the signature of a seed-\textit{independent} template rather than a sky, and covariance-level evidence for what Sect.~\ref{subsec:scalar_validation} read off the amplitude.
 
 \begin{figure*}
-  \includegraphics[width=\textwidth]{shear_leakage.png}
+  \includegraphics[width=\textwidth]{shear_leakage.pdf}
   \caption{
-    Four views of the same comparison, for every usable sheared (projection, mask) configuration (\numpairs\ in all; Sect.~\ref{subsec:disks}).
-    Top left: the mean measured $BB/EE$ over $1000 < \ell < 3000$ against $2\gsq$ computed from each configuration's Jacobian and apodized mask, spanning four projections and up to seven nested sky fractions --- \decades\ decades in $\gsq$ --- against the derived, parameter-free line.
-    Top right: the same points' fractional residual about that line, broken out by projection and plotted against sky fraction, showing the residual is a property of the projection and mask combination rather than a single outlying point.
-    Bottom left: on the 5\% disk, the measured ratio band by band against $\ell$ --- with the pipeline's $E \to B$ floor, measured on STG, subtracted --- which tilts where the leading-order relation is flat; overplotted is Eq.~\eqref{eq:forward}, the forward model that restores the two dropped terms.
-    Bottom right: the choice of shear variable tested against three candidate reductions of $(s_1, s_2)$ --- $\gsq$, $\expval{(s_1/s_2 - 1)^2}$, and $\expval{\ln^2(s_1/s_2)}$ --- which agree at first order but not beyond; only $\gsq$ collapses the data to its rms floor.
+    Measured $BB/EE$ against the squared-mask-weighted shear for every usable sheared projection--mask configuration, with the residual from the derived relation shown against sky fraction in the second panel.
+    The points follow $BB/EE=2\gsq$ across the available dynamic range, and the residuals expose the smaller projection- and mask-dependent departures without the conformal pipeline floor.
+    The two panels use the $1000<\ell<3000$ band average; the fit and the excluded configurations are defined in Sect.~\ref{subsec:disks}.
   }
   \label{fig:shear_leakage}
 \end{figure*}

@@ -107,7 +107,7 @@ def main():
     ax.axhline(1.0, color=PS.RULE, lw=0.9, zorder=1)
     ax.set_xlim(ELL[0], ELL[-1])
     ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(r"predicted $C_\ell^{\rm plane} / C_\ell^{\rm sky}$")
+    ax.set_ylabel(r"$C_\ell^{\rm plane}/C_\ell^{\rm sky}$")
     ax.legend(loc="lower right", fontsize=9)
 
     FIGURE.parent.mkdir(exist_ok=True)

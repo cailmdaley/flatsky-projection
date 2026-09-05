@@ -162,7 +162,7 @@ DEG = core.G3Units.deg
 MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
 CACHE_DIR = Path("/sptlocal/user/cailmdaley/pol_project")
 ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "shear_leakage.png"
+FIGURE = ROOT / "figures" / "shear_leakage.pdf"
 
 # config.yaml of the 2021 run: seven concentric disks about the projection
 # centre, apodized C2 at 2.5 deg. Radii carried here only for the record --
@@ -771,64 +771,65 @@ def report_1500d(nside=1024):
 # Figure
 # --------------------------------------------------------------------------
 
-def figure(mom, meas, pred, path=FIGURE):
+def figure(mom, meas, pred=None, path=FIGURE):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({
-        "font.size": 10, "font.family": "serif", "text.usetex": True,
+        "font.size": 9.5, "font.family": "serif", "text.usetex": True,
         "axes.grid": True, "grid.alpha": 0.25, "grid.linewidth": 0.5,
         "axes.linewidth": 0.7, "figure.dpi": 130, "savefig.bbox": "tight",
         "legend.edgecolor": "0.6", "legend.fancybox": False,
     })
-    # Projection identity and marker shapes come from paper_style, and are
-    # identical in every figure of the paper.
     colors = PS.PROJ_COLORS
     marks = PS.PROJ_MARKERS
 
-    jstg = S.PROJS.index(FLOOR_PROJ)
     g2 = mom["g2"]
     band0 = meas[0]
-    floor = meas[:, :, jstg]
     keep = law_mask(band0)
-    k, rms, worst, n = fit_constant(g2[keep], band0[keep])
+    k, rms, _, _ = fit_constant(g2[keep], band0[keep])
 
-    fig, axes = plt.subplots(2, 2, figsize=(11.5, 9.0))
+    fig, axes = plt.subplots(1, 2, figsize=(7.1, 3.45),
+                             gridspec_kw={"width_ratios": [1.15, 1.0],
+                                          "wspace": 0.28})
 
-    # (a) the law.
-    ax = axes[0, 0]
+    # (a) the law, without the STG floor that would add irrelevant decades.
+    ax = axes[0]
     span = np.array([1e-6, 2e-1])
     ax.plot(span, 2 * span, "k-", lw=1.3, zorder=1,
-            label=r"$BB/EE = 2\langle g^2\rangle$ (predicted, no fit)")
-    ax.plot(span, k * span, "k--", lw=1.0, zorder=1, label=rf"fit, $k = {k:.3f}$")
-    lo_f, hi_f = band0[:, jstg].min(), band0[:, jstg].max()
-    ax.axhspan(lo_f, hi_f, color=colors[FLOOR_PROJ], alpha=0.18, zorder=0,
-               label=r"STG: conformal, $\langle g^2\rangle \sim 10^{-15}$"
-                     "\n" r"$\to$ pipeline $E\!\to\!B$ floor")
+            label=r"$BB/EE = 2\langle g^2\rangle$")
+    ax.plot(span, k * span, "k--", lw=1.0, zorder=1,
+            label=rf"fit, $k={k:.3f}$")
     for j, proj in enumerate(S.PROJS):
         if proj == FLOOR_PROJ:
             continue
         sel = keep[:, j]
         ax.scatter(g2[sel, j], band0[sel, j], marker=marks[proj],
-                   facecolors="none", edgecolors=colors[proj], s=44, lw=1.4,
+                   facecolors="none", edgecolors=colors[proj], s=38, lw=1.2,
                    zorder=3, label=S.PROJ_LABEL[proj])
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlim(*span)
-    ax.set_ylim(1e-8, 4e-1)
+    y_values = np.concatenate([band0[keep], 2 * span])
+    ax.set_ylim(max(np.nanmin(y_values) / 1.8, 1e-7),
+                np.nanmax(y_values) * 1.8)
     ax.set_xlabel(r"$\langle g^2\rangle$, mask$^2$-weighted")
-    ax.set_ylabel(r"$BB/EE$, $1000 < \ell < 3000$")
-    ax.legend(fontsize=7.5, loc="upper left", framealpha=0.9)
+    ax.set_ylabel(r"$BB/EE$")
+    ax.legend(fontsize=7.2, loc="upper left", ncol=2, framealpha=0.9,
+              columnspacing=0.8, handletextpad=0.4)
 
-    # (b) residual about the predicted coefficient.
-    ax = axes[0, 1]
+    # (b) residual about the derived coefficient, by disk size.
+    ax = axes[1]
+    residuals = []
     for j, proj in enumerate(S.PROJS):
         if proj == FLOOR_PROJ:
             continue
         sel = keep[:, j]
-        ax.plot(S.PERC[sel], 100 * (band0[sel, j] / (2 * g2[sel, j]) - 1),
-                marker=marks[proj], color=colors[proj], lw=1.1, ms=5,
+        residual = 100 * (band0[sel, j] / (2 * g2[sel, j]) - 1)
+        residuals.append(residual)
+        ax.plot(S.PERC[sel], residual,
+                marker=marks[proj], color=colors[proj], lw=1.1, ms=4.5,
                 label=S.PROJ_LABEL[proj])
     ax.axhline(0, color="k", lw=1.0)
     ax.axhspan(-100 * rms, 100 * rms, color="k", alpha=0.07,
@@ -839,55 +840,13 @@ def figure(mom, meas, pred, path=FIGURE):
     ax.set_xticks([], minor=True)
     ax.set_xlabel(r"disk $f_{\rm sky}$ [\%]")
     ax.set_ylabel(r"$BB/EE \,/\, 2\langle g^2\rangle - 1$ [\%]")
-    ax.legend(fontsize=8, ncol=2)
+    residuals = np.concatenate(residuals)
+    rmax = max(5.0, 5.0 * np.ceil(np.max(np.abs(residuals)) / 25.0))
+    ax.set_ylim(-rmax, rmax)
+    ax.legend(fontsize=7.5, ncol=2, columnspacing=0.8,
+              handletextpad=0.4)
 
-    # (c) the l dependence the band average hides.
-    ax = axes[1, 0]
-    centres = np.array([0.5 * (lo + hi) for lo, hi in BANDS[1:]])
-    i = 5
-    for j, proj in enumerate(S.PROJS):
-        if proj == FLOOR_PROJ:
-            continue
-        y = (meas[1:, i, j] - floor[1:, i]) / (2 * g2[i, j])
-        if not np.isfinite(y).any():
-            continue
-        ax.plot(centres, y, marker=marks[proj], color=colors[proj], lw=1.3, ms=5,
-                label=rf"{S.PROJ_LABEL[proj]}, 5\% disk")
-        ax.plot(centres, pred[1:, i, j] / (2 * g2[i, j]), color=colors[proj],
-                lw=1.2, ls=":", alpha=0.9)
-    ax.axhline(1.0, color="k", lw=1.0)
-    ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(r"$(BB/EE)(\ell) \,/\, 2\langle g^2\rangle$")
-    model_h = matplotlib.lines.Line2D([], [], color="0.35", lw=1.2, ls=":")
-    h, l_ = ax.get_legend_handles_labels()
-    ax.legend(h + [model_h],
-              l_ + ["forward model (dotted); points have the STG floor removed"],
-              fontsize=7.5, ncol=2)
-
-    # (d) which reduction collapses the data. A different categorical
-    # dimension from (a)-(c) -- reductions, not projections -- so it draws
-    # from the neutral SECONDARY scheme and never from a projection hue.
-    ax = axes[1, 1]
-    labels = {"g2": (r"$\langle g^2 \rangle$", PS.SECONDARY[0]),
-              "q2": (r"$\langle (s_1/s_2-1)^2 \rangle$", PS.SECONDARY[1]),
-              "lnq2": (r"$\langle \ln^2 (s_1/s_2) \rangle$", PS.SECONDARY[2])}
-    red_marks = {"g2": "o", "q2": "v", "lnq2": "P"}
-    for key, (lab, col) in labels.items():
-        xx = mom[key][keep]
-        kk, _, _, _ = fit_constant(xx, band0[keep])
-        r = band0[keep] / (kk * xx) - 1
-        order = np.argsort(xx)
-        ax.plot(xx[order], 100 * r[order], "-", marker=red_marks[key], ms=4,
-                lw=1.0, color=col,
-                label=rf"{lab}: rms {100 * np.std(r):.1f}\%, "
-                      rf"$k = {kk:.3f}$")
-    ax.axhline(0, color="k", lw=1.0)
-    ax.set_xscale("log")
-    ax.set_xlabel(r"shear reduction, mask$^2$-weighted")
-    ax.set_ylabel(r"residual about own best fit [\%]")
-    ax.legend(fontsize=8, loc="lower left")
-
-    fig.tight_layout(pad=1.4, w_pad=2.2, h_pad=2.2)
+    fig.tight_layout(pad=0.8)
     path.parent.mkdir(exist_ok=True)
     fig.savefig(path)
     print(f"\nwrote {path}")
@@ -928,7 +887,7 @@ def main():
     pred = None if args.no_model else predicted_ratios(mom)
     report(mom, meas, pred)
     report_1500d()
-    if not args.no_figure and pred is not None:
+    if not args.no_figure:
         figure(mom, meas, pred)
 
 
