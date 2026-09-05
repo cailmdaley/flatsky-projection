@@ -168,6 +168,29 @@ def load_mask(masks_dir: Path, proj: str, i: int):
     return mask, lo, hi, lx_rad, ly_rad
 
 
+def finite_in_mask(m, mask):
+    """Zero non-finite pixels, requiring that none carry mask weight.
+
+    Orthographic (SIN) grids are undefined beyond the unit disk -- 1 rad =
+    57.3 deg from centre -- so the 110-deg box's corners are NaN. Every mask
+    stays inside that disk, but NaN * 0 is NaN and NaMaster then returns an
+    all-NaN spectrum; zeroing them is exact because the mask weight there is
+    zero. A NaN *inside* the mask would be a real problem, so it raises.
+    """
+    import numpy as np
+
+    bad = ~np.isfinite(m)
+    if not bad.any():
+        return m
+    if (mask[bad] != 0).any():
+        raise ValueError(
+            f"{int((mask[bad] != 0).sum())} non-finite map pixels carry mask weight"
+        )
+    out = m.copy()
+    out[bad] = 0.0
+    return out
+
+
 def compute_pixel_window(mode: str, b, ell_eff, lmax: int):
     import numpy as np
 
@@ -318,16 +341,24 @@ def main() -> None:
                     if leg == "qu":
                         frame_path = qu_maps_dir / f"qu_{proj}_seed{seed:04d}.g3"
                         frame = next(core.G3File(str(frame_path)))
-                        q = np.asarray(frame["Q"], dtype=np.float64)[lo:hi, lo:hi]
-                        u = np.asarray(frame["U"], dtype=np.float64)[lo:hi, lo:hi]
+                        q = finite_in_mask(
+                            np.asarray(frame["Q"], dtype=np.float64)[lo:hi, lo:hi], mask
+                        )
+                        u = finite_in_mask(
+                            np.asarray(frame["U"], dtype=np.float64)[lo:hi, lo:hi], mask
+                        )
                         ee, bb = compute_qu_bandpowers(
                             q, u, mask, lx_rad, ly_rad, purify_b, b, w
                         )
                     else:
                         frame_path = eb_maps_dir / f"eb_{proj}_seed{seed:04d}.g3"
                         frame = next(core.G3File(str(frame_path)))
-                        e = np.asarray(frame["E"], dtype=np.float64)[lo:hi, lo:hi]
-                        bmap = np.asarray(frame["B"], dtype=np.float64)[lo:hi, lo:hi]
+                        e = finite_in_mask(
+                            np.asarray(frame["E"], dtype=np.float64)[lo:hi, lo:hi], mask
+                        )
+                        bmap = finite_in_mask(
+                            np.asarray(frame["B"], dtype=np.float64)[lo:hi, lo:hi], mask
+                        )
                         ee, bb = compute_eb_bandpowers(
                             e, bmap, mask, lx_rad, ly_rad, b, w
                         )
