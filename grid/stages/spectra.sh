@@ -41,7 +41,7 @@ say RUN
     --qu-maps qu --eb-maps eb --masks masks --workspaces workspaces \
     --projections "$PROJ" \
     --seed-start "$SEED" --seed-stop "$((SEED + 1))" \
-    --purify-b purify --pixel-window healpix_and_flat \
+    --purify-b purify --pixel-window flat_only \
     --lmax l6000 --delta-ell 50 --max-procs 2 --out out
 rc=$?
 echo "run_rc=$rc"
