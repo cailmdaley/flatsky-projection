@@ -155,7 +155,7 @@ Figure~\ref{fig:invariants} draws the same $g$ pixel by pixel alongside $\mu$, o
   \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
   \caption{
     Maps of the local shear $g$ (top) and magnification $\mu$ (bottom) for the five projections used in this work; the coloured bands identify the columns and the black contour marks $W=0.5$ of the largest apodized disk.
-    STG is conformal and therefore shear-free, SFL and ZEA are equal-area with $\mu\simeq1$, and BICEP carries both strong shear and magnification toward the pole.
+    STG is conformal and therefore shear-free, SFL and ZEA are equal-area with $\mu\equiv1$, and BICEP carries both strong shear and magnification toward the pole.
     The fields come from the projection Jacobians on a common grid centred at $(\alpha,\delta)=(\ang{0},\ang{-56})$, while the contour is the 10\% mask boundary used in Sect.~\ref{sec:results}.
   }
   \label{fig:invariants}
@@ -170,7 +170,7 @@ Because pseudo-$C_\ell$ estimators bin in annuli of $\abs{\vbell}$, the directio
   \frac{P_2(\ell)}{P_1(\ell)} = \expval{\mu \, \frac{C\qty(\ell\, \rho(\chi))}{C(\ell)}}_{\chi,\, W^2},
   \qquad \rho(\chi) = \sqrt{s_1^2 \cos^2\chi + s_2^2 \sin^2\chi},
 \end{equation}
-where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight $\gsq \equiv \expval{g^2}_{\chi, W^2}$.
+where $\chi$ is the azimuth of $\vbell$ in the principal frame of $A$ and the outer average runs over the footprint with the squared mask weight; the same footprint mean of the squared shear, $\gsq \equiv \expval{g^2}_{W^2}$, is the one number every relation below is written in.
 
 For a locally power-law spectrum $C \propto \ell^{n}$, $C(\ell \rho)/C(\ell) = \rho^{n}$.
 Writing $s_{1,2} = \bar{s}(1 \pm g)$, so that $\rho(\chi) = \bar{s}\sqrt{1 + 2g\cos 2\chi + g^2}$, and setting $\bar{s} = 1$ and $\mu = 1$ for the moment,
@@ -183,7 +183,7 @@ Comparing two equal-area projections sets $\mu \equiv 1$, which forces a residua
 At $\gsq \simeq 0.035$, which is what SFL on SPT's 1500d field actually has (Sect.~\ref{subsec:disks}), that is a $30$--$60\%$ excess in measured power.
 A second-order effect in the distortion becomes an order-unity effect in the spectrum purely because the tail is steep.
 
-The sign is Jensen's inequality, and the corrected coefficient makes it unconditional: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell\rho)$ over the stretch always \textit{lifts} the answer --- the stretched directions lose less than the compressed directions gain.
+The sign is Jensen's inequality: $n^2/4 > 0$ for every slope, so azimuthally averaging $C(\ell\rho)$ over the stretch always \textit{lifts} the answer --- the stretched directions lose less than the compressed directions gain.
 Being quadratic in $g$, the excess is also blind to the sign of the shear and survives any mask symmetry.
 Magnification moves the other way and independently --- an isotropic dilation removes power from a falling spectrum when $\mu > 1$ --- so the two invariants separate in practice, with the conformal stereographic projection, $g \equiv 0$ and pure magnification, as the complementary null.
 
