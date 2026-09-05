@@ -80,7 +80,7 @@ Remapping a field by a deflection whose Jacobian has a trace-free part moves sca
 What is new is the source of the shear, and it changes what can be done with it.
 Gravitational shear is stochastic --- it must be reconstructed from the data, or marginalized over.
 Cartographic shear is a lens the analyst chooses, and its shear field follows in closed form from the projection definition \citep{calabretta02} before a single observation is made; Fig.~\ref{fig:invariants} is that lens, drawn.
-Because $g$ is known pixel by pixel before observing, the leaked $B$ field is a known linear functional of the measured $E$ and can be subtracted --- the logic of the forward-modelled, $E$-only template of \citet{zhou25}, with the amplitude fixed by the projection definition rather than by a fit, and a residual two orders of magnitude below the raw leakage (Sect.~\ref{subsec:template}).
+Because $g$ is known pixel by pixel before observing, the leaked $B$ field is a known linear functional of the measured $E$, and can be subtracted to a residual two orders of magnitude below the raw leakage (Sect.~\ref{subsec:template}).
 
 Prior work brackets this study without occupying it.
 The closest predecessor is \citet{wallis17}, who compared projections for weak-lensing convergence maps reconstructed via Kaiser--Squires and concluded empirically that ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
@@ -216,7 +216,7 @@ The angle could be defined from north ($\hat{\theta}$ to $\hat{y}$) or from east
 What must be removed is fixed by the polar decomposition $J = R\Sigma$, with $R$ a rotation and $\Sigma$ symmetric: flattening at the polar angle of $R$ removes all of the rotation and leaves exactly the local shear $\Sigma$, and it is the unique optimal choice, since an offset $\Delta$ leaves a residual uniform polarization rotation and the leakage becomes $\expval{\sin^2 2(\delta\psi+\Delta)} \simeq 2g^2 + 4\Delta^2$.
 Equation~\eqref{eq:rot_angle} attains that angle to first order, sitting at $\Delta = \order{g^2}$; Appendix~\ref{app:flatten} gives the residual and the ${\sim}1\%$ shift it makes to the quartic term of Eq.~\eqref{eq:law}, which the simulations therefore realize rather than the idealized form.
 For a conformal projection $\Sigma$ is a multiple of the identity, flattening is exact, and the leakage vanishes.
-For everything else, the leakage is set by $\Sigma$ alone.
+For everything else, the leakage is set by $\Sigma$ alone --- provided the pipeline flattens by rotation only, as \texttt{spt3g\_software} and comparable pipelines do, which is what the relation below describes.
 
 \subsection{The spin-two relation in closed form} \label{subsec:derivation}
 
@@ -247,16 +247,14 @@ Since $\delta\psi$ belongs to the Jacobian and not to the field, every spin resp
 The scalar rung vanishes identically, which demotes the first-order statement of Sect.~\ref{subsec:scalar} from a separate fact to a corollary; and because the derivation uses only the Jacobian, the spin-two rung applies verbatim to flat-sky projected galaxy-shear maps.
 Equation~\eqref{eq:law_footprint} is also the constant-shear limit of the standard flat-sky $E \to B$ lensing kernel \citep{lewis06}, derived in Appendix~\ref{app:kernels}: two routes with different machinery and different averages, agreeing exactly at $\order{g^2}$, with the closed form supplying a quartic term the first-order kernel cannot see.
 
-Three qualifications delimit the result.
+Two qualifications delimit the result.
 The first is the scale separation everything rests on.
 This is a local, adiabatic result, valid when the shear varies slowly compared to the mode, and the kernel expansion fixes the order at which locality fails: the term linear in $L/\ell$ vanishes by parity, so the leading correction is $\order{(L/\ell)^2}$.
 Cartographic shear varies on the scale of the field itself --- tens of degrees, so $L$ of order a few --- while the modes of interest have $\ell \gtrsim 10^3$; hence $L/\ell \sim \text{few}\times10^{-3}$ and a correction $\lesssim 10^{-4}$.
 The lens is as large-scale as a lens can be, which is why a relation derived for constant shear describes a shear field that is anything but.
 Second, $W^2$ is the \textit{effective} weight rather than the derived one: the estimator weights sky area by $W^2\abs{\det J}^2$, but for a falling spectrum the $\abs{\det J}$ factors are nearly cancelled by the spectrum's response to the same stretch, and the residue of that near-cancellation is exactly the band-dependent structure of Sect.~\ref{subsec:bandbyband}.
-Third, the relation describes pipelines that flatten by rotation only, as \texttt{spt3g\_software} and comparable pipelines do; flattening at any other angle leaves a residual uniform polarization rotation, which is the field $\omega$ already present in Eq.~\eqref{eq:hhz} rather than a new effect.
 
-Equation~\eqref{eq:law_footprint} carries no $\ell$; the measurements tilt, and the tilt is itself predicted.
-Recovering it is a matter of not averaging --- keep the exact kernel of Eq.~\eqref{eq:law} inside the azimuthal average, and read the sky spectrum at the sheared wavenumber $\abs{J^{T}\vbell}$ rather than at $\ell$ --- which gives the paper's forward model, an integral over the footprint with no free parameters,
+Equation~\eqref{eq:law_footprint} is an average, and what it averages away is recoverable --- keep the exact kernel of Eq.~\eqref{eq:law} inside the azimuthal average, and read the sky spectrum at the sheared wavenumber $\abs{J^{T}\vbell}$ rather than at $\ell$ --- which gives the paper's forward model, an integral over the footprint with no free parameters,
 \begin{equation} \label{eq:forward}
 \begin{aligned}
   C_\ell^{BB} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
@@ -274,8 +272,8 @@ Every model curve in this paper is Eq.~\eqref{eq:forward} evaluated on the proje
 \subsection{Two residuals outside the geometric term} \label{subsec:residuals}
 
 The local linear map accounts for the projection and nothing else; two residual mechanisms sit outside it, and both belong to the pipeline rather than to the map.
-The first is resampling: reading the sky onto a grid with a finite interpolation kernel aliases power, additively rather than multiplicatively, growing with $\ell$ toward the Nyquist scale and depending on kernel and pixel size rather than on $g$ or $\mu$.
-It shows up twice below --- as the nonzero $BB$ measured for the shearless stereographic projection (Sect.~\ref{subsec:scalar_validation}), and as a rise in measurement over geometric prediction at the highest multipoles (Sect.~\ref{subsec:bandbyband}) --- and because the geometric term turns over while resampling keeps rising, the two separate in $\ell$ as well as in amplitude.
+The first is resampling, and it has two faces, both set by kernel and pixel size rather than by $g$ or $\mu$: reading the sky onto a grid with a finite interpolation kernel suppresses power multiplicatively, a transfer function common to every projection and to $EE$ and $BB$ alike, and it aliases power additively, growing with $\ell$ toward the Nyquist scale.
+The first face appears below as a shortfall shared by all five projections; the second as the nonzero $BB$ measured for the shearless stereographic projection (Sect.~\ref{subsec:scalar_validation}), a floor that rises with $\ell$ while the geometric term turns over, so the two separate in $\ell$ as well as in amplitude.
 The second is mask-induced mode coupling, a statement about the estimator: one correcting only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands, while a purified pseudo-$C_\ell$ estimator on an apodized mask will not.
 It is the natural alternative explanation for any geometric shortfall, and it makes a different prediction --- present on hard-edged masks, absent on smoothly apodized ones of the same area.
 
@@ -477,7 +475,7 @@ Whether that number matters is a question about the footprint.
 The lensed $BB/EE$ ratio for the Planck 2018 cosmology is $2.3\times10^{-3}$ at $\ell = 1000$: the small disks studied here sit far beneath it and the SPT 1500d field an order of magnitude above (Sect.~\ref{subsec:disks}).
 The margin shrinks with survey area, and the footprint can reorder the ranking by a factor of four.
 
-\citet{wallis17} found the conformal STG best for spurious $B$-modes in Kaiser--Squires convergence reconstruction; Sect.~\ref{subsec:projections} explains why --- zero shear --- and also why CMB analysis wants something else, since STG's area distortion smooths acoustic peaks, a feature convergence fields lack.
+The conformal preference of \citet{wallis17} is the right answer for convergence maps and the wrong one for the CMB: STG's area distortion smooths acoustic peaks, a feature convergence fields lack.
 The equal-area ZEA, absent from their comparison, pairs the smallest zenithal shear with exact area preservation and remains the sensible default for CMB work at these sky fractions.
 
 Two neighbouring literatures measure something orthogonal to this.
@@ -497,8 +495,7 @@ Flagship wide-area measurements are curved-sky now --- the SPT-3G D1 analysis \c
 Four things remain flat and inherit the lens, usually without an accounting: simulations validating curved-sky pipelines, where the closed form is a diagnostic that says whether an unexplained excess is the projection before anyone goes looking at masks; deep small-patch $B$-mode experiments, whose systematics treatments already group the effect with apodization and note that ``other map projections will have significantly lower distortion'' \citep{bk7}; machine-learning and field-level inference, which operate on flat patches by construction and for which \citet{casas23} report ``significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane, a technical challenge that warrants dedicated mitigation in future work''; and cutout and stacking analyses, which rotate cluster-centred stamps before averaging and so mix the local distortion axes across the stack.
 Equation~\eqref{eq:law_footprint} turns each of these from an open worry into a one-line budget entry.
 
-Finally, the distortion-field basis of Eq.~\eqref{eq:hhz} extends naturally to accommodate this source.
-Its eleven fields describe how the instrument corrupts the sky; projection distortion enters downstream of the telescope, in the analyst's choice of grid, and the parameterization contains no trace-free position-dependent remapping to hold it --- its beam-scale sector's only remapping term is a pure translation, a displacement of the field rather than a differential stretch.
+Finally, the distortion-field basis of Eq.~\eqref{eq:hhz} extends naturally to hold this source, which it currently cannot: its beam-scale sector's only remapping term is a pure translation, a displacement of the field rather than a differential stretch.
 One entry suffices, a shear remapping field: the symmetric trace-free part of a local deflection Jacobian, with a pipeline that flattens at the wrong angle already described by the existing rotation field $\omega$.
 It behaves better than its neighbours, being deterministic and computable in advance from the projection definition, so it enters a systematics budget as a known amplitude rather than as a nuisance field --- and where the eleven-field parameterization is fit to real data \citep{bk17}, adding it makes budgetable a distortion that a fit built to characterize the instrument cannot see.
 
