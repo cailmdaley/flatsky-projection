@@ -350,6 +350,15 @@ outputs:
       onto the last one read.
     inputs: [projected_qu, projected_eb, flatsky_masks, coupling_matrices]
     decisions: [b_purification, pixel_window, ell_max, bandpower_width]
+    # One unit = one (seed, projection) over all 7 masks and both legs --
+    # the axes shared with projected_{qu,eb}, so each grid job is staged
+    # only its own ~350 MB of maps plus the whole (small) masks and
+    # workspaces. Splitting by mask instead would re-ship the same maps
+    # seven times. The gather assembles bandpowers_<proj>_seed<NNNN>.npz
+    # per unit, the layout analysis/spectra.py reads.
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
     recipe:
       command: >-
         bash env.sh
@@ -358,17 +367,21 @@ outputs:
         --eb-maps {inputs.projected_eb}
         --masks {inputs.flatsky_masks}
         --workspaces {inputs.coupling_matrices}
-        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
-        --seed-start 0 --seed-stop 20
+        --projections {units.projection}
+        --seeds {units.seed}
         --purify-b {decisions.b_purification}
         --pixel-window {decisions.pixel_window}
         --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
-        --max-procs 4
+        --max-procs 2
         --out {output}
       resources:
-        cpus: 4
-        memory: 64Gi
-        time_limit: 24h
+        cpus: 2
+        # Per-(seed, projection) from the raw grid/ spectra runs: 16 GB
+        # request, condor-sampled MemoryUsage ~1 GB (underreports 2-3x),
+        # 1-6 min wall.
+        memory: 16Gi
+        disk: 8Gi
+        time_limit: 1h
 
   - id: eb_residual_maps
     type: data

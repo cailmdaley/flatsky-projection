@@ -77,11 +77,13 @@ from pathlib import Path
 
 from _decisions import (
     add_common_args,
+    index_name,
     parse_delta_ell,
     parse_lmax,
     parse_pixel_window,
     parse_purify_b,
     read_index,
+    resolve_seeds,
     set_threads,
     write_index,
 )
@@ -310,12 +312,22 @@ def main() -> None:
     eb_maps_dir = Path(args.eb_maps)
     masks_dir = Path(args.masks)
     out_dir = Path(args.out)
-    partial_dir = out_dir / "partial"
-    partial_dir.mkdir(parents=True, exist_ok=True)
-
-    seeds = list(range(args.seed_start, args.seed_stop))
+    seeds = resolve_seeds(args)
     nseed = len(seeds)
     projections = list(args.projections)
+    # A unit job (explicit --seeds) writes its bandpowers under a name keyed
+    # by its coordinates, so the unit gather can hardlink every shard into
+    # one canonical directory without collision -- the same per-(projection,
+    # seed) layout the raw grid/ apparatus produced, which analysis/ already
+    # reads. A whole-output run keeps the single bandpowers.npz.
+    unit = args.seeds is not None
+    stem = (
+        "bandpowers_" + "_".join(projections) + "_seed" + "_".join(f"{s:04d}" for s in seeds)
+        if unit
+        else "bandpowers"
+    )
+    partial_dir = out_dir / ("partial" if not unit else f"partial_{stem}")
+    partial_dir.mkdir(parents=True, exist_ok=True)
 
     for leg in LEGS:
         for proj in projections:
@@ -386,7 +398,7 @@ def main() -> None:
                 bb[li, pi, mi] = arr[1]
 
     atomic_save(
-        out_dir / "bandpowers.npz",
+        out_dir / f"{stem}.npz",
         ell_eff=ell_eff,
         ee=ee,
         bb=bb,
@@ -396,10 +408,15 @@ def main() -> None:
         seeds=np.array(seeds),
     )
 
+    if unit:
+        import shutil
+
+        shutil.rmtree(partial_dir)  # shards must not collide at gather
+
     write_index(
         out_dir,
         {
-            "bandpowers": "bandpowers.npz",
+            "bandpowers": f"{stem}.npz",
             "legs": list(LEGS),
             "projections": projections,
             "masks": mask_indices,
@@ -410,6 +427,7 @@ def main() -> None:
             "purify_b": purify_b,
             "pixel_window": pixel_window_mode,
         },
+        name=index_name(seeds if unit else None, projections),
     )
 
 
