@@ -777,7 +777,9 @@ def figure(mom, meas, pred=None, path=FIGURE):
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({
-        "font.size": 9.5, "font.family": "serif", "text.usetex": True,
+        "font.size": 8.5, "font.family": "serif", "text.usetex": True,
+        "axes.labelsize": 8.5, "xtick.labelsize": 7.5,
+        "ytick.labelsize": 7.5,
         "axes.grid": True, "grid.alpha": 0.25, "grid.linewidth": 0.5,
         "axes.linewidth": 0.7, "figure.dpi": 130, "savefig.bbox": "tight",
         "legend.edgecolor": "0.6", "legend.fancybox": False,
@@ -790,9 +792,10 @@ def figure(mom, meas, pred=None, path=FIGURE):
     keep = law_mask(band0)
     k, rms, _, _ = fit_constant(g2[keep], band0[keep])
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.1, 3.45),
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.2),
+                             constrained_layout=True,
                              gridspec_kw={"width_ratios": [1.15, 1.0],
-                                          "wspace": 0.28})
+                                          "wspace": 0.35})
 
     # (a) the law, without the STG floor that would add irrelevant decades.
     ax = axes[0]
@@ -832,8 +835,7 @@ def figure(mom, meas, pred=None, path=FIGURE):
                 marker=marks[proj], color=colors[proj], lw=1.1, ms=4.5,
                 label=S.PROJ_LABEL[proj])
     ax.axhline(0, color="k", lw=1.0)
-    ax.axhspan(-100 * rms, 100 * rms, color="k", alpha=0.07,
-               label=rf"fit scatter, $\pm${100 * rms:.1f}\%")
+    fit_band = ax.axhspan(-100 * rms, 100 * rms, color="k", alpha=0.07)
     ax.set_xscale("log")
     ax.set_xticks([0.75, 1.5, 3, 5, 10])
     ax.set_xticklabels(["0.75", "1.5", "3", "5", "10"])
@@ -841,12 +843,10 @@ def figure(mom, meas, pred=None, path=FIGURE):
     ax.set_xlabel(r"disk $f_{\rm sky}$ [\%]")
     ax.set_ylabel(r"$BB/EE \,/\, 2\langle g^2\rangle - 1$ [\%]")
     residuals = np.concatenate(residuals)
-    rmax = max(5.0, 5.0 * np.ceil(np.max(np.abs(residuals)) / 25.0))
-    ax.set_ylim(-rmax, rmax)
-    ax.legend(fontsize=7.5, ncol=2, columnspacing=0.8,
-              handletextpad=0.4)
-
-    fig.tight_layout(pad=0.8)
+    padding = 0.15 * (np.max(residuals) - np.min(residuals))
+    ax.set_ylim(np.min(residuals) - padding, np.max(residuals) + padding)
+    ax.legend([fit_band], [rf"fit scatter, $\pm${100 * rms:.1f}\%"],
+              fontsize=7.5, loc="upper right", frameon=False)
     path.parent.mkdir(exist_ok=True)
     fig.savefig(path)
     print(f"\nwrote {path}")

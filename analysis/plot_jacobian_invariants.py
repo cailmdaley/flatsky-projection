@@ -132,13 +132,12 @@ def main():
             ax.tick_params(length=2.0, pad=1.5)
 
         # A wide colour band identifies the projection without a panel title.
-        axg.add_patch(Rectangle((0.0, 1.0), 1.0, 0.045, transform=axg.transAxes,
+        axg.add_patch(Rectangle((0.0, 1.0), 1.0, 0.05, transform=axg.transAxes,
                                 facecolor=PROJ_COLORS[proj], edgecolor="none",
                                 clip_on=False, zorder=10))
-        axg.text(0.5, 1.022, LABELS[proj], transform=axg.transAxes,
-                 ha="center", va="center", fontsize=7, fontweight="bold",
-                 color="black" if proj == "ProjZEA" else "white",
-                 clip_on=False, zorder=11)
+        axg.text(0.5, 1.025, LABELS[proj], transform=axg.transAxes,
+                 ha="center", va="center", fontsize=8.5, fontweight="bold",
+                 color="white", clip_on=False, zorder=11)
         axg.set_xticklabels([])
         axm.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
         if j > 0:
