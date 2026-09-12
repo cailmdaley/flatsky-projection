@@ -141,21 +141,28 @@ def realized_fsky(binary_mask, apodized_mask):
 
 
 def write_mask_g3(apodized_mask, out_path: Path) -> None:
-    """Write one mask as a G3Frame(T=HealpixSkyMap), through a temp file.
+    """Write one mask as a G3Frame(T=HealpixSkyMap), gzipped, through a temp file.
 
-    Matches the 2021 output format exactly (frame key "T", a HealpixSkyMap
-    holding the *apodized* mask) so the existing 2021 products stay readable
-    by the same downstream code. Written through a temporary and renamed
-    into place so a killed run cannot leave a truncated .g3 that a later
-    run, or a downstream reader, would mistake for a complete mask.
+    Same frame layout as the 2021 products (key "T", a HealpixSkyMap holding
+    the *apodized* mask) so the same downstream reader serves both. The map
+    is stored ring-sparse and the file gzipped: a footprint mask is zero over
+    ~90% of the sky and exactly 1.0 over most of the rest, so a dense .g3 is
+    1.6 GB at nside 4096 and 6.4 GB at nside 8192 while the .g3.gz is ~20 MB
+    and ~80 MB -- and HTCondor transfers apparent bytes, so the dense form
+    made the nside-8192 stage untransferable on OSPool. G3File reads .g3.gz
+    transparently; the round trip is bit-exact. Written through a temporary
+    and renamed into place so a killed run cannot leave a truncated file that
+    a later run, or a downstream reader, would mistake for a complete mask.
     """
     from spt3g import core, maps
 
-    tmp_path = out_path.with_name(out_path.stem + ".tmp.g3")
+    tmp_path = out_path.with_name(out_path.name.replace(".g3.gz", ".tmp.g3.gz"))
     tmp_path.unlink(missing_ok=True)
 
+    mask_map = maps.HealpixSkyMap(apodized_mask)
+    mask_map.ringsparse = True
     frame = core.G3Frame()
-    frame["T"] = maps.HealpixSkyMap(apodized_mask)
+    frame["T"] = mask_map
     # Calling the writer directly on one frame runs it and drops the
     # reference immediately, which triggers the writer's destructor and
     # flushes the file -- the same one-shot pattern the 2021 script used.
@@ -189,7 +196,7 @@ def main(argv=None) -> None:
             args.nside, center_vec, radius_rad, apotype, aposize_deg)
         fsky = realized_fsky(binary_mask, apodized_mask)
 
-        out_path = out_dir / f"mask_{index}.g3"
+        out_path = out_dir / f"mask_{index}.g3.gz"
         write_mask_g3(apodized_mask, out_path)
 
         wall_time = time.time() - t_start

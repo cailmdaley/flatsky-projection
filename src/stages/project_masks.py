@@ -38,7 +38,7 @@ from pathlib import Path
 from _decisions import add_common_args, parse_interpolation, set_threads, write_index
 from _project import PROJECTIONS_DEFAULT, project_frame
 
-MASK_INDEX_RE = re.compile(r"(\d+)\.g3$")
+MASK_INDEX_RE = re.compile(r"(\d+)\.g3(\.gz)?$")
 
 # "smallest centred square containing every pixel with mask > 1e-6" (README).
 MASK_VALUE_THRESHOLD = 1e-6
@@ -62,9 +62,9 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--healpix-masks", required=True,
-        help="directory of Healpix mask .g3 files, one 'T' HealpixSkyMap frame each, "
-             "named '*<index>.g3' -- make_masks.py's mask_{i}.g3, or the 2021 "
-             "healpix_mask{i}.g3, both match",
+        help="directory of Healpix mask .g3/.g3.gz files, one 'T' HealpixSkyMap frame "
+             "each, named '*<index>.g3[.gz]' -- make_masks.py's mask_{i}.g3.gz, or the "
+             "2021 healpix_mask{i}.g3, both match",
     )
     parser.add_argument("--projections", nargs="+", default=list(PROJECTIONS_DEFAULT))
     parser.add_argument("--interpolation", required=True)
@@ -83,14 +83,14 @@ def parse_args(argv=None):
 
 
 def discover_masks(healpix_masks_dir):
-    """[(index, path), ...] sorted by index, from '*<index>.g3' files in a directory."""
+    """[(index, path), ...] sorted by index, from '*<index>.g3[.gz]' files in a directory."""
     found = []
-    for path in sorted(Path(healpix_masks_dir).glob("*.g3")):
+    for path in sorted(Path(healpix_masks_dir).glob("*.g3*")):
         m = MASK_INDEX_RE.search(path.name)
         if m:
             found.append((int(m.group(1)), path))
     if not found:
-        raise FileNotFoundError(f"no '<index>.g3' files found under {healpix_masks_dir}")
+        raise FileNotFoundError(f"no '<index>.g3[.gz]' files found under {healpix_masks_dir}")
     found.sort(key=lambda t: t[0])
     return found
 

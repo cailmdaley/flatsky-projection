@@ -180,13 +180,12 @@ outputs:
       resources:
         cpus: 4
         memory: 32Gi
-        # The seven masks are full-sky float64 arrays, so each .g3 is 1.6 GB
-        # apparent (they are sparse on /sptlocal, but HTCondor transfers the
-        # apparent bytes). The grid job needs room for all seven plus the
-        # unpacked spt3g build before anything is transferred back. A
-        # completed grid run of this stage reported DiskUsage 12.5 GB against
-        # a 20 GB request, so 20Gi is the measured-and-proven figure.
-        disk: 20Gi
+        # Masks are written ring-sparse and gzipped (~20 MB each at nside
+        # 4096, ~80 MB at 8192), so the job's disk is the unpacked spt3g
+        # build plus the seven files. The earlier dense .g3 form was 6.4 GB
+        # apparent per mask at nside 8192 -- 45 GB total, held on OSPool for
+        # "disk usage exceeded allocated disk" against a 20 GB request.
+        disk: 8Gi
 
   - id: projected_qu
     type: data
