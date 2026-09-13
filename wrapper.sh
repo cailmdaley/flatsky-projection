@@ -80,6 +80,25 @@ if [ -f lightcone_py.tar.gz ] && [ ! -d lcpy ]; then
 fi
 export PYTHONPATH=$PWD/lcpy${PYTHONPATH:+:$PYTHONPATH}
 
+# Diagnostic: some sites die in snakemake's Persistence with "Read-only file
+# system: '/scratch'" although cwd, TMPDIR and relative paths all work. Log
+# the exact path os.makedirs fails on, and the cwd at that moment, so the
+# .err says which path snakemake resolved and from where.
+mkdir -p lcpy
+cat > lcpy/sitecustomize.py <<'PY'
+import os, sys
+_makedirs = os.makedirs
+def makedirs(name, mode=0o777, exist_ok=False):
+    try:
+        return _makedirs(name, mode, exist_ok)
+    except OSError as e:
+        print(f"sitecustomize: os.makedirs({name!r}) failed: {e}; cwd={os.getcwd()} "
+              f"TMPDIR={os.environ.get('TMPDIR')} exists(cwd)={os.path.exists(os.getcwd())}",
+              file=sys.stderr, flush=True)
+        raise
+os.makedirs = makedirs
+PY
+
 # Staged upstream outputs. A remote job cannot be handed `results/...`
 # directly: `results` is a symlink to /sptlocal and condor refuses to transfer
 # symlinks to directories. lightcone therefore ships each upstream output as
