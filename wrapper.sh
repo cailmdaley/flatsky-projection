@@ -9,26 +9,45 @@
 # The spt3g build tarball is unpacked lazily by env.sh inside the recipe.
 set -euo pipefail
 
+export OS_ARCH=RHEL_9_x86_64
+# setup.sh picks its output syntax from `case ${SHELL##*/}` and emits csh
+# `setenv` lines for tcsh/csh. OSPool workers do not agree on $SHELL -- some
+# hand out csh -- and the failure is `setenv: command not found` from a shell
+# that was always bash. Pin it before the eval, not after.
+export SHELL=/bin/bash
+eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
+
 # Some OSPool sites (seen: NWICG_NDCMS, msu-lm01.osris.org) run the container
-# with the sandbox reachable only relatively: getcwd() reports the host
-# path (/scratch/glide_.../execute/dir_N) but that path is not traversable
-# inside the image, so snakemake's os.path.abspath(".snakemake") dies on
-# "Read-only file system: '/scratch'". Probe for it. If the sandbox is also
-# visible at a resolvable path (OSG's /srv convention, or the condor scratch
+# so that the sandbox's absolute path is not usable from Python: snakemake's
+# os.makedirs(os.path.abspath(".snakemake/...")) dies on "Read-only file
+# system: '/scratch'" while relative paths work, and bash's own `[ -d
+# "$(pwd -P)" ]` does not catch it. So probe with the same interpreter and
+# the same call snakemake makes. If it fails and the sandbox is also visible
+# at a resolvable alias (OSG's /srv convention, or the condor scratch
 # variable), work from there; otherwise fail fast with the declared output
-# directories created, so condor does not hold the job for a missing
-# output transfer (a 4 h timeout on the access point) and snakemake's
-# retries resubmit it, most likely to a different site.
-if ! [ -d "$(pwd -P)" ]; then
+# directories created, so condor does not hold the job for a missing output
+# transfer (a 4 h timeout on the access point) and snakemake's retries
+# resubmit it, most likely to a different site.
+probe_abspath() {
+    python3 -c 'import os, sys
+d = os.path.abspath(".snakemake/probe")
+try:
+    os.makedirs(d, exist_ok=True)
+except OSError as e:
+    print(f"wrapper.sh: abspath probe failed: cwd={os.getcwd()} exists={os.path.exists(os.getcwd())} err={e}", file=sys.stderr)
+    sys.exit(1)'
+}
+if ! probe_abspath; then
     moved=0
     for cand in /srv "${_CONDOR_SCRATCH_DIR:-}" "${TMPDIR:-}"; do
         if [ -n "$cand" ] && [ -d "$cand" ] \
            && [ "$(stat -Lc %d:%i "$cand")" = "$(stat -Lc %d:%i .)" ]; then
-            cd "$cand"; moved=1; break
+            cd "$cand"
+            if probe_abspath; then moved=1; break; fi
         fi
     done
     if [ "$moved" = 0 ]; then
-        echo "wrapper.sh: sandbox $(pwd -P) is not resolvable in this container and no alias found; failing fast" >&2
+        echo "wrapper.sh: sandbox $(pwd -P) unusable in this container and no alias found; failing fast" >&2
         if [ -n "${_CONDOR_JOB_AD:-}" ]; then
             tr -d '"' < "$_CONDOR_JOB_AD" | awk -F' = ' '$1=="TransferOutput"{print $2}' \
                 | tr ',' '\n' | sed 's/^ *//; s/ *$//' | while read -r out; do
@@ -39,14 +58,6 @@ if ! [ -d "$(pwd -P)" ]; then
     fi
     echo "wrapper.sh: working from $(pwd -P) (sandbox alias)" >&2
 fi
-
-export OS_ARCH=RHEL_9_x86_64
-# setup.sh picks its output syntax from `case ${SHELL##*/}` and emits csh
-# `setenv` lines for tcsh/csh. OSPool workers do not agree on $SHELL -- some
-# hand out csh -- and the failure is `setenv: command not found` from a shell
-# that was always bash. Pin it before the eval, not after.
-export SHELL=/bin/bash
-eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
 
 if [ -f lightcone_py.tar.gz ] && [ ! -d lcpy ]; then
     mkdir -p lcpy
