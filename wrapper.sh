@@ -28,41 +28,27 @@ eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
 # directories created, so condor does not hold the job for a missing output
 # transfer (a 4 h timeout on the access point) and snakemake's retries
 # resubmit it, most likely to a different site.
-probe_abspath() {
-    python3 - <<'PY'
-import os, sys, tempfile
-cwd = os.getcwd()
-print(f"wrapper.sh: cwd={cwd} exists={os.path.exists(cwd)} "
-      f"_CONDOR_SCRATCH_DIR={os.environ.get('_CONDOR_SCRATCH_DIR')} TMPDIR={os.environ.get('TMPDIR')}",
-      file=sys.stderr)
-try:
-    # Exactly what snakemake does with --shared-fs-usage none on a remote
-    # worker: persistence lives under tempfile.TemporaryDirectory(), not cwd.
-    t = tempfile.TemporaryDirectory(prefix="snakemake")
-    print(f"wrapper.sh: tempdir={t.name}", file=sys.stderr)
-    os.makedirs(os.path.join(t.name, "persistence", "probe"), exist_ok=True)
-    os.makedirs(os.path.abspath(".snakemake/probe"), exist_ok=True)
-except OSError as e:
-    print(f"wrapper.sh: abspath probe failed: {e}", file=sys.stderr)
-    sys.exit(1)
-PY
-}
-if ! probe_abspath; then
-    # First fallback: a temp dir inside the sandbox, addressed through cwd.
-    export TMPDIR="$PWD/.tmp"; mkdir -p "$TMPDIR"
-    echo "wrapper.sh: retrying with TMPDIR=$TMPDIR" >&2
-fi
-if ! probe_abspath; then
-    moved=0
-    for cand in /srv "${_CONDOR_SCRATCH_DIR:-}" "${TMPDIR:-}"; do
-        if [ -n "$cand" ] && [ -d "$cand" ] \
-           && [ "$(stat -Lc %d:%i "$cand")" = "$(stat -Lc %d:%i .)" ]; then
-            cd "$cand"
-            if probe_abspath; then moved=1; break; fi
-        fi
+# Some sites hand the job a sandbox whose absolute path is a symlink into a
+# host path the container cannot traverse (seen on MI-HORUS, CHTC, Colgate:
+# cwd /srv/scratch works, relative paths work, but anything that resolves
+# the symlink -- snakemake's Persistence does -- dies on "Read-only file
+# system: '/var/lib/condor/execute/...'"). Detect it by comparing the cwd
+# with its realpath. If they differ, do the work in a fresh real directory
+# and copy the declared outputs back into the sandbox for transfer.
+SANDBOX=$PWD
+REAL=$(python3 -c 'import os; print(os.path.realpath("."))')
+echo "wrapper.sh: cwd=$PWD realpath=$REAL _CONDOR_SCRATCH_DIR=${_CONDOR_SCRATCH_DIR:-} TMPDIR=${TMPDIR:-}" >&2
+RELOCATED=0
+if [ "$REAL" != "$PWD" ]; then
+    WORK=""
+    for base in /tmp /var/tmp "$HOME"; do
+        [ -d "$base" ] && [ -w "$base" ] || continue
+        cand=$(mktemp -d "$base/lcwork.XXXXXX" 2>/dev/null) || continue
+        if [ "$(python3 -c "import os; print(os.path.realpath('$cand'))")" = "$cand" ]; then WORK=$cand; break; fi
+        rmdir "$cand"
     done
-    if [ "$moved" = 0 ]; then
-        echo "wrapper.sh: sandbox $(pwd -P) unusable in this container and no alias found; failing fast" >&2
+    if [ -z "$WORK" ]; then
+        echo "wrapper.sh: sandbox $PWD resolves to $REAL and no real working directory is available; failing fast" >&2
         if [ -n "${_CONDOR_JOB_AD:-}" ]; then
             tr -d '"' < "$_CONDOR_JOB_AD" | awk -F' = ' '$1=="TransferOutput"{print $2}' \
                 | tr ',' '\n' | sed 's/^ *//; s/ *$//' | while read -r out; do
@@ -71,7 +57,12 @@ if ! probe_abspath; then
         fi
         exit 85
     fi
-    echo "wrapper.sh: working from $(pwd -P) (sandbox alias)" >&2
+    echo "wrapper.sh: relocating sandbox to $WORK" >&2
+    cp -a "$SANDBOX"/. "$WORK"/
+    cd "$WORK"
+    export TMPDIR="$WORK/.tmp"; mkdir -p "$TMPDIR"
+    export PYTHONPATH=$PWD/lcpy${PYTHONPATH:+:$PYTHONPATH}
+    RELOCATED=1
 fi
 
 if [ -f lightcone_py.tar.gz ] && [ ! -d lcpy ]; then
@@ -123,4 +114,16 @@ for staged in *__*.tar.gz .lightcone/stage/*__*.tar.gz; do
 done
 shopt -u nullglob
 
+if [ "$RELOCATED" = 1 ]; then
+    set +e; snakemake "$@"; status=$?; set -e
+    tr -d '"' < "$_CONDOR_JOB_AD" | awk -F' = ' '$1=="TransferOutput"{print $2}' \
+        | tr ',' '\n' | sed 's/^ *//; s/ *$//' | while read -r out; do
+        [ -n "$out" ] || continue
+        mkdir -p "$SANDBOX/$(dirname "$out")"
+        rm -rf "$SANDBOX/$out"
+        [ -e "$WORK/$out" ] && cp -a "$WORK/$out" "$SANDBOX/$out" || mkdir -p "$SANDBOX/$out"
+    done
+    echo "wrapper.sh: copied outputs back to $SANDBOX; snakemake exit $status" >&2
+    exit $status
+fi
 exec snakemake "$@"
