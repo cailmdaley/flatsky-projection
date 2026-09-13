@@ -324,20 +324,51 @@ outputs:
       reproduce the 2021 bandpowers when fed the 2021 maps.
     inputs: [flatsky_masks]
     decisions: [apodization, b_purification, ell_max, bandpower_width]
+    # One unit = one (projection, mask) pair. The build cost spans three
+    # orders of magnitude across the mask set -- the raw grid/coupling
+    # logs at lmax 6000, delta_ell 50: 11-19 min on 8 cores for mask 0,
+    # up to 17 h on 8 cores for mask 5, and 29-34 h on 32 cores for
+    # mask 6 -- so the pairs never share a job, and the resources are
+    # per unit. Threading is real (87-92% of ideal at 8 and 32 cores).
+    # bandpowers shares the projection axis, so each of its units is
+    # staged only its own projection's seven workspaces.
+    units:
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
+      mask: 0..7
     recipe:
       command: >-
         bash env.sh
         python3 src/stages/coupling_matrices.py
         --masks {inputs.flatsky_masks}
-        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --projections {units.projection}
+        --mask-indices {units.mask}
         --purify-b {decisions.b_purification}
         --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
-        --max-procs 4
+        --max-procs {resources.cpus}
         --out {output}
       resources:
-        cpus: 4
-        memory: 64Gi
-        time_limit: 12h
+        cpus: 8
+        # Peak RSS is 0.3-0.7 GB for masks 0-5 and 1.9 GB for mask 6;
+        # the request covers snakemake plus the unpacked toolset too.
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 2h
+        # OSPool's default duration category kills at 20 h; Long at 40 h.
+        extra: {classad_JobDurationCategory: Medium}
+        per_unit:
+          - when: {mask: 3}
+            time_limit: 4h
+          - when: {mask: 4}
+            time_limit: 12h
+          - when: {mask: 5}
+            cpus: 16
+            memory: 6Gi
+            time_limit: 16h
+          - when: {mask: 6}
+            cpus: 32
+            memory: 12Gi
+            time_limit: 40h
+            extra: {classad_JobDurationCategory: Long}
 
   - id: bandpowers
     type: data

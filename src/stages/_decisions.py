@@ -159,21 +159,25 @@ def resolve_seeds(args) -> list:
     return list(range(args.seed_start, args.seed_stop))
 
 
-def index_name(seeds=None, projections=None) -> str:
+def index_name(seeds=None, projections=None, masks=None) -> str:
     """Name of the stage's index file.
 
-    ``index.json`` for a whole-output run; a per-shard run (explicit
-    ``--seeds``, i.e. a unit job) gets a name keyed by its coordinates so
-    shard indexes never collide when the unit gather assembles the
-    canonical directory. Downstream stages only ever read the masks and
-    coupling indexes, which are not unit-fanned, so nothing consumes the
-    sharded names.
+    ``index.json`` for a whole-output run; a per-shard run (a unit job,
+    which names its coordinates explicitly -- ``--seeds`` and/or
+    ``--mask-indices``) gets a name keyed by those coordinates so shard
+    indexes never collide when the unit gather assembles the canonical
+    directory. Consumers that need the whole picture read every shard
+    with :func:`read_index_entries`.
     """
-    if seeds is None:
+    if seeds is None and masks is None:
         return "index.json"
-    parts = ["index"] + [f"{s:04d}" for s in seeds]
+    parts = ["index"]
+    if seeds is not None:
+        parts += [f"{s:04d}" for s in seeds]
     if projections:
         parts += list(projections)
+    if masks is not None:
+        parts += [f"mask{m}" for m in masks]
     return "_".join(parts) + ".json"
 
 
@@ -191,3 +195,34 @@ def read_index(in_dir) -> dict:
     from pathlib import Path
 
     return json.loads((Path(in_dir) / "index.json").read_text())
+
+
+def read_index_entries(in_dir, key: str) -> tuple[dict, list]:
+    """Merge the ``key`` lists of every index file in ``in_dir``.
+
+    A whole-output stage writes one ``index.json``; a unit-fanned stage
+    leaves one ``index_<coords>.json`` per shard after the gather. Both
+    layouts read the same way here: the scalar fields (binning, purify_b,
+    ...) come from the first file and are checked equal across all of
+    them, and the ``key`` lists are concatenated in filename order.
+    """
+    import json
+    from pathlib import Path
+
+    paths = sorted(Path(in_dir).glob("index*.json"))
+    if not paths:
+        raise FileNotFoundError(f"no index*.json under {in_dir}")
+    head: dict | None = None
+    entries: list = []
+    for path in paths:
+        manifest = json.loads(path.read_text())
+        entries.extend(manifest.get(key, []))
+        scalars = {k: v for k, v in manifest.items() if not isinstance(v, (list, dict))}
+        if head is None:
+            head = scalars
+        elif scalars != head:
+            raise ValueError(
+                f"index files under {in_dir} disagree on scalar fields: "
+                f"{path.name} has {scalars}, {paths[0].name} has {head}"
+            )
+    return dict(head or {}), entries

@@ -47,6 +47,17 @@ all-zero dummy Q/U pair).
 Resumable: a workspace FITS already on disk is left alone. Written through a
 temporary file and renamed into place, so a kill mid-write cannot leave a
 truncated FITS that a later run mistakes for done.
+
+One pair per grid job
+---------------------
+The build cost spans three orders of magnitude across the mask set (the
+raw ``grid/coupling`` logs: 11 min on 8 cores for mask 0, 33 h on 32 cores
+for mask 6), so the 35 pairs never share a job. ``--mask-indices`` names
+the pair(s) a unit builds (``astra.yaml`` says ``--projections
+{units.projection} --mask-indices {units.mask}``); such a run writes its
+manifest under a coordinate-keyed name so the shards do not collide at the
+gather, and ``namaster_spectra.py`` reads them all back through
+``read_index_entries``.
 """
 
 from __future__ import annotations
@@ -57,6 +68,7 @@ from pathlib import Path
 
 from _decisions import (
     add_common_args,
+    index_name,
     parse_delta_ell,
     parse_lmax,
     parse_purify_b,
@@ -70,6 +82,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--masks", required=True, help="flatsky_masks output directory")
     p.add_argument("--projections", nargs="+", required=True)
+    p.add_argument(
+        "--mask-indices",
+        type=int,
+        nargs="+",
+        default=None,
+        help="build only these mask indices (a unit job); default: every "
+        "mask the flatsky_masks manifest lists for each projection",
+    )
     p.add_argument("--purify-b", required=True, help="purify | standard | true | false")
     p.add_argument("--lmax", required=True, help="l4000 | l6000 | bare integer")
     p.add_argument("--delta-ell", type=parse_delta_ell, default=10)
@@ -156,6 +176,14 @@ def main() -> None:
                 f"no masks for projection {proj!r} found under {masks_dir} "
                 "(checked its index.json and mask_{proj}_*.npz)"
             )
+        if args.mask_indices is not None:
+            absent = sorted(set(args.mask_indices) - set(indices))
+            if absent:
+                raise FileNotFoundError(
+                    f"mask indices {absent} requested for {proj!r} but not present "
+                    f"under {masks_dir} (available: {indices})"
+                )
+            indices = list(dict.fromkeys(args.mask_indices))
         for i in indices:
             mask_path = masks_dir / f"mask_{proj}_{i}.npz"
             data = np.load(mask_path)
@@ -210,6 +238,7 @@ def main() -> None:
             "purify_b": purify_b,
             "workspaces": entries,
         },
+        name=index_name(projections=args.projections, masks=args.mask_indices),
     )
 
 

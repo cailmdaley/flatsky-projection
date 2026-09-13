@@ -82,7 +82,7 @@ from _decisions import (
     parse_lmax,
     parse_pixel_window,
     parse_purify_b,
-    read_index,
+    read_index_entries,
     resolve_seeds,
     set_threads,
     write_index,
@@ -135,10 +135,15 @@ def atomic_save(path: Path, **arrays) -> None:
 
 
 def load_workspace_manifest(workspaces_dir: Path, projections: list[str]):
-    """Group the coupling_matrices manifest by projection; verify uniform masks."""
-    manifest = read_index(workspaces_dir)
+    """Group the coupling_matrices manifest by projection; verify uniform masks.
+
+    The workspaces arrive either as one ``index.json`` or as one
+    ``index_<proj>_mask<i>.json`` per grid unit; ``read_index_entries``
+    merges them and checks they agree on binning and purification.
+    """
+    manifest, workspaces = read_index_entries(workspaces_dir, "workspaces")
     by_proj: dict[str, dict[int, dict]] = {}
-    for entry in manifest["workspaces"]:
+    for entry in workspaces:
         if entry["projection"] in projections:
             by_proj.setdefault(entry["projection"], {})[entry["mask_index"]] = entry
 
