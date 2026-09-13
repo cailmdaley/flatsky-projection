@@ -30,18 +30,28 @@ eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
 # resubmit it, most likely to a different site.
 probe_abspath() {
     python3 - <<'PY'
-import os, sys
+import os, sys, tempfile
 cwd = os.getcwd()
 print(f"wrapper.sh: cwd={cwd} exists={os.path.exists(cwd)} "
       f"_CONDOR_SCRATCH_DIR={os.environ.get('_CONDOR_SCRATCH_DIR')} TMPDIR={os.environ.get('TMPDIR')}",
       file=sys.stderr)
 try:
+    # Exactly what snakemake does with --shared-fs-usage none on a remote
+    # worker: persistence lives under tempfile.TemporaryDirectory(), not cwd.
+    t = tempfile.TemporaryDirectory(prefix="snakemake")
+    print(f"wrapper.sh: tempdir={t.name}", file=sys.stderr)
+    os.makedirs(os.path.join(t.name, "persistence", "probe"), exist_ok=True)
     os.makedirs(os.path.abspath(".snakemake/probe"), exist_ok=True)
 except OSError as e:
     print(f"wrapper.sh: abspath probe failed: {e}", file=sys.stderr)
     sys.exit(1)
 PY
 }
+if ! probe_abspath; then
+    # First fallback: a temp dir inside the sandbox, addressed through cwd.
+    export TMPDIR="$PWD/.tmp"; mkdir -p "$TMPDIR"
+    echo "wrapper.sh: retrying with TMPDIR=$TMPDIR" >&2
+fi
 if ! probe_abspath; then
     moved=0
     for cand in /srv "${_CONDOR_SCRATCH_DIR:-}" "${TMPDIR:-}"; do
