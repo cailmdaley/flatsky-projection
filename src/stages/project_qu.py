@@ -22,20 +22,29 @@ LEG = Leg(name="qu", keys=("Q", "U"))
 def _synthesize(alm_file, nside):
     """Q, U on the intermediate Healpix grid.
 
-    Matches the 2021 project_QU.py exactly: hp.alm2map(alms_TEB, nside,
-    pol=True) synthesizes T, Q and U together (a polarized transform,
-    because a 3-element alm list is passed); only the polarization pair is
-    kept.
+    The 2021 project_QU.py called hp.alm2map(alms_TEB, nside, pol=True) and
+    kept the polarization pair. hp.alm2map_spin([alm_E, alm_B], nside, 2,
+    lmax) is the same spin-2 synthesis -- bit-identical output, verified
+    against the pol=True call on this project's alms -- without the T map
+    and without returning the three maps as one array. That matters for
+    memory, not correctness: at nside 8192 each map is 6.4 GB, and the
+    pol=True form held T+Q+U while two HealpixSkyMap copies were made
+    (38.8 GB peak per unit, measured). Here each numpy map is copied into
+    its HealpixSkyMap and released before the next, so the peak is the two
+    synthesized maps plus one copy.
     """
     import healpy as hp
     from spt3g.maps import HealpixSkyMap, MapPolConv
 
-    alms_teb = hp.read_alm(str(alm_file), hdu=(1, 2, 3))
-    q_map, u_map = hp.alm2map(alms_teb, nside, pol=True)[1:]
-    return {
-        "Q": HealpixSkyMap(q_map, pol_conv=MapPolConv.COSMO),
-        "U": HealpixSkyMap(u_map, pol_conv=MapPolConv.COSMO),
-    }
+    alm_e, alm_b = hp.read_alm(str(alm_file), hdu=(2, 3))
+    lmax = hp.Alm.getlmax(alm_e.size)
+    q_map, u_map = hp.alm2map_spin([alm_e, alm_b], nside, 2, lmax)
+    del alm_e, alm_b
+    maps = {"Q": HealpixSkyMap(q_map, pol_conv=MapPolConv.COSMO)}
+    del q_map
+    maps["U"] = HealpixSkyMap(u_map, pol_conv=MapPolConv.COSMO)
+    del u_map
+    return maps
 
 
 def _postprocess(flatsky_frame):

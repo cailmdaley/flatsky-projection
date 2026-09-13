@@ -214,12 +214,15 @@ outputs:
         --out {output}
       resources:
         cpus: 4
-        # Per-(seed, projection) figure from the raw grid/ apparatus (QU
-        # leg 64 GB; condor's sampled MemoryUsage underreports 2-3x, so
-        # this comes from /usr/bin/time -v, not condor_history).
-        memory: 64Gi
+        # Measured with /usr/bin/time -v on one nside-8192 unit (2026-09-12):
+        # 19.1 GB peak, 8.6 min wall, after the synthesis was rewritten to
+        # hold two maps at a time (it was 38.8 GB holding T+Q+U plus two
+        # copies). OSPool slots thin out fast above 32 GB, so the margin is
+        # deliberately modest. condor's sampled MemoryUsage underreports the
+        # peak 2-3x; size from time -v, not condor_history.
+        memory: 24Gi
         disk: 8Gi
-        time_limit: 12h
+        time_limit: 2h
 
   - id: projected_eb
     type: data
@@ -248,10 +251,10 @@ outputs:
         --out {output}
       resources:
         cpus: 4
-        # EB leg per-(seed, projection): 32 GB from the raw grid/ runs.
-        memory: 32Gi
+        # Measured 2026-09-12 like the QU leg: 19.1 GB peak, 7.7 min wall.
+        memory: 24Gi
         disk: 8Gi
-        time_limit: 12h
+        time_limit: 2h
 
   - id: flatsky_masks
     type: data

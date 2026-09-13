@@ -30,12 +30,19 @@ def _synthesize(alm_file, nside):
     from spt3g.maps import HealpixSkyMap, MapPolConv
 
     alm_e, alm_b = hp.read_alm(str(alm_file), hdu=(2, 3))
+    # One component at a time, releasing each numpy map once its
+    # HealpixSkyMap copy exists: at nside 8192 a map is 6.4 GB, and holding
+    # both numpy maps through both copies doubles the unit's peak memory.
+    maps = {}
     e_map = hp.alm2map(alm_e, nside)
+    del alm_e
+    maps["E"] = HealpixSkyMap(e_map, pol_conv=MapPolConv.COSMO)
+    del e_map
     b_map = hp.alm2map(alm_b, nside)
-    return {
-        "E": HealpixSkyMap(e_map, pol_conv=MapPolConv.COSMO),
-        "B": HealpixSkyMap(b_map, pol_conv=MapPolConv.COSMO),
-    }
+    del alm_b
+    maps["B"] = HealpixSkyMap(b_map, pol_conv=MapPolConv.COSMO)
+    del b_map
+    return maps
 
 
 def _postprocess(flatsky_frame):
