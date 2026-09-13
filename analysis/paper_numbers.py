@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cartographic_lensing as CL
 import shear_leakage as SL
 import spectra as S
 import theory as T
@@ -243,6 +244,49 @@ def main():
     for label in ("SFL", "BICEP"):
         M.add(f"tfd{label}", f"${sci(field[label])}$")
     M.add("tfdratio", f"{field['SFL'] / field['BICEP']:.1f}")
+
+    # ---- Table 2 (table:curl): cartographic lensing over the 1500d field --
+    # Same footprint and mask^2 weighting as _field_1500d above, but through
+    # geometry.relative_jacobian rather than a hand-written finite difference
+    # -- see analysis/cartographic_lensing.py.
+    curl = CL.field_1500d_moments()
+    omega_floor = 1e-6                # true zenithal omega is a ~1e-8 f.d. floor
+    max_zenithal_omega = 0.0
+    rows = []
+    for label in ("SFL", "BICEP", "SIN", "ZEA", "STG"):
+        c = curl[label]
+        om = c["omega_rms"]
+        if om < omega_floor:
+            max_zenithal_omega = max(max_zenithal_omega, om)
+            om_str = "$0$"
+        else:
+            om_str = f(om)
+        rows.append(f"{label} & {f(c['kappa_rms'])} & {f(c['gamma_rms'])} & "
+                    f"{om_str} & \\ang{{{c['d_rms_deg']:.1f}}} \\\\")
+    # One macro holding the table body: booktabs' \midrule looks ahead past
+    # the next token, so the rows must arrive as a single token, not an \input.
+    M.add("curltablerows", "%\n" + "\n".join(rows) + "\n")
+    M.add("curlfloor", f"${sci(max_zenithal_omega)}$")
+    # Quoted in the tablefoot as an aside about TAN's own distortion.
+    M.add("curlSTGgamma", f(curl["STG"]["gamma_rms"]))
+
+    # ---- the template-residual noise number --------------------------------
+    # Nominal white noise, no beam: N_l = (5 uK-arcmin)^2, constant in l.
+    # theory.load() stores raw C_l in uK^2 indexed directly by ell -- see
+    # analysis/theory.py's TRAPS note -- so this ratio needs no unit juggling.
+    th = T.load()
+    ell_ref = 1000
+    n_ell = (5.0 * np.deg2rad(1.0 / 60.0)) ** 2
+    cl_ee_lensed = float(th["lensed_EE"][ell_ref])
+    cl_bb_lensed = float(th["lensed_BB"][ell_ref])
+    noise_ratio = n_ell / cl_ee_lensed
+    lensed_bb_ee = cl_bb_lensed / cl_ee_lensed
+    M.add("noiseratio", pct(noise_ratio, 1))
+    M.add("lensedBBEE", f"${sci(lensed_bb_ee)}$")
+    M.add("tfdSFLoverlens", f"{field['SFL'] / lensed_bb_ee:.0f}")
+    resid = field["SFL"] * noise_ratio
+    M.add("tfdSFLresid", f"${sci(resid)}$")
+    M.add("tfdSFLresidfrac", f(resid / lensed_bb_ee, 2))
 
     OUT.write_text(M.tex())
     print(M.tex())

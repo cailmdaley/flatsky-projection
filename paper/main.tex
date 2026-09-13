@@ -421,7 +421,7 @@ Zenithal projections pass; cylindrical and pseudocylindrical ones do not.
 
 Table~\ref{table:curl} puts numbers on it over the SPT 1500d field.
 Curl reconstruction is a standard systematics null precisely because gravitational lensing generates curl only at second order in the deflection, at $\Omega \sim 10^{-5}$; SFL and BICEP write four to five orders of magnitude more than that into the map.
-At $\omega_{\rm rms} \sim 0.25$ the distortion is well outside the perturbative regime in which a translation into a bias on a curl bandpower would mean anything, and the qualitative statement is already sharp enough to act on: on a cylindrical grid the curl null is not a null, and the reason is cartography rather than the instrument.
+At $\omega_{\rm rms}$ of a few tenths the distortion is well outside the perturbative regime in which a translation into a bias on a curl bandpower would mean anything, and the qualitative statement is already sharp enough to act on: on a cylindrical grid the curl null is not a null, and the reason is cartography rather than the instrument.
 
 \begin{table}
   \caption{Effective lensing fields of each projection over the SPT 1500d field, referred to the TAN chart.}
@@ -431,18 +431,13 @@ At $\omega_{\rm rms} \sim 0.25$ the distortion is well outside the perturbative 
   \toprule
   Projection & $\kappa_{\rm rms}$ & $\abs{\gamma}_{\rm rms}$ & $\omega_{\rm rms}$ & $\abs{\vb*{d}}_{\rm rms}$ \\
   \midrule
-  SFL   & 0.097 & 0.221 & 0.252 & \ang{4.9} \\
-  BICEP & 0.132 & 0.120 & 0.461 & \ang{6.1} \\
-  SIN   & 0.153 & 0.083 & $0$   & \ang{1.8} \\
-  ZEA   & 0.110 & 0.058 & $0$   & \ang{1.3} \\
-  STG   & 0.072 & 0.037 & $0$   & \ang{0.9} \\
+  \curltablerows
   \bottomrule
   \end{tabular}
   \tablefoot{
-    Root-mean-square over $\pm\SI{50}{\degree}$ in RA and \SIrange{-70}{-42}{\degree} in declination, flat weighting, from finite-difference Jacobians of each projection's definition \citep{calabretta02}.
-    The zenithal entries' $\omega$ vanish analytically and numerically at the $10^{-10}$ finite-difference floor.
-    $\kappa$, $\abs{\gamma}$ and $\abs{\vb*{d}}$ are referred to TAN and so include TAN's own distortion --- which is why STG, whose intrinsic shear is identically zero, appears here with $\abs{\gamma}_{\rm rms} = 0.037$.
-    \CD{These are from \texttt{notes/curl.py}, not yet an ASTRA output; promote when the stage lands.}
+    Root-mean-square over $\pm\SI{50}{\degree}$ in RA and \SIrange{-70}{-42}{\degree} in declination, weighted by the square of the C2-apodized mask (Sect.~\ref{sec:methods}), from the Jacobians of the \texttt{spt3g\_software} projections by central differences, composed against TAN.
+    The zenithal entries' $\omega$ vanish analytically and numerically at the \curlfloor\ finite-difference floor.
+    $\kappa$, $\abs{\gamma}$ and $\abs{\vb*{d}}$ are referred to TAN and so include TAN's own distortion --- which is why STG, whose intrinsic shear is identically zero, appears here with $\abs{\gamma}_{\rm rms} = \curlSTGgamma$.
   }
 \end{table}
 
@@ -460,7 +455,7 @@ Given a measured $\hat{E} = E + N_E$, build $B_{\rm temp} = \mathcal{S}_J[\hat{E
 \begin{equation} \label{eq:template_resid}
   C_\ell^{BB,\,\rm resid} = 2\gsq\, N_\ell^{EE}.
 \end{equation}
-For a nominal $\SI{5}{\micro\kelvin}$-arcmin polarization map at $\ell = 1000$, $N_\ell^{EE}/C_\ell^{EE}$ is of order $0.8\%$ \CD{nominal-noise plug --- replace with the real $N_\ell^{EE}$ when the noise model is in hand}, which takes SFL on the 1500d field from $BB/EE$ of \tfdSFL, thirty times the lensed-$B$ floor, to ${\sim}6\times10^{-4}$, a quarter of it.
+For a nominal white-noise level of $\SI{5}{\micro\kelvin}$-arcmin and no beam, at $\ell = 1000$ $N_\ell^{EE}/C_\ell^{EE}$ is \noiseratio, which takes SFL on the 1500d field from $BB/EE$ of \tfdSFL, \tfdSFLoverlens\ times the lensed-$B$ floor, to \tfdSFLresid, \tfdSFLresidfrac\ of the floor.
 Two orders of magnitude, without changing the projection.
 
 This is the delensing logic with its difficulty removed.
@@ -473,7 +468,7 @@ Two limits: the $E$ entering the template must itself be free of mask-induced am
 Ranking projections for a survey reduces to a quadrature over the footprint: compute $\gsq$ from the projection's Jacobian over the mask, and the leakage is $2\gsq$ of $EE$.
 Of the two relations the scalar one is the larger effect --- tens of percent on the damping tail, and so a first-order concern for any high-$\ell$ $TT$ or $EE$ amplitude --- while the leakage relation is the cleaner, carrying no spectral-slope dependence and reducing to a single number per footprint.
 Whether that number matters is a question about the footprint.
-The lensed $BB/EE$ ratio for the Planck 2018 cosmology is $2.3\times10^{-3}$ at $\ell = 1000$: the small disks studied here sit far beneath it and the SPT 1500d field an order of magnitude above (Sect.~\ref{subsec:disks}).
+The lensed $BB/EE$ ratio for the Planck 2018 cosmology is \lensedBBEE\ at $\ell = 1000$: the small disks studied here sit far beneath it and the SPT 1500d field an order of magnitude above (Sect.~\ref{subsec:disks}).
 The margin shrinks with survey area, and the footprint can reorder the ranking by a factor of four.
 
 The conformal preference of \citet{wallis17} is the right answer for convergence maps and the wrong one for the CMB: STG's area distortion smooths acoustic peaks, a feature convergence fields lack.
