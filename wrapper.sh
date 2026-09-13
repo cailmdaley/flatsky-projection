@@ -9,6 +9,37 @@
 # The spt3g build tarball is unpacked lazily by env.sh inside the recipe.
 set -euo pipefail
 
+# Some OSPool sites (seen: NWICG_NDCMS, msu-lm01.osris.org) run the container
+# with the sandbox reachable only relatively: getcwd() reports the host
+# path (/scratch/glide_.../execute/dir_N) but that path is not traversable
+# inside the image, so snakemake's os.path.abspath(".snakemake") dies on
+# "Read-only file system: '/scratch'". Probe for it. If the sandbox is also
+# visible at a resolvable path (OSG's /srv convention, or the condor scratch
+# variable), work from there; otherwise fail fast with the declared output
+# directories created, so condor does not hold the job for a missing
+# output transfer (a 4 h timeout on the access point) and snakemake's
+# retries resubmit it, most likely to a different site.
+if ! [ -d "$(pwd -P)" ]; then
+    moved=0
+    for cand in /srv "${_CONDOR_SCRATCH_DIR:-}" "${TMPDIR:-}"; do
+        if [ -n "$cand" ] && [ -d "$cand" ] \
+           && [ "$(stat -Lc %d:%i "$cand")" = "$(stat -Lc %d:%i .)" ]; then
+            cd "$cand"; moved=1; break
+        fi
+    done
+    if [ "$moved" = 0 ]; then
+        echo "wrapper.sh: sandbox $(pwd -P) is not resolvable in this container and no alias found; failing fast" >&2
+        if [ -n "${_CONDOR_JOB_AD:-}" ]; then
+            tr -d '"' < "$_CONDOR_JOB_AD" | awk -F' = ' '$1=="TransferOutput"{print $2}' \
+                | tr ',' '\n' | sed 's/^ *//; s/ *$//' | while read -r out; do
+                [ -n "$out" ] && mkdir -p "$out" || true
+            done
+        fi
+        exit 85
+    fi
+    echo "wrapper.sh: working from $(pwd -P) (sandbox alias)" >&2
+fi
+
 export OS_ARCH=RHEL_9_x86_64
 # setup.sh picks its output syntax from `case ${SHELL##*/}` and emits csh
 # `setenv` lines for tcsh/csh. OSPool workers do not agree on $SHELL -- some
