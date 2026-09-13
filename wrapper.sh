@@ -29,13 +29,18 @@ eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
 # transfer (a 4 h timeout on the access point) and snakemake's retries
 # resubmit it, most likely to a different site.
 probe_abspath() {
-    python3 -c 'import os, sys
-d = os.path.abspath(".snakemake/probe")
+    python3 - <<'PY'
+import os, sys
+cwd = os.getcwd()
+print(f"wrapper.sh: cwd={cwd} exists={os.path.exists(cwd)} "
+      f"_CONDOR_SCRATCH_DIR={os.environ.get('_CONDOR_SCRATCH_DIR')} TMPDIR={os.environ.get('TMPDIR')}",
+      file=sys.stderr)
 try:
-    os.makedirs(d, exist_ok=True)
+    os.makedirs(os.path.abspath(".snakemake/probe"), exist_ok=True)
 except OSError as e:
-    print(f"wrapper.sh: abspath probe failed: cwd={os.getcwd()} exists={os.path.exists(os.getcwd())} err={e}", file=sys.stderr)
-    sys.exit(1)'
+    print(f"wrapper.sh: abspath probe failed: {e}", file=sys.stderr)
+    sys.exit(1)
+PY
 }
 if ! probe_abspath; then
     moved=0
