@@ -18,7 +18,7 @@ them is the spectrum's own shape read through n^2/4:
     the clean n(n+2)/4 <g^2> the expansion predicts.
 
 Run inside the project container:
-    systemd-run --user --scope -p MemoryMax=4G bash env.sh python3 analysis/plot_slope_intuition.py
+    OMP_NUM_THREADS=4 systemd-run --user --scope -p MemoryMax=12G -p CPUQuota=400% bash env.sh python3 analysis/plot_slope_intuition.py
 
 Output: figures/slope_intuition.pdf
 """
@@ -40,7 +40,7 @@ FIGURE = ROOT / "figures" / "slope_intuition.pdf"
 
 PROJ = "ProjSFL"
 MASK_INDEX = 5          # PERC[5] = 5.0%, the paper's reference footprint
-ELL = np.arange(200.0, 3901.0, 10.0)
+ELL = np.arange(200.0, 4801.0, 10.0)   # the spectra figure's range
 POWER_LAW_INDEX = -4.0
 
 
@@ -86,29 +86,29 @@ def main():
     inputs = [
         (r"lensed $TT$", th["lensed_TT"], PS.SECONDARY[0], "-"),
         (r"lensed $EE$", th["lensed_EE"], PS.SECONDARY[1], "--"),
-        (rf"power law, $C_\ell \propto \ell^{{{POWER_LAW_INDEX:.0f}}}$",
+        (rf"$C_\ell \propto \ell^{{{POWER_LAW_INDEX:.0f}}}$",
          power_law, PS.SECONDARY[2], ":"),
     ]
 
     mom = SL.load_moments()
     i, j = MASK_INDEX, S.PROJS.index(PROJ)
 
-    plt.rcParams.update(PS.rc(usetex=True, font_size=10))
-    fig, ax = plt.subplots(figsize=(6.4, 4.0))
+    plt.rcParams.update(PS.rc())
+    fig, ax = plt.subplots(figsize=(PS.COL_W, 2.4), layout="constrained")
 
     for lab, cl, col, ls in inputs:
         ratio = scalar_ratio(mom, i, j, ELL, ell_theory, cl)
-        ax.plot(ELL, ratio, ls=ls, color=col, lw=2.0 if ls == ":" else 1.5,
-                label=lab)
-        print(f"{lab:<28} ratio at l = 1000, 2000, 3000: "
+        ax.plot(ELL, ratio, ls=ls, color=col,
+                lw=1.4 * PS.LW if ls == ":" else PS.LW, label=lab)
+        print(f"{lab:<28} ratio at l = 1000 ... 4800: "
               + "  ".join(f"{np.interp(l, ELL, ratio):.3f}"
-                          for l in (1000, 2000, 3000)))
+                          for l in (1000, 2000, 3000, 4000, 4800)))
 
-    ax.axhline(1.0, color=PS.RULE, lw=0.9, zorder=1)
+    ax.axhline(1.0, color=PS.RULE, lw=PS.LW_REF, zorder=1)
     ax.set_xlim(ELL[0], ELL[-1])
     ax.set_xlabel(r"$\ell$")
     ax.set_ylabel(r"$C_\ell^{\rm plane}/C_\ell^{\rm sky}$")
-    ax.legend(loc="lower right", fontsize=9)
+    fig.legend(ncol=3, loc="outside upper center")
 
     FIGURE.parent.mkdir(exist_ok=True)
     fig.savefig(FIGURE)
