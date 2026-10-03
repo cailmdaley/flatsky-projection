@@ -330,15 +330,19 @@ Its shear vanishes identically, so its predicted $BB$ is zero; its measured $BB$
 Its apparent $BB$ ``minimum'' is therefore a measurement of the pipeline rather than a property of the projection, and reading it as STG's leakage would misstate what a conformal grid does.
 The floor is in any case irrelevant to the fits below, which use raw bandpowers: subtracting it moves the fitted coefficient from $\fitcoef$ to $\fitcoefsub$ and the rms not at all.
 
-
 \begin{figure*}
-  \includegraphics[width=\textwidth]{projection_spectra_ee.pdf}
+  \includegraphics[width=\textwidth]{projection_spectra.pdf}
   \caption{
-    Measured $EE$ bandpowers (top) and their ratios to the input spectrum (bottom) on the 5\% reference disk, with one series for each projection and smooth model curves.
+    [EE caption, placeholder:] Measured $EE$ bandpowers (top) and their ratios to the input spectrum (bottom) on the 5\% reference disk, with one series for each projection and smooth model curves.
     The projection-dependent remapping follows the acoustic structure of the input, while STG falls monotonically because its distortion is purely magnifying.
     Points average 20 realizations and curves are the parameter-free forward model of Eq.~\eqref{eq:forward}; error bars are omitted because they are smaller than the markers.
+    [BB caption, placeholder:] Measured $BB$ bandpowers (top) and $BB/EE$ ratios (bottom) on the 5\% reference disk; the unlensed simulations contain no true $B$ modes, so the signal is projection leakage.
+    The four sheared projections follow the derived relation, while STG's points expose the pipeline's own $E\to B$ floor rather than geometric leakage.
+    Curves are the parameter-free forward model of Eq.~\eqref{eq:forward}, and the dashed reference is the lensed spectrum; STG is omitted from the ratio panel.
   }
+  \label{fig:spectra}
   \label{fig:spectra_ee}
+  \label{fig:spectra_bb}
 \end{figure*}
 
 \subsection{The leakage channel: \texorpdfstring{$BB$}{BB} against the derived coefficient} \label{subsec:validation}
@@ -348,16 +352,6 @@ The five projections span \bbdecades\ orders of magnitude and the same forward m
 STG is the exception and the diagnostic, its model \STGmodelorders\ orders below its measurement because what it measures is the pipeline floor.
 For scale, the two cylindrical projections leak more $B$ power on this disk than gravitational lensing of the real sky produces.
 The lower panel is the leakage relation itself, and it holds across the whole usable range: over $500 < \ell < \lwall$ the measured $BB/EE$ sits at \wideBBrange\ of the forward model for all four sheared projections, tilts of Sect.~\ref{subsec:bandbyband} included.
-
-\begin{figure*}
-  \includegraphics[width=\textwidth]{projection_spectra_bb.pdf}
-  \caption{
-    Measured $BB$ bandpowers (top) and $BB/EE$ ratios (bottom) on the 5\% reference disk; the unlensed simulations contain no true $B$ modes, so the signal is projection leakage.
-    The four sheared projections follow the derived relation, while STG's points expose the pipeline's own $E\to B$ floor rather than geometric leakage.
-    Curves are the parameter-free forward model of Eq.~\eqref{eq:forward}, and the dashed reference is the lensed spectrum; STG is omitted from the ratio panel.
-  }
-  \label{fig:spectra_bb}
-\end{figure*}
 
 Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair.
 Fitting the coefficient returns $\fitcoef$ --- \fitoffset\ above the derived value of 2, the offset being the mean of the band-dependent term of Sect.~\ref{subsec:bandbyband} --- with \fitrms\ rms and \fitworst\ worst case across \decades\ decades in $\gsq$; a free power law returns $\freepowerlaw$.

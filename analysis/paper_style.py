@@ -76,18 +76,54 @@ def mask_ramp(n):
     return [MASK_RAMP[i] for i in idx]
 
 
-def rc(usetex=False, font_size=9.5):
-    """Shared matplotlib rcParams: recessive grid and axes, no frames."""
-    rc = {
-        "font.size": font_size,
-        "axes.grid": True, "grid.alpha": 0.18, "grid.linewidth": 0.6,
+# Print geometry, read off aa.cls (\the\columnwidth, \the\textwidth in TeX
+# points, 72.27 to the inch). Every figure is drawn at exactly the width it is
+# placed at, so LaTeX includes it at scale 1 and 8 pt in matplotlib is 8 pt on
+# the page.
+COL_W = 256.0748 / 72.27     # 3.543 in, 90 mm
+TEXT_W = 523.5307 / 72.27    # 7.244 in, 184 mm
+
+FONT_SIZE = 8.0
+LEGEND_SIZE = 7.5
+
+# Marks. One weight for model curves, one for reference lines, one marker
+# size for every per-bandpower point.
+LW = 1.0
+LW_REF = 0.8
+MS = 3.2
+MEW = 0.7
+
+
+def rc():
+    """The paper's matplotlib rcParams: 8 pt serif type set by LaTeX in the
+    paper's own txfonts, recessive grid and axes, and a figure saved at its
+    drawn size (no tight bbox), so the PDF width is the figsize width."""
+    return {
+        "text.usetex": True,
+        "text.latex.preamble": r"\usepackage{txfonts}",
+        "font.family": "serif",
+        "font.size": FONT_SIZE,
+        "axes.labelsize": FONT_SIZE, "axes.titlesize": FONT_SIZE,
+        "xtick.labelsize": FONT_SIZE, "ytick.labelsize": FONT_SIZE,
+        "legend.fontsize": LEGEND_SIZE, "legend.frameon": False,
+        "legend.handlelength": 1.8, "legend.handletextpad": 0.5,
+        "legend.columnspacing": 1.2, "legend.borderaxespad": 0.3,
+        "axes.grid": True, "grid.alpha": 0.18, "grid.linewidth": 0.5,
         "grid.color": RULE,
-        "axes.edgecolor": RULE, "axes.linewidth": 0.7,
+        "axes.edgecolor": RULE, "axes.linewidth": 0.6,
         "axes.labelcolor": INK, "text.color": INK,
+        "axes.labelpad": 2.5,
         "xtick.color": INK_SOFT, "ytick.color": INK_SOFT,
-        "figure.dpi": 150, "savefig.bbox": "tight",
-        "legend.frameon": False,
+        "xtick.major.size": 2.5, "ytick.major.size": 2.5,
+        "xtick.minor.size": 1.5, "ytick.minor.size": 1.5,
+        "xtick.major.width": 0.5, "ytick.major.width": 0.5,
+        "xtick.minor.width": 0.4, "ytick.minor.width": 0.4,
+        "xtick.major.pad": 2.0, "ytick.major.pad": 2.0,
+        "lines.linewidth": LW, "lines.markersize": MS,
+        "lines.markeredgewidth": MEW,
+        "figure.dpi": 150,
+        "figure.constrained_layout.h_pad": 0.02,
+        "figure.constrained_layout.w_pad": 0.02,
+        "savefig.bbox": None, "savefig.dpi": 300,
+        "pdf.fonttype": 42,
     }
-    if usetex:
-        rc.update({"font.family": "serif", "text.usetex": True})
-    return rc
