@@ -121,7 +121,7 @@ def rc():
         "xtick.major.pad": 2.0, "ytick.major.pad": 2.0,
         "lines.linewidth": LW, "lines.markersize": MS,
         "lines.markeredgewidth": MEW,
-        "figure.dpi": 150,
+        "figure.dpi": 150, "figure.autolayout": False,
         "figure.constrained_layout.h_pad": 0.02,
         "figure.constrained_layout.w_pad": 0.02,
         "savefig.bbox": None, "savefig.dpi": 300,

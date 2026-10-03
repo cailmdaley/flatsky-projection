@@ -65,7 +65,7 @@ LIM_DEG = 55.0
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
 
-MASK_INDEX = 6  # the 10% (largest) disk in the 2021 suite
+POLE_DEG = 0.5  # sky-frame differencing is replaced this close to the pole
 
 
 def flat_map(proj):
@@ -107,20 +107,61 @@ def sky_grid(proj):
     return alpha, delta, ok, dx, dy
 
 
+def plane_invariants(proj, dx, dy, step_deg=1e-3):
+    """(g, mu) from the inverse projection, differenced on the map plane.
+
+    The sky displacements are taken as 3-vectors, so no sky coordinate enters
+    and the result is as good at the pole as anywhere else. A singular value
+    of the inverse map is the reciprocal of one of the Jacobian's, so g is
+    unchanged and mu = 1 / (sigma1 sigma2); where the projection itself is
+    singular (the cylindrical pair's pole row) sigma -> 0 and mu is not
+    finite.
+    """
+    fsm = flat_map(proj)
+    px = np.ravel(dx) / RES_DEG + N // 2
+    py = np.ravel(dy) / RES_DEG + N // 2
+    h = step_deg / RES_DEG
+
+    def unit(x, y):
+        a, d = fsm.xy_to_angle(core.DoubleVector(x), core.DoubleVector(y))
+        a, d = np.asarray(a), np.asarray(d)
+        return np.stack([np.cos(d) * np.cos(a), np.cos(d) * np.sin(a),
+                         np.sin(d)])
+
+    kx = (unit(px + h, py) - unit(px - h, py)) / np.deg2rad(2 * step_deg)
+    ky = (unit(px, py + h) - unit(px, py - h)) / np.deg2rad(2 * step_deg)
+    a, b, c = (kx * kx).sum(0), (kx * ky).sum(0), (ky * ky).sum(0)
+    root = np.sqrt((a - c) ** 2 + 4 * b * b)
+    sig1 = np.sqrt(0.5 * (a + c + root))
+    sig2 = np.sqrt(np.maximum(0.5 * (a + c - root), 0.0))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        g = (sig1 - sig2) / (sig1 + sig2)
+        mu = 1.0 / (sig1 * sig2)
+    shape = np.shape(dx)
+    return g.reshape(shape), mu.reshape(shape)
+
+
 def compute():
-    g_maps, mu_maps, valid = {}, {}, {}
+    """g and mu maps, NaN off reachable sky.
+
+    Sky-frame central differences (`geometry.jacobian`) everywhere but within
+    POLE_DEG of the pole, where stepping in (alpha, delta) degenerates; there
+    the same invariants come from the inverse map on the plane.
+    """
+    g_maps, mu_maps = {}, {}
     for proj in PROJS:
         alpha, delta, ok, dx, dy = sky_grid(proj)
         with np.errstate(invalid="ignore"):
             jac = G.jacobian(proj, alpha.ravel(), delta.ravel())
             s1, s2 = G.singular_values(jac)
-        g = ((s1 - s2) / (s1 + s2)).reshape(N, N)
-        mu = (s1 * s2).reshape(N, N)
-        # The Jacobian in (alpha, delta) is singular at the pole itself.
-        ok &= np.isfinite(g) & np.isfinite(mu) & (delta > -89.5)
+            g = ((s1 - s2) / (s1 + s2)).reshape(N, N)
+            mu = (s1 * s2).reshape(N, N)
+        polar = ok & (delta <= -90.0 + POLE_DEG)
+        if polar.any():
+            g[polar], mu[polar] = plane_invariants(proj, dx[polar], dy[polar])
+        ok &= np.isfinite(g) & np.isfinite(mu)
         g_maps[proj] = np.where(ok, g, np.nan)
         mu_maps[proj] = np.where(ok, mu, np.nan)
-        valid[proj] = ok
     return g_maps, mu_maps, dx, dy
 
 
