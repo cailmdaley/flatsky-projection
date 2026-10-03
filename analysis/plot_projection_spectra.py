@@ -46,8 +46,7 @@ common curve that is the pixel and not the geometry. These figures stop at
 l = 4800 and make no claim beyond it.
 
 Pixel windows. The production bandpowers already have the 2 arcmin flat-sky
-top-hat divided out and the spurious HEALPix window restored (see
-`spectra`), so `spectra.transfer` is unity here. What remains is the bilinear
+top-hat divided out (see `spectra`). What remains is the bilinear
 interpolation transfer, which no analytic window captures; it is common to
 every projection and to EE and BB alike, and it is why the measurements sit a
 few percent under the curves, growing with l.
@@ -108,7 +107,6 @@ def load_data():
     ell = S.ELL
     cl_ee = S.theory("unlensed_EE")
     cl_bb_lensed = S.theory("lensed_BB")
-    transfer = S.transfer()
     th = T.load()
     ell_theory, cl_theory = th["ell"].astype(float), th["unlensed_EE"]
 
@@ -121,7 +119,7 @@ def load_data():
         m_bb[j], m_ee[j] = model_curves(mom, i, j, ell, ell_theory, cl_theory)
 
     return dict(i=i, mom=mom, ee=ee, bb=bb, ell=ell, cl_ee=cl_ee,
-                cl_bb_lensed=cl_bb_lensed, transfer=transfer,
+                cl_bb_lensed=cl_bb_lensed,
                 m_bb=m_bb, m_ee=m_ee, keep=keep, dl=dl)
 
 
@@ -137,7 +135,7 @@ def set_style(plt):
 
 def plot_ee(plt, d):
     """EE bandpowers (top) and EE/input ratio (bottom), self-sufficient."""
-    i, ee, transfer = d["i"], d["ee"], d["transfer"]
+    i, ee = d["i"], d["ee"]
     cl_ee, m_ee = d["cl_ee"], d["m_ee"]
     ell, keep, dl = d["ell"], d["keep"], d["dl"]
 
@@ -150,7 +148,7 @@ def plot_ee(plt, d):
                           color=PS.INK, lw=1.4, zorder=1, label="input $EE$")
     proj_handles = []
     for j, proj in enumerate(S.PROJS):
-        y = (ee[i, j].mean(0) / transfer) * dl
+        y = (ee[i, j].mean(0)) * dl
         h, = ax.plot(ell[keep], y[keep], MARKS[proj], color=COLORS[proj],
                      ms=MS, mfc="none", mew=MEW, label=S.PROJ_LABEL[proj])
         proj_handles.append(h)
@@ -161,7 +159,7 @@ def plot_ee(plt, d):
     ax = axes[1]
     ax.axhline(1.0, color=PS.RULE, lw=0.8, zorder=1)
     for j, proj in enumerate(S.PROJS):
-        r = ee[i, j].mean(0) / transfer / cl_ee
+        r = ee[i, j].mean(0) / cl_ee
         ax.plot(ell[keep], r[keep], MARKS[proj], color=COLORS[proj], ms=MS,
                 mfc="none", mew=MEW)
         ax.plot(ell[keep], (m_ee[j] / cl_ee)[keep], "-", color=COLORS[proj],
@@ -193,7 +191,7 @@ def plot_bb(plt, d):
     omitted from the ratio panel, where a floor divided by EE would read as a
     leakage. Its value is quoted in the text instead.
     """
-    i, bb, ee, transfer = d["i"], d["bb"], d["ee"], d["transfer"]
+    i, bb, ee = d["i"], d["bb"], d["ee"]
     cl_bb_lensed, cl_ee = d["cl_bb_lensed"], d["cl_ee"]
     m_bb, m_ee = d["m_bb"], d["m_ee"]
     ell, keep, dl = d["ell"], d["keep"], d["dl"]
@@ -208,7 +206,7 @@ def plot_bb(plt, d):
                         label="lensed")
     proj_handles = []
     for j, proj in enumerate(S.PROJS):
-        y = (bb[i, j].mean(0) / transfer) * dl
+        y = (bb[i, j].mean(0)) * dl
         h, = ax.plot(ell[keep], y[keep], MARKS[proj], color=COLORS[proj],
                      ms=MS, mfc="none", mew=MEW, label=S.PROJ_LABEL[proj])
         proj_handles.append(h)
@@ -261,13 +259,13 @@ def plot_bb(plt, d):
 
 def print_numbers(d):
     """A few numbers for the caption and the prose, printed rather than typed."""
-    i, ee, bb, transfer = d["i"], d["ee"], d["bb"], d["transfer"]
+    i, ee, bb = d["i"], d["ee"], d["bb"]
     ell, cl_ee = d["ell"], d["cl_ee"]
     m_bb, m_ee = d["m_bb"], d["m_ee"]
 
     print("\n5% disk, measured / input EE (measured / model in parentheses):")
     for j, proj in enumerate(S.PROJS):
-        r = ee[i, j].mean(0) / transfer / cl_ee
+        r = ee[i, j].mean(0) / cl_ee
         row = []
         for L in (1000, 2000, 3000, 4000, 4500):
             k = np.argmin(abs(ell - L))
@@ -276,7 +274,7 @@ def print_numbers(d):
     sel = (ell > 500) & (ell < 3000)
     print("\nBB at 5% disk, 500 < l < 3000 mean [uK^2]:")
     for j, proj in enumerate(S.PROJS):
-        meas = (bb[i, j].mean(0) / transfer)[sel].mean()
+        meas = (bb[i, j].mean(0))[sel].mean()
         print(f"  {S.PROJ_LABEL[proj]:<6s} measured {meas:9.3e}   "
               f"model {m_bb[j][sel].mean():9.3e}   "
               f"<g^2> {d['mom']['g2'][i, j]:9.3e}")
