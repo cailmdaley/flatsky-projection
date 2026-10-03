@@ -371,8 +371,9 @@ The lone exception is STG, whose floor reaches a mean off-diagonal correlation o
 
 Equation~\eqref{eq:law_footprint} is flat in $\ell$; the measurements tilt, and Eq.~\eqref{eq:forward} says by how much.
 Rebinning to \numbandbands\ bands of $\Delta\ell = 500$ over $\bandlo < \ell < \bandhi$, the forward model reproduces the measurements at $\bandbybandratio$ over every band, mask, and sheared projection more than $20\times$ above the pipeline floor (\numbands\ points, worst case \bandbybandworst), still with no free parameters.
-The mechanism is convexity.
-SFL is equal-area, so its azimuthal stretch is symmetric about unity and a falling spectrum's convexity lifts high-shear pixels at high $\ell$; BICEP's shear comes with magnification up to $\magfactor$ inside the same footprint, and the same convexity pushes the other way.
+The tilts come from the weight $C^{EE}(\ell\bar s)$ each pixel's leakage carries (Sect.~\ref{subsec:derivation}).
+SFL is equal-area, and convexity lifts the $E$ power of its high-shear pixels on a falling spectrum, so its ratio rises with $\ell$.
+BICEP's shear grows fastest toward the pole, where it comes with magnification up to $\magfactor$; a magnified pixel reads the spectrum at a higher wavenumber, so on the damping tail its weight falls, and the ratio with it.
 On the 5\% disk BICEP's measured ratio to $2\gsq$ runs from $\tiltBICEPlo$ down to $\tiltBICEPhi$ while SFL's rises from $\tiltSFLlo$ to $\tiltSFLhi$, and Eq.~\eqref{eq:forward} tracks both tilts without adjustment.
 The cleanest single test is ZEA, least sheared and least magnified, where the pipeline floor stays below $0.5\%$ of the measurement up to $\ell = \ZEAfloorclean$: its raw ratio to the relation runs \ZEAbands\ across the \numbandbands\ bands, the last band's excess consistent with the floor.
 
