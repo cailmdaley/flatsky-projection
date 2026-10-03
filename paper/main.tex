@@ -154,9 +154,10 @@ Figure~\ref{fig:invariants} draws $g$ and $\mu$ pixel by pixel over the field on
   \centering
   \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
   \caption{
-    Maps of the local shear $g$ (top) and magnification $\mu$ (bottom) for the five projections used in this work, on a common grid centred at $(\alpha,\delta)=(\ang{0},\ang{-56})$; the black contour is $W=0.5$ of the 10\% mask used in Sect.~\ref{sec:results}, and hatching marks sky the projection cannot reach (beyond the pole, or beyond SIN's horizon).
-    STG is conformal and therefore shear-free, SFL and ZEA are equal-area with $\mu\equiv1$, and BICEP carries both strong shear and magnification toward the pole.
-    The $\mu$ scale is logarithmic about $\mu=1$, so a factor of two of magnification and of compression sit equally far from the neutral midpoint.
+    Local shear $g$ (top) and magnification $\mu$ (bottom) of the five projections, on a common grid centred at $(\alpha,\delta)=(\ang{0},\ang{-56})$.
+    The black contour is $W=0.5$ of the 10\% mask of Sect.~\ref{sec:results}, and hatching marks grid pixels that no point of the sky projects onto: beyond the pole, beyond SIN's horizon, or past SFL's boundary meridian.
+    The $\mu$ scale is logarithmic about $\mu=1$.
+    STG carries no shear, and SFL and ZEA no magnification.
   }
   \label{fig:invariants}
 \end{figure*}
@@ -197,9 +198,9 @@ Equation~\eqref{eq:scalar_expansion} is also the constant-shear limit of the len
 \begin{figure}
   \includegraphics[width=\columnwidth]{slope_intuition.pdf}
   \caption{
-    Scalar-spectrum ratios $C_\ell^{\rm plane}/C_\ell^{\rm sky}$ for three input spectra passed through the same SFL geometry on the 5\% disk.
-    The power law produces a constant offset, whereas the acoustic structure of lensed $TT$ and $EE$ reappears in the ratio and grows in the damping tail.
-    The curves are the scalar forward model with its polarization kernel set to unity; no simulations enter.
+    Ratio of plane to sky power for three input spectra passed through the same SFL geometry on the 5\% disk, from the scalar forward model alone (Eq.~\eqref{eq:forward} with its polarization kernel set to unity).
+    A power law gives a constant offset, while the acoustic structure of lensed $TT$ and $EE$ reappears in the ratio and grows on the damping tail.
+    Lensing makes the damping tail shallower, so these lensed spectra rise less than the unlensed input of Fig.~\ref{fig:spectra}.
   }
   \label{fig:slope}
 \end{figure}
@@ -314,10 +315,10 @@ One selection rule applies, to the band-by-band comparison of Sect.~\ref{subsec:
 
 \subsection{The scalar channel: \texorpdfstring{$EE$}{EE} against the sky it was drawn from} \label{subsec:scalar_validation}
 
-Figure~\ref{fig:spectra_ee} is the measurement itself: $EE$ bandpowers on the 5\% reference disk, one set per projection, against the forward model of Eq.~\eqref{eq:forward} evaluated from each projection's Jacobian and the input spectrum alone.
+The upper panel of Fig.~\ref{fig:spectra} is the measurement itself: $EE$ bandpowers on the 5\% reference disk as ratios to the input spectrum, one set per projection, against the forward model of Eq.~\eqref{eq:forward} evaluated from each projection's Jacobian and the input spectrum alone.
 The ratios are nowhere near unity.
 At $\ell = 1000$ the two cylindrical projections have lost a third of their power --- SFL measures $\EEinSFLoneK$ of the input, BICEP $\EEinBICEPoneK$ --- and by $\ell = 3000$ both have gained instead, $\EEinSFLthreeK$ and $\EEinBICEPthreeK$, reaching $\EEinSFLfourfive$ and $\EEinBICEPfourfive$ times the input by $\ell = 4500$; SIN runs from $\EEinSINoneK$ to $\EEinSINthreeK$ across the first of those ranges, while ZEA, equal-area and least sheared, stays within $\EEinZEAdev$ of unity throughout.
-The conformal STG moves the other way and monotonically, to $\EEinSTGthreeK$ by $\ell = 3000$: with $g = 0$ the only invariant left is magnification, and an isotropic dilation of a falling spectrum removes power.
+The conformal STG moves the other way, to $\EEinSTGthreeK$ by $\ell = 3000$ and near it beyond: with $g = 0$ the only invariant left is magnification, and an isotropic dilation of a falling spectrum removes power.
 
 The shape is a sharper test than the amplitude.
 Because the coefficient tracks the \textit{local} slope, the predicted ratio inherits the acoustic structure of $C(\ell)$ --- dipping where a peak flattens the slope, rising where the damping tail steepens --- and the measurements oscillate with it in phase and in amplitude for every projection, including the sign flip between STG and the sheared four.
@@ -328,21 +329,17 @@ Measurement over model sits at \EEmodelRangeOneK\ at $\ell = 1000$ and \EEmodelR
 \begin{figure*}
   \includegraphics[width=\textwidth]{projection_spectra.pdf}
   \caption{
-    [EE caption, placeholder:] Measured $EE$ bandpowers (top) and their ratios to the input spectrum (bottom) on the 5\% reference disk, with one series for each projection and smooth model curves.
-    The projection-dependent remapping follows the acoustic structure of the input, while STG falls monotonically because its distortion is purely magnifying.
-    Points average 20 realizations and curves are the parameter-free forward model of Eq.~\eqref{eq:forward}; error bars are omitted because they are smaller than the markers.
-    [BB caption, placeholder:] Measured $BB$ bandpowers (top) and $BB/EE$ ratios (bottom) on the 5\% reference disk; the unlensed simulations contain no true $B$ modes, so the signal is projection leakage.
-    The four sheared projections follow the derived relation, while STG's points expose the pipeline's own $E\to B$ floor rather than geometric leakage.
-    Curves are the parameter-free forward model of Eq.~\eqref{eq:forward}, and the dashed reference is the lensed spectrum; STG is omitted from the ratio panel.
+    Measured bandpower ratios on the 5\% reference disk, one series per projection: $EE$ over the input spectrum (top) and $BB/EE$ (bottom).
+    Points average 20 realizations, with error bars smaller than the markers; curves are the parameter-free forward model of Eq.~\eqref{eq:forward}.
+    The simulations contain no $B$ modes, so $BB/EE$ is pure leakage; STG, whose $BB$ is the pipeline floor, is omitted there, and the dashed curve is lensed $BB/EE$ for scale.
+    The scalar channel follows the acoustic structure of the input, and the leakage channel does not.
   }
   \label{fig:spectra}
-  \label{fig:spectra_ee}
-  \label{fig:spectra_bb}
 \end{figure*}
 
 \subsection{The leakage channel: \texorpdfstring{$BB$}{BB} against the derived coefficient} \label{subsec:validation}
 
-The $BB$ bandpowers of Fig.~\ref{fig:spectra_bb} are pure leakage, the simulations being unlensed.
+The $BB$ bandpowers of Fig.~\ref{fig:spectra} are pure leakage, the simulations being unlensed.
 The five projections span \bbdecades\ orders of magnitude and the same forward model reproduces four of them: averaged over $500 < \ell < 3000$, measured over modelled is $\BBmodelSFL$ (SFL), $\BBmodelSIN$ (SIN), $\BBmodelZEA$ (ZEA) and $\BBmodelBICEP$ (BICEP).
 STG is the exception and the diagnostic.
 Its shear vanishes identically, so its predicted $BB$ is zero; what it measures instead is the pipeline's own $E \to B$ floor, \floorFive\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFiveTop\ over $\floorTopBand$.
@@ -363,9 +360,9 @@ The lone exception is STG, whose floor reaches a mean off-diagonal correlation o
 \begin{figure*}
   \includegraphics[width=\textwidth]{shear_leakage.pdf}
   \caption{
-    Measured $BB/EE$ against the mask-weighted $\gsq$ for every usable sheared projection--mask pair (left), and the residual from $BB/EE = 2\gsq$ against disk sky fraction (right).
-    The points follow the derived relation across four decades in $\gsq$, and every residual lies within two percent of it, with the scatter about the fitted coefficient shaded.
-    Both panels use the $1000<\ell<3000$ band average; the excluded pairs are defined in Sect.~\ref{subsec:disks}.
+    Measured $BB/EE$ against $\gsq$ for every usable sheared projection--mask pair (left), and its fractional residual from $2\gsq$ against disk sky fraction (right), both averaged over $1000<\ell<3000$.
+    The line is $BB/EE = 2\gsq$, with nothing fitted; the band is the scatter about the fitted coefficient.
+    Excluded pairs are defined in Sect.~\ref{subsec:disks}.
   }
   \label{fig:shear_leakage}
 \end{figure*}
