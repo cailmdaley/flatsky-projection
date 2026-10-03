@@ -772,55 +772,49 @@ def report_1500d(nside=1024):
 # --------------------------------------------------------------------------
 
 def figure(mom, meas, pred=None, path=FIGURE):
+    """The leakage relation over every usable sheared pair (left) and its
+    residual by disk size (right), at text width on the paper's rc."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
 
-    plt.rcParams.update({
-        "font.size": 8.5, "font.family": "serif", "text.usetex": True,
-        "axes.labelsize": 8.5, "xtick.labelsize": 7.5,
-        "ytick.labelsize": 7.5,
-        "axes.grid": True, "grid.alpha": 0.25, "grid.linewidth": 0.5,
-        "axes.linewidth": 0.7, "figure.dpi": 130, "savefig.bbox": "tight",
-        "legend.edgecolor": "0.6", "legend.fancybox": False,
-    })
+    plt.rcParams.update(PS.rc())
     colors = PS.PROJ_COLORS
     marks = PS.PROJ_MARKERS
+    ms = 1.4 * PS.MS
+    sheared = [p for p in S.PROJS if p != FLOOR_PROJ]
 
     g2 = mom["g2"]
     band0 = meas[0]
     keep = law_mask(band0)
     k, rms, _, _ = fit_constant(g2[keep], band0[keep])
+    # The fit's rms band, expressed as a residual about the derived 2.
+    fit_lo, fit_hi = 100 * (k / 2 * (1 - rms) - 1), 100 * (k / 2 * (1 + rms) - 1)
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.2),
-                             constrained_layout=True,
-                             gridspec_kw={"width_ratios": [1.15, 1.0],
-                                          "wspace": 0.35})
+    fig, axes = plt.subplots(1, 2, figsize=(PS.TEXT_W, 2.45),
+                             layout="constrained")
 
     # (a) the law, without the STG floor that would add irrelevant decades.
     ax = axes[0]
-    span = np.array([1e-6, 2e-1])
-    ax.plot(span, 2 * span, "k-", lw=1.3, zorder=1,
-            label=r"$BB/EE = 2\langle g^2\rangle$")
-    ax.plot(span, k * span, "k--", lw=1.0, zorder=1,
-            label=rf"fit, $k={k:.3f}$")
+    x = g2[keep]
+    span = np.array([x.min() / 2.5, x.max() * 2.5])
+    ax.plot(span, 2 * span, "-", color=PS.SECONDARY[0], lw=PS.LW, zorder=1)
     for j, proj in enumerate(S.PROJS):
         if proj == FLOOR_PROJ:
             continue
         sel = keep[:, j]
-        ax.scatter(g2[sel, j], band0[sel, j], marker=marks[proj],
-                   facecolors="none", edgecolors=colors[proj], s=38, lw=1.2,
-                   zorder=3, label=S.PROJ_LABEL[proj])
+        # Hollow, not surface-filled: SFL and BICEP nearly coincide on round
+        # masks, and a filled marker would hide the one drawn first.
+        ax.plot(g2[sel, j], band0[sel, j], ls="none", marker=marks[proj],
+                color=colors[proj], mfc="none", ms=ms, mew=PS.MEW, zorder=3)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlim(*span)
-    y_values = np.concatenate([band0[keep], 2 * span])
-    ax.set_ylim(max(np.nanmin(y_values) / 1.8, 1e-7),
-                np.nanmax(y_values) * 1.8)
-    ax.set_xlabel(r"$\langle g^2\rangle$, mask$^2$-weighted")
-    ax.set_ylabel(r"$BB/EE$")
-    ax.legend(fontsize=7.2, loc="upper left", ncol=2, framealpha=0.9,
-              columnspacing=0.8, handletextpad=0.4)
+    ax.set_ylim(2 * span[0], 2 * span[1])
+    ax.set_xlabel(r"$\langle g^2\rangle$")
+    ax.set_ylabel(r"$C_\ell^{BB}/C_\ell^{EE}$")
 
     # (b) residual about the derived coefficient, by disk size.
     ax = axes[1]
@@ -831,22 +825,31 @@ def figure(mom, meas, pred=None, path=FIGURE):
         sel = keep[:, j]
         residual = 100 * (band0[sel, j] / (2 * g2[sel, j]) - 1)
         residuals.append(residual)
-        ax.plot(S.PERC[sel], residual,
-                marker=marks[proj], color=colors[proj], lw=1.1, ms=4.5,
-                label=S.PROJ_LABEL[proj])
-    ax.axhline(0, color="k", lw=1.0)
-    fit_band = ax.axhspan(-100 * rms, 100 * rms, color="k", alpha=0.07)
+        ax.plot(S.PERC[sel], residual, marker=marks[proj], color=colors[proj],
+                mfc="white", ms=ms, mew=PS.MEW, lw=PS.LW, zorder=3)
+    ax.axhline(0, color=PS.SECONDARY[0], lw=PS.LW, zorder=2)
+    ax.axhspan(fit_lo, fit_hi, color=PS.SECONDARY[2], alpha=0.25, lw=0,
+               zorder=1)
     ax.set_xscale("log")
     ax.set_xticks([0.75, 1.5, 3, 5, 10])
     ax.set_xticklabels(["0.75", "1.5", "3", "5", "10"])
     ax.set_xticks([], minor=True)
     ax.set_xlabel(r"disk $f_{\rm sky}$ [\%]")
-    ax.set_ylabel(r"$BB/EE \,/\, 2\langle g^2\rangle - 1$ [\%]")
+    ax.set_ylabel(r"$C_\ell^{BB}/C_\ell^{EE} \,/\, 2\langle g^2\rangle - 1$ [\%]")
     residuals = np.concatenate(residuals)
-    padding = 0.15 * (np.max(residuals) - np.min(residuals))
-    ax.set_ylim(np.min(residuals) - padding, np.max(residuals) + padding)
-    ax.legend([fit_band], [rf"fit scatter, $\pm${100 * rms:.1f}\%"],
-              fontsize=7.5, loc="upper right", frameon=False)
+    padding = 0.12 * (np.max(residuals) - np.min(residuals))
+    ax.set_ylim(min(np.min(residuals), fit_lo) - padding,
+                max(np.max(residuals), fit_hi) + padding)
+
+    # One legend for both panels.
+    handles = [Line2D([], [], ls="none", marker=marks[p], color=colors[p],
+                      mfc="white", ms=ms, mew=PS.MEW) for p in sheared]
+    labels = [S.PROJ_LABEL[p] for p in sheared]
+    handles += [Line2D([], [], color=PS.SECONDARY[0], lw=PS.LW),
+                Patch(facecolor=PS.SECONDARY[2], alpha=0.25, lw=0)]
+    labels += [r"$C_\ell^{BB}/C_\ell^{EE} = 2\langle g^2\rangle$",
+               rf"fitted $k = {k:.3f}$, $\pm${100 * rms:.1f}\% rms"]
+    fig.legend(handles, labels, ncol=len(labels), loc="outside upper center")
     path.parent.mkdir(exist_ok=True)
     fig.savefig(path)
     print(f"\nwrote {path}")
