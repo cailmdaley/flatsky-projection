@@ -258,9 +258,9 @@ def footprint_moments(mask, n_bins=64, chunk=2_000_000):
     `mask` is the apodized HEALPix map. Returns, per projection (leading axis
     in `spectra.PROJS` order), the exact per-pixel moments and a (n_bins,
     n_bins) weight histogram in (log s1, log s2) with the weighted *centroid*
-    of each occupied cell and the cell's weighted mean of sin^2(2 Delta),
-    Delta = `flattening_residual` -- the one quantity the forward model needs
-    that (s1, s2) do not fix.
+    of each occupied cell and the cell's weighted means of sin^2(2 Delta) and
+    sin(2 Delta), Delta = `flattening_residual` -- the quantities the forward
+    model needs that (s1, s2) do not fix. The signed mean feeds only TB<-TE.
 
     The centroid matters. Placing cells at their geometric midpoints biases
     <g^2> by 4% for BICEP at n_bins = 64, because BICEP's magnification spans
@@ -287,6 +287,7 @@ def footprint_moments(mask, n_bins=64, chunk=2_000_000):
     m1 = np.zeros_like(hist)
     m2 = np.zeros_like(hist)
     mf = np.zeros_like(hist)
+    ms = np.zeros_like(hist)
 
     # Edges from a ~200k subsample; the moments themselves are exact.
     stride = max(1, idx.size // 200_000)
@@ -301,7 +302,8 @@ def footprint_moments(mask, n_bins=64, chunk=2_000_000):
         for j, proj in enumerate(S.PROJS):
             jac = G.jacobian(proj, alpha, delta)
             s1, s2 = G.singular_values(jac)
-            sin2_2d = np.sin(2 * flattening_residual(jac)) ** 2
+            sin_2d = np.sin(2 * flattening_residual(jac))
+            sin2_2d = sin_2d ** 2
             det = s1 * s2
             out["sum_w2"][j] += w.sum()
             out["sum_w2_det"][j] += (w * det).sum()
@@ -329,6 +331,7 @@ def footprint_moments(mask, n_bins=64, chunk=2_000_000):
             m1[j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
             m2[j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
             mf[j] += np.bincount(flat, weights=w * sin2_2d, minlength=nb2).reshape(n_bins, n_bins)
+            ms[j] += np.bincount(flat, weights=w * sin_2d, minlength=nb2).reshape(n_bins, n_bins)
 
     for key in REDUCTIONS:
         out[key] /= out["sum_w2"]
@@ -339,6 +342,7 @@ def footprint_moments(mask, n_bins=64, chunk=2_000_000):
     out["cell_s1"] = np.exp(np.divide(m1, hist, out=np.zeros_like(m1), where=hist > 0))
     out["cell_s2"] = np.exp(np.divide(m2, hist, out=np.zeros_like(m2), where=hist > 0))
     out["cell_sin2_2delta"] = np.divide(mf, hist, out=np.zeros_like(mf), where=hist > 0)
+    out["cell_sin_2delta"] = np.divide(ms, hist, out=np.zeros_like(ms), where=hist > 0)
     return out
 
 
@@ -371,7 +375,8 @@ def field_moments_1500d(nside=1024, n_bins=64):
 
 
 # What `predicted_spectra` and the reports read from a moments cache.
-MOMENT_FIELDS = {"g2", "hist", "cell_s1", "cell_s2", "cell_sin2_2delta"}
+MOMENT_FIELDS = {"g2", "hist", "cell_s1", "cell_s2", "cell_sin2_2delta",
+                 "cell_sin_2delta"}
 
 
 def load_moments(n_bins=64, refresh=False, verbose=True):
@@ -482,22 +487,24 @@ def coupling_matrix(mom, i, j, ell, ell_prime, band_limit=G.SIM_BAND_LIMIT,
                        average, cos^2(2 dpsi) (1 - f) + sin^2(2 dpsi) f.
       BB<-EE, EE<-BB   the complement, sin^2(2 dpsi) (1 - f) + cos^2(2 dpsi) f.
       TE<-TE           kernel cos(2 dpsi + 2 Delta) -> cos(2 dpsi) <cos 2 Delta>.
+      TB<-TE           kernel sin(2 dpsi + 2 Delta) -> cos(2 dpsi) <sin 2 Delta>.
 
     dpsi(chi) is the Fourier-space misalignment, Delta FlattenPol's residual
-    rotation, and f the cell's mean sin^2(2 Delta) (`mask_moments`). The cross
-    terms sin(4 dpsi) sin(4 Delta) / 2 and sin(2 dpsi) sin(2 Delta) are odd in
-    chi about the principal axis while the stretch is even, so they average
-    away. The spin blocks are symmetric under E <-> B because the sky's B is
-    rotated by the same angle as its E. For TE the cell mean of cos(2 Delta) is
-    taken as sqrt(1 - f), exact for a Delta uniform within the cell; Delta is
-    O(g^2) and nearly constant across a cell, so the error is O(Delta^4)
-    times the within-cell scatter.
+    rotation, f the cell's mean sin^2(2 Delta) and <sin 2 Delta> its signed
+    mean (`footprint_moments`). The cross terms sin(4 dpsi) sin(4 Delta) / 2,
+    sin(2 dpsi) sin(2 Delta) and sin(2 dpsi) cos(2 Delta) are odd in chi about
+    the principal axis while the stretch is even, so they average away, for
+    any spectrum and to all orders in g. The spin blocks are symmetric under
+    E <-> B because the sky's B is rotated by the same angle as its E. For TE
+    the cell mean of cos(2 Delta) is taken as sqrt(1 - f), exact for a Delta
+    uniform within the cell; Delta is O(g^2) and nearly constant across a
+    cell, so the error is O(Delta^4) times the within-cell scatter.
 
-    TB<-TE is not here. Its kernel is cos(2 dpsi) sin(2 Delta), which needs
-    the *signed* cell mean of sin(2 Delta); the cells live in (s1, s2), which
-    a mirror image about the projection's central meridian leaves unchanged
-    while it flips the sign of Delta, so on any footprint symmetric about that
-    meridian the signed mean, and TB<-TE, vanish (see the paper's TE/TB note).
+    TB<-TE is first order in Delta, so O(g^2) per pixel, where the leakage
+    feels Delta only at second order. Delta is odd under a mirror about the
+    projection's central meridian (`check_te_tb`), so over a footprint
+    symmetric about that meridian the signed mean, and TB<-TE, vanish; every
+    footprint in this suite is one.
 
     The pseudo-C_l weight per unit sky area is W^2 |det J|^2 -- one |det J|
     because C_plane(k) = |det J| C_sky(J^T k), one more because the W^2
@@ -505,7 +512,9 @@ def coupling_matrix(mom, i, j, ell, ell_prime, band_limit=G.SIM_BAND_LIMIT,
     integral without the spectrum, W^2 |det J|.
     """
     s1, s2, w = _cells(mom, i, j)
-    f = mom["cell_sin2_2delta"][i, j][mom["hist"][i, j] > 0][:, None]
+    occ = mom["hist"][i, j] > 0
+    f = mom["cell_sin2_2delta"][i, j][occ][:, None]
+    f_signed = mom["cell_sin_2delta"][i, j][occ][:, None]
     chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
 
     chi_sky = np.arctan2(s2[:, None] * np.sin(chi), s1[:, None] * np.cos(chi))
@@ -517,6 +526,7 @@ def coupling_matrix(mom, i, j, ell, ell_prime, band_limit=G.SIM_BAND_LIMIT,
         "EE<-EE": 1 - kern_b,
         "BB<-EE": kern_b,
         "TE<-TE": np.cos(2 * dpsi) * np.sqrt(1 - f),
+        "TB<-TE": np.cos(2 * dpsi) * f_signed,
     }
     stretch = np.sqrt(s1[:, None] ** 2 * np.cos(chi) ** 2
                       + s2[:, None] ** 2 * np.sin(chi) ** 2)
@@ -874,6 +884,78 @@ def report(mom, meas, pred=None):
               "in the leading-order law is the l dependence, not noise.")
 
 
+def check_te_tb(nside=1024):
+    """TE and TB from a TE-only sky: the azimuthal identities and the footprint.
+
+    A sky mode with T and E lands on the grid with E rotated by
+    2 dpsi + 2 Delta, so TE takes cos and TB takes sin of that angle. Two
+    exact azimuthal identities settle the dpsi part. With w = e^{2i chi},
+    e^{2i dpsi} = (1 + g/w) / (1 + g w), and the residue at w = 0 gives
+
+        <cos 2 dpsi>_chi = 1 - g^2,    <sin 2 dpsi>_chi = 0,
+
+    the second also for any spectrum read at the sheared wavenumber, since
+    sin 2 dpsi is odd in chi and the stretch even. So TE <- TE carries
+    (1 - g^2) cos 2 Delta and TB <- TE carries (1 - g^2) sin 2 Delta, for a
+    spectrum smooth on the scale g l. The second is first order in Delta,
+    which is O(g^2), and vanishes over a footprint only if the signed,
+    W^2 |det J|^2-weighted mean of sin 2 Delta does. Printed here: the
+    identities at three shears, then per footprint and projection the
+    smooth-spectrum TB/TE, the weighted mean of |sin 2 Delta| (the size TB/TE
+    would reach were Delta of one sign), the mirror test max |Delta(a, d) +
+    Delta(-a, d)|, and TE/TT against 1 - <g^2>. The third footprint, the
+    1500d field's eastern half, is not symmetric about the central meridian.
+    """
+    import healpy as hp
+    import footprints as F
+
+    chi = (np.arange(4096) + 0.5) * (np.pi / 4096)
+    print("azimuthal identities, 4096 azimuths:")
+    for g in (0.05, 0.2, 0.4):
+        s1, s2 = 1 + g, 1 - g
+        d = np.arctan2(s2 * np.sin(chi), s1 * np.cos(chi)) - chi
+        d = (d + np.pi / 2) % np.pi - np.pi / 2
+        print(f"  g = {g}: <cos 2dpsi> - (1 - g^2) = "
+              f"{np.cos(2 * d).mean() - (1 - g * g): .1e}   "
+              f"<sin 2dpsi> = {np.sin(2 * d).mean(): .1e}")
+
+    npix = hp.nside2npix(nside)
+    ra, dec = hp.pix2ang(nside, np.arange(npix), lonlat=True)
+    ra = np.where(ra > 180.0, ra - 360.0, ra)
+    east = np.where((ra >= 0) & (ra <= 50) & (dec >= -70) & (dec <= -42),
+                    1.0, 0.0)
+    footprints = {
+        "5% disk": F.disk_mask(RADII_RAD[5], nside=nside),
+        "1500d": F.rect_mask(50.0, -70.0, -42.0, nside=nside),
+        "1500d, RA 0 to 50": F.apodize(east),
+    }
+    rows = {}
+    for name, mask in footprints.items():
+        idx = np.flatnonzero(mask)
+        a, d = hp.pix2ang(nside, idx, lonlat=True)
+        print(f"\n{name}")
+        print(f"  {'':<14}{'TB/TE':>11}{'<|sin 2D|>':>12}{'mirror':>10}"
+              f"{'TE/TT':>10}{'1-<g^2>':>10}")
+        for proj in S.PROJS:
+            jac = G.jacobian(proj, a, d)
+            s1, s2 = G.singular_values(jac)
+            delta = flattening_residual(jac)
+            mirror = flattening_residual(G.jacobian(proj, -a, d))
+            g2 = ((s1 - s2) / (s1 + s2)) ** 2
+            wt = mask[idx] ** 2 * (s1 * s2) ** 2
+            te = np.sum(wt * (1 - g2) * np.cos(2 * delta))
+            tb = np.sum(wt * (1 - g2) * np.sin(2 * delta))
+            r = dict(tb_te=tb / te,
+                     abs_sin=np.sum(wt * np.abs(np.sin(2 * delta))) / wt.sum(),
+                     mirror=np.max(np.abs(delta + mirror)),
+                     te_tt=te / wt.sum(), one_g2=1 - np.sum(wt * g2) / wt.sum())
+            rows[name, proj] = r
+            print(f"  {S.PROJ_LABEL[proj]:<14}{r['tb_te']:11.2e}"
+                  f"{r['abs_sin']:12.2e}{r['mirror']:10.1e}"
+                  f"{r['te_tt']:10.5f}{r['one_g2']:10.5f}")
+    return rows
+
+
 def report_1500d(nside=1024):
     """Apply the law off its training set, to SPT's real 1500d footprint.
 
@@ -1023,6 +1105,8 @@ def main():
     ap.add_argument("--check-flattenpol", action="store_true",
                     help="print the FlattenPol rotation against the polar "
                          "rotation of the local Jacobian, and stop")
+    ap.add_argument("--check-te-tb", action="store_true",
+                    help="print the TE and TB a TE-only sky acquires, and stop")
     ap.add_argument("--no-figure", action="store_true")
     args = ap.parse_args()
 
@@ -1037,6 +1121,10 @@ def main():
         print("recovers that residual from the Jacobian alone. FlattenPol")
         print("removes the polar rotation up to it; the symmetric part stays,")
         print("and with the residual it is the whole of the leakage.")
+        return
+
+    if args.check_te_tb:
+        check_te_tb()
         return
 
     mom = load_moments(n_bins=args.n_bins, refresh=args.refresh)
