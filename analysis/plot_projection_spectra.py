@@ -29,9 +29,8 @@ flattening angle, averaged over mode azimuth and over the footprint
 with weight W^2 |det J|^2 per unit sky area, and band-limited at the sims'
 l = 6000. No free parameters, no fit.
 
-Normalisation. The model returns an unnormalised numerator; the pseudo-C_l
-denominator is the plane-area mask integral, sum(W^2 |det J|) per unit sky
-area, one power of |det J| lower than the numerator's. Getting this right
+Normalisation. The pseudo-C_l denominator is the plane-area mask integral,
+sum(W^2 |det J|) per unit sky area, one power of |det J| lower than the numerator's. Getting this right
 matters only for a projection whose magnification varies across the
 footprint -- for BICEP the wrong power moves the curve by 20%, for the two
 equal-area projections not at all.
@@ -78,20 +77,9 @@ COLORS = PS.PROJ_COLORS
 MARKS = PS.PROJ_MARKERS
 
 def model_curves(mom, i, j, ell, ell_theory, cl_theory):
-    """Forward-modelled BB(l), EE(l) normalised to absolute C_l.
-
-    The numerator carries W^2 |det J|^2 per unit sky area (one |det J| from
-    C_plane = |det J| C_sky(J^T l), one more because the mask-squared integral
-    runs over plane area); the pseudo-C_l normalisation divides by the same
-    integral without the spectrum, i.e. by W^2 |det J| per unit sky area.
-    """
-    h = mom["hist"][i, j]
-    occ = h > 0
-    s1, s2, w = mom["cell_s1"][i, j][occ], mom["cell_s2"][i, j][occ], h[occ]
-    norm = (w * s1 * s2).sum()
-    bb, ee = SL.predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
-                                  band_limit=BAND_LIMIT)
-    return bb / norm, ee / norm
+    """Forward-modelled BB(l), EE(l) in absolute C_l."""
+    return SL.predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
+                                band_limit=BAND_LIMIT)
 
 
 def load_data():

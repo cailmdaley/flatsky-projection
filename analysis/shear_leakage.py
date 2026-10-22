@@ -422,28 +422,130 @@ def _cells(mom, i, j):
     return mom["cell_s1"][i, j][occ], mom["cell_s2"][i, j][occ], h[occ]
 
 
-def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
-                      band_limit=G.SIM_BAND_LIMIT, n_chi=128, chunk=64):
-    """Forward-model BB(l) and EE(l) up to a common normalisation.
+def _hat_weights(x, grid):
+    """Linear-interpolation weights of the points `x` on the sorted `grid`.
 
-    Restores the three things the leading-order law drops:
+    Returns (lo, hi, t): the value of `np.interp(x, grid, c, left=c[1],
+    right=0)` is (1 - t) c[lo] + t c[hi], with t = 0 where x lands on or below
+    the grid's ends and both weights dropped (t = nan) where x lies above it.
+    Below the grid the weight goes to index 1, as `left=c[1]` does: index 0
+    is the l = 0 slot, which CAMB zeroes.
+    """
+    n = grid.size
+    lo = np.clip(np.searchsorted(grid, x, side="right") - 1, 0, n - 2)
+    hi = lo + 1
+    t = (x - grid[lo]) / (grid[hi] - grid[lo])
+    below = x < grid[0]
+    lo = np.where(below, 1, lo)
+    t = np.where(below, 0.0, t)
+    t = np.where(x > grid[-1], np.nan, t)
+    return lo, hi, t
+
+
+def coupling_matrix(mom, i, j, ell, ell_prime, band_limit=G.SIM_BAND_LIMIT,
+                    n_chi=128, chunk=16):
+    """The forward model as a matrix: plane C_l = R @ sky C_l', per spin block.
+
+    Eq. (forward) is linear in the sky spectrum, so for one (mask, projection)
+    it is a matrix R(l, l') from a sky spectrum sampled on `ell_prime` to the
+    expected mask-decoupled flat-sky spectrum at `ell`, normalised to absolute
+    C_l. Row l is a weighted sum over footprint cells c and mode azimuths chi
+    of a hat function on the `ell_prime` grid centred at the sheared
+    wavenumber l r_c(chi), r = |J^T l| / l, so `R @ cl` reproduces linear
+    interpolation of `cl` exactly; `ell_prime` needs to resolve the spectrum,
+    which the integer-l theory grid does. Each output l draws on the band of
+    sky l' between l s2_min and l s1_max. Columns above `band_limit` are zero
+    -- the sims' own band limit; pass None for a sky without one.
+
+    The blocks, keyed "XY<-ZW":
+
+      TT<-TT           kernel 1: the scalar remapping alone.
+      EE<-EE, BB<-BB   kernel cos^2(2 dpsi + 2 Delta) -> after the azimuthal
+                       average, cos^2(2 dpsi) (1 - f) + sin^2(2 dpsi) f.
+      BB<-EE, EE<-BB   the complement, sin^2(2 dpsi) (1 - f) + cos^2(2 dpsi) f.
+      TE<-TE           kernel cos(2 dpsi + 2 Delta) -> cos(2 dpsi) <cos 2 Delta>.
+
+    dpsi(chi) is the Fourier-space misalignment, Delta FlattenPol's residual
+    rotation, and f the cell's mean sin^2(2 Delta) (`mask_moments`). The cross
+    terms sin(4 dpsi) sin(4 Delta) / 2 and sin(2 dpsi) sin(2 Delta) are odd in
+    chi about the principal axis while the stretch is even, so they average
+    away. The spin blocks are symmetric under E <-> B because the sky's B is
+    rotated by the same angle as its E. For TE the cell mean of cos(2 Delta) is
+    taken as sqrt(1 - f), exact for a Delta uniform within the cell; Delta is
+    O(g^2) and nearly constant across a cell, so the error is O(Delta^4)
+    times the within-cell scatter.
+
+    TB<-TE is not here. Its kernel is cos(2 dpsi) sin(2 Delta), which needs
+    the *signed* cell mean of sin(2 Delta); the cells live in (s1, s2), which
+    a mirror image about the projection's central meridian leaves unchanged
+    while it flips the sign of Delta, so on any footprint symmetric about that
+    meridian the signed mean, and TB<-TE, vanish (see the paper's TE/TB note).
+
+    The pseudo-C_l weight per unit sky area is W^2 |det J|^2 -- one |det J|
+    because C_plane(k) = |det J| C_sky(J^T k), one more because the W^2
+    integral runs over plane area -- and the normalisation is the same
+    integral without the spectrum, W^2 |det J|.
+    """
+    s1, s2, w = _cells(mom, i, j)
+    f = mom["cell_sin2_2delta"][i, j][mom["hist"][i, j] > 0][:, None]
+    chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
+
+    chi_sky = np.arctan2(s2[:, None] * np.sin(chi), s1[:, None] * np.cos(chi))
+    dpsi = (chi_sky - chi + np.pi / 2) % np.pi - np.pi / 2
+    leak = np.sin(2 * dpsi) ** 2
+    kern_b = leak * (1 - f) + (1 - leak) * f
+    kernels = {
+        "TT<-TT": np.ones_like(leak),
+        "EE<-EE": 1 - kern_b,
+        "BB<-EE": kern_b,
+        "TE<-TE": np.cos(2 * dpsi) * np.sqrt(1 - f),
+    }
+    stretch = np.sqrt(s1[:, None] ** 2 * np.cos(chi) ** 2
+                      + s2[:, None] ** 2 * np.sin(chi) ** 2)
+    # Cell weight, azimuthal mean and normalisation folded into each kernel.
+    scale = (w * (s1 * s2) ** 2 / (w * s1 * s2).sum())[:, None] / n_chi
+    vals = {k: (v * scale)[:, None, :] for k, v in kernels.items()}
+
+    grid = np.asarray(ell_prime, dtype=float)
+    ell = np.atleast_1d(np.asarray(ell, dtype=float))
+    n_p = grid.size
+    out = {k: np.zeros((ell.size, n_p)) for k in kernels}
+    for k0 in range(0, ell.size, chunk):
+        sl = slice(k0, k0 + chunk)
+        nl = ell[sl].size
+        lo, hi, t = _hat_weights(ell[sl][None, :, None] * stretch[:, None, :],
+                                 grid)
+        keep = np.isfinite(t)
+        row = np.broadcast_to(np.arange(nl)[None, :, None], t.shape)[keep] * n_p
+        t = t[keep]
+        idx = np.concatenate([row + lo[keep], row + hi[keep]])
+        for name, v in vals.items():
+            v = np.broadcast_to(v, keep.shape)[keep]
+            wts = np.concatenate([v * (1 - t), v * t])
+            out[name][sl] = np.bincount(idx, weights=wts,
+                                        minlength=nl * n_p).reshape(nl, n_p)
+    if band_limit is not None:
+        for m in out.values():
+            m[:, grid > band_limit] = 0.0
+    out["BB<-BB"] = out["EE<-EE"]
+    out["EE<-BB"] = out["BB<-EE"]
+    return out
+
+
+def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
+                      band_limit=G.SIM_BAND_LIMIT, n_chi=128):
+    """Forward-model BB(l) and EE(l), absolute C_l, from a sky with E only.
+
+    The E column of `coupling_matrix`: BB = R_{BB<-EE} C^EE, EE = R_{EE<-EE}
+    C^EE. That restores the three things the leading-order law drops:
 
       * the exact misalignment kernel sin^2(2 dpsi) rather than 4 dpsi^2,
       * the fact that a plane mode k reads the sky spectrum at |J^T k|, which
         depends on the angle of k to the shear's major axis, and
-      * the pipeline's own flattening angle. FlattenPol misses the polar
-        rotation by Delta (`flattening_residual`), a uniform local rotation
-        of the E/B basis, so the kernels are sin^2 and cos^2 of
-        2 dpsi + 2 Delta. Their cross term, sin(4 dpsi) sin(4 Delta) / 2, is
-        odd in chi about the principal axis while the stretch is even, so it
-        averages away and only each cell's mean f = <sin^2 2 Delta> enters:
-        BB takes sin^2(2 dpsi) (1 - f) + cos^2(2 dpsi) f, and EE the
-        complement.
+      * the pipeline's own flattening angle, through FlattenPol's residual
+        rotation Delta (`flattening_residual`).
 
-    The second is what makes the ratio depend on l at all. The pseudo-C_l
-    weight per unit *sky* area is mask^2 |det J|^2: one power of |det J|
-    because C_plane(k) = |det J| C_sky(J^T k), one more because the mask^2
-    integral runs over plane area.
+    The second is what makes the ratio depend on l at all.
 
     `band_limit` kills sky power above the simulations' own band limit, which
     is l = 6000 for the highell run (`spectra.LMAX`) and 4000 for the 2021 one.
@@ -452,33 +554,10 @@ def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
     `G.SIM_BAND_LIMIT` is the 2021 value; every call in this repository passes
     the run's own limit explicitly.
     """
-    s1, s2, w = _cells(mom, i, j)
-    f = mom["cell_sin2_2delta"][i, j][mom["hist"][i, j] > 0][:, None]
-    chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
-    cos2, sin2 = np.cos(chi) ** 2, np.sin(chi) ** 2
-
-    chi_sky = np.arctan2(s2[:, None] * np.sin(chi), s1[:, None] * np.cos(chi))
-    dpsi = (chi_sky - chi + np.pi / 2) % np.pi - np.pi / 2
-    leak = np.sin(2 * dpsi) ** 2
-    kern_b = leak * (1 - f) + (1 - leak) * f
-    kern_e = 1 - kern_b
-    stretch = np.sqrt(s1[:, None] ** 2 * cos2 + s2[:, None] ** 2 * sin2)
-
+    R = coupling_matrix(mom, i, j, ell, ell_theory, band_limit=band_limit,
+                        n_chi=n_chi)
     cl = np.asarray(cl_theory, dtype=float)
-    if band_limit is not None:
-        cl = np.where(np.asarray(ell_theory) > band_limit, 0.0, cl)
-
-    weight = w * (s1 * s2) ** 2
-    ell = np.atleast_1d(np.asarray(ell, dtype=float))
-    bb = np.empty(ell.size)
-    ee = np.empty(ell.size)
-    for k in range(0, ell.size, chunk):
-        sl = slice(k, k + chunk)
-        sampled = np.interp(ell[sl][None, :, None] * stretch[:, None, :],
-                            ell_theory, cl, left=cl[1], right=0.0)
-        bb[sl] = weight @ (sampled * kern_b[:, None, :]).mean(-1)
-        ee[sl] = weight @ (sampled * kern_e[:, None, :]).mean(-1)
-    return bb, ee
+    return R["BB<-EE"] @ cl, R["EE<-EE"] @ cl
 
 
 def predicted_ratios(mom, bands=BANDS, n_chi=128, verbose=True,

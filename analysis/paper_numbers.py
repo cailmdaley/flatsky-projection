@@ -105,14 +105,8 @@ def main():
     m_bb = np.empty((len(S.PROJS), len(ell)))
     m_ee = np.empty_like(m_bb)
     for j in range(len(S.PROJS)):
-        h = mom["hist"][MASK, j]
-        occ = h > 0
-        s1, s2, w = (mom["cell_s1"][MASK, j][occ], mom["cell_s2"][MASK, j][occ],
-                     h[occ])
-        norm = (w * s1 * s2).sum()
-        b_, e_ = SL.predicted_spectra(mom, MASK, j, ell, ell_th, cl_th,
-                                      band_limit=BAND_LIMIT)
-        m_bb[j], m_ee[j] = b_ / norm, e_ / norm
+        m_bb[j], m_ee[j] = SL.predicted_spectra(mom, MASK, j, ell, ell_th, cl_th,
+                                                band_limit=BAND_LIMIT)
 
     # ---- 4.1 the scalar channel -------------------------------------------
     ratio = ee[MASK].mean(1) / cl_ee              # (proj, nbins), measured/input

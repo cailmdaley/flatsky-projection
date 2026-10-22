@@ -44,30 +44,18 @@ ELL = np.arange(200.0, 4801.0, 10.0)   # the spectra figure's range
 POWER_LAW_INDEX = -4.0
 
 
-def scalar_ratio(mom, i, j, ell, ell_theory, cl_theory, n_chi=128, chunk=64):
+def scalar_ratio(mom, i, j, ell, ell_theory, cl_theory, n_chi=128):
     """Footprint-averaged predicted / input scalar spectrum.
 
-    The spin-two kernels of `shear_leakage.predicted_spectra` are replaced by
-    unity; everything else -- the (s1, s2) cells, the W^2 |det J|^2 numerator
-    weight, the |det J| normalisation, the azimuthal average of the sheared
-    wavenumber -- is identical, so the three curves differ only by C(l).
+    The TT<-TT block of `shear_leakage.coupling_matrix`: the spin-two kernels
+    replaced by unity, everything else -- the (s1, s2) cells, the W^2 |det J|^2
+    numerator weight, the |det J| normalisation, the azimuthal average of the
+    sheared wavenumber -- identical, so the three curves differ only by C(l).
+    No band limit: these are spectra, not the simulations.
     """
-    s1, s2, w = SL._cells(mom, i, j)
-    chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
-    stretch = np.sqrt(s1[:, None] ** 2 * np.cos(chi) ** 2
-                      + s2[:, None] ** 2 * np.sin(chi) ** 2)
-
-    cl = np.asarray(cl_theory, dtype=float)
-    weight = w * (s1 * s2) ** 2
-    norm = (w * s1 * s2).sum()
-
-    out = np.empty(ell.size)
-    for k in range(0, ell.size, chunk):
-        sl = slice(k, k + chunk)
-        sampled = np.interp(ell[sl][None, :, None] * stretch[:, None, :],
-                            ell_theory, cl, left=cl[1], right=0.0)
-        out[sl] = (weight @ sampled.mean(-1)) / norm
-    return out / np.interp(ell, ell_theory, cl)
+    R = SL.coupling_matrix(mom, i, j, ell, ell_theory, band_limit=None,
+                           n_chi=n_chi)["TT<-TT"]
+    return (R @ cl_theory) / np.interp(ell, ell_theory, cl_theory)
 
 
 def main():
