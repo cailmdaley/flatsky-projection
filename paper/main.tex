@@ -274,6 +274,46 @@ The numerator carries two powers of $\abs{\det J}$ --- one from Eq.~\eqref{eq:sc
 Setting the kernel to unity gives the scalar forward model, which is Eq.~\eqref{eq:scalar_ratio} written over a footprint; setting $\Delta$ to zero, replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho$ by unity returns Eq.~\eqref{eq:law_footprint}.
 Every model curve in this paper is Eq.~\eqref{eq:forward} evaluated on the projection's own Jacobian and the input spectrum.
 
+\subsection{The projection's coupling matrix} \label{subsec:coupling}
+
+Equation~\eqref{eq:forward} is linear in the sky spectrum, so it is a mode-coupling matrix, applied without being written down.
+Written down, it reads
+\begin{equation} \label{eq:coupling}
+\begin{aligned}
+  C_\ell^{X} &= \sum_{\ell'} R^{X \leftarrow Y}_{\ell\ell'}\, C^{Y}_{{\rm sky},\,\ell'}, \\
+  R^{X \leftarrow Y}_{\ell\ell'} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
+    \expval{K^{X\leftarrow Y}(\chi)\; \delta_{\rm D}\qty(\ell' - \ell\rho(\chi))}_\chi,
+\end{aligned}
+\end{equation}
+with one kernel per spin block, all functions of $\alpha \equiv 2\delta\psi + 2\Delta$: unity for $TT \leftarrow TT$, $\cos^2\alpha$ for $EE \leftarrow EE$ and $BB \leftarrow BB$, $\sin^2\alpha$ for $BB \leftarrow EE$ and $EE \leftarrow BB$, and $\cos\alpha$ and $\sin\alpha$ for $TE \leftarrow TE$ and $TB \leftarrow TE$.
+It is the projection's counterpart of the matrix a pseudo-$C_\ell$ estimator builds for its mask, and the two compose: the estimator sees the mask's matrix acting on $R$, and decoupling the mask, as NaMaster does, leaves $R$, which is what Sect.~\ref{sec:results} tests.
+Each row draws on a band of sky multipoles, $\ell s_2 \le \ell' \le \ell s_1$, whose width is the shear (Fig.~\ref{fig:coupling}, left); without a band limit every row has the same shape in $\ell'/\ell$.
+
+Two spectra pass through the scalar block in closed form, and they bracket the slope dependence of Sect.~\ref{subsec:scalar}.
+A white spectrum comes out multiplied by $\int W^2\abs{\det J}^2 / \int W^2 \abs{\det J}$, unity for an equal-area projection.
+And $C_\ell \propto \ell^{-2}$, the spectrum with equal power per logarithmic interval in two dimensions, comes out unchanged for every $J$ and to all orders in $g$, because $\expval{\rho^{-2}}_\chi = 1/(s_1 s_2)$ exactly; this is the all-orders form of the zero of $n(n+2)/4$ at $n = -2$.
+The spin-two blocks have an exact identity of their own, $\expval{\cos 2\delta\psi}_\chi = 1 - g^2$ with $\expval{\sin 2\delta\psi}_\chi = 0$, so $TE$ is suppressed by $1-\gsq$ and $TB$ is fed only by the flattening residual, through $\sin 2\Delta$.
+That residual is odd under reflection about the central meridian, so $TB$ vanishes on any footprint symmetric about it; on one that is not, it does not.
+SFL's $\Delta$ reaches \DeltamaxSFL\ on the 1500d field, and the field's eastern half alone has $\abs{TB/TE} = \TBhalfSFL$: a position-dependent rotation of the polarization basis, made by the pipeline, which a search for anisotropic birefringence on that map would have to model.
+
+The matrix is useful in both directions.
+Forward, it takes any spectrum, which a diagonal transfer function does not.
+A transfer function $F_\ell$ calibrated on CMB simulations absorbs the projection as the CMB's own slope response, and that response is not shared by a component of a different shape.
+Applied to a white, Poisson-source-like spectrum on SPT's 1500d field, a CMB-calibrated $F_\ell$ undershoots the true $TT$ bandpowers by \diagTTSFLtfdthreeK\ around $\ell = 3000$ and \diagTTSFLtfdfourK\ around $\ell = 4000$ for SFL, against \diagTTZEAtfdthreeK\ and \diagTTZEAtfdfourK\ for ZEA (Fig.~\ref{fig:coupling}, right); $R$ gets both exactly, within the local approximation.
+Backward, the scalar blocks invert like any mode-coupling matrix, given a multipole range wider than the band of interest by the factor $s_1/s_2$, and the inversion removes the projection from $TT$ and $EE$ bandpowers on the flat sky.
+Inverting the $BB \leftarrow EE$ block also removes the mean leakage, but not its variance: the leaked $E$ keeps its sample variance in the $B$ bandpowers, and removing that takes the realization-level template of Sect.~\ref{subsec:template}.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=\textwidth]{coupling_matrix.pdf}
+  \caption{%
+    Left: one row of the coupling matrix of Eq.~\eqref{eq:coupling} on the 1500d field, $\ell R_{\ell\ell'}$ against $\ell'/\ell$, for the $EE \leftarrow EE$ (solid) and $BB \leftarrow EE$ (dashed) blocks.
+    Right: fractional error of $TT$ (solid) and $EE$ (dashed) bandpowers of a white spectrum corrected by a diagonal transfer function calibrated on the CMB.
+    The oscillation is the acoustic phase of the calibrating spectrum.
+  }
+  \label{fig:coupling}
+\end{figure*}
+
 \subsection{Two residuals outside the geometric term} \label{subsec:residuals}
 
 The local linear map accounts for the projection and nothing else; two residual mechanisms sit outside it, and both belong to the pipeline rather than to the map.

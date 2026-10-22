@@ -983,6 +983,7 @@ def check_te_tb(nside=1024):
             r = dict(tb_te=tb / te,
                      abs_sin=np.sum(wt * np.abs(np.sin(2 * delta))) / wt.sum(),
                      mirror=np.max(np.abs(delta + mirror)),
+                     delta_max=np.max(np.abs(delta)),
                      te_tt=te / wt.sum(), one_g2=1 - np.sum(wt * g2) / wt.sum())
             rows[name, proj] = r
             print(f"  {S.PROJ_LABEL[proj]:<14}{r['tb_te']:11.2e}"

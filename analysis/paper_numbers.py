@@ -371,8 +371,7 @@ def main():
     step, half = 5.0, 150.0
     for label, (mom_, i_, p, nd) in {
             "SFLtfd": (_moments_1500d(), 0, "ProjSFL", 0),
-            "SFLfive": (mom, MASK, "ProjSFL", 0),
-            "ZEAfive": (mom, MASK, "ProjZEA", 1)}.items():
+            "ZEAtfd": (_moments_1500d(), 0, "ProjZEA", 1)}.items():
         for l0, word in ((3000.0, "threeK"), (4000.0, "fourK")):
             ell_b = np.arange(l0 - half + step / 2, l0 + half, step)
             R = SL.coupling_matrix(mom_, i_, P[p], ell_b, ell_th,
@@ -384,6 +383,15 @@ def main():
                 worst = err[np.argmax(np.abs(err))]
                 M.add(f"diag{X}{label}{word}", f"${100 * err.mean():+.{nd}f}\\%$")
                 M.add(f"diag{X}{label}{word}max", f"${100 * worst:+.{nd}f}\\%$")
+
+    # ---- TB from a TE-only sky: FlattenPol's residual rotation ------------
+    # Delta is odd about the central meridian, so TB/TE vanishes on any
+    # footprint symmetric about it; on the 1500d field's eastern half it does
+    # not. `TBhalfSFL` is that half-field TB/TE; `DeltamaxSFL` the largest
+    # |Delta| over the full 1500d field, in degrees.
+    tetb = SL.check_te_tb()
+    M.add("TBhalfSFL", pct(abs(tetb["1500d, RA 0 to 50", "ProjSFL"]["tb_te"]), 1))
+    M.add("DeltamaxSFL", f"\\ang{{{np.degrees(tetb['1500d', 'ProjSFL']['delta_max']):.1f}}}")
 
     OUT.write_text(M.tex())
     print(M.tex())
