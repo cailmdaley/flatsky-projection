@@ -420,28 +420,21 @@ def _offdiag(ee, bb, ell, lo=500, hi=4800):
 _FIELD_CACHE = {}
 
 
-def _field_1500d(nside=1024):
+def _moments_1500d():
+    """`shear_leakage.field_moments_1500d`, computed once per run."""
+    if not _FIELD_CACHE:
+        _FIELD_CACHE["mom"] = SL.field_moments_1500d()
+    return _FIELD_CACHE["mom"]
+
+
+def _field_1500d():
     """Predicted BB/EE = 2<g^2> on SPT's real 1500d footprint, per projection.
 
-    Same computation as `shear_leakage.report_1500d`, returned rather than
-    printed. Built at Nside 1024, which agrees with the full-resolution
-    moment to 0.2%; nothing here touches map pixels.
+    Built at Nside 1024, which agrees with the full-resolution moment to 0.2%;
+    nothing here touches map pixels.
     """
-    if _FIELD_CACHE:
-        return _FIELD_CACHE
-    import healpy as hp
-    import footprints as F
-    import geometry as G
-
-    mask = F.rect_mask(50.0, -70.0, -42.0, nside=nside)
-    idx = np.flatnonzero(mask)
-    w2 = mask[idx] ** 2
-    alpha, delta = hp.pix2ang(nside, idx, lonlat=True)
-    for proj in S.PROJS:
-        s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
-        g = ((s1 - s2) / (s1 + s2)) ** 2
-        _FIELD_CACHE[S.PROJ_LABEL[proj]] = 2 * float(np.sum(w2 * g) / w2.sum())
-    return _FIELD_CACHE
+    g2 = _moments_1500d()["g2"][0]
+    return {S.PROJ_LABEL[p]: 2 * float(g2[j]) for j, p in enumerate(S.PROJS)}
 
 
 if __name__ == "__main__":

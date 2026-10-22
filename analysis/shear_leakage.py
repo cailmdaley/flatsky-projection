@@ -252,14 +252,15 @@ def _bin_edges(proj, alpha, delta, n_bins, pad=0.05):
     return out
 
 
-def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
-    """Mask-squared-weighted shear moments for every (mask, projection).
+def footprint_moments(mask, n_bins=64, chunk=2_000_000):
+    """Mask-squared-weighted shear moments of one HEALPix footprint.
 
-    Returns a dict of (n_mask, n_proj) arrays of exact per-pixel moments, plus
-    a (n_mask, n_proj, n_bins, n_bins) weight histogram in (log s1, log s2)
-    with the weighted *centroid* of each occupied cell and the cell's weighted
-    mean of sin^2(2 Delta), Delta = `flattening_residual` -- the one quantity
-    the forward model needs that (s1, s2) do not fix.
+    `mask` is the apodized HEALPix map. Returns, per projection (leading axis
+    in `spectra.PROJS` order), the exact per-pixel moments and a (n_bins,
+    n_bins) weight histogram in (log s1, log s2) with the weighted *centroid*
+    of each occupied cell and the cell's weighted mean of sin^2(2 Delta),
+    Delta = `flattening_residual` -- the one quantity the forward model needs
+    that (s1, s2) do not fix.
 
     The centroid matters. Placing cells at their geometric midpoints biases
     <g^2> by 4% for BICEP at n_bins = 64, because BICEP's magnification spans
@@ -272,73 +273,62 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
     """
     import healpy as hp
 
-    nm, npj = len(RADII_RAD), len(S.PROJS)
-    shape = (nm, npj)
-    out = {k: np.zeros(shape) for k in
+    arr = np.asarray(mask)
+    nside = hp.npix2nside(arr.size)
+    idx = np.flatnonzero(arr)
+    w2 = arr[idx] ** 2
+    npj = len(S.PROJS)
+    out = {k: np.zeros(npj) for k in
            ("sum_w2", "sum_w2_det", "sum_w2_det2", "sum_w2_nopole",
             "g2_det", "g2_det2", "g2_nopole", "s1_max", "s2_min")}
     for key in REDUCTIONS:
-        out[key] = np.zeros(shape)
-    hist = np.zeros((nm, npj, n_bins, n_bins))
+        out[key] = np.zeros(npj)
+    hist = np.zeros((npj, n_bins, n_bins))
     m1 = np.zeros_like(hist)
     m2 = np.zeros_like(hist)
     mf = np.zeros_like(hist)
 
-    for i in range(nm):
-        path = MASK_DIR / f"healpix_mask{i}.g3"
-        frame = next(core.G3File(str(path)))
-        hpm = frame["T"]
-        nside = hpm.nside
-        arr = np.asarray(hpm)
-        idx = np.flatnonzero(arr)
-        w2 = arr[idx] ** 2
-        if verbose:
-            print(f"  mask{i}: Nside {nside}, support {idx.size / 1e6:.2f} M pixels "
-                  f"({idx.size / arr.size:.4f} of the sky)", flush=True)
+    # Edges from a ~200k subsample; the moments themselves are exact.
+    stride = max(1, idx.size // 200_000)
+    a_s, d_s = hp.pix2ang(nside, idx[::stride], lonlat=True)
+    edges = {p: _bin_edges(p, a_s, d_s, n_bins) for p in S.PROJS}
 
-        # Edges from a ~200k subsample; the moments themselves are exact.
-        stride = max(1, idx.size // 200_000)
-        a_s, d_s = hp.pix2ang(nside, idx[::stride], lonlat=True)
-        edges = {p: _bin_edges(p, a_s, d_s, n_bins) for p in S.PROJS}
+    for start in range(0, idx.size, chunk):
+        sl = slice(start, start + chunk)
+        alpha, delta = hp.pix2ang(nside, idx[sl], lonlat=True)
+        w = w2[sl]
+        off_pole = (90.0 - np.abs(delta)) > POLAR_CUT_DEG
+        for j, proj in enumerate(S.PROJS):
+            jac = G.jacobian(proj, alpha, delta)
+            s1, s2 = G.singular_values(jac)
+            sin2_2d = np.sin(2 * flattening_residual(jac)) ** 2
+            det = s1 * s2
+            out["sum_w2"][j] += w.sum()
+            out["sum_w2_det"][j] += (w * det).sum()
+            out["sum_w2_det2"][j] += (w * det ** 2).sum()
+            for key, (_, f) in REDUCTIONS.items():
+                out[key][j] += (w * f(s1, s2)).sum()
+            gg = REDUCTIONS["g2"][1](s1, s2)
+            out["g2_det"][j] += (w * det * gg).sum()
+            out["g2_det2"][j] += (w * det ** 2 * gg).sum()
+            out["sum_w2_nopole"][j] += w[off_pole].sum()
+            out["g2_nopole"][j] += (w[off_pole] * gg[off_pole]).sum()
+            out["s1_max"][j] = max(out["s1_max"][j], s1.max())
+            out["s2_min"][j] = (s2.min() if out["s2_min"][j] == 0
+                                else min(out["s2_min"][j], s2.min()))
 
-        for start in range(0, idx.size, chunk):
-            sl = slice(start, start + chunk)
-            alpha, delta = hp.pix2ang(nside, idx[sl], lonlat=True)
-            w = w2[sl]
-            off_pole = (90.0 - np.abs(delta)) > POLAR_CUT_DEG
-            for j, proj in enumerate(S.PROJS):
-                jac = G.jacobian(proj, alpha, delta)
-                s1, s2 = G.singular_values(jac)
-                sin2_2d = np.sin(2 * flattening_residual(jac)) ** 2
-                det = s1 * s2
-                out["sum_w2"][i, j] += w.sum()
-                out["sum_w2_det"][i, j] += (w * det).sum()
-                out["sum_w2_det2"][i, j] += (w * det ** 2).sum()
-                for key, (_, f) in REDUCTIONS.items():
-                    out[key][i, j] += (w * f(s1, s2)).sum()
-                gg = REDUCTIONS["g2"][1](s1, s2)
-                out["g2_det"][i, j] += (w * det * gg).sum()
-                out["g2_det2"][i, j] += (w * det ** 2 * gg).sum()
-                out["sum_w2_nopole"][i, j] += w[off_pole].sum()
-                out["g2_nopole"][i, j] += (w[off_pole] * gg[off_pole]).sum()
-                out["s1_max"][i, j] = max(out["s1_max"][i, j], s1.max())
-                out["s2_min"][i, j] = (s2.min() if out["s2_min"][i, j] == 0
-                                       else min(out["s2_min"][i, j], s2.min()))
-
-                l1, l2 = np.log(s1), np.log(s2)
-                e1, e2 = edges[proj]
-                k1 = np.clip(((l1 - e1[0]) / (e1[1] - e1[0])).astype(np.intp),
-                             0, n_bins - 1)
-                k2 = np.clip(((l2 - e2[0]) / (e2[1] - e2[0])).astype(np.intp),
-                             0, n_bins - 1)
-                flat = k1 * n_bins + k2
-                nb2 = n_bins * n_bins
-                hist[i, j] += np.bincount(flat, weights=w, minlength=nb2).reshape(n_bins, n_bins)
-                m1[i, j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
-                m2[i, j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
-                mf[i, j] += np.bincount(flat, weights=w * sin2_2d, minlength=nb2).reshape(n_bins, n_bins)
-
-        del arr, frame, hpm, idx, w2
+            l1, l2 = np.log(s1), np.log(s2)
+            e1, e2 = edges[proj]
+            k1 = np.clip(((l1 - e1[0]) / (e1[1] - e1[0])).astype(np.intp),
+                         0, n_bins - 1)
+            k2 = np.clip(((l2 - e2[0]) / (e2[1] - e2[0])).astype(np.intp),
+                         0, n_bins - 1)
+            flat = k1 * n_bins + k2
+            nb2 = n_bins * n_bins
+            hist[j] += np.bincount(flat, weights=w, minlength=nb2).reshape(n_bins, n_bins)
+            m1[j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
+            m2[j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
+            mf[j] += np.bincount(flat, weights=w * sin2_2d, minlength=nb2).reshape(n_bins, n_bins)
 
     for key in REDUCTIONS:
         out[key] /= out["sum_w2"]
@@ -350,6 +340,34 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
     out["cell_s2"] = np.exp(np.divide(m2, hist, out=np.zeros_like(m2), where=hist > 0))
     out["cell_sin2_2delta"] = np.divide(mf, hist, out=np.zeros_like(mf), where=hist > 0)
     return out
+
+
+def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
+    """`footprint_moments` of the run's seven disks, as (n_mask, n_proj, ...)."""
+    per_mask = []
+    for i in range(len(RADII_RAD)):
+        frame = next(core.G3File(str(MASK_DIR / f"healpix_mask{i}.g3")))
+        arr = np.asarray(frame["T"])
+        if verbose:
+            n = np.count_nonzero(arr)
+            print(f"  mask{i}: Nside {frame['T'].nside}, support {n / 1e6:.2f} M "
+                  f"pixels ({n / arr.size:.4f} of the sky)", flush=True)
+        per_mask.append(footprint_moments(arr, n_bins=n_bins, chunk=chunk))
+        del arr, frame
+    return {k: np.stack([m[k] for m in per_mask]) for k in per_mask[0]}
+
+
+def field_moments_1500d(nside=1024, n_bins=64):
+    """`footprint_moments` of SPT's 1500d field, shaped like one mask (i = 0).
+
+    RA +-50 deg, dec -70 to -42, C2-apodized at 2.5 deg, built through
+    `footprints` at Nside 1024 like `report_1500d`. The result drops into
+    every function that takes `(mom, i, j)` with i = 0.
+    """
+    import footprints as F
+    m = footprint_moments(F.rect_mask(50.0, -70.0, -42.0, nside=nside),
+                          n_bins=n_bins)
+    return {k: v[None] for k, v in m.items()}
 
 
 # What `predicted_spectra` and the reports read from a moments cache.
