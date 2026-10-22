@@ -230,7 +230,7 @@ In the principal frame of $\Sigma$, a plane-wave mode $\vbell$ on the grid origi
   \;\simeq\; -g \sin 2\chi,
 \end{equation}
 with $\chi$ the angle of $\vbell$ to the local principal axis.
-This is not the flattening angle $\psi$ of Sect.~\ref{subsec:flatten_pol}, which was a position-space quantity already removed; $\delta\psi$ lives in Fourier space, indexed by mode azimuth.
+This is not the flattening angle $\psi$ of Sect.~\ref{subsec:flatten_pol}, a position-space angle that flattening removes up to the residual $\Delta$, which Eq.~\eqref{eq:forward} carries; $\delta\psi$ lives in Fourier space, indexed by mode azimuth.
 The $E$/$B$ decomposition on the grid, Eq.~\eqref{eq:qu_to_eb}, therefore reads the sky's $E$-mode at the wrong angle, and $B$ picks up $E\sin 2\delta\psi$.
 Binning in annuli of $\abs{\vbell}$ averages $\chi$ uniformly over the circle --- and because a uniform measure on the circle is shift-invariant, the position-dependent orientation of the principal axes drops out identically, for any mask shape.
 That average, taken with the \textit{exact} $\delta\psi$, resums in closed form to all orders in $g$,
@@ -280,7 +280,7 @@ The local linear map accounts for the projection and nothing else; two residual 
 The first is resampling, set by the interpolation kernel and pixel size rather than by $g$ or $\mu$.
 It suppresses power multiplicatively, a transfer common to every projection, which appears below as a shortfall in $EE$ shared by all five.
 It also aliases power additively, growing toward the Nyquist scale, which appears as the nonzero $BB$ of the shearless stereographic projection: a floor that rises with $\ell$ while the geometric term turns over.
-Near Nyquist the additive part stops being common: SFL and BICEP compress the sky along a grid axis, so they carry the most sky power to plane wavenumbers past Nyquist, and over $\aliaslo < \ell < \lwall$ they measure \EEaliasSFL\ and \EEaliasBICEP\ more $EE$ than STG relative to the forward model, which we read as that power folding back.
+Near Nyquist the floor stops being the whole story: SFL and BICEP distort the grid the most, so they carry the most sky power to plane wavenumbers past Nyquist, and over $\aliaslo < \ell < \lwall$, both against the forward model, SFL measures \EEaliasSFL\ and BICEP \EEaliasBICEP\ more $EE$ than STG does, which we read as that power folding back.
 The second residual is mask-induced mode coupling, a statement about the estimator: one correcting only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands, while a purified pseudo-$C_\ell$ estimator on an apodized mask will not.
 It is the natural alternative explanation for any geometric shortfall, and it makes a different prediction --- present on hard-edged masks, absent on smoothly apodized ones of the same area.
 
@@ -293,7 +293,7 @@ Two legs are compared per realization.
 The $Q/U$ leg projects $Q$ and $U$, flattens the polarization (Eq.~\eqref{eq:rot_angle}), and decomposes to $E$/$B$ on the flat sky --- what a real analysis does, and what carries the leakage.
 The $E/B$ leg decomposes on the sphere first and projects the resulting scalar $E$ and $B$ maps, a spin-0 projection with no leakage by construction.
 Their difference isolates the projection effect from all shared systematics.
-The shear only redistributes polarized power between $E$ and $B$, so the $Q/U$ leg's $EE+BB$ should equal the $E/B$ leg's $EE$; over $500 < \ell < \lwall$ it does, to \powerconserve\ for every usable projection--mask pair.
+Both legs undergo the same scalar remapping, and beyond it the shear only moves power between $E$ and $B$, so the $Q/U$ leg's $EE+BB$ should equal the $E/B$ leg's $EE$; on average over $500 < \ell < \lwall$ it does, to \powerconserve\ for every usable projection--mask pair.
 The flat-sky decomposition is the usual rotation into the mode frame,
 \begin{align}
   \label{eq:qu_to_eb}
@@ -347,8 +347,8 @@ STG is the exception and the diagnostic.
 Its shear vanishes identically, so its predicted $BB$ is zero; what it measures instead is the pipeline's own $E \to B$ floor, \floorFive\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFiveTop\ over $\floorTopBand$.
 For scale, the two cylindrical projections leak more $B$ power on this disk than gravitational lensing of the real sky produces.
 The lower panel is the leakage relation itself, and it holds across the whole usable range: over $500 < \ell < \lwall$ the measured $BB/EE$ sits at \wideBBrange\ of the forward model for all four sheared projections, tilts of Sect.~\ref{subsec:bandbyband} included.
-Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and below the reach of aliasing, the agreement is \cleanBBrange.
-Above $\ell = \riselo$ BICEP's ratio climbs, to \riseBICEPtop\ in the last bin below the wall, which we attribute to the aliasing that lifts its $EE$: folded-back power splits between $E$ and $B$, and $B$ starts from much less.
+Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and before aliasing reaches $BB/EE$, the agreement is \cleanBBrange.
+Above $\ell = \riselo$ the ratio climbs for BICEP and SIN, to \riseBICEPtop\ and \riseSINtop\ in the last bin, $\risetopbin$, while SFL's stays at \riseSFLtop\ though it carries as much excess $EE$: where folded-back power lands, in $E$ or in $B$, depends on how each projection's distortion meets the grid, which the local model does not describe.
 
 Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair.
 Fitting the coefficient to the $1000 < \ell < 3000$ band average returns $\fitcoef$ --- \fitoffset\ above the derived value of 2, the offset being the mean of the band-dependent term of Sect.~\ref{subsec:bandbyband} --- with \fitrms\ rms and \fitworst\ worst case across \decades\ decades in $\gsq$; a free power law returns $\freepowerlaw$.
@@ -523,7 +523,7 @@ The conventions map as follows: the lensing shear modulus is $\abs{\gamma} = (s_
 \end{equation}
 equal to $\abs{\gamma}$ at first order in the deflection.
 The normalization by the mean magnification rather than by unity earns its keep: $g$ is scale-free, whereas $\abs{\gamma}$ is not, and the difference is $\order{\kappa g}$ --- negligible for gravitational lensing, but not for a projection whose magnification reaches $\magfactor$ at the edge of the 5\% reference footprint, as BICEP's does.
-The mapping is legitimate only because flattening removes the polar rotation: a gravitational deflection is a gradient, so its Jacobian is symmetric and carries no rotation, whereas a projection Jacobian is not symmetric in general and only the flattened $\Sigma$ is (Sect.~\ref{subsec:flatten_pol}).
+The mapping is legitimate only because flattening removes the polar rotation: a gravitational deflection is a gradient, so its Jacobian is symmetric and carries no rotation, whereas a projection Jacobian is not symmetric in general and only the flattened $\Sigma$ is (Sect.~\ref{subsec:flatten_pol}), up to the residual of Appendix~\ref{app:flatten}.
 
 \subsection{The spin-two channel} \label{app:kernels_eb}
 
@@ -626,7 +626,7 @@ The equal-weight average of Eq.~\eqref{eq:rot_angle} differs from the polar rota
 Sitting at $\Delta = \order{g^2}$ rather than at zero adds $g^4\sin^2 4\beta$ of leakage --- the same order as, and opposite in sign to, the $-\tfrac32 g^4$ term of Eq.~\eqref{eq:law}.
 The residual vanishes wherever $\sin 4\beta = 0$: principal axes along the grid axes (BICEP everywhere, the zenithal projections on their central meridians) or along the grid diagonals.
 For a round footprint of a zenithal projection $\beta$ runs uniformly with azimuth, so $\expval{\sin^2 4\beta} = \tfrac12$ and the addition is exactly one third of the retained quartic term: a pipeline flattening with Eq.~\eqref{eq:rot_angle} realizes $2g^2(1-\tfrac12 g^2)$ on such a footprint rather than $2g^2(1-\tfrac34 g^2)$, a ${\sim}1\%$ shift in the ratio at $g = 0.2$.
-SFL's axes lie off the diagonals by an angle of order $g$, which defers its residual to $\order{g^3}$; but SFL is the most sheared projection, and it carries nearly all of the residual: \flattenSFL\ of its leakage on the reference disk, against at most \flattenZenithal\ for the zenithal three and none for BICEP.
+SFL's axes lie off the diagonals by $\tfrac12\arcsin g$, which defers its residual to $\Delta \simeq g^3$; but SFL shears as hard as BICEP, whose residual is exactly zero, and far harder than the zenithal projections, so it carries nearly all of the residual: \flattenSFL\ of its leakage on the reference disk, against at most \flattenZenithal\ for SIN and ZEA and none for BICEP or STG.
 The simulations flatten with Eq.~\eqref{eq:rot_angle}, and so does the forward model, which evaluates $\Delta$ pixel by pixel from the Jacobian.
 
 

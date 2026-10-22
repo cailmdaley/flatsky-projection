@@ -25,8 +25,9 @@ decomposition J = R(phi) S, R a rotation and S symmetric. FlattenPol's rotation
 angle is phi up to a residual Delta that is O(g^2) in angle -- (g^2/2)|sin 4beta|
 with beta the angle of the principal axes to the grid (paper, Appendix E).
 `check_flattenpol` below verifies this by reimplementing FlattenPol's `rot`
-from `xy_to_angle`, the same call the C++ makes: the two angles agree to
-0.02 deg where g = 0.07 and to 1.5 deg at a point with g = 0.31, and
+from `xy_to_angle`, the same call the C++ makes: at SFL points, whose axes sit
+near the grid diagonals so that Delta ~ g^3, the two angles agree to 0.02 deg
+where g = 0.07 and to 1.5 deg where g = 0.31, and
 `flattening_residual` recovers the same Delta from the Jacobian alone. A
 residual rotation adds sin^2(2 Delta) ~ g^4 sin^2 4beta to the leakage --
 largest for SFL despite its near-diagonal axes, small for the zenithal
@@ -503,7 +504,7 @@ def predicted_ratios(mom, bands=BANDS, n_chi=128, verbose=True,
 
 
 # --------------------------------------------------------------------------
-# Validation of the premise: FlattenPol removes the polar rotation, exactly
+# Validation of the premise: FlattenPol removes the polar rotation, up to the O(g^2) residual Delta
 # --------------------------------------------------------------------------
 
 def check_flattenpol(step=1e-3):

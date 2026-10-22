@@ -35,7 +35,7 @@ L_WALL = 4800.0               # above this the 2 arcmin pixel, not the geometry
 # reach the sheared measurements.
 L_CLEAN = (1000, 4000)
 L_ALIAS = 4000.0              # EE aliasing quoted over L_ALIAS < l < L_WALL
-L_RISE = 4250.0               # BICEP's BB/EE leaves the model above this
+L_RISE = 4250.0               # BICEP's and SIN's BB/EE leave the model above this
 BAND_LIMIT = S.LMAX
 
 
@@ -184,7 +184,6 @@ def main():
         r = ((bb[MASK, j].mean(0) / ee[MASK, j].mean(0) - floor_bin)
              / (m_bb[j] / m_ee[j]))
         cr.append(float(r[cband].mean()))
-        M.add(f"cleanBB{short[p]}", f(cr[-1]))
     M.add("cleanBBrange", rng(min(cr), max(cr), 3))
 
     # What FlattenPol's residual rotation is worth in the model: BB/EE with
@@ -205,20 +204,22 @@ def main():
     M.add("cleanlo", f"{L_CLEAN[0]}")
     M.add("cleanhi", f"{L_CLEAN[1]}")
 
-    # BICEP's near-Nyquist rise: BB/EE over the model, raw as in wideBBrange,
-    # averaged from L_RISE to the wall and in the last bin below the wall.
-    jB = P["ProjBICEP"]
-    rB = (bb[MASK, jB].mean(0) / ee[MASK, jB].mean(0)) / (m_bb[jB] / m_ee[jB])
+    # The near-Nyquist rise: floor-subtracted BB/EE over the model in the last
+    # bin below the wall. BICEP and SIN climb above L_RISE; SFL, with as much
+    # excess EE, does not, so SFL's is quoted too.
     top = int(np.flatnonzero(S.BIN_HI <= L_WALL)[-1])
-    M.add("riseBICEPtop", f(rB[top]))
+    for p in ("ProjBICEP", "ProjSIN", "ProjSFL"):
+        j = P[p]
+        r = ((bb[MASK, j].mean(0) / ee[MASK, j].mean(0) - floor_bin)
+             / (m_bb[j] / m_ee[j]))
+        M.add(f"rise{short[p]}top", f(r[top]))
     M.add("risetopbin", f"{S.BIN_LO[top]} < \\ell < {S.BIN_HI[top]}")
-    M.add("riseBICEPband", f(rB[(ell > L_RISE) & (ell < L_WALL)].mean()))
     M.add("riselo", f"{L_RISE:.0f}")
 
     # The resampling term is not common to every projection near Nyquist: EE
-    # over the model, relative to STG's, for SFL and BICEP, which compress the
-    # sky by up to a factor 0.65 and so carry the most plane power past the
-    # 2 arcmin Nyquist.
+    # over the model, relative to STG's, for SFL and BICEP, which distort the
+    # grid the most and so carry the most sky power past the 2 arcmin Nyquist
+    # (BICEP by compressing x, SFL by lengthening k_y through its shear).
     aband = (ell > L_ALIAS) & (ell < L_WALL)
     stg_t = ee[MASK, jstg].mean(0) / m_ee[jstg]
     for p in ("ProjSFL", "ProjBICEP"):
@@ -232,6 +233,7 @@ def main():
     # so (EE + BB) on the QU leg equals EE on the E/B leg. Per (mask,
     # projection), seed-mean spectra, the per-bin ratio averaged over
     # 500 < l < L_WALL; the worst deviation over every pair but `CLIPPED`.
+    # A band mean: single bins deviate by up to ~1e-3.
     ee_eb = S.load("EE", leg=S.EB_LEG).mean(2)
     tot = (ee.mean(2) + bb.mean(2)) / ee_eb
     dev = np.abs(tot[:, :, wide].mean(-1) - 1)
