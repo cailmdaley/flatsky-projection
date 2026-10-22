@@ -30,6 +30,12 @@ OUT = ROOT / "paper" / "numbers.tex"
 
 MASK = 5                      # PERC[5] = 5%, the reference footprint
 L_WALL = 4800.0               # above this the 2 arcmin pixel, not the geometry
+# Where the forward model is judged cleanly: above the low-l mode-coupling
+# regime and below the l at which near-Nyquist aliasing and the STG floor
+# reach the sheared measurements.
+L_CLEAN = (1000, 4000)
+L_ALIAS = 4000.0              # EE aliasing quoted over L_ALIAS < l < L_WALL
+L_RISE = 4250.0               # BICEP's BB/EE leaves the model above this
 BAND_LIMIT = S.LMAX
 
 
@@ -165,7 +171,73 @@ def main():
     we = [float((ratio[j] / mratio[j])[wide].mean()) for j in P.values()]
     M.add("wideEErange", rng(min(we), max(we), 3))
     M.add("lwall", f"{L_WALL:.0f}")
+
+    # The clean statement: floor-subtracted (BB/EE)_meas / (BB/EE)_model, mean
+    # over bins, on L_CLEAN, where neither the STG floor nor near-Nyquist
+    # aliasing reaches the sheared measurements.
+    floor_bin = bb[MASK, jstg].mean(0) / ee[MASK, jstg].mean(0)
+    cband = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
+    cr = []
+    for p, j in P.items():
+        if p == SL.FLOOR_PROJ:
+            continue
+        r = ((bb[MASK, j].mean(0) / ee[MASK, j].mean(0) - floor_bin)
+             / (m_bb[j] / m_ee[j]))
+        cr.append(float(r[cband].mean()))
+        M.add(f"cleanBB{short[p]}", f(cr[-1]))
+    M.add("cleanBBrange", rng(min(cr), max(cr), 3))
+
+    # What FlattenPol's residual rotation is worth in the model: BB/EE with
+    # Delta over BB/EE with the polar angle, mean over L_CLEAN, 5% disk. SFL
+    # carries nearly all of it; the zenithal three are quoted as one bound.
+    nod = dict(mom, cell_sin2_2delta=np.zeros_like(mom["cell_sin2_2delta"]))
+    dz = []
+    for p in ("ProjSFL", "ProjSIN", "ProjZEA"):
+        j = P[p]
+        b0, e0 = SL.predicted_spectra(nod, MASK, j, ell, ell_th, cl_th,
+                                      band_limit=BAND_LIMIT)
+        d = float(((m_bb[j] / m_ee[j]) / (b0 / e0))[cband].mean() - 1)
+        if p == "ProjSFL":
+            M.add("flattenSFL", pct(d, 1))
+        else:
+            dz.append(d)
+    M.add("flattenZenithal", pct(max(dz), 2))
+    M.add("cleanlo", f"{L_CLEAN[0]}")
+    M.add("cleanhi", f"{L_CLEAN[1]}")
+
+    # BICEP's near-Nyquist rise: BB/EE over the model, raw as in wideBBrange,
+    # averaged from L_RISE to the wall and in the last bin below the wall.
+    jB = P["ProjBICEP"]
+    rB = (bb[MASK, jB].mean(0) / ee[MASK, jB].mean(0)) / (m_bb[jB] / m_ee[jB])
+    top = int(np.flatnonzero(S.BIN_HI <= L_WALL)[-1])
+    M.add("riseBICEPtop", f(rB[top]))
+    M.add("risetopbin", f"{S.BIN_LO[top]} < \\ell < {S.BIN_HI[top]}")
+    M.add("riseBICEPband", f(rB[(ell > L_RISE) & (ell < L_WALL)].mean()))
+    M.add("riselo", f"{L_RISE:.0f}")
+
+    # The resampling term is not common to every projection near Nyquist: EE
+    # over the model, relative to STG's, for SFL and BICEP, which compress the
+    # sky by up to a factor 0.65 and so carry the most plane power past the
+    # 2 arcmin Nyquist.
+    aband = (ell > L_ALIAS) & (ell < L_WALL)
+    stg_t = ee[MASK, jstg].mean(0) / m_ee[jstg]
+    for p in ("ProjSFL", "ProjBICEP"):
+        j = P[p]
+        rel = (ee[MASK, j].mean(0) / m_ee[j]) / stg_t
+        M.add(f"EEalias{short[p]}", pct(float(rel[aband].mean()) - 1, 1))
+    M.add("aliaslo", f"{L_ALIAS:.0f}")
     M.add("lmaxrun", f"{S.LMAX}")
+
+    # Power conservation between the legs: the shear only rotates E into B,
+    # so (EE + BB) on the QU leg equals EE on the E/B leg. Per (mask,
+    # projection), seed-mean spectra, the per-bin ratio averaged over
+    # 500 < l < L_WALL; the worst deviation over every pair but `CLIPPED`.
+    ee_eb = S.load("EE", leg=S.EB_LEG).mean(2)
+    tot = (ee.mean(2) + bb.mean(2)) / ee_eb
+    dev = np.abs(tot[:, :, wide].mean(-1) - 1)
+    for i, p in SL.CLIPPED:
+        dev[i, P[p]] = np.nan
+    M.add("powerconserve", f"${sci(np.nanmax(dev))}$")
     # The pixel Nyquist multipole, from the pixel scale rather than remembered.
     M.add("lnyquist", f"{np.pi / np.deg2rad(S.RES_ARCMIN / 60.0):.0f}")
 

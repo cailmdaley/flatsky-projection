@@ -216,7 +216,7 @@ The angle could be defined from north ($\hat{\theta}$ to $\hat{y}$) or from east
 \end{equation}
 The polar decomposition $J = R\Sigma$, with $R$ a rotation and $\Sigma$ symmetric, says what must be removed: flattening by the angle of $R$ removes all of the rotation and leaves exactly the shear $\Sigma$.
 Any other angle does worse, since an offset $\Delta$ adds a uniform polarization rotation and raises the leakage by $4\Delta^2$.
-Equation~\eqref{eq:rot_angle} reaches the angle of $R$ up to $\Delta = \order{g^2}$; Appendix~\ref{app:flatten} gives the residual, a ${\sim}1\%$ shift in the quartic term of Eq.~\eqref{eq:law} at $g = 0.2$, which the simulations contain and the forward model below does not.
+Equation~\eqref{eq:rot_angle} reaches the angle of $R$ up to $\Delta = \order{g^2}$; Appendix~\ref{app:flatten} gives the residual, a ${\sim}1\%$ shift in the leakage at $g = 0.2$, which the simulations contain and the forward model of Sect.~\ref{subsec:derivation} carries.
 For a conformal projection $\Sigma$ is a multiple of the identity, flattening is exact, and the leakage vanishes.
 For everything else, the leakage is set by $\Sigma$ alone --- provided the pipeline flattens by rotation only, as \texttt{spt3g\_software} and comparable pipelines do, which is what the relation below describes.
 
@@ -259,19 +259,19 @@ Second, $W^2$ is the \textit{effective} weight rather than the derived one.
 At leading order the footprint ratio is $2\int W^2\mu^2 g^2\, C^{EE}(\ell\bar s) \big/ \int W^2\mu^2\, C^{EE}(\ell\bar s)$: the estimator weights sky area by $W^2\abs{\det J}^2$, and the spectrum is read at the locally dilated wavenumber.
 For a falling spectrum the two nearly cancel, $\gsq$ under $W^2$ is what remains, and the residue of that near-cancellation is the band-dependent structure of Sect.~\ref{subsec:bandbyband}.
 
-Equation~\eqref{eq:law_footprint} is an average, and what it averages away is recoverable --- keep the exact kernel of Eq.~\eqref{eq:law} inside the azimuthal average, and read the sky spectrum at the sheared wavenumber $\abs{J^{T}\vbell}$ rather than at $\ell$ --- which gives the paper's forward model, an integral over the footprint with no free parameters,
+Equation~\eqref{eq:law_footprint} is an average, and what it averages away is recoverable --- keep the exact kernel of Eq.~\eqref{eq:law} inside the azimuthal average, read the sky spectrum at the sheared wavenumber $\abs{J^{T}\vbell}$ rather than at $\ell$, and flatten with the pipeline's own angle --- which gives the paper's forward model, an integral over the footprint with no free parameters,
 \begin{equation} \label{eq:forward}
 \begin{aligned}
   C_\ell^{BB} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
-    \expval{\sin^2 2\delta\psi\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
+    \expval{\sin^2 (2\delta\psi + 2\Delta)\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
   C_\ell^{EE} &= \frac{1}{\mathcal{N}} \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J}^2
-    \expval{\cos^2 2\delta\psi\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
+    \expval{\cos^2 (2\delta\psi + 2\Delta)\; C^{EE}_{\rm sky}\qty(\ell\, \rho(\chi))}_\chi, \\
   \mathcal{N} &= \int \dd[2]{\vu*{n}}\; W^2 \abs{\det J},
 \end{aligned}
 \end{equation}
-with $\rho(\chi) = \abs{J^{T}\vbell}/\ell$ as in Eq.~\eqref{eq:scalar_ratio}, every quantity evaluated at the sky position $\vu*{n}$, and $C^{EE}_{\rm sky}$ set to zero above the simulations' band limit.
+with $\rho(\chi) = \abs{J^{T}\vbell}/\ell$ as in Eq.~\eqref{eq:scalar_ratio}, $\Delta$ the angle by which Eq.~\eqref{eq:rot_angle} misses the polar rotation (Appendix~\ref{app:flatten}), every quantity evaluated at the sky position $\vu*{n}$, and $C^{EE}_{\rm sky}$ set to zero above the simulations' band limit.
 The numerator carries two powers of $\abs{\det J}$ --- one from Eq.~\eqref{eq:scalar_remap}, one because the mask-squared integral runs over plane rather than sky area --- and $\mathcal{N}$ cancels in the ratio.
-Setting the kernel to unity gives the scalar forward model, which is Eq.~\eqref{eq:scalar_ratio} written over a footprint; replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho$ by unity returns Eq.~\eqref{eq:law_footprint}.
+Setting the kernel to unity gives the scalar forward model, which is Eq.~\eqref{eq:scalar_ratio} written over a footprint; setting $\Delta$ to zero, replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho$ by unity returns Eq.~\eqref{eq:law_footprint}.
 Every model curve in this paper is Eq.~\eqref{eq:forward} evaluated on the projection's own Jacobian and the input spectrum.
 
 \subsection{Two residuals outside the geometric term} \label{subsec:residuals}
@@ -280,6 +280,7 @@ The local linear map accounts for the projection and nothing else; two residual 
 The first is resampling, set by the interpolation kernel and pixel size rather than by $g$ or $\mu$.
 It suppresses power multiplicatively, a transfer common to every projection, which appears below as a shortfall in $EE$ shared by all five.
 It also aliases power additively, growing toward the Nyquist scale, which appears as the nonzero $BB$ of the shearless stereographic projection: a floor that rises with $\ell$ while the geometric term turns over.
+Near Nyquist the additive part stops being common: SFL and BICEP compress the sky along a grid axis, so they carry the most sky power to plane wavenumbers past Nyquist, and over $\aliaslo < \ell < \lwall$ they measure \EEaliasSFL\ and \EEaliasBICEP\ more $EE$ than STG relative to the forward model, which we read as that power folding back.
 The second residual is mask-induced mode coupling, a statement about the estimator: one correcting only by $\expval{W^2}$ without decoupling will let a hard mask edge move power across bands, while a purified pseudo-$C_\ell$ estimator on an apodized mask will not.
 It is the natural alternative explanation for any geometric shortfall, and it makes a different prediction --- present on hard-edged masks, absent on smoothly apodized ones of the same area.
 
@@ -292,6 +293,7 @@ Two legs are compared per realization.
 The $Q/U$ leg projects $Q$ and $U$, flattens the polarization (Eq.~\eqref{eq:rot_angle}), and decomposes to $E$/$B$ on the flat sky --- what a real analysis does, and what carries the leakage.
 The $E/B$ leg decomposes on the sphere first and projects the resulting scalar $E$ and $B$ maps, a spin-0 projection with no leakage by construction.
 Their difference isolates the projection effect from all shared systematics.
+The shear only redistributes polarized power between $E$ and $B$, so the $Q/U$ leg's $EE+BB$ should equal the $E/B$ leg's $EE$; over $500 < \ell < \lwall$ it does, to \powerconserve\ for every usable projection--mask pair.
 The flat-sky decomposition is the usual rotation into the mode frame,
 \begin{align}
   \label{eq:qu_to_eb}
@@ -345,6 +347,8 @@ STG is the exception and the diagnostic.
 Its shear vanishes identically, so its predicted $BB$ is zero; what it measures instead is the pipeline's own $E \to B$ floor, \floorFive\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFiveTop\ over $\floorTopBand$.
 For scale, the two cylindrical projections leak more $B$ power on this disk than gravitational lensing of the real sky produces.
 The lower panel is the leakage relation itself, and it holds across the whole usable range: over $500 < \ell < \lwall$ the measured $BB/EE$ sits at \wideBBrange\ of the forward model for all four sheared projections, tilts of Sect.~\ref{subsec:bandbyband} included.
+Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and below the reach of aliasing, the agreement is \cleanBBrange.
+Above $\ell = \riselo$ BICEP's ratio climbs, to \riseBICEPtop\ in the last bin below the wall, which we attribute to the aliasing that lifts its $EE$: folded-back power splits between $E$ and $B$, and $B$ starts from much less.
 
 Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair.
 Fitting the coefficient to the $1000 < \ell < 3000$ band average returns $\fitcoef$ --- \fitoffset\ above the derived value of 2, the offset being the mean of the band-dependent term of Sect.~\ref{subsec:bandbyband} --- with \fitrms\ rms and \fitworst\ worst case across \decades\ decades in $\gsq$; a free power law returns $\freepowerlaw$.
@@ -620,9 +624,10 @@ each up to a constant, with $R = \sin r$, $2\sin(r/2)$ and $2\tan(r/2)$ respecti
 
 The equal-weight average of Eq.~\eqref{eq:rot_angle} differs from the polar rotation by a residual of magnitude $(g^2/2)\abs{\sin 4\beta} + \order{g^3}$, with $\beta$ the angle of the shear principal axes to the grid axes, so the flattened Jacobian is symmetric up to $\order{g^2}$.
 Sitting at $\Delta = \order{g^2}$ rather than at zero adds $g^4\sin^2 4\beta$ of leakage --- the same order as, and opposite in sign to, the $-\tfrac32 g^4$ term of Eq.~\eqref{eq:law}.
-The residual vanishes wherever $\sin 4\beta = 0$: principal axes along the grid axes (BICEP everywhere, the zenithal projections on their central meridians) or along the grid diagonals, as SFL's nearly are.
+The residual vanishes wherever $\sin 4\beta = 0$: principal axes along the grid axes (BICEP everywhere, the zenithal projections on their central meridians) or along the grid diagonals.
 For a round footprint of a zenithal projection $\beta$ runs uniformly with azimuth, so $\expval{\sin^2 4\beta} = \tfrac12$ and the addition is exactly one third of the retained quartic term: a pipeline flattening with Eq.~\eqref{eq:rot_angle} realizes $2g^2(1-\tfrac12 g^2)$ on such a footprint rather than $2g^2(1-\tfrac34 g^2)$, a ${\sim}1\%$ shift in the ratio at $g = 0.2$.
-The simulations flatten with Eq.~\eqref{eq:rot_angle} itself while the forward model uses the polar angle, so the residual is part of what every numerical comparison in the paper measures, bounded at that ${\sim}1\%$ for the most sheared pixels and far smaller in the footprint mean.
+SFL's axes lie near the diagonals at small offsets and leave them as the shear grows, and as the most sheared projection it carries nearly all of the residual: \flattenSFL\ of its leakage on the reference disk, against at most \flattenZenithal\ for the zenithal three and none for BICEP.
+The simulations flatten with Eq.~\eqref{eq:rot_angle}, and so does the forward model, which evaluates $\Delta$ pixel by pixel from the Jacobian.
 
 
 \end{document}

@@ -24,7 +24,8 @@ multipole axis so that the reader compares them bin for bin:
 
 The smooth curves are the same forward model, `shear_leakage.predicted_spectra`:
 the sky spectrum read at the sheared wavenumber |J^T l| with the exact
-sin^2/cos^2(2 dpsi) kernel, averaged over mode azimuth and over the footprint
+sin^2/cos^2(2 dpsi + 2 Delta) kernel, Delta the residual of the pipeline's own
+flattening angle, averaged over mode azimuth and over the footprint
 with weight W^2 |det J|^2 per unit sky area, and band-limited at the sims'
 l = 6000. No free parameters, no fit.
 

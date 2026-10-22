@@ -22,11 +22,17 @@ Locally a projection is a linear map J from the sky tangent plane to the map
 plane. Polarization is sampled from HEALPix in the sky's (east, north) basis
 and then rotated into the grid basis by `maps.FlattenPol`. Write the polar
 decomposition J = R(phi) S, R a rotation and S symmetric. FlattenPol's rotation
-angle is phi -- verified numerically in `check_flattenpol` below by
-reimplementing its `rot` from `xy_to_angle`, the same call the C++ makes. The
-two agree to 0.02 deg where g = 0.07 and to 1.5 deg at a point with g = 0.31,
-an O(g^3) residual worth under 0.1% of the leakage. So the rotation is removed
-cleanly and only the symmetric part S survives.
+angle is phi up to a residual Delta that is O(g^2) in angle -- (g^2/2)|sin 4beta|
+with beta the angle of the principal axes to the grid (paper, Appendix E).
+`check_flattenpol` below verifies this by reimplementing FlattenPol's `rot`
+from `xy_to_angle`, the same call the C++ makes: the two angles agree to
+0.02 deg where g = 0.07 and to 1.5 deg at a point with g = 0.31, and
+`flattening_residual` recovers the same Delta from the Jacobian alone. A
+residual rotation adds sin^2(2 Delta) ~ g^4 sin^2 4beta to the leakage: 0.5%
+of it for SFL on the 5% disk, at most 0.16% for any zenithal pair, exactly zero
+for BICEP, whose Jacobian is diagonal on the grid. `predicted_spectra` carries
+it, so up to that known residual the rotation is removed and only the
+symmetric part S survives.
 
 S cannot be removed. A sheared spin-2 field is not a rotated spin-2 field.
 Working in the principal frame of S, a map-plane Fourier mode k comes from the
@@ -95,12 +101,13 @@ Three places, all real and all reported rather than smoothed over.
      ratio rises from 1.02 to 1.09 times 2<g^2> and BICEP's falls from 1.07 to
      0.67, even though the two agree on the 1000-3000 average to 0.4%. The
      leading-order law is l-independent by construction and cannot describe
-     that. `predicted_spectra` restores the two terms it drops -- the exact
-     misalignment kernel, and the fact that a plane mode k reads the sky
-     spectrum at |J^T k| rather than |k| -- and reproduces both trends: over
-     all bands, masks and sheared projections that sit clear of the floor, it
-     matches the measurement to 1.0039 +- 0.0090 (191 points, worst 5.6%). SFL is equal-area, so the
-     azimuthal stretch is symmetric about 1 and the convexity of a falling
+     that. `predicted_spectra` restores what it drops -- the exact
+     misalignment kernel, the fact that a plane mode k reads the sky
+     spectrum at |J^T k| rather than |k|, and FlattenPol's residual rotation
+     Delta -- and reproduces both trends band by band, over all masks and
+     sheared projections that sit clear of the floor (`paper_numbers` reports
+     the mean ratio and the worst band as `bandbybandratio` and
+     `bandbybandworst`). SFL is equal-area, so the azimuthal stretch is symmetric about 1 and the convexity of a falling
      spectrum lifts the high-shear pixels at high l. BICEP is not: its shear
      comes with magnification of up to a factor of four, so the same convexity
      pushes the other way. Same law, opposite second-order term.
@@ -211,6 +218,27 @@ REDUCTIONS = {
 # Geometry: mask-weighted shear moments
 # --------------------------------------------------------------------------
 
+def flattening_residual(jac):
+    """FlattenPol's rotation minus the polar rotation of J, in radians, per pixel.
+
+    FlattenPol rotates the polarization by rot/2, with
+    rot = atan2(-da/dx, da/dy) + atan2(-dd/dy, -dd/dx) built from the inverse
+    map (paper Eq. rot_angle). The derivatives of (alpha, delta) by pixel
+    coordinates are the inverse of `geometry.jacobian` up to positive factors
+    (cos delta, the pixel size) and the x flip `geometry._xy` applies, none of
+    which move an atan2, so rot follows from J alone. The residual against the
+    polar angle phi of J = R(phi) S is (g^2/2)|sin 4beta| + O(g^3), beta the
+    angle of the principal axes to the grid. It agrees with the `xy_to_angle`
+    reimplementation of `check_flattenpol` to 2e-6 deg over the 5% disk.
+    """
+    a, b = jac[..., 0, 0], jac[..., 0, 1]
+    c, d = jac[..., 1, 0], jac[..., 1, 1]
+    det = a * d - b * c
+    rot = np.arctan2(d / det, -b / det) + np.arctan2(-a / det, -c / det)
+    phi = np.arctan2(c - b, a + d)
+    return rot / 2 + phi
+
+
 def _bin_edges(proj, alpha, delta, n_bins, pad=0.05):
     """Log-s edges for the (s1, s2) histogram, from a subsample of the mask."""
     s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
@@ -227,7 +255,9 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
 
     Returns a dict of (n_mask, n_proj) arrays of exact per-pixel moments, plus
     a (n_mask, n_proj, n_bins, n_bins) weight histogram in (log s1, log s2)
-    with the weighted *centroid* of each occupied cell.
+    with the weighted *centroid* of each occupied cell and the cell's weighted
+    mean of sin^2(2 Delta), Delta = `flattening_residual` -- the one quantity
+    the forward model needs that (s1, s2) do not fix.
 
     The centroid matters. Placing cells at their geometric midpoints biases
     <g^2> by 4% for BICEP at n_bins = 64, because BICEP's magnification spans
@@ -250,6 +280,7 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
     hist = np.zeros((nm, npj, n_bins, n_bins))
     m1 = np.zeros_like(hist)
     m2 = np.zeros_like(hist)
+    mf = np.zeros_like(hist)
 
     for i in range(nm):
         path = MASK_DIR / f"healpix_mask{i}.g3"
@@ -274,7 +305,9 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
             w = w2[sl]
             off_pole = (90.0 - np.abs(delta)) > POLAR_CUT_DEG
             for j, proj in enumerate(S.PROJS):
-                s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
+                jac = G.jacobian(proj, alpha, delta)
+                s1, s2 = G.singular_values(jac)
+                sin2_2d = np.sin(2 * flattening_residual(jac)) ** 2
                 det = s1 * s2
                 out["sum_w2"][i, j] += w.sum()
                 out["sum_w2_det"][i, j] += (w * det).sum()
@@ -301,6 +334,7 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
                 hist[i, j] += np.bincount(flat, weights=w, minlength=nb2).reshape(n_bins, n_bins)
                 m1[i, j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
                 m2[i, j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
+                mf[i, j] += np.bincount(flat, weights=w * sin2_2d, minlength=nb2).reshape(n_bins, n_bins)
 
         del arr, frame, hpm, idx, w2
 
@@ -312,21 +346,28 @@ def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
     out["hist"] = hist
     out["cell_s1"] = np.exp(np.divide(m1, hist, out=np.zeros_like(m1), where=hist > 0))
     out["cell_s2"] = np.exp(np.divide(m2, hist, out=np.zeros_like(m2), where=hist > 0))
+    out["cell_sin2_2delta"] = np.divide(mf, hist, out=np.zeros_like(mf), where=hist > 0)
     return out
+
+
+# What `predicted_spectra` and the reports read from a moments cache.
+MOMENT_FIELDS = {"g2", "hist", "cell_s1", "cell_s2", "cell_sin2_2delta"}
 
 
 def load_moments(n_bins=64, refresh=False, verbose=True):
     """Cached `mask_moments`, one file per n_bins.
 
     Written to a temporary name and renamed, so an interrupted run never
-    leaves a half-written cache behind for the next one to trust.
+    leaves a half-written cache behind for the next one to trust. A cache
+    lacking any field in `MOMENT_FIELDS` is stale and is recomputed.
     """
     cache = CACHE_DIR / f"shear_leakage_moments_nb{n_bins}.npz"
     if cache.exists() and not refresh:
         with np.load(cache) as f:
-            if verbose:
-                print(f"shear moments: cached {cache}")
-            return {k: f[k] for k in f.files if k != "n_bins"}
+            if MOMENT_FIELDS <= set(f.files):
+                if verbose:
+                    print(f"shear moments: cached {cache}")
+                return {k: f[k] for k in f.files if k != "n_bins"}
     if verbose:
         print("shear moments: computing (one pass per mask at Nside 4096)")
     out = mask_moments(n_bins=n_bins, verbose=verbose)
@@ -383,11 +424,19 @@ def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
                       band_limit=G.SIM_BAND_LIMIT, n_chi=128, chunk=64):
     """Forward-model BB(l) and EE(l) up to a common normalisation.
 
-    Restores the two things the leading-order law drops:
+    Restores the three things the leading-order law drops:
 
-      * the exact misalignment kernel sin^2(2 dpsi) rather than 4 dpsi^2, and
+      * the exact misalignment kernel sin^2(2 dpsi) rather than 4 dpsi^2,
       * the fact that a plane mode k reads the sky spectrum at |J^T k|, which
-        depends on the angle of k to the shear's major axis.
+        depends on the angle of k to the shear's major axis, and
+      * the pipeline's own flattening angle. FlattenPol misses the polar
+        rotation by Delta (`flattening_residual`), a uniform local rotation
+        of the E/B basis, so the kernels are sin^2 and cos^2 of
+        2 dpsi + 2 Delta. Their cross term, sin(4 dpsi) sin(4 Delta) / 2, is
+        odd in chi about the principal axis while the stretch is even, so it
+        averages away and only each cell's mean f = <sin^2 2 Delta> enters:
+        BB takes sin^2(2 dpsi) (1 - f) + cos^2(2 dpsi) f, and EE the
+        complement.
 
     The second is what makes the ratio depend on l at all. The pseudo-C_l
     weight per unit *sky* area is mask^2 |det J|^2: one power of |det J|
@@ -402,13 +451,15 @@ def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory,
     the run's own limit explicitly.
     """
     s1, s2, w = _cells(mom, i, j)
+    f = mom["cell_sin2_2delta"][i, j][mom["hist"][i, j] > 0][:, None]
     chi = (np.arange(n_chi) + 0.5) * (np.pi / n_chi)
     cos2, sin2 = np.cos(chi) ** 2, np.sin(chi) ** 2
 
     chi_sky = np.arctan2(s2[:, None] * np.sin(chi), s1[:, None] * np.cos(chi))
     dpsi = (chi_sky - chi + np.pi / 2) % np.pi - np.pi / 2
-    kern_b = np.sin(2 * dpsi) ** 2
-    kern_e = np.cos(2 * dpsi) ** 2
+    leak = np.sin(2 * dpsi) ** 2
+    kern_b = leak * (1 - f) + (1 - leak) * f
+    kern_e = 1 - kern_b
     stretch = np.sqrt(s1[:, None] ** 2 * cos2 + s2[:, None] ** 2 * sin2)
 
     cl = np.asarray(cl_theory, dtype=float)
@@ -459,11 +510,13 @@ def check_flattenpol(step=1e-3):
 
     maputils.cxx builds rot = atan2(-da/dx, da/dy) + atan2(-dd/dy, -dd/dx) from
     PixelToAngleGrad and applies (Q + iU) -> e^{i rot}(Q + iU), so rot is the
-    spin-2 angle and rot/2 is the frame rotation. The claim the whole law rests
-    on is that rot/2 equals the rotation part of the polar decomposition of the
-    local Jacobian -- no more, no less. Returns (proj, alpha, delta, rot/2,
-    phi, residual) in degrees; geometry.jacobian flips the x axis to make
-    det J > 0, which flips the sign of the angle, hence the minus.
+    spin-2 angle and rot/2 is the frame rotation. The law rests on rot/2
+    equalling the rotation part of the polar decomposition of the local
+    Jacobian up to an O(g^2) residual, and the forward model on
+    `flattening_residual` reproducing that residual from J alone. Returns
+    (proj, alpha, delta, rot/2, -phi, residual, residual from J, g), angles in
+    degrees; geometry.jacobian flips the x axis to make det J > 0, which flips
+    the sign of the angle, hence the minus.
     """
     pts = [(10.0, -56.0), (20.0, -56.0), (30.0, -56.0), (20.0, -65.0),
            (-25.0, -48.0), (40.0, -70.0), (-40.0, -45.0)]
@@ -497,10 +550,12 @@ def check_flattenpol(step=1e-3):
         c, d = jac[:, 1, 0], jac[:, 1, 1]
         phi = np.arctan2(c - b, a + d)          # rotation part of J = R(phi) S
         s1, s2 = G.singular_values(jac)
+        from_jac = flattening_residual(jac)
         for n in range(len(pts)):
             rows.append((proj, alpha[n], delta[n],
                          np.degrees(rot[n] / 2), np.degrees(-phi[n]),
                          np.degrees(rot[n] / 2 + phi[n]),
+                         np.degrees(from_jac[n]),
                          (s1[n] - s2[n]) / (s1[n] + s2[n])))
     return rows
 
@@ -874,15 +929,15 @@ def main():
 
     if args.check_flattenpol:
         print(f"{'proj':<10}{'alpha':>7}{'delta':>7}{'rot/2':>10}{'-phi':>10}"
-              f"{'resid':>12}{'g':>11}")
-        for proj, a, d, half, mphi, res, g in check_flattenpol():
+              f"{'resid':>12}{'from J':>12}{'g':>11}")
+        for proj, a, d, half, mphi, res, res_j, g in check_flattenpol():
             print(f"{S.PROJ_LABEL[proj]:<10}{a:7.1f}{d:7.1f}{half:10.4f}"
-                  f"{mphi:10.4f}{res:12.2e}{g:11.3e}")
-        print("\nAngles in degrees. rot/2 tracks -phi to well under a degree,")
-        print("with a residual that scales as g^3 and is worth under 0.1% of")
-        print("the leakage: FlattenPol removes the polar rotation of the local")
-        print("Jacobian and nothing else. The symmetric part stays, and it is")
-        print("the whole of the leakage.")
+                  f"{mphi:10.4f}{res:12.2e}{res_j:12.2e}{g:11.3e}")
+        print("\nAngles in degrees. rot/2 tracks -phi to within an O(g^2)")
+        print("residual, (g^2/2)|sin 4 beta|, and `flattening_residual`")
+        print("recovers that residual from the Jacobian alone. FlattenPol")
+        print("removes the polar rotation up to it; the symmetric part stays,")
+        print("and with the residual it is the whole of the leakage.")
         return
 
     mom = load_moments(n_bins=args.n_bins, refresh=args.refresh)

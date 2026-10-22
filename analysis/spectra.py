@@ -83,6 +83,7 @@ NBINS = LMAX // DELTA_L                      # 120
 RES_ARCMIN = 2.0
 NSIDE_IN = 8192
 QU_LEG = 0
+EB_LEG = 1
 
 BIN_LO = np.arange(NBINS) * DELTA_L
 BIN_HI = (np.arange(NBINS) + 1) * DELTA_L
@@ -111,11 +112,13 @@ def _path(proj, seed):
     return HIGHELL_DIR / f"bandpowers_{proj}_seed{seed:04d}.npz"
 
 
-def load(spec="EE"):
-    """Bandpowers as (n_masks, n_projs, NSIMS, NBINS), QU leg.
+def load(spec="EE", leg=QU_LEG):
+    """Bandpowers as (n_masks, n_projs, NSIMS, NBINS), QU leg by default.
 
-    The 2 arcmin flat-sky window is already divided out; nothing further is
-    applied (see the module docstring).
+    `leg=EB_LEG` reads the E/B leg instead, whose "EE" and "BB" are the
+    spin-0 auto-spectra of the sphere-decomposed E and B maps. The 2 arcmin
+    flat-sky window is already divided out; nothing further is applied (see
+    the module docstring).
     """
     key = spec.lower()
     if key not in ("ee", "bb"):
@@ -125,7 +128,7 @@ def load(spec="EE"):
     for j, proj in enumerate(PROJS):
         for s in range(NSIMS):
             with np.load(_path(proj, s)) as z:
-                arr = z[key][QU_LEG, 0, :, 0, :]      # (n_masks, NBINS)
+                arr = z[key][leg, 0, :, 0, :]         # (n_masks, NBINS)
             if arr.shape != (len(PERC), NBINS):
                 raise ValueError(f"{_path(proj, s).name}: {arr.shape}")
             out[:, j, s, :] = arr
