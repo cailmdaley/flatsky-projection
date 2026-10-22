@@ -28,9 +28,10 @@ with beta the angle of the principal axes to the grid (paper, Appendix E).
 from `xy_to_angle`, the same call the C++ makes: the two angles agree to
 0.02 deg where g = 0.07 and to 1.5 deg at a point with g = 0.31, and
 `flattening_residual` recovers the same Delta from the Jacobian alone. A
-residual rotation adds sin^2(2 Delta) ~ g^4 sin^2 4beta to the leakage: 0.5%
-of it for SFL on the 5% disk, at most 0.16% for any zenithal pair, exactly zero
-for BICEP, whose Jacobian is diagonal on the grid. `predicted_spectra` carries
+residual rotation adds sin^2(2 Delta) ~ g^4 sin^2 4beta to the leakage --
+largest for SFL despite its near-diagonal axes, small for the zenithal
+projections, exactly zero for BICEP, whose Jacobian is diagonal on the grid
+(`paper_numbers` quotes the sizes as `flattenSFL` and `flattenZenithal`). `predicted_spectra` carries
 it, so up to that known residual the rotation is removed and only the
 symmetric part S survives.
 
