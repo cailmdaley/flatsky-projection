@@ -356,6 +356,35 @@ def main():
     M.add("tfdSFLresid", f"${sci(resid)}$")
     M.add("tfdSFLresidfrac", f(resid / lensed_bb_ee, 2))
 
+    # ---- the coupling matrix against a diagonal transfer function ---------
+    # F_b = <R C^CMB>_b / <C^CMB>_b per dl = 50 bandpower, calibrated on the
+    # unlensed Planck TT and EE, applied to a white (Poisson-source) spectrum.
+    # The error is that of the recovered bandpower, <R C>_b / (F_b <C>_b) - 1;
+    # negative means the diagonal correction undershoots. F_b carries the
+    # acoustic phase, so the error oscillates about a smooth offset with a
+    # period of ~300 in l: each l0 is quoted as the mean over the six
+    # bandpowers within l0 +- 150 (`...threeK`, `...fourK`) and the worst of
+    # them (`...max`). SFL and ZEA are equal-area, so a D_l-flat (tSZ-like)
+    # spectrum gives the same errors (`shear_leakage.diagonal_transfer_error`).
+    # No band limit: the sky's foregrounds have none.
+    white = np.where(ell_th >= 2, 1.0, 0.0)
+    step, half = 5.0, 150.0
+    for label, (mom_, i_, p, nd) in {
+            "SFLtfd": (_moments_1500d(), 0, "ProjSFL", 0),
+            "SFLfive": (mom, MASK, "ProjSFL", 0),
+            "ZEAfive": (mom, MASK, "ProjZEA", 1)}.items():
+        for l0, word in ((3000.0, "threeK"), (4000.0, "fourK")):
+            ell_b = np.arange(l0 - half + step / 2, l0 + half, step)
+            R = SL.coupling_matrix(mom_, i_, P[p], ell_b, ell_th,
+                                   band_limit=None)
+            for X in ("TT", "EE"):
+                err = SL.diagonal_transfer_error(
+                    R[f"{X}<-{X}"], ell_b, ell_th, th[f"unlensed_{X}"], white,
+                    per_band=int(50 / step))
+                worst = err[np.argmax(np.abs(err))]
+                M.add(f"diag{X}{label}{word}", f"${100 * err.mean():+.{nd}f}\\%$")
+                M.add(f"diag{X}{label}{word}max", f"${100 * worst:+.{nd}f}\\%$")
+
     OUT.write_text(M.tex())
     print(M.tex())
     print(f"wrote {OUT}  ({len(M)} macros)")
