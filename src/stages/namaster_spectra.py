@@ -166,13 +166,22 @@ def load_workspace_manifest(workspaces_dir: Path, projections: list[str]):
 
 
 def load_mask(masks_dir: Path, proj: str, i: int):
+    """(mask, window, lx_rad, ly_rad); `window` slices the cut out of a full map.
+
+    Cuts carry row and column bounds (`ylo:yhi`, `xlo:xhi`); a square cut
+    written with only `lo:hi` uses those on both axes.
+    """
     import numpy as np
 
     d = np.load(masks_dir / f"mask_{proj}_{i}.npz")
     mask = np.asarray(d["mask"], dtype=np.float64)
-    lo, hi = int(d["lo"]), int(d["hi"])
+    if "ylo" in d.files:
+        rows = slice(int(d["ylo"]), int(d["yhi"]))
+        cols = slice(int(d["xlo"]), int(d["xhi"]))
+    else:
+        rows = cols = slice(int(d["lo"]), int(d["hi"]))
     lx_rad, ly_rad = float(d["lx_rad"]), float(d["ly_rad"])
-    return mask, lo, hi, lx_rad, ly_rad
+    return mask, (rows, cols), lx_rad, ly_rad
 
 
 def finite_in_mask(m, mask):
@@ -337,7 +346,7 @@ def main() -> None:
     for leg in LEGS:
         for proj in projections:
             for i in mask_indices:
-                mask, lo, hi, lx_rad, ly_rad = load_mask(masks_dir, proj, i)
+                mask, window, lx_rad, ly_rad = load_mask(masks_dir, proj, i)
 
                 ws_path = workspaces_dir / ws_by_proj[proj][i]["w22" if leg == "qu" else "w00"]
                 w = nmt.NmtWorkspaceFlat()
@@ -359,10 +368,10 @@ def main() -> None:
                         frame_path = qu_maps_dir / f"qu_{proj}_seed{seed:04d}.g3"
                         frame = next(core.G3File(str(frame_path)))
                         q = finite_in_mask(
-                            np.asarray(frame["Q"], dtype=np.float64)[lo:hi, lo:hi], mask
+                            np.asarray(frame["Q"], dtype=np.float64)[window], mask
                         )
                         u = finite_in_mask(
-                            np.asarray(frame["U"], dtype=np.float64)[lo:hi, lo:hi], mask
+                            np.asarray(frame["U"], dtype=np.float64)[window], mask
                         )
                         ee, bb = compute_qu_bandpowers(
                             q, u, mask, lx_rad, ly_rad, purify_b, b, w
@@ -371,10 +380,10 @@ def main() -> None:
                         frame_path = eb_maps_dir / f"eb_{proj}_seed{seed:04d}.g3"
                         frame = next(core.G3File(str(frame_path)))
                         e = finite_in_mask(
-                            np.asarray(frame["E"], dtype=np.float64)[lo:hi, lo:hi], mask
+                            np.asarray(frame["E"], dtype=np.float64)[window], mask
                         )
                         bmap = finite_in_mask(
-                            np.asarray(frame["B"], dtype=np.float64)[lo:hi, lo:hi], mask
+                            np.asarray(frame["B"], dtype=np.float64)[window], mask
                         )
                         ee, bb = compute_eb_bandpowers(
                             e, bmap, mask, lx_rad, ly_rad, b, w

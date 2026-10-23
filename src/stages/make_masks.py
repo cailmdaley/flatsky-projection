@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-"""Build apodized circular Healpix masks marking each analysis footprint.
+"""Build apodized Healpix masks marking each analysis footprint.
 
 Every projection is tested against the same set of sky cuts, so the masks
-live on the sphere rather than on any one flat-sky grid: a circular disk
-around the patch centre, at each of seven radii, apodized with NaMaster's
-C1 or C2 taper. Building them on the sphere -- on the same intermediate
+live on the sphere rather than on any one flat-sky grid: either a circular
+disk around the patch centre at each of several radii (`--radii-rad`, the
+seven-disk suite), or one RA/dec rectangle (`--rect`, SPT's 1500d field),
+apodized with NaMaster's C1 or C2 taper. Building them on the sphere -- on the same intermediate
 Healpix grid the maps are synthesized onto -- means mask and map share a
 pixelization before either one is resampled onto the flat sky, so the
 projection stage introduces no mismatch between the two.
@@ -35,7 +36,7 @@ from _decisions import add_common_args, parse_apodization, parse_nside, set_thre
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build apodized circular Healpix masks at several radii.",
+        description="Build apodized Healpix masks: disks at several radii, or one RA/dec rectangle.",
     )
     parser.add_argument(
         "--nside", required=True, type=parse_nside,
@@ -48,9 +49,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--ra-deg", required=True, type=float, help="patch centre, RA")
     parser.add_argument("--dec-deg", required=True, type=float, help="patch centre, dec")
-    parser.add_argument(
-        "--radii-rad", required=True, type=float, nargs="+",
+    shape = parser.add_mutually_exclusive_group(required=True)
+    shape.add_argument(
+        "--radii-rad", type=float, nargs="+",
         help="disk radii in radians, one mask per value, in the order given",
+    )
+    shape.add_argument(
+        "--rect", type=float, nargs=3, metavar=("RA_HALF", "DEC_MIN", "DEC_MAX"),
+        help="one RA/dec rectangle, degrees: |RA - ra_deg| <= RA_HALF and "
+             "DEC_MIN <= dec <= DEC_MAX (written as mask_0)",
     )
     add_common_args(parser)
     return parser
@@ -105,21 +112,67 @@ def apodize_disk_analytic(nside, center_vec, radius_rad, apotype, aposize_deg):
     r = np.arccos(np.clip(np.dot(center_vec, vecs), -1.0, 1.0))
     del vecs
 
-    theta = radius_rad - r  # distance to the disk boundary
-    aposize_rad = np.radians(aposize_deg)
-    x = np.sqrt((1.0 - np.cos(theta)) / (1.0 - np.cos(aposize_rad)))
-    w = np.ones_like(x)
-    taper = x < 1.0
-    if apotype == "C2":
-        w[taper] = 0.5 * (1.0 - np.cos(np.pi * x[taper]))
-    elif apotype == "C1":
-        w[taper] = x[taper] - np.sin(2 * np.pi * x[taper]) / (2 * np.pi)
-    else:
-        raise ValueError(f"analytic apodization only supports C1/C2, got {apotype}")
-
+    w = taper(radius_rad - r, apotype, aposize_deg)  # distance to the disk boundary
     mask = np.zeros(hp.nside2npix(nside))
     mask[disk_pixels] = w
     return mask
+
+
+def taper(theta, apotype, aposize_deg):
+    """NaMaster's C1/C2 weight at angular distance `theta` (rad) inside the edge."""
+    import numpy as np
+
+    aposize_rad = np.radians(aposize_deg)
+    x = np.sqrt((1.0 - np.cos(theta)) / (1.0 - np.cos(aposize_rad)))
+    w = np.ones_like(x)
+    t = x < 1.0
+    if apotype == "C2":
+        w[t] = 0.5 * (1.0 - np.cos(np.pi * x[t]))
+    elif apotype == "C1":
+        w[t] = x[t] - np.sin(2 * np.pi * x[t]) / (2 * np.pi)
+    else:
+        raise ValueError(f"analytic apodization only supports C1/C2, got {apotype}")
+    return w
+
+
+def rect_mask_analytic(nside, ra_center_deg, ra_half_deg, dec_min_deg,
+                        dec_max_deg, apotype, aposize_deg):
+    """(pixels, weights) of a C1/C2-apodized RA/dec rectangle, tapered analytically.
+
+    The rectangle is bounded by two meridians and two parallels -- constant
+    limits in the coordinates, which is how survey fields are defined. The
+    taper is NaMaster's kernel evaluated at each pixel's geodesic distance to
+    the boundary, in closed form, for the same reason as the disk:
+    nmt.mask_apodization segfaults at nside 8192. For an interior pixel that
+    distance is the smallest of four: to each parallel, |dec - dec_edge|
+    (along the meridian, whose foot always lies on the edge), and to each
+    meridian's great circle, arcsin(cos dec |sin(ra - ra_edge)|). Where that
+    great-circle foot falls past a corner it lies outside the field, so the
+    geodesic to it crosses the boundary and a parallel is nearer anyway; the
+    minimum over the four is therefore the exact distance to the boundary.
+    Same half-pixel edge convention as `apodize_disk_analytic`. Returned
+    sparse: the rectangle is a few percent of an 805M-pixel sky at nside 8192.
+    """
+    import numpy as np
+    import healpy as hp
+
+    theta_lo = np.radians(90.0 - dec_max_deg)
+    theta_hi = np.radians(90.0 - dec_min_deg)
+    strip = hp.query_strip(nside, theta_lo, theta_hi, inclusive=False)
+    ra, dec = hp.pix2ang(nside, strip, lonlat=True)
+    dra = (ra - ra_center_deg + 180.0) % 360.0 - 180.0
+    keep = (np.abs(dra) <= ra_half_deg) & (dec >= dec_min_deg) & (dec <= dec_max_deg)
+    pix, dra, dec = strip[keep], np.radians(dra[keep]), np.radians(dec[keep])
+    del strip, ra, keep
+
+    half = np.radians(ra_half_deg)
+    cosd = np.cos(dec)
+    dist = np.minimum(dec - np.radians(dec_min_deg), np.radians(dec_max_deg) - dec)
+    for edge in (half, -half):
+        dist = np.minimum(dist, np.arcsin(np.clip(cosd * np.abs(np.sin(dra - edge)), 0.0, 1.0)))
+    del cosd, dra, dec
+
+    return pix, taper(dist, apotype, aposize_deg)
 
 
 def realized_fsky(binary_mask, apodized_mask):
@@ -179,6 +232,7 @@ def main(argv=None) -> None:
     set_threads(args.max_procs)
 
     import healpy as hp
+    import numpy as np
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -186,6 +240,33 @@ def main(argv=None) -> None:
     center_vec = hp.ang2vec(args.ra_deg, args.dec_deg, lonlat=True)
     apotype = args.apodization["apotype"]
     aposize_deg = args.apodization["aposize"]
+
+    if args.rect is not None:
+        ra_half, dec_min, dec_max = args.rect
+        t_start = time.time()
+        pix, w = rect_mask_analytic(
+            args.nside, args.ra_deg, ra_half, dec_min, dec_max, apotype, aposize_deg)
+        npix = hp.nside2npix(args.nside)
+        fsky = {"fsky_binary": pix.size / npix,
+                "fsky_w1": float(w.sum()) / npix,
+                "fsky_w2": float((w * w).sum()) / npix}
+        apodized_mask = np.zeros(npix)
+        apodized_mask[pix] = w
+        del pix, w
+        out_path = out_dir / "mask_0.g3.gz"
+        write_mask_g3(apodized_mask, out_path)
+        print(f"rect RA {args.ra_deg:+.1f} +- {ra_half} dec [{dec_min}, {dec_max}] -> "
+              f"fsky_binary {fsky['fsky_binary']:.5f}  fsky_w1 {fsky['fsky_w1']:.5f}  "
+              f"fsky_w2 {fsky['fsky_w2']:.5f}  ({time.time() - t_start:.1f}s)", flush=True)
+        write_index(out_dir, {
+            "stage": "make_masks", "shape": "rect", "nside": args.nside,
+            "apotype": apotype, "aposize_deg": aposize_deg,
+            "ra_deg": args.ra_deg, "dec_deg": args.dec_deg,
+            "max_procs": args.max_procs,
+            "masks": [{"index": 0, "file": out_path.name, "ra_half_deg": ra_half,
+                       "dec_min_deg": dec_min, "dec_max_deg": dec_max, **fsky}],
+        })
+        return
 
     mask_records = []
     for index, radius_rad in enumerate(args.radii_rad):

@@ -416,6 +416,132 @@ outputs:
         disk: 8Gi
         time_limit: 1h
 
+  # -------------------------------------------------------------------------
+  # SPT's 1500d field as its own footprint. The seven disks are concentric
+  # about the projection centre, which makes SFL's and BICEP's mask-averaged
+  # shear coincide; the field is wide in RA and narrow in dec, so it splits
+  # them. These outputs read the same projected maps as the disk suite and
+  # leave every disk output untouched.
+  # -------------------------------------------------------------------------
+  - id: field_healpix_mask
+    type: data
+    label: "1500d field Healpix mask"
+    description: |
+      SPT's 1500d field -- RA -50 to +50 deg, dec -70 to -42 deg -- as one
+      apodized Healpix mask on the intermediate grid, the same kernel and scale
+      as the disks. The taper is NaMaster's C1/C2 kernel evaluated at each
+      pixel's exact geodesic distance to the RA/dec boundary (nmt's own
+      apodization segfaults at nside 8192); at nside 1024 it reproduces
+      `nmt.mask_apodization` to 0.3% in f_sky.
+    decisions: [intermediate_nside, apodization]
+    recipe:
+      command: >-
+        bash env.sh
+        python3 src/stages/make_masks.py
+        --nside {decisions.intermediate_nside}
+        --apodization {decisions.apodization}
+        --ra-deg 0 --dec-deg -56
+        --rect 50 -70 -42
+        --max-procs 2
+        --out {output}
+      resources:
+        cpus: 2
+        # One dense nside-8192 float64 map (6.4 GB) plus the dec strip's
+        # pixel coordinates and the G3 copy on write.
+        memory: 24Gi
+        disk: 8Gi
+        time_limit: 1h
+
+  - id: field_flatsky_masks
+    type: data
+    label: "1500d field flat-sky masks"
+    description: |
+      The field mask reprojected into each of the five projections exactly as
+      the disks are, then cut to the tightest even-sided box around its
+      support. The box is rectangular, not square: on the grid the field is
+      about three times wider than tall, and a square window would multiply
+      the coupling-matrix cost.
+    inputs: [field_healpix_mask]
+    decisions: [interpolation, apodization]
+    recipe:
+      command: >-
+        bash env.sh
+        python3 src/stages/project_masks.py
+        --healpix-masks {inputs.field_healpix_mask}
+        --projections ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP
+        --interpolation {decisions.interpolation}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --rectangular
+        --max-procs 2
+        --out {output}
+      resources:
+        cpus: 2
+        memory: 16Gi
+        disk: 8Gi
+        time_limit: 2h
+
+  - id: field_coupling
+    type: data
+    label: "1500d field coupling workspaces"
+    description: |
+      NmtWorkspaceFlat spin-2 and spin-0 coupling matrices for the field, one
+      pair per projection, built by the same stage and binning as the disk
+      workspaces.
+    inputs: [field_flatsky_masks]
+    decisions: [apodization, b_purification, ell_max, bandpower_width]
+    units:
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh
+        python3 src/stages/coupling_matrices.py
+        --masks {inputs.field_flatsky_masks}
+        --projections {units.projection}
+        --mask-indices 0
+        --purify-b {decisions.b_purification}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs {resources.cpus}
+        --out {output}
+      resources:
+        cpus: 16
+        memory: 8Gi
+        disk: 4Gi
+        time_limit: 12h
+        extra: {classad_JobDurationCategory: Medium}
+
+  - id: field_bandpowers
+    type: data
+    label: "1500d field EE and BB bandpowers"
+    description: |
+      NaMaster EE and BB bandpowers on the 1500d field for every (projection,
+      realization), both legs, from the same projected maps as the disk
+      bandpowers. Same layout as `bandpowers` with a single mask index, 0.
+    inputs: [projected_qu, projected_eb, field_flatsky_masks, field_coupling]
+    decisions: [b_purification, pixel_window, ell_max, bandpower_width]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSIN, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh
+        python3 src/stages/namaster_spectra.py
+        --qu-maps {inputs.projected_qu}
+        --eb-maps {inputs.projected_eb}
+        --masks {inputs.field_flatsky_masks}
+        --workspaces {inputs.field_coupling}
+        --projections {units.projection}
+        --seeds {units.seed}
+        --purify-b {decisions.b_purification}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs 2
+        --out {output}
+      resources:
+        cpus: 2
+        memory: 16Gi
+        disk: 8Gi
+        time_limit: 1h
+
   - id: eb_residual_maps
     type: data
     label: "Map-space E/B residuals"

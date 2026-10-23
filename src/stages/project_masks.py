@@ -5,9 +5,9 @@ Each of the seven masks is reprojected into each of the five flat-sky
 projections with the same maps.maputils.healpix_to_flatsky call the map legs
 use (project_qu.py, project_eb.py, via _project.project_frame), NaNs outside
 the projection's valid domain are zeroed, and the result is cut down to a
-centred square -- NaMaster analyses that window, not the full 3300x3300 grid.
+window -- NaMaster analyses that window, not the full 3300x3300 grid.
 
-Two ways to choose the window, selected by whether --cut-bounds is given:
+Three ways to choose the window:
 
 * derived (default): the smallest centred square that contains every pixel
   with mask > 1e-6, rounded up to an even side. Computed independently per
@@ -23,6 +23,15 @@ Two ways to choose the window, selected by whether --cut-bounds is given:
   bandpowers; it is what reproduces the 2021 numbers. The 2021 windows clip
   the outer part of the apodization taper on the small masks, so derived
   bounds for those masks come out wider than the hand table.
+* --rectangular: the tightest box, not necessarily square or centred, that
+  contains every pixel with mask > 1e-6, each side rounded up to even. For a
+  footprint far from round -- SPT's 1500d field is about three times wider
+  than tall on the grid -- a square window would multiply the coupling-matrix
+  cost, which grows roughly as the square of the window's pixel count.
+  Only the mask's heaviest connected component is kept (`main_footprint`).
+
+Every cut is written with its row and column bounds (`ylo:yhi`, `xlo:xhi`);
+a square cut also carries `lo:hi`, which equal both.
 
 Ported from
 /sptlocal/analysis/pol_project2020/workflow/scripts/project_masks.py and
@@ -78,6 +87,10 @@ def parse_args(argv=None):
              "that mask -- e.g. the 2021 table 1320:1980 1290:2010 1230:2070 1140:2160 "
              "960:2340 780:2520 300:3000. Omit for the derived default (see module docstring).",
     )
+    parser.add_argument(
+        "--rectangular", action="store_true",
+        help="derive the tightest even-sided box around each mask instead of a centred square",
+    )
     add_common_args(parser, seeds=False)
     return parser.parse_args(argv)
 
@@ -123,6 +136,49 @@ def derived_bounds(mask_arr, threshold=MASK_VALUE_THRESHOLD):
     return center - half, center + half
 
 
+def main_footprint(mask_arr, threshold=MASK_VALUE_THRESHOLD):
+    """`mask_arr` with every component but the heaviest zeroed, and the count dropped.
+
+    A cylindrical grid 110 deg tall centred at dec -56 runs past the south
+    pole, and healpix_to_flatsky wraps those rows onto the far side of the
+    sphere, so a field reaching dec -70 reappears as slivers at the grid's
+    bottom corners. Those are not part of the footprint.
+    """
+    import numpy as np
+    from scipy import ndimage
+
+    labels, n = ndimage.label(mask_arr > threshold)
+    if n == 0:
+        raise ValueError("mask has no pixels above threshold; cannot derive a cutout")
+    weight = ndimage.sum(mask_arr, labels, index=np.arange(1, n + 1))
+    keep = labels == 1 + int(np.argmax(weight))
+    dropped = int(np.count_nonzero(labels) - np.count_nonzero(keep))
+    return np.where(keep, mask_arr, 0.0), dropped
+
+
+def derived_rect_bounds(mask_arr, threshold=MASK_VALUE_THRESHOLD):
+    """Tightest (ylo, yhi, xlo, xhi) box with mask > threshold, sides even.
+
+    Each side is widened by one pixel on its high edge when odd (or its low
+    edge when the high edge is the grid boundary).
+    """
+    import numpy as np
+
+    ys, xs = np.nonzero(mask_arr > threshold)
+    if ys.size == 0:
+        raise ValueError("mask has no pixels above threshold; cannot derive a cutout")
+    out = []
+    for idx, n in ((ys, mask_arr.shape[0]), (xs, mask_arr.shape[1])):
+        lo, hi = int(idx.min()), int(idx.max()) + 1
+        if (hi - lo) % 2:
+            if hi < n:
+                hi += 1
+            else:
+                lo -= 1
+        out += [lo, hi]
+    return tuple(out)
+
+
 def main(argv=None):
     args = parse_args(argv)
     set_threads(args.max_procs)  # must precede numpy/healpy/spt3g imports
@@ -137,6 +193,8 @@ def main(argv=None):
     projections = list(dict.fromkeys(args.projections))
     masks = discover_masks(args.healpix_masks)
 
+    if args.cut_bounds is not None and args.rectangular:
+        raise SystemExit("--cut-bounds and --rectangular are exclusive")
     if args.cut_bounds is not None and len(args.cut_bounds) != len(masks):
         raise SystemExit(
             f"--cut-bounds has {len(args.cut_bounds)} entries but {len(masks)} "
@@ -148,6 +206,8 @@ def main(argv=None):
 
     res_rad_per_pix = args.res_arcmin / 60.0 * np.pi / 180.0
 
+    cut_mode = ("rectangular" if args.rectangular
+                else "explicit" if args.cut_bounds is not None else "derived")
     records = []
     for order, (index, mask_path) in enumerate(masks):
         frame = next(core.G3File(str(mask_path)))
@@ -171,25 +231,26 @@ def main(argv=None):
             # no-op range; only the NaN -> vcut=0.0 branch ever fires).
             arr[np.isnan(arr)] = 0.0
 
-            if forced is not None:
-                lo, hi = forced
+            if args.rectangular:
+                arr, dropped = main_footprint(arr)
+                ylo, yhi, xlo, xhi = derived_rect_bounds(arr)
+                square = {"dropped_pixels": dropped}
             else:
-                lo, hi = derived_bounds(arr)
+                lo, hi = forced if forced is not None else derived_bounds(arr)
+                ylo, yhi, xlo, xhi = lo, hi, lo, hi
+                square = {"lo": lo, "hi": hi}
 
-            cut = np.ascontiguousarray(arr[lo:hi, lo:hi])
-            lx_rad = (hi - lo) * res_rad_per_pix
-            ly_rad = lx_rad  # square cut: same bounds on both axes
+            cut = np.ascontiguousarray(arr[ylo:yhi, xlo:xhi])
+            lx_rad = (xhi - xlo) * res_rad_per_pix
+            ly_rad = (yhi - ylo) * res_rad_per_pix
+            bounds = {"ylo": ylo, "yhi": yhi, "xlo": xlo, "xhi": xhi, **square}
 
             out_path = out_dir / f"mask_{proj}_{index}.npz"
-            np.savez(
-                out_path,
-                mask=cut,
-                lo=lo, hi=hi, lx_rad=lx_rad, ly_rad=ly_rad,
-            )
+            np.savez(out_path, mask=cut, lx_rad=lx_rad, ly_rad=ly_rad, **bounds)
             records.append({
                 "projection": proj, "mask": index, "path": out_path.name,
-                "lo": lo, "hi": hi, "lx_rad": lx_rad, "ly_rad": ly_rad,
-                "cut_bounds_mode": "explicit" if forced is not None else "derived",
+                **bounds, "lx_rad": lx_rad, "ly_rad": ly_rad,
+                "cut_bounds_mode": cut_mode,
             })
         del frame
 
@@ -205,7 +266,7 @@ def main(argv=None):
         "ra_deg": args.ra_deg,
         "dec_deg": args.dec_deg,
         "mask_value_threshold": MASK_VALUE_THRESHOLD,
-        "cut_bounds_mode": "explicit" if args.cut_bounds is not None else "derived",
+        "cut_bounds_mode": cut_mode,
         "cut_bounds_requested": (
             [f"{lo}:{hi}" for lo, hi in args.cut_bounds] if args.cut_bounds is not None else None
         ),
