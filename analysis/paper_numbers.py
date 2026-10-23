@@ -195,6 +195,20 @@ def main():
         else:
             dz.append(d)
     M.add("flattenZenithal", pct(max(dz), 2))
+
+    # Flattening by the polar angle instead (`polar_flatten`): the production
+    # SFL maps reflattened, 20 sims. `flattenSFLmaps` is the BB/EE drop on the
+    # 5% disk (to compare with `flattenSFL`), `flattenSFLfield` the forward
+    # model's on the 1500d field; `EBhalfStock` / `EBhalfPolar` the eastern
+    # half's EB/EE from the E-only sky, stock and polar, with its error.
+    import polar_flatten as PF
+    pf = PF.summary(PF.map_test(), mom, _moments_1500d())
+    M.add("flattenSFLmaps", f"${100 * pf['disk_shift_maps']:.2f}"
+          f" \\pm {100 * pf['disk_shift_maps_err']:.2f}\\%$")
+    M.add("flattenSFLfield", pct(pf["field_shift_model"], 1))
+    M.add("EBhalfStock", pct(abs(pf["east_eb_stock"]), 1))
+    M.add("EBhalfPolar", f"${100 * pf['east_eb_polar']:.2f}"
+          f" \\pm {100 * pf['east_eb_polar_err']:.2f}\\%$")
     M.add("cleanlo", f"{L_CLEAN[0]}")
     M.add("cleanhi", f"{L_CLEAN[1]}")
 
