@@ -54,7 +54,7 @@ The forward model reproduces the measured $EE$ distortion band by band to within
 Two cylindrical projections that leak nearly equally on round masks differ by a factor of \tfdratio\ on the SPT 1500d field.}
 {The distortion can be computed for any footprint before observing.
 We recommend the zenithal equal-area projection.
-For an analysis that keeps a sheared grid, the projection's coupling matrix corrects bandpowers of any spectral shape, and we predict that an $E$-mode template removes the leaked $B$ down to a residual set by the noise on $E$.}
+For an analysis that keeps a sheared grid, the projection's coupling matrix corrects bandpowers of any spectral shape, and in simulations an $E$-mode template built from the Jacobian removes the leaked $B$ down to a residual set by the noise on $E$.}
 
 \keywords{cosmic background radiation -- methods: data analysis -- techniques: image processing}
 
@@ -438,18 +438,43 @@ Either way, the leaked $E$ keeps its sample variance in the $B$ bandpowers.
 \end{figure}
 
 Removing that variance takes a template of the leaked $B$ at the map level.
-A sky $E$ mode lands on the grid as $E\cos 2\delta\psi$ in $E$ and $E\sin 2\delta\psi$ in $B$, so the leaked $B$ is the measured $E$ multiplied by $\tan 2\delta\psi(\chi)$.
+A sky $E$ mode lands on the grid as $E\cos 2\delta\psi$ in $E$ and $E\sin 2\delta\psi$ in $B$, so the leaked $B$ is the grid $E$ multiplied by $\tan 2\delta\psi(\chi)$.
 Write $\mathcal{S}_J$ for that operator, which depends on position through $J$ and on mode direction through $\chi$.
 Given a measured $\hat{E} = E + N_E$, subtracting $\mathcal{S}_J[\hat{E}]$ cancels the signal within the local approximation and leaves the operator acting on the noise,
 \begin{equation} \label{eq:template_resid}
-  C_\ell^{BB,\,\rm resid} = \expval{\tan^2 2\delta\psi}\, N_\ell^{EE} \simeq 2\gsq\, N_\ell^{EE}.
+\begin{aligned}
+  C_\ell^{BB,\,\rm resid} &= \expval{\tan^2 2\delta\psi}_{\chi,\,W^2} N_\ell^{EE}, \\
+  \expval{\tan^2 2\delta\psi}_{\chi,\,W^2} &= 2\gsq\qty[1 + \tfrac94\expval{g^4}_{W^2}/\gsq + \dots],
+\end{aligned}
 \end{equation}
-For a white-noise level of $\SI{5}{\micro\kelvin}$-arcmin and no beam, $N_\ell^{EE}/C_\ell^{EE}$ is \noiseratio\ at $\ell = 1000$, and the template would take SFL on the 1500d field from $BB/EE$ of \tfdSFL\ to \tfdSFLresid, \tfdSFLresidfrac\ of the lensed $B$ power.
-We have not yet applied the template to simulated maps, so Eq.~\eqref{eq:template_resid} is a leading-order prediction.
-Two conditions apply.
-The $E$ entering the template must be free of mask-induced ambiguity, so the subtraction comes after purification.
-And the template needs the exact kernel, which follows from the exact $\delta\psi$ as $\expval{\tan^2 2\delta\psi}_\chi = 2g^2\qty[1 + \tfrac94 g^2 + \order{g^4}]$, which at the $g \simeq 0.2$ the 1500d field reaches exceeds the leading form by ${\sim}10\%$.
-The template resembles delensing, but the projection's lens is known exactly in advance, so the template is limited only by the noise on $E$; it is a projection-specific case of the $E$-only template subtraction of \citet{zhou25}, with an amplitude fixed by the projection definition rather than fitted.
+where the bracket follows from expanding the exact $\delta\psi$.
+The correction is weighted by $\expval{g^4}/\gsq$, which the most sheared pixels dominate, so for SFL the coefficient exceeds $2\gsq$ by \templateSFLdisktanexcess\ on the 5\% disk and \templateSFLfieldtanexcess\ on the 1500d field.
+
+We test the template on the 20 SFL simulations of Sect.~\ref{sec:methods}, reflattened by the angle $\psi_R$ of Eq.~\eqref{eq:polar_angle} so that the maps carry the shear alone.
+$\mathcal{S}_J$ is not a Fourier multiplier, but $\tan 2\delta\psi$ is $\pi$-periodic in the grid mode angle and so expands exactly in even angular harmonics; the template is then a short sum of Fourier-filtered copies of $E$, each multiplied by a map of coefficients computed pixel by pixel from the local Jacobian.
+We take $E$ from the unmasked grid, so the test checks the operator rather than the estimation of $E$ at a mask edge.
+Without noise the template lowers $BB/EE$ over $\cleanlo < \ell < \cleanhi$ by a factor of \templateSFLdisksupp\ on the 5\% disk and \templateSFLfieldsupp\ on the 1500d field, and by \templateZEAdisksupp\ and \templateZEAfieldsupp\ for ZEA (Fig.~\ref{fig:template}); the template and the grid $B$ correlate at $r = \templatecorr$.
+What remains rises toward low $\ell$ for SFL and not for ZEA; we read this, without having tested it, as the local approximation failing as the mode wavelength approaches the scale over which $J$ varies, while at high $\ell$ the two projections share the resampling floor.
+
+With white noise on the $E$ that builds the template, the residual is the noise term of Eq.~\eqref{eq:template_resid}.
+The measured kernel, the residual $BB$ over $N^{EE}$, is \templateSFLfieldkernel\ on the 1500d field against $\expval{\tan^2 2\delta\psi}_{\chi,\,W^2} = \templateSFLfieldtan$, and \templateSFLdiskkernel\ on the disk against \templateSFLdisktan; the leading-order $2\gsq$ would give \templateSFLfieldgg\ and \templateSFLdiskgg.
+Over \templatelref\ in $\ell$, with \SI{5}{\micro\kelvin}-arcmin of noise, the template takes SFL on the 1500d field from $BB/EE$ of \templateSFLfieldrawref\ to \templateSFLfieldsubnoisefive, a factor of \templateSFLfieldgainfive, and the residual is \templateSFLfieldlensfracfive\ of the lensed $B$ power; at \templatenoise\ the factor is \templateSFLfieldgain.
+The gain shrinks with $\ell$, because the residual is white while $EE$ falls.
+A template built from $\hat{E}$ itself adds more $B$ than it removes above $\ell \approx \templateSFLfieldcross$ at \templatenoise\ and above $\ell \approx \templateSFLfieldcrossfive$ at \SI{5}{\micro\kelvin}-arcmin.
+Built from the Wiener-filtered $C^{EE}/(C^{EE}+N^{EE})\,\hat{E}$, it leaves $\expval{\tan^2 2\delta\psi}\,C^{EE}N^{EE}/(C^{EE}+N^{EE})$, matches the unfiltered template where $E$ is signal-dominated, and in the simulations never exceeds the raw leakage, so the template should be built from Wiener-filtered $E$.
+
+On data the $E$ entering the template must also be free of mask-induced ambiguity, so the subtraction comes after purification.
+The template resembles delensing, but the projection's lens is known exactly in advance, so the template is limited by the noise on $E$ rather than by a reconstruction; it is a projection-specific case of the $E$-only template subtraction of \citet{zhou25}, with an amplitude fixed by the projection definition rather than fitted.
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{template_subtraction.pdf}
+  \caption{
+    $BB/EE$ before and after subtracting the $E$-mode template $\mathcal{S}_J[E]$, on the 5\% disk (left) and the 1500d field (right), averaged over 20 simulations in bands of $\Delta\ell = 250$.
+    SFL and ZEA are shown raw and with the template built from noise-free $E$; for SFL, squares and diamonds add \templatenoise\ of white noise to the $E$ that builds the template, unfiltered and Wiener-filtered.
+    The dashed and dash-dotted curves are the residuals Eq.~\eqref{eq:template_resid} predicts for those two cases, with no free parameters, and the grey curve is lensed $BB/EE$ for scale.
+  }
+  \label{fig:template}
+\end{figure*}
 
 \subsection{Lensing reconstruction on a projected map} \label{subsec:qe}
 
@@ -493,7 +518,9 @@ ACT's maps use an equidistant cylindrical pixelization, the family of BICEP's gr
 A map projection's shear follows in closed form from its definition.
 The shear moves scalar power by an amount set by the curvature of $C(\ell)$ and leaks a fraction $2\gsq$ of $EE$ into $BB$, and a parameter-free forward model built from the Jacobian and the analysis mask matches simulations at the percent level across five projections and seven footprints.
 For new work, ZEA or a curved-sky method avoids most of the effect.
-For flat-sky work that keeps a sheared grid, the effect can be computed for the footprint before observing and corrected with the projection's coupling matrix, and we expect an $E$-mode template to remove the leaked $B$.
+For flat-sky work that keeps a sheared grid, the effect can be computed for the footprint before observing and corrected with the projection's coupling matrix.
+An $E$-mode template built from the Jacobian removes the leaked $B$ map by map down to the noise on $E$.
+For SFL on the 1500d field with \SI{5}{\micro\kelvin}-arcmin of noise the reduction is a factor of \templateSFLfieldgainfive\ near $\ell = 1000$ and smaller at higher $\ell$, where building the template from Wiener-filtered $E$ keeps it from adding $B$.
 
 \begin{acknowledgements}
 Much of this work was done with AI models, Claude (Anthropic) and Codex (OpenAI): derivations, analysis code, independent review of the derivations, and drafting of the manuscript.

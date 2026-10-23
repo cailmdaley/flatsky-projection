@@ -135,7 +135,7 @@ def main():
     n_tail = np.polyfit(np.log(ell_th[tail]), np.log(cl_th[tail]), 1)[0]
     coef_tail = n_tail * (n_tail + 2) / 4
     g2_sfl = float(g2[MASK][P["ProjSFL"]])
-    M.add("nEEtail", f"${n_tail:.0f}$")
+    M.add("nEEtail", f"${n_tail:.1f}$")
     M.add("coefEEtail", f"{coef_tail:.0f}")
     M.add("gsqSFLfive", f(g2_sfl))
     M.add("liftEEtail", pct(coef_tail * g2_sfl, 0))
@@ -376,23 +376,15 @@ def main():
     # Quoted in the tablefoot as an aside about TAN's own distortion.
     M.add("curlSTGgamma", f(curl["STG"]["gamma_rms"]))
 
-    # ---- the template-residual noise number --------------------------------
-    # Nominal white noise, no beam: N_l = (5 uK-arcmin)^2, constant in l.
+    # ---- the lensed reference -------------------------------------------
     # theory.load() stores raw C_l in uK^2 indexed directly by ell -- see
-    # analysis/theory.py's TRAPS note -- so this ratio needs no unit juggling.
+    # analysis/theory.py's TRAPS note -- so these ratios need no unit juggling.
     th = T.load()
     ell_ref = 1000
-    n_ell = (5.0 * np.deg2rad(1.0 / 60.0)) ** 2
-    cl_ee_lensed = float(th["lensed_EE"][ell_ref])
     cl_bb_lensed = float(th["lensed_BB"][ell_ref])
-    noise_ratio = n_ell / cl_ee_lensed
-    lensed_bb_ee = cl_bb_lensed / cl_ee_lensed
-    M.add("noiseratio", pct(noise_ratio, 1))
+    lensed_bb_ee = cl_bb_lensed / float(th["lensed_EE"][ell_ref])
     M.add("lensedBBEE", f"${sci(lensed_bb_ee)}$")
     M.add("tfdSFLoverlens", f"{field['SFL'] / lensed_bb_ee:.0f}")
-    resid = field["SFL"] * noise_ratio
-    M.add("tfdSFLresid", f"${sci(resid)}$")
-    M.add("tfdSFLresidfrac", f(resid / lensed_bb_ee, 2))
 
     # ---- the template applied to the simulations (`template_subtraction`) --
     # S_J[E] built per pixel from the grid metric and subtracted from the
@@ -404,7 +396,11 @@ def main():
     # l ~ 1000 (L_REF), `...cross` the l above which the
     # raw-E template adds more B than it removes; `...kernel` the measured BB
     # of S_J[unit E noise] over N^EE against the W^2-weighted <tan^2 2dpsi>
-    # (`...tan`) and 2<g^2> (`...gg`). `templatecorr`: the noise-free
+    # (`...tan`) and 2<g^2> (`...gg`), `...tanexcess` the fraction by which
+    # the first exceeds the second; `...gain` the raw BB/EE at L_REF over the
+    # noisy residual there, and `...lensfrac` the noise residual
+    # kernel * N^EE as a fraction of the lensed BB at l = 1000.
+    # `templatecorr`: the noise-free
     # map-level correlation of S_J[E] with the grid B on SFL's 5% disk.
     import template_subtraction as TPL
     lv = TPL.NOISE_LEVELS[0]
@@ -425,10 +421,16 @@ def main():
                 M.add(f"{k}subnoise{word}", f"${sci(ts[f'{m}_sub_n{lvl:g}_ref'])}$")
                 M.add(f"{k}subwiener{word}", f"${sci(ts[f'{m}_sub_w{lvl:g}_ref'])}$")
                 M.add(f"{k}cross{word}", f"{ts[f'{m}_cross_n{lvl:g}']:.0f}")
+                gain = ts[f"{m}_raw_ref"] / ts[f"{m}_sub_n{lvl:g}_ref"]
+                M.add(f"{k}gain{word}", f"{float(f'{gain:.2g}'):g}")
+                n_lvl = (lvl * np.deg2rad(1.0 / 60.0)) ** 2
+                M.add(f"{k}lensfrac{word}",
+                      pct(ts[f"{m}_kernel"] * n_lvl / cl_bb_lensed, 0))
             M.add(f"{k}kernel", f"${f(ts[f'{m}_kernel'], 4)}"
                   f" \\pm {f(ts[f'{m}_kernel_err'], 4)}$")
             M.add(f"{k}tan", f(ts[f"{m}_tan2"], 4))
             M.add(f"{k}gg", f(2 * ts[f"{m}_g2"], 4))
+            M.add(f"{k}tanexcess", pct(ts[f"{m}_tan2"] / (2 * ts[f"{m}_g2"]) - 1, 0))
         if proj == "ProjSFL":
             M.add("templatecorr", f(ts["corr"], 4))
 
