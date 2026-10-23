@@ -124,6 +124,22 @@ def main():
     for p in ("ProjSFL", "ProjBICEP"):
         M.add(f"EEin{short[p]}fourfive", f(at(ratio[P[p]], 4500), 2))
 
+    # ---- 2.2 the scalar expansion, on the spectrum the results use --------
+    # For an equal-area projection and C ~ l^n the direction average lifts
+    # power by n(n+2)/4 <g^2>. Unlensed EE oscillates too strongly for a
+    # local slope to mean much, so `nEEtail` is the mean slope on the damping
+    # tail, a least-squares fit of ln C on ln l over 3000 < l < 4500;
+    # `coefEEtail` the coefficient it implies; `gsqSFLfive` SFL's <g^2> on
+    # the reference disk; `liftEEtail` their product, the expansion's lift.
+    tail = (ell_th > 3000) & (ell_th < 4500)
+    n_tail = np.polyfit(np.log(ell_th[tail]), np.log(cl_th[tail]), 1)[0]
+    coef_tail = n_tail * (n_tail + 2) / 4
+    g2_sfl = float(g2[MASK][P["ProjSFL"]])
+    M.add("nEEtail", f"${n_tail:.0f}$")
+    M.add("coefEEtail", f"{coef_tail:.0f}")
+    M.add("gsqSFLfive", f(g2_sfl))
+    M.add("liftEEtail", pct(coef_tail * g2_sfl, 0))
+
     band = (ell > 500) & (ell < L_WALL)
     M.add("EEinZEAdev", pct(np.max(np.abs(ratio[P["ProjZEA"]][band] - 1)), 0))
     r_one = [at(ratio[j] / mratio[j], 1000) for j in P.values()]
@@ -202,13 +218,21 @@ def main():
     # model's on the 1500d field; `EBhalfStock` / `EBhalfPolar` the eastern
     # half's EB/EE from the E-only sky, stock and polar, with its error.
     import polar_flatten as PF
-    pf = PF.summary(PF.map_test(), mom, _moments_1500d())
+    res_pf = PF.map_test()
+    pf = PF.summary(res_pf, mom, _moments_1500d())
     M.add("flattenSFLmaps", f"${100 * pf['disk_shift_maps']:.2f}"
           f" \\pm {100 * pf['disk_shift_maps_err']:.2f}\\%$")
     M.add("flattenSFLfield", pct(pf["field_shift_model"], 1))
     M.add("EBhalfStock", pct(abs(pf["east_eb_stock"]), 1))
     M.add("EBhalfPolar", f"${100 * pf['east_eb_polar']:.2f}"
           f" \\pm {100 * pf['east_eb_polar_err']:.2f}\\%$")
+    # The eastern half's EB/EE under stock flattening grows with l: quoted in
+    # the first and last 500-wide band of the polar_flatten figure.
+    edges = np.arange(500, 4501, 500)
+    eb_east = (PF._wide(res_pf["east_EB_stock"], res_pf["ell"], edges)
+               / PF._wide(res_pf["east_EE_stock"], res_pf["ell"], edges)).mean(0)
+    M.add("EBeastlo", pct(abs(eb_east[0]), 1))
+    M.add("EBeasthi", pct(abs(eb_east[-1]), 1))
     M.add("cleanlo", f"{L_CLEAN[0]}")
     M.add("cleanhi", f"{L_CLEAN[1]}")
 
