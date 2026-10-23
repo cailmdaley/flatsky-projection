@@ -555,7 +555,6 @@ What survives at $\order{L^4}$, written in terms of the distortion tensor $\part
 \end{aligned}
 \end{equation}
 Term by term in $\vb*{L}$, this is the second-order part of the exact constant-Jacobian remap $\abs{\det J}\,C(\abs{J^{T}\vbell})$, with the difference vanishing identically at this order.
-Reaching it requires every $\order{L^4}$ piece, including the sub-leading $-L^2$ term of the vertex and the magnification factor, because $\ell^k C^{(k)} \sim n^k C$ leaves no $L/\ell$ suppression to separate them from the $C''$ term.
 The moment $\expval{(\kappa+\gamma_+)^2}$ is the variance of the linear stretch along the mode and alone pairs with $C''$, so the order-unity part of the effect on a steep spectrum lives in that one moment; the cross-shear $\expval{\gamma_\times^2}$ pairs only with $C'$ and $C$ and corrects the coefficient at first order in the slope.
 
 Two features distinguish a projection's fixed Jacobian from a random lensing potential, and both enter the scalar channel only, since Eq.~\eqref{eq:kernel_collapse} is blind to the convergence and Eq.~\eqref{eq:tt_collapse} is not.
@@ -563,8 +562,7 @@ First, the distortion has a piece linear in $\kappa$, $-\expval{2C\kappa + \ell 
 For a uniform shear with $\kappa = 0$, Eq.~\eqref{eq:tt_collapse} gives the coefficient $\tfrac14(n+2)^2 g^2$ for $C \propto \ell^n$; the normalization of the Jacobian then fixes $\kappa$ and, through the linear term, the coefficient.
 An equal-area Jacobian carries $\kappa = g^2/2 + \order{g^4}$, the linear term subtracts $\tfrac12(n+2)g^2$, and the coefficient is $\tfrac14 n(n+2)$, as in Eq.~\eqref{eq:scalar_expansion}.
 A Jacobian with unit mean singular value carries $\kappa = g^2$ and gives $\tfrac14 n^2 - 1$.
-Second, for a random potential $\expval{(\kappa+\gamma_+)(\kappa-\gamma_+)} = \expval{\gamma_\times^2}$ identically, which lets the isotropic literature write the collapse in $\kappa$ and $\gamma$ variances alone.
-A uniform shear violates this, since $\kappa$ and $\gamma_+$ are perfectly correlated and the same combination equals $-\expval{\gamma_\times^2}$, so the general form above is the one that applies to a projection.
+Second, the isotropic literature writes the collapse in $\kappa$ and $\gamma$ variances alone using $\expval{(\kappa+\gamma_+)(\kappa-\gamma_+)} = \expval{\gamma_\times^2}$, which holds for a random potential; for a uniform shear the same combination equals $-\expval{\gamma_\times^2}$, so a projection needs the general form above.
 
 
 \section{Leakage for any spin} \label{app:ladder}
@@ -595,15 +593,8 @@ The effective displacement of Sect.~\ref{subsec:qe} is $\vb*{d}(\vb*{x}) = \math
 \end{aligned}
 \end{equation}
 so that $\vb*{d} = \grad\phi_{\rm cart} + \curl\Omega_{\rm cart}$, with the two-dimensional curl defined as $(\curl\Omega)_i = -\epsilon_{ij}\partial_j\Omega$ and hence $\omega_{\rm eff} = -\tfrac12\laplacian\Omega_{\rm cart}$.
-Averaging a quadratic estimator over CMB realizations at fixed projection then returns, to linear order in the distortion,
-\begin{equation} \label{eq:meanfield}
-  \expval{\hat\phi(\vb*{L})}_{\rm CMB} = \phi_{\rm cart}(\vb*{L}),
-  \qquad
-  \expval{\hat\Omega(\vb*{L})}_{\rm CMB} = \Omega_{\rm cart}(\vb*{L}).
-\end{equation}
-In the $\ell \gg L$ limit the estimator measures the local anisotropic modulation of small-scale power: it responds to $\kappa_{\rm eff}$ and $\gamma_{\rm eff}$ with the standard lensing response, and $\phi_{\rm cart}$ is the potential whose Hessian those are.
-The locality condition and its failure order are those of Sect.~\ref{subsec:footprint}.
-These effective fields are referred to TAN, which has its own distortion, so they depend on the reference chart; the $g$ that sets the leakage is read from $\Sigma$ alone and does not.
+In the $\ell \gg L$ limit a quadratic estimator measures the local anisotropic modulation of small-scale power, so averaged over CMB realizations at fixed projection it returns $\phi_{\rm cart}$ and $\Omega_{\rm cart}$ at linear order in the distortion, with corrections at the order of Sect.~\ref{subsec:footprint}.
+These fields are referred to TAN, which has its own distortion; the $g$ that sets the leakage is read from $\Sigma$ alone and depends on no reference chart.
 
 For the zenithal projections the displacement is purely radial: a point at angular radius $r$ sits at plane radius $R(r)$ on the analysis grid and $\tan r$ on TAN, so $\dd\phi_{\rm cart}/\dd R = \tan r - R(r)$, which integrates in closed form.
 In orthonormal polar frames a zenithal Jacobian is $\mathrm{diag}\qty(R'(r),\, R(r)/\sin r)$, symmetric and free of rotation, and so is the composite against TAN.
