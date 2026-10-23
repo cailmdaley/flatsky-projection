@@ -386,58 +386,66 @@ All five projections share it, STG included, as expected of the interpolation tr
   \label{fig:spectra}
 \end{figure*}
 
-\subsection{The leakage channel: \texorpdfstring{$BB$}{BB} against the derived coefficient} \label{subsec:validation}
+\subsection{\texorpdfstring{$E$}{E}-to-\texorpdfstring{$B$}{B} leakage} \label{subsec:validation}
 
-The $BB$ bandpowers of Fig.~\ref{fig:spectra} are pure leakage, the simulations being unlensed.
-The five projections span \bbdecades\ orders of magnitude and the same forward model reproduces four of them: averaged over $500 < \ell < 3000$, measured over modelled is $\BBmodelSFL$ (SFL), $\BBmodelSIN$ (SIN), $\BBmodelZEA$ (ZEA) and $\BBmodelBICEP$ (BICEP).
-STG is the exception and the diagnostic.
-Its shear vanishes identically, so its predicted $BB$ is zero; what it measures instead is the pipeline's own $E \to B$ floor, \floorFive\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFiveTop\ over $\floorTopBand$.
+The simulations are unlensed, so the $BB$ bandpowers of Fig.~\ref{fig:spectra} are pure leakage.
+Across the five projections they span \bbdecades\ orders of magnitude, and the forward model reproduces the four sheared ones: averaged over $500 < \ell < 3000$, measured over modelled $BB$ is $\BBmodelSFL$ for SFL, $\BBmodelSIN$ for SIN, $\BBmodelZEA$ for ZEA, and $\BBmodelBICEP$ for BICEP.
+STG has no shear, so its predicted $BB$ is zero, and what it measures is the pipeline's own $E \to B$ floor: \floorFive\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFiveTop\ over $\floorTopBand$.
 For scale, the two cylindrical projections leak more $B$ power on this disk than gravitational lensing of the real sky produces.
-The lower panel is the leakage relation itself, and it holds across the whole usable range: over $500 < \ell < \lwall$ the measured $BB/EE$ sits at \wideBBrange\ of the forward model for all four sheared projections, tilts of Sect.~\ref{subsec:bandbyband} included.
-Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and before aliasing reaches $BB/EE$, the agreement is \cleanBBrange.
-Above $\ell = \riselo$ the ratio climbs for BICEP and SIN, to \riseBICEPtop\ and \riseSINtop\ in the last bin, $\risetopbin$, while SFL's stays at \riseSFLtop\ though it carries as much excess $EE$: where folded-back power lands, in $E$ or in $B$, depends on how each projection's distortion meets the grid, which the local model does not describe.
 
-Figure~\ref{fig:shear_leakage} compares the measured $BB/EE$ to $2\gsq$ for every sheared (projection, mask) pair.
-Fitting the coefficient to the $1000 < \ell < 3000$ band average returns $\fitcoef$ --- \fitoffset\ above the derived value of 2, the offset being the mean of the band-dependent term of Sect.~\ref{subsec:bandbyband} --- with \fitrms\ rms and \fitworst\ worst case across \decades\ decades in $\gsq$; a free power law returns $\freepowerlaw$.
-Subtracting the STG floor moves the coefficient to $\fitcoefsub$ and the rms not at all.
-Of three reductions of $(s_1,s_2)$ that agree at first order --- $\gsq$, $\expval{(s_1/s_2 - 1)^2}$, and $\expval{\ln^2(s_1/s_2)}$ --- only $\gsq$ collapses the sample to its floor: rms \rmsGsq\ against \rmsRatio\ and \rmsLog\ about their own best fits.
-The sample is four independent geometric configurations measured on seven nested concentric disks, \numpairs\ usable pairs in all, and it should be read that way: SFL and BICEP are near-degenerate on round masks (Sect.~\ref{subsec:disks}), so the \decades\ decades of dynamic range come from the projections while the nested disks vary the footprint at fixed geometry.
+The lower panel of Fig.~\ref{fig:spectra} shows $BB/EE$ directly.
+Over $500 < \ell < \lwall$ the measured ratio sits at \wideBBrange\ of the forward model for all four sheared projections, including the band-dependent tilts of Sect.~\ref{subsec:bandbyband}.
+Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and below the multipoles where aliased power reaches $BB/EE$, the agreement is \cleanBBrange.
+Above $\ell = \riselo$ the floor-subtracted ratio to the model climbs for BICEP and SIN, reaching \riseBICEPtop\ and \riseSINtop\ in the last bin ($\risetopbin$), while SFL's stays at \riseSFLtop\ even though SFL carries as much aliased excess $EE$ as BICEP (Sect.~\ref{subsec:residuals}).
+Whether folded-back power lands in $E$ or in $B$ depends on how each projection's distortion meets the grid, which the local model does not describe.
 
-The leaked $B$ could in principle bin unlike an ordinary sky, being a deterministic image of the shared $EE$ realization rather than an independent Gaussian field.
-It does not: over $500 < \ell < \lwall$ and every configuration in which the leakage is genuine, the mean off-diagonal $BB$ correlation is \offdiagBB, against \offdiagEE\ for the $EE$ bandpowers of the same runs, so a standard diagonal-plus-mode-coupling covariance suffices.
-The shear couples mode $\vbell$ only to $EE$ modes near $\abs{J^T\vbell} \approx \ell(1\pm g)$, so neighbouring bins do share source modes; the sharing is diluted below a percent by the many independent modes each bin averages.
-The lone exception is STG, whose floor reaches a mean off-diagonal correlation of $\offdiagSTG$ against $\offdiagnoise$ per-entry sampling noise: a seed-independent template rather than a sky.
+Figure~\ref{fig:shear_leakage} tests the footprint relation, Eq.~\eqref{eq:law_footprint}, directly, plotting the measured $BB/EE$ against $2\gsq$ for every sheared projection--mask pair.
+A fit of the coefficient to the band average over $1000 < \ell < 3000$ returns $\fitcoef$, \fitoffset\ above the derived value of 2, with \fitrms\ rms scatter and a worst case of \fitworst\ across \decades\ decades in $\gsq$.
+The offset is the mean, over that band, of the band-dependent term of Sect.~\ref{subsec:bandbyband}.
+A free power law returns $\freepowerlaw$, and subtracting the STG floor moves the coefficient to $\fitcoefsub$ while leaving the rms unchanged.
+Three summaries of the singular values agree at first order in $g$: $\gsq$, $\expval{(s_1/s_2 - 1)^2}$, and $\expval{\ln^2(s_1/s_2)}$.
+Each fitted with its own best coefficient, they leave rms scatters of \rmsGsq\ for $\gsq$, against \rmsRatio\ and \rmsLog\ for the other two, so the data select $\gsq$.
+The \numpairs\ usable pairs are not independent tests: they are four sheared projections, two of them near-degenerate on round masks (Sect.~\ref{subsec:disks}), each measured on seven nested concentric disks.
+
+The leaked $B$ is a deterministic image of the same $E$ realization rather than an independent Gaussian field, so its bandpowers could in principle be correlated differently from those of an ordinary sky.
+The measured correlations show they are not.
+Over $500 < \ell < \lwall$, in every configuration with genuine leakage, the mean off-diagonal correlation of the $BB$ bandpowers is \offdiagBB, against \offdiagEE\ for the $EE$ bandpowers of the same runs, so a standard diagonal-plus-mode-coupling covariance suffices.
+The shear couples a grid mode $\vbell$ only to sky $E$ modes near $\abs{J^T\vbell} \approx \ell(1\pm g)$, so neighbouring bins do share source modes, but each bin averages over enough independent modes that the sharing stays below a percent.
+STG is the exception: its floor has a mean off-diagonal correlation of $\offdiagSTG$, against $\offdiagnoise$ per-entry sampling noise, which marks it as a seed-independent template rather than a realization of a sky.
 
 \begin{figure*}
   \includegraphics[width=\textwidth]{shear_leakage.pdf}
   \caption{
     Measured $BB/EE$ against $\gsq$ for every usable sheared projection--mask pair (left), and its fractional residual from $2\gsq$ against disk sky fraction (right), both averaged over $1000<\ell<3000$.
     The line is $BB/EE = 2\gsq$, with nothing fitted; the band is the scatter about the fitted coefficient.
-    Excluded pairs are defined in Sect.~\ref{subsec:disks}.
+    The two pairs excluded (SFL and BICEP on the 10\% disk) are discussed in Sect.~\ref{subsec:disks}.
   }
   \label{fig:shear_leakage}
 \end{figure*}
 
-\subsection{Band by band, with no free parameters} \label{subsec:bandbyband}
+\subsection{Band-by-band comparison} \label{subsec:bandbyband}
 
-Equation~\eqref{eq:law_footprint} is flat in $\ell$; the measurements tilt, and Eq.~\eqref{eq:forward} says by how much.
-Rebinning to \numbandbands\ bands of $\Delta\ell = 500$ over $\bandlo < \ell < \bandhi$, the forward model reproduces the measurements at $\bandbybandratio$ over every band, mask, and sheared projection more than $20\times$ above the pipeline floor (\numbands\ points, worst case \bandbybandworst), still with no free parameters.
-The tilts come from the weight $C^{EE}(\ell\bar s)$ each pixel's leakage carries (Sect.~\ref{subsec:derivation}).
-SFL is equal-area, and convexity lifts the $E$ power of its high-shear pixels on a falling spectrum, so its ratio rises with $\ell$.
-BICEP's shear grows fastest toward the pole, where it comes with magnification up to $\magfactor$; a magnified pixel reads the spectrum at a higher wavenumber, so on the damping tail its weight falls, and the ratio with it.
-On the 5\% disk BICEP's measured ratio to $2\gsq$ runs from $\tiltBICEPlo$ down to $\tiltBICEPhi$ while SFL's rises from $\tiltSFLlo$ to $\tiltSFLhi$, and Eq.~\eqref{eq:forward} tracks both tilts without adjustment.
-The cleanest single test is ZEA, least sheared and least magnified, where the pipeline floor stays below $0.5\%$ of the measurement up to $\ell = \ZEAfloorclean$: its raw ratio to the relation runs \ZEAbands\ across the \numbandbands\ bands, the last band's excess consistent with the floor.
+The footprint relation, Eq.~\eqref{eq:law_footprint}, is flat in $\ell$, while the measured ratios tilt; the forward model of Eq.~\eqref{eq:forward} predicts the tilts.
+We rebin to \numbandbands\ bands of $\Delta\ell = 500$ over $\bandlo < \ell < \bandhi$ and keep every band, mask and sheared projection that passes the floor cut of Sect.~\ref{sec:methods}, \numbands\ points in all.
+Measured over modelled, these have mean and scatter $\bandbybandratio$ and a worst case of \bandbybandworst, with nothing fitted.
+The tilts come from the weight $C^{EE}(\ell\bar s)$ that each pixel's leakage carries in the footprint average (Sect.~\ref{subsec:derivation}), and they run in opposite directions for the two cylindrical projections.
+SFL is equal-area, and on a falling spectrum convexity lifts the $E$ power of its high-shear pixels, so its ratio rises with $\ell$.
+BICEP's shear grows fastest toward the pole, where its magnification reaches $\magfactor$; a magnified pixel reads the spectrum at a higher wavenumber, so on the damping tail its weight falls, and the ratio falls with it.
+On the 5\% disk, with the floor subtracted, BICEP's measured ratio to $2\gsq$ falls from $\tiltBICEPlo$ in the first band to $\tiltBICEPhi$ in the last, SFL's rises from $\tiltSFLlo$ to $\tiltSFLhi$, and Eq.~\eqref{eq:forward} tracks both.
+ZEA, the least sheared and least magnified projection, gives the cleanest single test: its pipeline floor stays below $0.5\%$ of the measurement up to $\ell = \ZEAfloorclean$, and its raw ratio to $2\gsq$ across the \numbandbands\ bands is \ZEAbands, the excess in the last band being consistent with the floor.
 
-\subsection{Cylindrical projections agree only on round masks} \label{subsec:disks}
+\subsection{SFL and BICEP on round and non-round masks} \label{subsec:disks}
 
-The two cylindrical projections shear with the same coefficient in orthogonal directions (Table~\ref{table:projs}), so on a disk concentric with the field centre $\expval{\text{east}^2} = \expval{\text{north}^2}$ and their $\gsq$ agree --- to \sflbicepsmall\ on the smallest mask, \sflbicepfive\ at 5\%, breaking to \sflbicepten\ by 10\%.
-That agreement is a property of the mask, not of the projections.
-Part of the 10\% break is bookkeeping rather than shear.
-The largest disk is the one whose $W = 0.5$ contour Fig.~\ref{fig:invariants} draws, and for the two cylindrical projections it runs off the analysis grid in $x$ and encloses the south celestial pole, where SFL's map $x$-coordinate collapses and BICEP's magnification formally diverges.
-The footprint the pipeline then analyses is not the disk the geometric moment averages over, and the measured ratios say so: on that disk SFL sits at $\clippedSFL$ times $2\gsq$ and BICEP at $\clippedBICEP$, against agreement at the per-mille level on every other mask.
-Those \numclipped\ pairs are excluded rather than imputed, leaving \numpairs\ of \numpairstotal\ sheared pairs.
-SIN, ZEA and STG suffer neither pathology and their 10\% spectra are used.
-On SPT's real 1500d field ($\pm\SI{50}{\degree}$ in RA, \SIrange{-70}{-42}{\degree} in declination) the mask is not round and the degeneracy breaks: the relation gives SFL $BB/EE$ of \tfdSFL\ against BICEP's \tfdBICEP, a factor of $\tfdratio$ apart.
+SFL and BICEP shear with the same coefficient in orthogonal directions, SFL with the east--west offset from the field centre and BICEP with the north--south offset (Table~\ref{table:projs}).
+On a disk concentric with the field centre the mean squared offsets in the two directions are equal, so the two projections have nearly the same $\gsq$: the values agree to \sflbicepsmall\ on the smallest mask and \sflbicepfive\ on the 5\% disk, and differ by \sflbicepten\ on the 10\% disk.
+The agreement is a symmetry of round masks.
+SPT's 1500d field ($\pm\SI{50}{\degree}$ in RA, \SIrange{-70}{-42}{\degree} in declination) is not round, and on it the relation gives $BB/EE$ of \tfdSFL\ for SFL and \tfdBICEP\ for BICEP, a factor of $\tfdratio$ apart.
+
+The 10\% disk also exposes a failure unrelated to shear.
+Its $W = 0.5$ contour, drawn in Fig.~\ref{fig:invariants}, runs off the analysis grid in $x$ for both cylindrical projections and encloses the south celestial pole, where SFL's $x$ coordinate collapses and BICEP's magnification formally diverges.
+The footprint the pipeline analyses is then not the disk over which $\gsq$ is computed, and the measurements show it: on that disk SFL measures $\clippedSFL$ times $2\gsq$ and BICEP $\clippedBICEP$ times, while every other pair lies within \fitworst\ of the fitted relation.
+We exclude these \numclipped\ pairs rather than impute them, which leaves \numpairs\ of the \numpairstotal\ sheared pairs.
+SIN, ZEA and STG have neither problem, and we use their 10\% spectra.
 
 \section{Lensing reconstruction and template subtraction} \label{sec:lensing}
 
