@@ -1,0 +1,20 @@
+--- a/maps/src/maputils.cxx
++++ b/maps/src/maputils.cxx
+@@ -285,8 +285,16 @@
+ 		if (q == 0 && u == 0)
+ 			continue;
+ 
++		// Rotate by the rotation factor of the polar decomposition of the
++		// local pixel-to-sky Jacobian, which leaves only its symmetric
++		// (shear) part.  The RA derivatives are scaled by cos(dec) and the
++		// pixel derivatives by the pixel size so that both axes are in
++		// angle.  rot is the spin-2 angle, twice the frame rotation.
+ 		std::vector<double> grad = Q.PixelToAngleGrad(i.first, h);
+-		double rot = ATAN2(-grad[0], grad[1]) + ATAN2(-grad[3], -grad[2]);
++		double cd = COS(Q.PixelToAngle(i.first)[1]);
++		double dax = cd * grad[0] / Q.xres(), day = cd * grad[1] / Q.yres();
++		double ddx = grad[2] / Q.xres(), ddy = grad[3] / Q.yres();
++		double rot = 2.0 * ATAN2(-ddx - day, ddy - dax);
+ 		if (invert)
+ 			rot *= -1.0;
+ 		if (U.pol_conv == G3SkyMap::COSMO)
