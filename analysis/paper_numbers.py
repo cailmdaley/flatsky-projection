@@ -394,6 +394,44 @@ def main():
     M.add("tfdSFLresid", f"${sci(resid)}$")
     M.add("tfdSFLresidfrac", f(resid / lensed_bb_ee, 2))
 
+    # ---- the template applied to the simulations (`template_subtraction`) --
+    # S_J[E] built per pixel from the grid metric and subtracted from the
+    # polar-reflattened SFL and ZEA QU-leg maps, 20 sims, on the 5% disk and
+    # the 1500d field. Noise-free: `...raw` / `...sub` BB/EE over L_CLEAN and
+    # `...supp` their ratio. With white E noise of `templatenoise` on the
+    # template's input (`...five`: the paper's nominal 5 uK-arcmin):
+    # `...subnoise` (raw E) and `...subwiener` (Wiener-filtered E) at
+    # l ~ 1000 (L_REF), `...cross` the l above which the
+    # raw-E template adds more B than it removes; `...kernel` the measured BB
+    # of S_J[unit E noise] over N^EE against the W^2-weighted <tan^2 2dpsi>
+    # (`...tan`) and 2<g^2> (`...gg`). `templatecorr`: the noise-free
+    # map-level correlation of S_J[E] with the grid B on SFL's 5% disk.
+    import template_subtraction as TPL
+    lv = TPL.NOISE_LEVELS[0]
+    M.add("templatenoise", f"\\SI{{{lv:g}}}{{\\micro\\kelvin}}-arcmin")
+    M.add("templatelref", f"${TPL.L_REF[0]}$--${TPL.L_REF[1]}$")
+    for proj in ("ProjSFL", "ProjZEA"):
+        ts = TPL.summary(TPL.run(proj))
+        lab = S.PROJ_LABEL[proj]
+        for m in ("disk", "field"):
+            k = f"template{lab}{m}"
+            M.add(f"{k}raw", f"${sci(ts[f'{m}_raw'])}$")
+            M.add(f"{k}sub", f"${sci(ts[f'{m}_sub'])}$")
+            M.add(f"{k}supp", f"${sci(ts[f'{m}_raw'] / ts[f'{m}_sub'])}$")
+            if proj != "ProjSFL":
+                continue
+            M.add(f"{k}rawref", f"${sci(ts[f'{m}_raw_ref'])}$")
+            for lvl, word in zip(TPL.NOISE_LEVELS, ("", "five")):
+                M.add(f"{k}subnoise{word}", f"${sci(ts[f'{m}_sub_n{lvl:g}_ref'])}$")
+                M.add(f"{k}subwiener{word}", f"${sci(ts[f'{m}_sub_w{lvl:g}_ref'])}$")
+                M.add(f"{k}cross{word}", f"{ts[f'{m}_cross_n{lvl:g}']:.0f}")
+            M.add(f"{k}kernel", f"${f(ts[f'{m}_kernel'], 4)}"
+                  f" \\pm {f(ts[f'{m}_kernel_err'], 4)}$")
+            M.add(f"{k}tan", f(ts[f"{m}_tan2"], 4))
+            M.add(f"{k}gg", f(2 * ts[f"{m}_g2"], 4))
+        if proj == "ProjSFL":
+            M.add("templatecorr", f(ts["corr"], 4))
+
     # ---- the coupling matrix against a diagonal transfer function ---------
     # F_b = <R C^CMB>_b / <C^CMB>_b per dl = 50 bandpower, calibrated on the
     # unlensed Planck TT and EE, applied to a white (Poisson-source) spectrum.
