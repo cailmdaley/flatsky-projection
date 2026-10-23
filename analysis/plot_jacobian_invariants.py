@@ -32,7 +32,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 import geometry as G
 import paper_style as PS
-from paper_style import INK, MASK_RAMP, PROJ_COLORS
+from paper_style import INK, INK_SOFT, MASK_RAMP, PROJ_COLORS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
 from matplotlib.patches import Rectangle
 
@@ -52,16 +52,29 @@ LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
 # ramp, starting from a pale slate rather than white so that g = 0 (all of STG)
 # reads as a value and not as an empty panel; mu is diverging on log2(mu), so
 # a factor of two of magnification and of compression sit equally far from a
-# neutral-grey midpoint at mu = 1. Sky that the projection cannot reach (past
-# the pole for the cylindrical pair, beyond the horizon for SIN) is hatched.
+# neutral-grey midpoint at mu = 1. The two sides of mu = 1 differ in hue and in
+# lightness: compression darkens through hueless graphite, magnification warms
+# to a muted umber that stops short of the dark end. Graphite keeps the mu row
+# from repeating g's slate, umber stays clear of the five projection hues, and
+# the lightness asymmetry keeps the sign legible in greyscale print. Sky that
+# the projection cannot reach (past the pole for the cylindrical pair, beyond
+# the horizon for SIN) is hatched.
 G_CMAP = LinearSegmentedColormap.from_list("slate", ["#E9EDF0"] + MASK_RAMP)
 MU_CMAP = LinearSegmentedColormap.from_list(
-    "teal_grey_copper",
-    ["#0F6E6A", "#5FA39E", "#B9D3D0", "#E6E5E1", "#E4C2A2", "#C98B57", "#8C4E1A"])
+    "graphite_umber",
+    ["#363636", "#6B6B6A", "#A8A7A4", "#E6E5E1", "#DACBB2", "#B89C72", "#86693F"])
 G_VMAX = 0.6          # linear; SFL and BICEP saturate only near the pole
 LOG2MU_MAX = 1.0      # mu in [1/2, 2]
 HATCH_COLOR = "#B5B5B0"
 LIM_DEG = 55.0
+
+# Panels that are identically trivial by construction, named in-panel so a
+# flat field reads as a property of the projection.
+TRIVIAL = {
+    ("g", "ProjSTG"): r"$g \equiv 0$ (conformal)",
+    ("mu", "ProjSFL"): r"$\mu \equiv 1$ (equal-area)",
+    ("mu", "ProjZEA"): r"$\mu \equiv 1$ (equal-area)",
+}
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
 
@@ -229,7 +242,11 @@ def main():
                            cmap=mu_cmap, norm=mu_norm,
                            interpolation="nearest", rasterized=True, zorder=1)
 
-        for ax in (axg, axm):
+        for row, ax in (("g", axg), ("mu", axm)):
+            if (row, proj) in TRIVIAL:
+                ax.text(0.5, 0.94, TRIVIAL[row, proj], transform=ax.transAxes,
+                        ha="center", va="top", color=INK_SOFT,
+                        fontsize=PS.LEGEND_SIZE, zorder=6)
             if cache is not None:
                 ax.contour(*fp, levels=[0.5], colors=INK, linewidths=0.6,
                            zorder=5)
