@@ -503,6 +503,8 @@ outputs:
         --max-procs {resources.cpus}
         --out {output}
       resources:
+        # Measured on OSPool at 16 cores: 2.0 h (BICEP, 1.4 Mpx window) to
+        # 5.9 h (STG, 2.2 Mpx), condor-sampled memory under 1 GB.
         cpus: 16
         memory: 8Gi
         disk: 4Gi

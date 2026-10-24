@@ -37,7 +37,7 @@ eval "$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)"
 # and copy the declared outputs back into the sandbox for transfer.
 SANDBOX=$PWD
 REAL=$(python3 -c 'import os; print(os.path.realpath("."))')
-echo "wrapper.sh: cwd=$PWD realpath=$REAL _CONDOR_SCRATCH_DIR=${_CONDOR_SCRATCH_DIR:-} TMPDIR=${TMPDIR:-}" >&2
+echo "wrapper.sh: cwd=$PWD realpath=$REAL _CONDOR_SCRATCH_DIR=${_CONDOR_SCRATCH_DIR:-} TMPDIR=${TMPDIR:-} APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-}" >&2
 RELOCATED=0
 if [ "$REAL" != "$PWD" ]; then
     WORK=""
@@ -64,6 +64,15 @@ if [ "$REAL" != "$PWD" ]; then
     export PYTHONPATH=$PWD/lcpy${PYTHONPATH:+:$PYTHONPATH}
     RELOCATED=1
 fi
+
+# Snakemake's Persistence makes its apptainer-image directory at
+# $APPTAINER_CACHEDIR when that is set (DeploymentSettings.apptainer_prefix),
+# and some glideins (AMNH, IRISHEP-SSL river, Rhodes-HPC; likely MWT2) export
+# it as the sandbox's *host* path, which is read-only inside the container:
+# the job dies on "Read-only file system: '/pilot'" or '/scratch_space' with
+# cwd, realpath and TMPDIR all /srv/scratch. Nothing here uses apptainer, so
+# point it inside the sandbox.
+export APPTAINER_CACHEDIR="$PWD/.apptainer"
 
 if [ -f lightcone_py.tar.gz ] && [ ! -d lcpy ]; then
     mkdir -p lcpy
