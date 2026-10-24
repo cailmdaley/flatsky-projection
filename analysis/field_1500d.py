@@ -201,9 +201,12 @@ def figure(res, path=FIGURE):
         bx.plot(ell[keep], (res["pipeline_m_ee"][j] / res["cl_ee"])[keep], color=c, lw=PS.LW)
     ax.set_yscale("log")
     ax.set_ylabel(r"$BB/EE$")
-    ax.legend(ncol=3, frameon=False, fontsize=PS.LEGEND_SIZE, loc="lower right")
-    ax.text(0.03, 0.95, "1500d field: points simulated, lines forward model",
-            transform=ax.transAxes, va="top", fontsize=PS.LEGEND_SIZE)
+    ax.set_ylim(3e-8, 30)
+    ax.set_yticks([1e-6, 1e-4, 1e-2, 1])
+    ax.legend(ncol=5, frameon=False, fontsize=PS.LEGEND_SIZE, loc="upper center",
+              handletextpad=0.1, columnspacing=0.6)
+    ax.set_title("1500d field: points simulated, lines forward model",
+                 fontsize=PS.LEGEND_SIZE)
     bx.axhline(1, color=PS.RULE, lw=PS.LW_REF)
     bx.set_ylabel(r"$EE/C_\ell^{EE}$")
     bx.set_xlabel(r"$\ell$")

@@ -351,6 +351,25 @@ def main():
         M.add(f"tfd{label}", f"${sci(field[label])}$")
     M.add("tfdratio", f"{field['SFL'] / field['BICEP']:.1f}")
 
+    # The same field simulated (`field_bandpowers`, 20 sims, QU leg; see
+    # analysis/field_1500d.py): floor-subtracted band BB/EE over BAND, the
+    # SFL/BICEP ratio of the per-sim values with its error, `tfdmeaslaw` the
+    # SFL measurement over the leading-order law 2<g^2> on the pipeline mask,
+    # and `tfdmeasmodel` the worst |meas/model - 1| over L_CLEAN among the
+    # four leaking projections (STG is the floor).
+    import field_1500d as FD
+    fd = FD.load()
+    lab = [S.PROJ_LABEL[p] for p in S.PROJS]
+    for label in ("SFL", "BICEP"):
+        M.add(f"tfd{label}meas", f"${sci(fd['meas_band'][lab.index(label)])}$")
+    M.add("tfdratiomeas", f"{fd['sfl_bicep']:.2f}")
+    M.add("tfdratiomeaserr", f"{fd['sfl_bicep_err']:.2f}")
+    jsfl = lab.index("SFL")
+    M.add("tfdmeaslaw", pct(fd["meas_band"][jsfl] / (2 * fd["pipeline_g2"][jsfl]) - 1, 0))
+    leak = [j for j, l in enumerate(lab) if l != "STG"]
+    M.add("tfdmeasmodel", pct(max(abs(fd["pipeline_clean"][j] - 1) for j in leak), 1))
+    M.add("tfdnsims", f"{int(fd['n_sims'])}")
+
     # ---- Table 2 (table:curl): cartographic lensing over the 1500d field --
     # Same footprint and mask^2 weighting as _field_1500d above, but through
     # geometry.relative_jacobian rather than a hand-written finite difference
