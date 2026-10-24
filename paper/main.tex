@@ -51,7 +51,7 @@ We fold these into a forward model over the analysis mask and compare it with un
 {The shear moves scalar power by an amount set by the local curvature of $C(\ell)$, which is of order unity on the damping tail of a field covering a few percent of the sky.
 It also turns the $E$/$B$ basis, so that a fraction $2\gsq$ of $EE$ appears as $BB$, where $\gsq$ is the footprint mean of $g^2$ weighted by the squared mask; averaged over mode direction, the fraction is exactly $2g^2(1-\tfrac34 g^2)$.
 The forward model reproduces the measured $EE$ distortion band by band to within 2\%, acoustic structure included, and the leakage relation holds to \fitrms\ rms over \decades\ decades in $\gsq$ across \numpairs\ projection--mask pairs, which share projections and nested masks and so are not independent tests.
-Two cylindrical projections that leak nearly equally on round masks differ by a factor of \tfdratio\ on the SPT 1500d field.}
+Two cylindrical projections that leak nearly equally on round masks differ by a factor of \tfdratiomeas\ in simulations of the SPT 1500d field, as the forward model predicts.}
 {The distortion can be computed for any footprint before observing.
 We recommend the zenithal equal-area projection.
 For an analysis that keeps a sheared grid, the projection's coupling matrix corrects bandpowers of any spectral shape, and in simulations an $E$-mode template built from the Jacobian removes the leaked $B$ down to a residual set by the noise on $E$.}
@@ -398,10 +398,11 @@ The leaked $B$ is a deterministic image of the $E$ realization, but its bandpowe
 SFL and BICEP shear with the same coefficient in orthogonal directions, SFL with the east--west offset from the field centre and BICEP with the north--south offset (Table~\ref{table:projs}).
 On a disk concentric with the field centre the mean squared offsets in the two directions are equal, so the two projections have nearly the same $\gsq$: the values agree to \sflbicepsmall\ on the smallest mask and \sflbicepfive\ on the 5\% disk, and differ by \sflbicepten\ on the 10\% disk.
 SPT's 1500d field ($\pm\SI{50}{\degree}$ in RA, \SIrange{-70}{-42}{\degree} in declination) is wider than it is tall, and on it Eq.~\eqref{eq:law_footprint} predicts $BB/EE$ of \tfdSFL\ for SFL and \tfdBICEP\ for BICEP, a factor of $\tfdratio$ apart.
+\tfdnsims\ simulations projected onto the field measure \tfdSFLmeas\ and \tfdBICEPmeas, a ratio of $\tfdratiomeas \pm \tfdratiomeaserr$, and the forward model matches the measured $BB/EE$ of every sheared projection to within \tfdmeasmodel\ over $\cleanlo < \ell < \cleanhi$.
 
 The lensed $BB/EE$ ratio for the Planck 2018 cosmology is \lensedBBEE\ at $\ell = 1000$.
 The cylindrical projections leak more than this on every disk studied here, while the zenithal projections stay below it on every disk up to 5\%, with SIN crossing above it on the 10\% disk.
-On the 1500d field SFL is predicted to leak \tfdSFLoverlens\ times the lensed $B$ power.
+On the 1500d field SFL leaks \tfdSFLoverlens\ times the lensed $B$ power.
 
 \section{Discussion} \label{sec:discussion}
 
