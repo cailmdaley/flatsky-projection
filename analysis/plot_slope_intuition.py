@@ -72,10 +72,10 @@ def main():
                                       POWER_LAW_INDEX), 0.0)
 
     inputs = [
-        (r"lensed $TT$", th["lensed_TT"], PS.SECONDARY[0], "-"),
-        (r"lensed $EE$", th["lensed_EE"], PS.SECONDARY[1], "--"),
+        (r"lensed $TT$", th["lensed_TT"], PS.SPECTRUM_COLORS["TT"], "-"),
+        (r"lensed $EE$", th["lensed_EE"], PS.SPECTRUM_COLORS["EE"], "--"),
         (rf"$C_\ell \propto \ell^{{{POWER_LAW_INDEX:.0f}}}$",
-         power_law, PS.SECONDARY[2], ":"),
+         power_law, PS.SECONDARY[0], ":"),
     ]
 
     mom = SL.load_moments()
