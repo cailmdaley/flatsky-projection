@@ -218,7 +218,7 @@ Projecting $Q$ and $U$ as two scalar maps therefore leaves the polarization basi
 Pipelines undo this by rotating $Q$ into $U$ pixel by pixel through a local angle $\psi$, an operation called flattening.
 \texttt{spt3g\_software}, whose pipeline we test, takes $\psi$ as the equal-weight average of the tilts of north and of east, in terms of the sky coordinates $(\theta, \phi)$ and the grid coordinates $(x, y)$,
 \begin{equation} \label{eq:rot_angle}
-    2\psi = \atantwo \qty(\pdv*{\theta}{y},\, \pdv*{\theta}{x}) + \atantwo \qty(-\pdv*{\phi}{x},\, \pdv*{\phi}{y}),
+    2\psi = \atantwo \qty(\pdv*{\theta}{y},\, \pdv*{\theta}{x}) + \atantwo \qty(-\pdv*{\phi}{x},\, \pdv*{\phi}{y}).
 \end{equation}
 Flattening by the angle of $R$ would remove all of the rotation and leave exactly the shear $\Sigma$.
 Equation~\eqref{eq:rot_angle} misses that angle by $\Delta = \order{g^2}$, which raises SFL's leakage on the reference disk by \flattenSFL\ and affects the other projections far less; the forward model carries $\Delta$, and Appendix~\ref{app:flatten} gives the angle of $R$ in closed form, which removes it.
@@ -331,7 +331,7 @@ The footprint the pipeline analyses is then not the disk over which $\gsq$ is co
 
 The upper panel of Fig.~\ref{fig:spectra} shows the $EE$ bandpowers on the 5\% reference disk as ratios to the input spectrum, one series per projection, together with the forward model evaluated from each projection's Jacobian and the input spectrum alone.
 The two cylindrical projections lose about a third of the input power at $\ell = 1000$ (SFL measures $\EEinSFLoneK$ of the input, BICEP $\EEinBICEPoneK$), exceed it by $\ell = 3000$ ($\EEinSFLthreeK$ and $\EEinBICEPthreeK$), and reach $\EEinSFLfourfive$ and $\EEinBICEPfourfive$ times the input by $\ell = 4500$.
-ZEA, equal-area and the least sheared, stays within $\EEinZEAdev$ of unity throughout.
+ZEA, equal-area and the least sheared of the three, stays within $\EEinZEAdev$ of unity throughout.
 STG moves the other way, falling to $\EEinSTGthreeK$ by $\ell = 3000$ and staying near it beyond: with $g = 0$ only magnification acts.
 
 The shape of these ratios tests the model more sharply than their amplitude.
@@ -367,7 +367,7 @@ Above $\ell = \riselo$ the floor-subtracted ratio to the model climbs to \riseBI
 
 Figure~\ref{fig:shear_leakage} tests Eq.~\eqref{eq:law_footprint} directly, plotting the measured $BB/EE$ against $2\gsq$ for every usable sheared projection--mask pair.
 A fit of the coefficient to the band average over $1000 < \ell < 3000$ returns $\fitcoef$, \fitoffset\ above the derived value of 2, with \fitrms\ rms scatter and a worst case of \fitworst\ across \decades\ decades in $\gsq$.
-The \numpairs\ pairs are not independent tests: they are three sheared projections, two of them near-degenerate on round masks (Sect.~\ref{subsec:disks}), each measured on seven nested disks.
+The \numpairs\ pairs are not independent tests: they are three sheared projections, two of them near-degenerate on round masks (Sect.~\ref{subsec:disks}), each measured on up to seven nested disks.
 The offset is the mean, over that band, of the $\ell$-dependent tilt described below.
 The fit uses the raw ratios; subtracting the STG floor moves the coefficient to $\fitcoefsub$ and leaves the rms unchanged, and a free power law returns $\freepowerlaw$.
 The two excluded pairs measure $\clippedSFL$ (SFL) and $\clippedBICEP$ (BICEP) times $2\gsq$.
@@ -378,7 +378,7 @@ Measured over modelled, these have mean and scatter $\bandbybandratio$ and a wor
 The tilts run in opposite directions for the two cylindrical projections.
 SFL is equal-area, and on a falling spectrum the curvature of $C$ lifts the $E$ power of its high-shear pixels, so its ratio rises with $\ell$; on the 5\% disk, floor-subtracted, its ratio to $2\gsq$ rises from $\tiltSFLlo$ in the first band to $\tiltSFLhi$ in the last.
 BICEP's shear grows fastest toward the pole, where its magnification reaches $\magfactor$; a magnified pixel reads the spectrum at a higher wavenumber, so on the damping tail its weight falls, and BICEP's ratio falls from $\tiltBICEPlo$ to $\tiltBICEPhi$.
-ZEA, the least sheared and least magnified projection, gives the cleanest single test: its pipeline floor stays below $0.5\%$ of the measurement up to $\ell = \ZEAfloorclean$, and its raw ratio to $2\gsq$ across the \numbandbands\ bands is \ZEAbands, the excess in the last band being consistent with the floor.
+ZEA, the least sheared of the three and unmagnified, gives the cleanest single test: its pipeline floor stays below $0.5\%$ of the measurement up to $\ell = \ZEAfloorclean$, and its raw ratio to $2\gsq$ across the \numbandbands\ bands is \ZEAbands, the excess in the last band being consistent with the floor.
 
 The leaked $B$ is a deterministic image of the $E$ realization, but its bandpowers are no more correlated than those of an ordinary sky: over $500 < \ell < \lwall$ the mean off-diagonal correlation of the $BB$ bandpowers is \offdiagBB, against \offdiagEE\ for $EE$, so a standard covariance suffices.
 
