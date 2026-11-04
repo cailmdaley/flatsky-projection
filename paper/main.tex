@@ -68,7 +68,7 @@ They project a patch of the celestial sphere onto a Cartesian grid and replace s
 Flat maps have two advantages.
 Fast Fourier transforms (FFTs) have historically been faster than spherical harmonic transforms, and the mathematics of the plane can be simpler: harmonic modes are plane waves, a filter is a multiplication in Fourier space, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
 
-These advantages have made the flat sky the working setting for much of small- and medium-field cosmology.
+These advantages have led a variety of fields in cosmology to adopt flat-sky analyses.
 Ground-based CMB experiments have measured temperature and polarization power spectra on projected maps for more than a decade: SPT on Lambert azimuthal equal-area maps \citep{story13, henning18, dutcher21}, ACT on cylindrical equal-area maps \citep{louis17}, and POLARBEAR and BICEP/Keck on small patches \citep{polarbear14, bk7}.
 The quadratic estimators of CMB lensing were derived on the flat sky \citep{huokamoto02}, the first measurements of the lensing power spectrum used them there \citep{das11, vanengelen12}, and field-level Bayesian lensing analyses of SPT data run on projected maps \citep{millea21, ge24}.
 Galaxy clusters and point sources are found with matched filters built in two-dimensional Fourier space \citep{melin06, vieira10, bleem15, hilton21}; even the all-sky \textit{Planck} cluster catalogue was made by cutting the HEALPix maps into tangent-plane patches before filtering \citep{planck16sz}.
@@ -76,23 +76,20 @@ Stacking analyses cut flat stamps around known objects, for example to measure t
 Convolutional neural networks take images as input, so machine-learning and simulation-based inference work on projected patches, whether they reconstruct CMB lensing \citep{caldeira19}, recover polarization maps \citep{casas23}, or infer cosmology from weak-lensing mass maps \citep{fluri19, jeffrey21}.
 Those mass maps have mostly been reconstructed on the flat sky as well \citep{chang18}, with the Kaiser--Squires inversion of shear into convergence \citep{kaiser93}.
 
-The plane has a price, because no projection flattens the sphere without distorting it.
+No projection flattens the sphere without distorting it.
 Working on the sphere avoids the distortion but is more involved, both mathematically and computationally.
-Pseudo-$C_\ell$ estimators on the sphere build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}; lensing estimators had to be rederived with spin-weighted harmonics once surveys approached a percent of the sky \citep{okamotohu03}; and a spherical harmonic transform band-limited at $\ell_{\rm max}$ costs $\order{\ell_{\rm max}^3}$ operations \citep{reinecke13}, against $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ for an FFT at the same resolution.
-As footprints have grown, the largest analyses have paid that cost: ACT's power spectra have been estimated on the curved sky since its fourth data release \citep{choi20}, as have its lensing reconstruction \citep{qu24}, the most recent SPT-3G temperature and polarization spectra \citep{spt3gd1}, and wide-area weak-lensing mass maps \citep{chang18, wallis17}.
-The flat sky remains wherever an analysis is local, image-based, or confined to a small field, and there the projection's distortion is either carried by simulations, through a transfer function or a forward model, or neglected.
-
-Each of these choices is easier to justify when one knows exactly what the projection does, can predict it, and can account for it.
-This paper does that for power spectra.
+Pseudo-$C_\ell$ estimators on the sphere build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}; lensing estimators have full-sky forms in spin-weighted harmonics \citep{okamotohu03}; and a spherical harmonic transform band-limited at $\ell_{\rm max}$ costs $\order{\ell_{\rm max}^3}$ operations \citep{reinecke13}, against $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ for an FFT at the same resolution.
+As analyses have pushed to wider areas, most experiments have switched to spherical harmonic transforms: ACT's power spectra since its fourth data release \citep{choi20}, its lensing reconstruction \citep{qu24}, the most recent SPT-3G temperature and polarization spectra \citep{spt3gd1}, and wide-area weak-lensing mass maps \citep{chang18, wallis17}.
+Flat maps persist in local, image-based and small-field analyses, which carry the projection's distortion through simulations or neglect it.
+This paper predicts that distortion from the projection's definition.
 Near any point a projection rotates, magnifies, and shears the sky.
-Polarization pipelines already undo the rotation.
-The shear remains, and it acts on a spectrum in two ways: it moves scalar power along $\ell$, by an order-unity amount on the damping tail of a wide field, and it turns $E$ into $B$.
+Polarization pipelines undo the rotation but not the shear, which acts on a spectrum in two ways: it moves scalar power along $\ell$, by an order-unity amount on the damping tail of a wide field, and it turns $E$ into $B$.
 The second matters because the faint signals of polarization live in $B$, from the imprint of primordial gravitational waves \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
 We derive both effects in closed form from the projection's definition, with no free parameters, and test them against simulations.
 
-Three effects go by the name ``$E$/$B$ leakage,'' and this paper concerns one of them.
+Projection leakage differs from two other sources of $E$/$B$ mixing.
 A mask boundary leaves some modes ambiguous between $E$ and $B$ \citep{bunn03}, which purified estimators remove \citep{smith07, alonso19}, and the flat-sky approximation to the harmonic transform adds an error controlled at the $0.3$--$1\%$ level \citep{bernardeau11, challinor05}.
-The third is geometric: projection distorts the field itself, in the interior of a footprint as well as at its edge, and no choice of harmonic transform removes it.
+Projection instead distorts the field itself, in the interior of a footprint as well as at its edge, and no choice of harmonic transform removes it.
 
 Gravitational lensing acts on the CMB by the same mechanism.
 A remapping whose Jacobian has a trace-free part moves scalar power along $\ell$ and converts $E$ into $B$, and the flat-sky kernels for both are standard \citep{lewis06}.
