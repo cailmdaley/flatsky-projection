@@ -568,6 +568,39 @@ def _field_1500d():
 
 
 
+def _scalar_forward(mom, mask, j, ell, lp, inputs):
+    """Apply the scalar block of the coupling matrix without unused spin blocks."""
+    s1, s2, weight = SL._cells(mom, mask, j)
+    chi = (np.arange(128) + .5) * np.pi / 128
+    stretch = np.sqrt((s1[:, None] * np.cos(chi))**2
+                      + (s2[:, None] * np.sin(chi))**2)
+    scale = weight * (s1 * s2)**2 / np.sum(weight * s1 * s2)
+    values = np.zeros((len(inputs), len(ell)))
+    for start in range(0, len(ell), 8):
+        source = stretch[:, :, None] * ell[start:start + 8]
+        for k, cl in enumerate(inputs):
+            mapped = np.interp(source, lp, np.where(lp <= S.LMAX, cl, 0.))
+            values[k, start:start + 8] = np.sum(
+                mapped.mean(1) * scale[:, None], axis=0)
+    return values
+
+
+def check_scalar_forward():
+    """Gate scalar reports on agreement with the full matrix, including its edge."""
+    mom = SL.load_moments(verbose=False)
+    th = T.load()
+    lp = th['ell'].astype(float)
+    inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
+    ell = np.array([1025., 3025., 5725.])
+    for j, proj in enumerate(S.PROJS):
+        direct = _scalar_forward(mom, MASK, j, ell, lp, inputs)
+        matrix = SL.coupling_matrix(mom, MASK, j, ell, lp,
+                                    band_limit=S.LMAX)['TT<-TT']
+        expected = np.stack([matrix @ cl for cl in inputs])
+        np.testing.assert_allclose(direct, expected, rtol=2e-12, atol=1e-14)
+    print('Scalar integration agrees with the full coupling matrix.')
+
+
 def scalar_numbers():
     """Report measured scalar closure and TT-calibrated white transfer errors.
 
@@ -576,6 +609,7 @@ def scalar_numbers():
     The full forward correction tests the unit-white amplitude against R @ 1;
     it does not invert a noisy, finite-band coupling matrix.
     """
+    check_scalar_forward()
     th = T.load()
     lp = th['ell'].astype(float)
     inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
@@ -583,31 +617,16 @@ def scalar_numbers():
     fine = np.arange(2.5, S.LMAX, 5.)
     truth = np.stack([np.interp(fine, lp, cl).reshape(S.NBINS, 10).mean(1)
                       for cl in inputs])
-    measured, predictions, errors = [], [], []
+    measured, predictions = [], []
     for field in (False, True):
         mom = _moments_1500d() if field else SL.load_moments()
         mask = 0 if field else MASK
         measured.append(np.stack([S.load_scalar(spec, field=field) if field
-                                  else S.load_scalar(spec) [MASK]
+                                  else S.load_scalar(spec)[MASK]
                                   for spec in ('TT', 'white')]))
         pred = []
         for j, proj in enumerate(S.PROJS):
-            # Evaluate the TT<-TT block directly to avoid allocating the
-            # unused polarization blocks of the full coupling matrix.
-            s1, s2, weight = SL._cells(mom, mask, j)
-            chi = (np.arange(128) + .5) * np.pi / 128
-            stretch = np.sqrt((s1[:, None] * np.cos(chi))**2
-                              + (s2[:, None] * np.sin(chi))**2)
-            scale = weight * (s1 * s2)**2 / np.sum(weight * s1 * s2)
-            values = np.zeros((2, fine.size))
-            for start in range(0, fine.size, 8):
-                ell = fine[start:start + 8]
-                source = stretch[:, :, None] * ell
-                keep = source <= S.LMAX
-                for k, cl in enumerate(inputs):
-                    mapped = np.interp(source, lp, cl) * keep
-                    values[k, start:start + 8] = np.sum(
-                        mapped.mean(1) * scale[:, None], axis=0)
+            values = _scalar_forward(mom, mask, j, fine, lp, inputs)
             pred.append(values.reshape(2, S.NBINS, 10).mean(2))
         predictions.append(np.stack(pred, axis=1))
     # Axes: footprint, sky(TT/white), projection, seed, band.
@@ -647,7 +666,9 @@ def scalar_numbers():
 
 
 if __name__ == "__main__":
-    if "--scalar-only" in sys.argv:
+    if "--check-scalar-forward" in sys.argv:
+        check_scalar_forward()
+    elif "--scalar-only" in sys.argv:
         scalar_numbers()
     else:
         main()
