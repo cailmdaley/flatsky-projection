@@ -119,8 +119,8 @@ def load(spec="EE", leg=QU_LEG):
     the module docstring).
     """
     key = spec.lower()
-    if key not in ("ee", "bb"):
-        raise ValueError(f"spec must be EE or BB, got {spec!r}")
+    if key not in ("ee", "bb", "tt"):
+        raise ValueError(f"spec must be EE, BB or TT, got {spec!r}")
     _check_window()
     out = np.full((len(PERC), len(PROJS), NSIMS, NBINS), np.nan)
     for j, proj in enumerate(PROJS):
