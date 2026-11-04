@@ -48,10 +48,6 @@ PROJ_LABEL = {"ProjSFL": "SFL", "ProjSTG": "STG", "ProjZEA": "ZEA",
 # greyscale and every flavour of colour vision.
 SECONDARY = ["#232323", "#616161", "#9E9E9E"]
 
-# Input spectra, for a figure whose series are spectra rather than projections.
-# Red and teal sit away from every projection hue and from each other.
-SPECTRUM_COLORS = {"TT": "#CC3311", "EE": "#009988"}
-
 # Sequential ramp for an ordered non-projection quantity (the ladder of mask
 # sizes). One hue, light to dark, per the sequential rule -- a desaturated
 # slate that no projection colour sits near.

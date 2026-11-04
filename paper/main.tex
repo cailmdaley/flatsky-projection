@@ -190,7 +190,8 @@ Averaging over directions samples $C$ between $\ell s_2$ and $\ell s_1$, which r
 The second term appears because an area-preserving stretch raises the mean of $\ln\rho$ by $g^2/2$, so the spectrum is read at a slightly higher multipole.
 On the damping tail the curvature dominates: the unlensed $EE$ spectrum of our simulations falls with a mean slope $n$ of \nEEtail\ over $3000 < \ell < 4500$, so $\tfrac14 n(n+2) \approx \coefEEtail$, and SFL on the 5\% reference disk of Sect.~\ref{sec:methods}, with $\gsq = \gsqSFLfive$, gains \liftEEtail\ in power at leading order.
 Once $g\ell$ approaches the acoustic period the expansion fails, so every prediction in this paper evaluates Eq.~\eqref{eq:scalar_ratio} exactly with the input spectrum.
-Figure~\ref{fig:slope} shows that exact ratio for three input spectra passed through the same geometry.
+A power law has no preferred scale, so its exact ratio is one constant at every $\ell$, $1 + \tfrac14 n(n+2)\gsq$ at leading order, whereas the acoustic structure of $TT$ and $EE$ reappears in theirs and grows on the damping tail.
+Figure~\ref{fig:direct} shows the spectra that result.
 
 Two limits anchor the picture.
 A spectrum $C \propto \ell^{-2}$, with equal power per logarithmic interval in two dimensions, passes through unchanged for every $J$ and to all orders in $g$, because $\expval{\rho^{-2}}_\chi = 1/(s_1 s_2)$ exactly; this is the zero of $n(n+2)$ at $n = -2$.
@@ -198,14 +199,16 @@ Magnification acts separately: with $g = 0$, a power law is multiplied by $\mu^{
 The conformal STG isolates this effect.
 Equation~\eqref{eq:scalar_expansion} is also the constant-shear limit of the lensed-$TT$ kernel of \citet{lewis06}, and Appendix~\ref{app:tt} derives it that way, together with the coefficient for other normalizations.
 
-\begin{figure}
-  \includegraphics[width=\columnwidth]{slope_intuition.pdf}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{direct_spectra.pdf}
   \caption{
-    Ratio of plane to sky power predicted for three input spectra passed through one geometry, SFL on the 5\% disk, from Eq.~\eqref{eq:scalar_ratio} evaluated over the footprint.
-    The power law gives a constant offset, $\tfrac14 n(n+2)\gsq$ at $n=-4$, while the acoustic structure of the unlensed $TT$ and $EE$ of our simulations reappears in the ratio and grows on the damping tail.
+    Power spectra on the 5\% reference disk, multiplied by $\ell^6$ to lift the damping tail on a linear axis: $TT$ (left), $EE$ (centre) and $BB$ (right), one series per projection.
+    Black lines are the input, unlensed spectra, whose $BB$ vanishes; coloured curves are the parameter-free forward model of Eq.~\eqref{eq:forward}.
+    Points average 20 realizations of the $EE$ and $BB$ bandpowers, with error bars smaller than the markers, and each projection shows every fourth band of width $\Delta\ell = 50$; the $TT$ panel shows the forward model alone.
+    In $BB$, STG is omitted because its $BB$ is the pipeline floor, and ZEA is multiplied by 100.
   }
-  \label{fig:slope}
-\end{figure}
+  \label{fig:direct}
+\end{figure*}
 
 \subsection{Distortion of polarization: basis rotation and \texorpdfstring{$E$}{E}-to-\texorpdfstring{$B$}{B} leakage} \label{subsec:derivation}
 
