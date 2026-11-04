@@ -22,3 +22,23 @@ for nn in (1024,2048,4096):
         c=np.polyfit((l[m]/nn)**2,-np.log(w[m]),2)    # -ln w = c1 x^2 + c2 x^4...
         c1=np.polyfit((l[m]/nn)**2,-np.log(w[m])/(l[m]/nn)**2,1)[1]
         print(f"Nside {nn} x<{hi}: measured c={c1:.5f}  square pixel pi/72={np.pi/72:.5f}  sheared {np.pi/72*F:.5f}")
+
+# Full window: each pixel as the parallelogram its corners span, |W|^2 averaged over direction and pixels.
+print("full window, parallelogram pixels against hp.pixwin")
+for nn in (1024, 4096):
+    np_ = hp.nside2npix(nn); ids = np.arange(0, np_, np_ // 6000)
+    b = hp.boundaries(nn, ids, step=1, nest=True)
+    th, ph = hp.pix2ang(nn, ids, nest=True); z = np.cos(th)
+    n = np.stack([-z*np.cos(ph), -z*np.sin(ph), np.sqrt(1-z**2)], 1); e = np.stack([-np.sin(ph), np.cos(ph), 0*ph], 1)
+    d0 = np.stack([((b[:, :, 0]-b[:, :, 2])*e).sum(1), ((b[:, :, 0]-b[:, :, 2])*n).sum(1)], 1)
+    d1 = np.stack([((b[:, :, 1]-b[:, :, 3])*e).sum(1), ((b[:, :, 1]-b[:, :, 3])*n).sum(1)], 1)
+    s1, s2 = (d0+d1)/2, (d0-d1)/2
+    chi = (np.arange(90)+.5)*np.pi/90
+    u = np.stack([np.cos(chi), np.sin(chi)], 1)
+    a2 = 4*np.pi/np_; w = hp.pixwin(nn, lmax=3*nn-1)
+    print(f"Nside {nn}:  l/Nside  pixwin  sheared  square")
+    for x in (0.5, 1, 1.5, 2, 2.5, 3-1/nn):
+        l = int(x*nn)
+        W = np.sinc(l*(s1@u.T)/2/np.pi)*np.sinc(l*(s2@u.T)/2/np.pi)
+        sq = (np.sinc(l*np.sqrt(a2)*np.cos(chi)/2/np.pi)*np.sinc(l*np.sqrt(a2)*np.sin(chi)/2/np.pi))
+        print(f"   {l/nn:.2f}  {w[l]:.5f}  {np.sqrt((W**2).mean()):.5f}  {np.sqrt((sq**2).mean()):.5f}")
