@@ -251,3 +251,24 @@ def theory_ee():
 def transfer_2021(ell=ELL_2021):
     """The 2021 files were raw: they still need the flat-sky window divided."""
     return flat_pixwin(ell)
+
+
+def load_scalar(spec="TT", field=False):
+    """Scalar bandpowers, (mask, projection, seed, band), or field without mask.
+
+    `spec` is TT or white. Both use the EE bins and flat_only window correction.
+    White skies have unit input C_l from ell=2 through LMAX.
+    """
+    kind = {"tt": "tt", "white": "white"}[spec.lower()]
+    suffix = "_field" if field else ""
+    directory = ROOT / "results" / "highell" / f"scalar_{kind}{suffix}_bandpowers"
+    _check_window(directory)
+    nmask = 1 if field else len(PERC)
+    out = np.empty((nmask, len(PROJS), NSIMS, NBINS))
+    for j, proj in enumerate(PROJS):
+        for seed in range(NSIMS):
+            with np.load(_path(proj, seed, directory)) as z:
+                if not np.array_equal(z["ell_eff"], ELL):
+                    raise ValueError(f"{directory}: scalar bins differ from EE")
+                out[:, j, seed] = z["cl"]
+    return out[0] if field else out

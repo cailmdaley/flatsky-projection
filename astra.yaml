@@ -544,6 +544,162 @@ outputs:
         disk: 8Gi
         time_limit: 1h
 
+  # Scalar measurements share geometry and binning with the polarization suite.
+  - id: scalar_white_alms
+    type: data
+    label: Independent white scalar alms
+    decisions: [ell_max]
+    units:
+      seed: 0..20
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_white_alms.py
+        --lmax {decisions.ell_max} --seeds {units.seed}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 2Gi
+        disk: 2Gi
+        time_limit: 1h
+
+  - id: scalar_tt_maps
+    type: data
+    label: Projected tt scalar maps
+    inputs: [preprocessed_alms]
+    decisions: [interpolation, intermediate_nside]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_project.py
+        --alms {inputs.preprocessed_alms}
+        --projections {units.projection} --seeds {units.seed}
+        --interpolation {decisions.interpolation}
+        --nside {decisions.intermediate_nside}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --max-procs 4 --out {output}
+      resources:
+        cpus: 4
+        memory: 20Gi
+        disk: 4Gi
+        time_limit: 2h
+
+  - id: scalar_tt_bandpowers
+    type: data
+    label: tt scalar bandpowers
+    inputs: [scalar_tt_maps, flatsky_masks, coupling_matrices]
+    decisions: [pixel_window, ell_max, bandpower_width]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_spectra.py
+        --maps {inputs.scalar_tt_maps}
+        --masks {inputs.flatsky_masks} --workspaces {inputs.coupling_matrices}
+        --projections {units.projection} --seeds {units.seed}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: scalar_tt_field_bandpowers
+    type: data
+    label: tt scalar bandpowers_field
+    inputs: [scalar_tt_maps, field_flatsky_masks, field_coupling]
+    decisions: [pixel_window, ell_max, bandpower_width]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_spectra.py
+        --maps {inputs.scalar_tt_maps}
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projections {units.projection} --seeds {units.seed}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: scalar_white_maps
+    type: data
+    label: Projected white scalar maps
+    inputs: [scalar_white_alms]
+    decisions: [interpolation, intermediate_nside]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_project.py
+        --alms {inputs.scalar_white_alms}
+        --projections {units.projection} --seeds {units.seed}
+        --interpolation {decisions.interpolation}
+        --nside {decisions.intermediate_nside}
+        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
+        --max-procs 4 --out {output}
+      resources:
+        cpus: 4
+        memory: 20Gi
+        disk: 4Gi
+        time_limit: 2h
+
+  - id: scalar_white_bandpowers
+    type: data
+    label: white scalar bandpowers
+    inputs: [scalar_white_maps, flatsky_masks, coupling_matrices]
+    decisions: [pixel_window, ell_max, bandpower_width]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_spectra.py
+        --maps {inputs.scalar_white_maps}
+        --masks {inputs.flatsky_masks} --workspaces {inputs.coupling_matrices}
+        --projections {units.projection} --seeds {units.seed}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: scalar_white_field_bandpowers
+    type: data
+    label: white scalar bandpowers_field
+    inputs: [scalar_white_maps, field_flatsky_masks, field_coupling]
+    decisions: [pixel_window, ell_max, bandpower_width]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/scalar_spectra.py
+        --maps {inputs.scalar_white_maps}
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projections {units.projection} --seeds {units.seed}
+        --pixel-window {decisions.pixel_window}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
   - id: eb_residual_maps
     type: data
     label: "Map-space E/B residuals"
