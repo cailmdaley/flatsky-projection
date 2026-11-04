@@ -79,7 +79,7 @@ Those mass maps have mostly been reconstructed on the flat sky as well, with the
 No projection flattens the sphere without distorting it.
 Working on the sphere avoids the distortion but is more involved, both mathematically and computationally.
 Pseudo-$C_\ell$ estimators on the sphere build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}; lensing estimators have full-sky forms in spin-weighted harmonics \citep{okamotohu03}; and a spherical harmonic transform band-limited at $\ell_{\rm max}$ costs $\order{\ell_{\rm max}^3}$ operations \citep{reinecke13}, against $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ for an FFT at the same resolution.
-As analyses have pushed to wider areas, most experiments have switched to spherical harmonic transforms: ACT's power spectra since its fourth data release \citep{choi20}, its lensing reconstruction \citep{qu24}, the most recent SPT-3G temperature and polarization spectra \citep{spt3gd1}, and wide-area weak-lensing mass maps \citep{chang18, wallis17}.
+As analyses have pushed to wider areas, most experiments have switched to spherical harmonic transforms: ACT's power spectra since its fourth data release, which keep a plate carr\'ee (CAR) grid but transform it on the sphere \citep{choi20}, its lensing reconstruction \citep{qu24}, the most recent SPT-3G temperature and polarization spectra \citep{spt3gd1}, and wide-area weak-lensing mass maps \citep{chang18, wallis17}.
 Flat maps persist in local, image-based and small-field analyses, which carry the projection's distortion through simulations or neglect it.
 This paper predicts that distortion from the projection's definition.
 Near any point a projection rotates, magnifies, and shears the sky.
