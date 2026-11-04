@@ -646,6 +646,22 @@ def scalar_numbers():
              predicted=predictions, ratio=closure, ratio_sem=sem / predictions,
              diagonal_white=diagonal_white, diagonal_white_sem=diagonal_sem,
              predicted_diagonal_white=predicted_diagonal, truth=truth)
+    import csv
+    with (ROOT / 'paper' / 'scalar_summary.csv').open('w', newline='') as stream:
+        writer = csv.writer(stream)
+        writer.writerow(['footprint', 'projection', 'spectrum', 'ell', 'measured',
+                         'sem', 'forward_model', 'measured_over_forward', 'ratio_sem',
+                         'white_after_tt_diagonal', 'diagonal_sem', 'predicted_diagonal'])
+        for fi, footprint in enumerate(('disk5', 'field1500d')):
+            for j, proj in enumerate(S.PROJS):
+                for k, sky in enumerate(('TT', 'white')):
+                    for b, ell in enumerate(S.ELL):
+                        writer.writerow([footprint, proj, sky, ell, mean[fi,k,j,b],
+                                         sem[fi,k,j,b], predictions[fi,k,j,b],
+                                         closure[fi,k,j,b], sem[fi,k,j,b]/predictions[fi,k,j,b],
+                                         diagonal_white[fi,j,b] if k else '',
+                                         diagonal_sem[fi,j,b] if k else '',
+                                         predicted_diagonal[fi,j,b] if k else ''])
     M = Macros()
     clean = (S.ELL >= 1000) & (S.ELL < 4000)
     for fi, footprint in enumerate(('Disk', 'Field')):
