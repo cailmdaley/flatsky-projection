@@ -566,5 +566,88 @@ def _field_1500d():
     return {S.PROJ_LABEL[p]: 2 * float(g2[j]) for j, p in enumerate(S.PROJS)}
 
 
+
+
+def scalar_numbers():
+    """Report measured scalar closure and TT-calibrated white transfer errors.
+
+    Writes paper/scalar_numbers.tex and band-by-band paper/scalar_summary.npz.
+    Run with --scalar-only after all four scalar bandpower outputs land.
+    The full forward correction tests the unit-white amplitude against R @ 1;
+    it does not invert a noisy, finite-band coupling matrix.
+    """
+    th = T.load()
+    lp = th['ell'].astype(float)
+    inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
+    # Ten midpoint samples per production band resolve acoustic structure.
+    fine = np.arange(2.5, S.LMAX, 5.)
+    truth = np.stack([np.interp(fine, lp, cl).reshape(S.NBINS, 10).mean(1)
+                      for cl in inputs])
+    measured, predictions, errors = [], [], []
+    for field in (False, True):
+        mom = _moments_1500d() if field else SL.load_moments()
+        mask = 0 if field else MASK
+        measured.append(np.stack([S.load_scalar(spec, field=field) if field
+                                  else S.load_scalar(spec) [MASK]
+                                  for spec in ('TT', 'white')]))
+        pred = []
+        for j, proj in enumerate(S.PROJS):
+            # Evaluate the TT<-TT block directly to avoid allocating the
+            # unused polarization blocks of the full coupling matrix.
+            s1, s2, weight = SL._cells(mom, mask, j)
+            chi = (np.arange(128) + .5) * np.pi / 128
+            stretch = np.sqrt((s1[:, None] * np.cos(chi))**2
+                              + (s2[:, None] * np.sin(chi))**2)
+            scale = weight * (s1 * s2)**2 / np.sum(weight * s1 * s2)
+            values = np.zeros((2, fine.size))
+            for start in range(0, fine.size, 8):
+                ell = fine[start:start + 8]
+                source = stretch[:, :, None] * ell
+                keep = source <= S.LMAX
+                for k, cl in enumerate(inputs):
+                    mapped = np.interp(source, lp, cl) * keep
+                    values[k, start:start + 8] = np.sum(
+                        mapped.mean(1) * scale[:, None], axis=0)
+            pred.append(values.reshape(2, S.NBINS, 10).mean(2))
+        predictions.append(np.stack(pred, axis=1))
+    # Axes: footprint, sky(TT/white), projection, seed, band.
+    measured = np.stack(measured)
+    predictions = np.stack(predictions)
+    mean = measured.mean(axis=3)
+    sem = measured.std(axis=3, ddof=1) / np.sqrt(S.NSIMS)
+    closure = mean / predictions
+    # Independent realization ensembles: their sample-mean errors add.
+    diagonal_white = mean[:, 1] / (mean[:, 0] / truth[0])
+    diagonal_sem = diagonal_white * np.sqrt(
+        (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
+    predicted_diagonal = predictions[:, 1] / (predictions[:, 0] / truth[0])
+    np.savez(ROOT / 'paper' / 'scalar_summary.npz', ell=S.ELL,
+             projections=S.PROJS, footprints=['disk5', 'field1500d'],
+             spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
+             predicted=predictions, ratio=closure, ratio_sem=sem / predictions,
+             diagonal_white=diagonal_white, diagonal_white_sem=diagonal_sem,
+             predicted_diagonal_white=predicted_diagonal, truth=truth)
+    M = Macros()
+    clean = (S.ELL >= 1000) & (S.ELL < 4000)
+    for fi, footprint in enumerate(('Disk', 'Field')):
+        for j, proj in enumerate(S.PROJS):
+            label = S.PROJ_LABEL[proj]
+            for k, sky in enumerate(('TT', 'White')):
+                prefix = f'Scalar{footprint}{label}{sky}'
+                M.add(prefix + 'RatioMin', f(np.min(closure[fi, k, j, clean])))
+                M.add(prefix + 'RatioMax', f(np.max(closure[fi, k, j, clean])))
+                M.add(prefix + 'RatioMean', f(np.mean(closure[fi, k, j, clean])))
+            M.add(f'Scalar{footprint}{label}WhiteDiagonalMeanError',
+                  pct(np.mean(diagonal_white[fi, j, clean] - 1)))
+            print(footprint, label, 'TT/forward', closure[fi, 0, j, clean].mean(),
+                  'white/forward', closure[fi, 1, j, clean].mean(),
+                  'white TT-diagonal error', (diagonal_white[fi, j, clean] - 1).mean())
+    (ROOT / 'paper' / 'scalar_numbers.tex').write_text(M.tex())
+    print('Wrote paper/scalar_numbers.tex and paper/scalar_summary.npz')
+
+
 if __name__ == "__main__":
-    main()
+    if "--scalar-only" in sys.argv:
+        scalar_numbers()
+    else:
+        main()
