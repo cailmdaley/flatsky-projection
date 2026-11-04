@@ -65,8 +65,8 @@ For an analysis that keeps a sheared grid, the projection's coupling matrix corr
 
 Many analyses of the cosmic microwave background (CMB) and of large-scale structure work on a flat map.
 They project a patch of the celestial sphere onto a Cartesian grid and replace spherical harmonics with two-dimensional Fourier modes.
-Two things recommend the plane.
-Fast Fourier transforms (FFTs) make it cheap, and its mathematics is often simpler: harmonic modes are plane waves, a filter is a multiplication in Fourier space, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
+Flat maps have two advantages.
+Fast Fourier transforms (FFTs) have historically been faster than spherical harmonic transforms, and the mathematics of the plane can be simpler: harmonic modes are plane waves, a filter is a multiplication in Fourier space, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
 
 These advantages have made the flat sky the working setting for much of small- and medium-field cosmology.
 Ground-based CMB experiments have measured temperature and polarization power spectra on projected maps for more than a decade: SPT on Lambert azimuthal equal-area maps \citep{story13, henning18, dutcher21}, ACT on cylindrical equal-area maps \citep{louis17}, and POLARBEAR and BICEP/Keck on small patches \citep{polarbear14, bk7}.
@@ -510,6 +510,7 @@ In each case Eq.~\eqref{eq:law_footprint} gives the expected leakage from the pr
 
 Avoiding pixelization errors and avoiding projection are separate properties.
 \citet{ge24} replace bilinear interpolation with non-uniform FFTs and verify round trips between grids to $\lesssim 0.3\%$ out to $\ell = 3500$; this measures interpolation fidelity, which a better kernel improves, whereas the shear belongs to the projection, so a perfect resampler onto a non-conformal grid still leaks $2\gsq$ of $EE$ into $BB$.
+\citet{halltessore25} model the corresponding pixelization biases in cosmic-shear pseudo-$C_\ell$ estimators on the HEALPix grid, where no plane is involved.
 \citet{wolz25} and \citet{cornish25} estimate spectra directly from catalogues by summing spherical harmonics at true sky positions, which involves no projection and so no leakage.
 ACT's maps use an equidistant cylindrical pixelization, the family of BICEP's grid, but are analysed with spherical harmonic transforms on the curved sky \citep{choi20}; with no flat-sky step and no flattening there is no projection leakage, so the leakage arises from analysing the grid as a plane rather than from the pixelization itself.
 
