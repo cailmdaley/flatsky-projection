@@ -12,8 +12,8 @@ which is Equation (eq:forward) with the misalignment kernel set to one. The
 geometry is held fixed across the three curves, so every difference between
 them is the spectrum's own shape read through n^2/4:
 
-  * lensed TT -- acoustic peaks imprint, the steep damping tail amplifies;
-  * lensed EE -- sharper peaks, deeper troughs, so a larger swing;
+  * unlensed TT -- acoustic peaks imprint, the steep damping tail amplifies;
+  * unlensed EE -- sharper peaks, deeper troughs, so a larger swing;
   * a featureless power law C ~ l^-4 -- constant slope, so a constant offset,
     the clean n(n+2)/4 <g^2> the expansion predicts.
 
@@ -72,8 +72,8 @@ def main():
                                       POWER_LAW_INDEX), 0.0)
 
     inputs = [
-        (r"lensed $TT$", th["lensed_TT"], PS.SPECTRUM_COLORS["TT"], "-"),
-        (r"lensed $EE$", th["lensed_EE"], PS.SPECTRUM_COLORS["EE"], "--"),
+        (r"$TT$", th["unlensed_TT"], PS.SPECTRUM_COLORS["TT"], "-"),
+        (r"$EE$", th["unlensed_EE"], PS.SPECTRUM_COLORS["EE"], "--"),
         (rf"$C_\ell \propto \ell^{{{POWER_LAW_INDEX:.0f}}}$",
          power_law, PS.SECONDARY[0], ":"),
     ]

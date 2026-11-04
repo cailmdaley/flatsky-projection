@@ -74,7 +74,7 @@ The quadratic estimators of CMB lensing were derived on the flat sky \citep{huok
 Galaxy clusters and point sources are found with matched filters built in two-dimensional Fourier space \citep{melin06, vieira10, bleem15, hilton21}; even the all-sky \textit{Planck} cluster catalogue was made by cutting the HEALPix maps into tangent-plane patches before filtering \citep{planck16sz}.
 Stacking analyses cut flat stamps around known objects, for example to measure the lensing of the CMB by clusters and halos \citep{baxter15, madhavacheril15}.
 Convolutional neural networks take images as input, so machine-learning and simulation-based inference work on projected patches, whether they reconstruct CMB lensing \citep{caldeira19}, recover polarization maps \citep{casas23}, or infer cosmology from weak-lensing mass maps \citep{fluri19, jeffrey21}.
-Those mass maps have mostly been reconstructed on the flat sky as well \citep{chang18}, with the Kaiser--Squires inversion of shear into convergence \citep{kaiser93}.
+Those mass maps have mostly been reconstructed on the flat sky as well, with the Kaiser--Squires inversion of shear into convergence \citep{kaiser93}.
 
 No projection flattens the sphere without distorting it.
 Working on the sphere avoids the distortion but is more involved, both mathematically and computationally.
@@ -202,8 +202,7 @@ Equation~\eqref{eq:scalar_expansion} is also the constant-shear limit of the len
   \includegraphics[width=\columnwidth]{slope_intuition.pdf}
   \caption{
     Ratio of plane to sky power predicted for three input spectra passed through one geometry, SFL on the 5\% disk, from Eq.~\eqref{eq:scalar_ratio} evaluated over the footprint.
-    The power law gives a constant offset, $\tfrac14 n(n+2)\gsq$ at $n=-4$, while the acoustic structure of lensed $TT$ and $EE$ reappears in the ratio and grows on the damping tail.
-    Lensing makes the damping tail shallower, so these lensed spectra rise less than the unlensed input of Fig.~\ref{fig:spectra}.
+    The power law gives a constant offset, $\tfrac14 n(n+2)\gsq$ at $n=-4$, while the acoustic structure of the unlensed $TT$ and $EE$ of our simulations reappears in the ratio and grows on the damping tail.
   }
   \label{fig:slope}
 \end{figure}
