@@ -5,7 +5,7 @@ This is the paper's central figure. Everything else in the analysis is a
 reduction -- a band average, a ratio, a fit. Here the distortion is shown
 where it actually lives: in the bandpowers.
 
-One mask (the 5% disk), five projections, two channels, stacked on one
+One mask (the 5% disk), four projections, two channels, stacked on one
 multipole axis so that the reader compares them bin for bin:
 
   top     EE divided by the input spectrum -- the scalar channel, the remap of

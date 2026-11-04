@@ -1,14 +1,14 @@
 """The 2021 mask suite, as each projection sees it.
 
 Seven concentric apodized disks (unapodized sky fractions 0.75% to 10%) were
-projected onto the same 110 x 110 deg, 2 arcmin flat-sky grid in five
+projected onto the same 110 x 110 deg, 2 arcmin flat-sky grid in four
 projections. The scientific point of the figure is geometric: a disk on the
 sphere is not a disk on the grid, and how badly it is stretched depends on the
 projection. SFL and the BICEP equidistant-cylindrical projection stretch in x
-by ~1/cos(dec) at the field centre and are near-degenerate; SIN, STG and ZEA
+by ~1/cos(dec) at the field centre and are near-degenerate; STG and ZEA
 are zenithal and keep circles as circles near the centre.
 
-One row of five panels, one per projection:
+One row of four panels, one per projection:
   - grey image of the largest apodized mask (the C2, 2.5 deg taper shows as the
     soft edge),
   - W = 0.5 contours for all seven disks, coloured by disk area,
@@ -29,15 +29,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle, Rectangle
 
-from paper_style import PROJ_COLORS as PROJ_COLOR, mask_ramp
+from paper_style import PROJ_COLORS as PROJ_COLOR, PROJS, mask_ramp
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "figures"
 CACHE = Path(__file__).resolve().parent / ".cache" / "mask_contours.npz"
 MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
 
-PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
-LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
+LABELS = {"ProjSFL": "SFL", "ProjSTG": "STG",
           "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
 # From the 2021 config: disk radii (rad) and their nominal sky percentages.
 DISK_RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]
@@ -116,7 +115,7 @@ def main():
     bounds = np.arange(NMASK + 1) - 0.5
     norm = BoundaryNorm(bounds, NMASK)
 
-    fig, axes = plt.subplots(1, 5, figsize=(7.1, 1.85), sharex=True, sharey=True,
+    fig, axes = plt.subplots(1, len(PROJS), figsize=(7.1, 2.25), sharex=True, sharey=True,
                              gridspec_kw=dict(wspace=0.06, left=0.055, right=0.9,
                                               bottom=0.195, top=0.84))
     lim = 55.0

@@ -11,13 +11,13 @@ identity or magnitude.
 
 The palette
 -----------
-Five categorical hues in the paper's fixed projection order (SFL, SIN, STG,
-ZEA, BICEP). Validated with the dataviz skill's checker in *all-pairs* mode
-on a light surface:
+Four categorical hues in the paper's fixed projection order (SFL, STG, ZEA,
+BICEP). Validated with the dataviz skill's checker in *all-pairs* mode on a
+light surface:
 
     lightness band  PASS      chroma floor    PASS
-    CVD separation  PASS (worst all-pairs dE 8.9, protan, STG-SIN)
-    normal vision   PASS (worst all-pairs dE 18.0, BICEP-SIN)
+    CVD separation  PASS (worst all-pairs dE 9.9, deutan, BICEP-STG)
+    normal vision   PASS (worst all-pairs dE 21.8, BICEP-SFL)
     contrast        WARN on ZEA's gold (2.1:1), relieved as the skill
                     requires: every series carries a legend entry and a
                     distinct marker, so identity is never colour alone.
@@ -26,30 +26,25 @@ Marker shapes are part of the identity, not decoration: they are what keeps
 the figures readable in greyscale print and for the residual CVD risk.
 """
 
-# Projection identity. Order is the paper's: SFL, SIN, STG, ZEA, BICEP.
+# Projection identity. Order is the paper's: SFL, STG, ZEA, BICEP. `PROJS`
+# below is the one list of the paper's projections; every script reuses it.
 PROJ_COLORS = {
     "ProjSFL":   "#3F76B8",   # blue
-    "ProjSIN":   "#EE6677",   # rose
     "ProjSTG":   "#228833",   # green
     "ProjZEA":   "#C7B03F",   # gold
     "ProjBICEP": "#AA3377",   # purple
 }
 
-PROJ_MARKERS = {
-    "ProjSFL": "o", "ProjSIN": "s", "ProjSTG": "x", "ProjZEA": "^",
-    "ProjBICEP": "D",
-}
+PROJ_MARKERS = {"ProjSFL": "o", "ProjSTG": "x", "ProjZEA": "^", "ProjBICEP": "D"}
 
 PROJS = list(PROJ_COLORS)
 
-PROJ_LABEL = {
-    "ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
-    "ProjZEA": "ZEA", "ProjBICEP": "BICEP",
-}
+PROJ_LABEL = {"ProjSFL": "SFL", "ProjSTG": "STG", "ProjZEA": "ZEA",
+              "ProjBICEP": "BICEP"}
 
 # Everything that is not a projection. Neutral by construction: it reads as
 # "different kind of thing" at a glance, and it cannot be mistaken for one of
-# the five. Three steps, well separated in lightness, so they survive
+# the four. Three steps, well separated in lightness, so they survive
 # greyscale and every flavour of colour vision.
 SECONDARY = ["#232323", "#616161", "#9E9E9E"]
 

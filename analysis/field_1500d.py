@@ -133,19 +133,21 @@ def run():
             clean.append(float(rr[cband].mean()))
         out[f"{name}_clean"] = np.array(clean)
     CACHE.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(CACHE, **out)
+    np.savez(CACHE, projs=S.PROJS, **out)
     return out
 
 
 def load(refresh=False):
     if CACHE.exists() and not refresh:
         with np.load(CACHE) as f:
-            return {k: f[k] for k in f.files}
+            if "projs" in f.files and list(f["projs"]) == S.PROJS:
+                return {k: f[k] for k in f.files}
     return run()
 
 
 def report(res):
     lab = [S.PROJ_LABEL[p] for p in S.PROJS]
+    jsfl, jbic = lab.index("SFL"), lab.index("BICEP")
     print(f"1500d field, {int(res['n_sims'])} sims, QU leg, BB/EE over {BAND[0]}<l<{BAND[1]}")
     print(f"  STG floor (band) {res['floor_band']:.3e}")
     print(f"  {'proj':<7}{'meas-floor':>12}{'+-':>10}{'model':>11}{'2<g2>':>11}"
@@ -157,9 +159,9 @@ def report(res):
               f"{m / mo:12.3f}{res['pipeline_clean'][j]:8.3f}"
               f"{2 * res['rect1024_g2'][j]:16.3e}")
     print(f"  SFL/BICEP measured {res['sfl_bicep']:.2f} +- {res['sfl_bicep_err']:.2f}; "
-          f"model {res['pipeline_model_band'][0] / res['pipeline_model_band'][4]:.2f}; "
-          f"2<g2> pipeline {res['pipeline_g2'][0] / res['pipeline_g2'][4]:.2f}, "
-          f"rect1024 {res['rect1024_g2'][0] / res['rect1024_g2'][4]:.2f}")
+          f"model {res['pipeline_model_band'][jsfl] / res['pipeline_model_band'][jbic]:.2f}; "
+          f"2<g2> pipeline {res['pipeline_g2'][jsfl] / res['pipeline_g2'][jbic]:.2f}, "
+          f"rect1024 {res['rect1024_g2'][jsfl] / res['rect1024_g2'][jbic]:.2f}")
     ell = res["ell"]
     print("  EE/input (measured | model) at l ~ 1000, 3000, 4000:")
     for j, l in enumerate(lab):

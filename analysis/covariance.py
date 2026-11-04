@@ -6,7 +6,7 @@ an ordinary sky? If neighbouring bandpowers were strongly correlated, a
 diagonal-plus-mode-coupling covariance would not do.
 
 It reads `spectra.load`, i.e. the highell run -- 20 seeds x 120 bandpowers of
-width dl = 50 out to l = 6000, five projections on seven masks -- and
+width dl = 50 out to l = 6000, four projections on seven masks -- and
 recomputes the seed-to-seed covariance and correlation directly.
 
 CAVEAT -- N=20 is few. A 120x120 sample correlation matrix from 20 seeds has
@@ -142,7 +142,7 @@ def main() -> None:
         for i, perc in enumerate(S.PERC):
             for j, proj in enumerate(S.PROJS):
                 bp = data[i, j]
-                # The 10% (mask6) runs for SFL, SIN and BICEP are broken on
+                # The 10% (mask6) runs for SFL and BICEP are broken on
                 # disk (all-NaN or overflowed to ~1e246; the disk swallows the
                 # south celestial pole -- see shear_leakage.py). Drop them
                 # entirely, matching the shear-law fit, rather than nan-meaning

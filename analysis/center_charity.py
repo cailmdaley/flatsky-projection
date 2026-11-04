@@ -1,6 +1,6 @@
 """Is any projection given an *uncharitable* centre?
 
-The paper's five projections are all built with `delta_center = -56 deg`
+The paper's projections are all built with `delta_center = -56 deg`
 (astra.yaml, grid/overnight.sh) and `alpha_center = 0` (the FlatSkyMap
 default; see _project.ALPHA_CENTER_DEG_DEFAULT). The analysis masks are
 concentric disks about the *same* point (0, -56).
@@ -24,8 +24,8 @@ import healpy as hp
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from geometry import jacobian, singular_values
+from paper_style import PROJS
 
-PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
 RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]  # astra.yaml:172
 APOSIZE_DEG = 2.5
 FIELD = (0.0, -56.0)

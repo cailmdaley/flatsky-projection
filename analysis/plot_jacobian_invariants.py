@@ -1,17 +1,17 @@
 """The anchor figure for Section 2: local shear g and magnification mu over the
-1500d footprint, for all five projections, computed relative to the sky (not
+1500d footprint, for the paper's four projections, computed relative to the sky (not
 relative to ZEA -- this is the single-projection Jacobian of Eq. scalar_remap,
 the invariants introduced right after the itemization in sec:law).
 
-Layout: 2 rows (g, mu) x 5 columns (SFL, SIN, STG, ZEA, BICEP), one shared
+Layout: 2 rows (g, mu) x 4 columns (SFL, STG, ZEA, BICEP), one shared
 colorbar per row. The 10% mask's W=0.5 contour (contoured from the projected
 mask image cached by plot_masks_figure.py) is overlaid on every panel so the
 reader sees what the analysis footprint actually samples, versus the wider
 field shown for context.
 
 Reachable sky. A grid pixel is drawn only if the sky point it names projects
-back onto it. That one test covers SIN's horizon, the cylindrical pair's
-pole, and SFL's boundary meridian: past |alpha - alpha_0| = 180 deg, near the
+back onto it. That one test covers the cylindrical pair's pole and SFL's
+boundary meridian: past |alpha - alpha_0| = 180 deg, near the
 pole, SFL's grid wraps around and samples sky it has already drawn, so
 neither its Jacobian nor its mask there is new sky. The mask contour is taken
 of W on reachable pixels only (zero elsewhere), so it closes on the footprint
@@ -32,17 +32,13 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 import geometry as G
 import paper_style as PS
-from paper_style import INK, INK_SOFT, MASK_RAMP, PROJ_COLORS
+from paper_style import INK, INK_SOFT, MASK_RAMP, PROJ_COLORS, PROJ_LABEL, PROJS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
 from matplotlib.patches import Rectangle
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "figures"
 CONTOUR_CACHE = Path(__file__).resolve().parent / ".cache" / "mask_contours.npz"
-
-PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
-LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
-          "ProjZEA": "ZEA", "ProjBICEP": "BICEP"}
 
 # Projection colour identity lives in paper_style: each column is named in ink
 # over a rule in its projection colour, so the hue is never asked to carry text.
@@ -55,10 +51,10 @@ LABELS = {"ProjSFL": "SFL", "ProjSIN": "SIN", "ProjSTG": "STG",
 # neutral-grey midpoint at mu = 1. The two sides of mu = 1 differ in hue and in
 # lightness: compression darkens through hueless graphite, magnification warms
 # to a muted umber that stops short of the dark end. Graphite keeps the mu row
-# from repeating g's slate, umber stays clear of the five projection hues, and
+# from repeating g's slate, umber stays clear of the projection hues, and
 # the lightness asymmetry keeps the sign legible in greyscale print. Sky that
-# the projection cannot reach (past the pole for the cylindrical pair, beyond
-# the horizon for SIN) is hatched.
+# the projection cannot reach (past the pole for the cylindrical pair) is
+# hatched.
 G_CMAP = LinearSegmentedColormap.from_list("slate", ["#E9EDF0"] + MASK_RAMP)
 MU_CMAP = LinearSegmentedColormap.from_list(
     "graphite_umber",
@@ -214,9 +210,10 @@ def main():
     # on the right for the two colour bars.
     left, right, top, bottom = 0.40, 0.66, 0.30, 0.36
     wgap, hgap, cbar_gap, cbar_w = 0.05, 0.08, 0.08, 0.09
-    side = (PS.TEXT_W - left - right - 4 * wgap) / 5
+    ncol = len(PROJS)
+    side = (PS.TEXT_W - left - right - (ncol - 1) * wgap) / ncol
     height = bottom + 2 * side + hgap + top
-    fig, axes = plt.subplots(2, 5, figsize=(PS.TEXT_W, height),
+    fig, axes = plt.subplots(2, ncol, figsize=(PS.TEXT_W, height),
                              sharex=True, sharey=True,
                              gridspec_kw=dict(
                                  wspace=wgap / side, hspace=hgap / side,
@@ -258,7 +255,7 @@ def main():
 
         # The column is named in ink; a rule in the projection's colour sits
         # under the name and is the only place the identity hue appears.
-        axg.text(0.5, 1.10, LABELS[proj], transform=axg.transAxes,
+        axg.text(0.5, 1.10, PROJ_LABEL[proj], transform=axg.transAxes,
                  ha="center", va="bottom", color=INK, clip_on=False)
         axg.add_patch(Rectangle((0.0, 1.03), 1.0, 0.045, transform=axg.transAxes,
                                 facecolor=PROJ_COLORS[proj], edgecolor="none",
@@ -274,7 +271,9 @@ def main():
 
     axes[0, 0].set_ylabel(r"$\Delta y$ [deg]", labelpad=1)
     axes[1, 0].set_ylabel(r"$\Delta y$ [deg]", labelpad=1)
-    axes[1, 2].set_xlabel(r"$\Delta x$ [deg]", labelpad=2)
+    # Centred under the row: on the gap between the two middle columns.
+    axes[1, ncol // 2 - 1].set_xlabel(r"$\Delta x$ [deg]", labelpad=2,
+                                      x=1 + wgap / (2 * side))
 
     def cbar_axes(row):
         pos = axes[row, -1].get_position()

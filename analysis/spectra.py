@@ -2,10 +2,12 @@
 
 The production run
 ------------------
-`results/highell/bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, five
-projections x 20 seeds x 7 masks: the `bandpowers` output of `astra.yaml`
-under the `highell` universe, run through lightcone on the Open Science Pool
-(one grid job per (seed, projection) unit). What it did:
+`results/highell/bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, 20 seeds x 7
+masks for each projection: the `bandpowers` output of `astra.yaml` under the
+`highell` universe, run through lightcone on the Open Science Pool (one grid
+job per (seed, projection) unit). The paper studies four projections,
+`paper_style.PROJS`, and every array here is indexed in that order; the run
+also holds a fifth, ProjSIN, which nothing in `analysis/` reads. What it did:
 
   - Input: HEALPix Nside 8192 *unlensed* TQU realizations of the Planck 2018
     best-fit cosmology, so the true B is exactly zero and every recovered B
@@ -49,8 +51,13 @@ sky power band-limited at 4000) for the regression check in
 `analysis/check_highell_regression.py`. Nothing in the paper reads it.
 """
 
-import numpy as np
+import sys
 from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from paper_style import PROJ_LABEL, PROJS
 
 ROOT = Path(__file__).resolve().parent.parent
 HIGHELL_DIR = ROOT / "results" / "highell" / "bandpowers"
@@ -61,18 +68,8 @@ SPECTRA_DIR_2021 = Path("/sptlocal/analysis/pol_project2020/results/spectra")
 # twice over, and nothing should read it again.
 THEORY_NPZ = Path(__file__).resolve().parent / "theory_spectra.npz"
 
-PROJS = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
-# How the paper names them, and what they are.
-PROJ_LABEL = {
-    "ProjSFL": "SFL",
-    "ProjSIN": "SIN",
-    "ProjSTG": "STG",
-    "ProjZEA": "ZEA",
-    "ProjBICEP": "BICEP",
-}
 PROJ_KIND = {
     "ProjSFL": "pseudocylindrical, equal-area",
-    "ProjSIN": "zenithal",
     "ProjSTG": "conformal",
     "ProjZEA": "zenithal equal-area",
     "ProjBICEP": "cylindrical",
@@ -167,7 +164,7 @@ def load_2021(spec="EE"):
     """The 2021 bandpowers, (n_masks, n_projs, NSIMS_2021, NBINS_2021).
 
     Kept only for `analysis/check_highell_regression.py`. dl = 10 to l = 4000,
-    and the 10% disk is all-NaN (SIN) or overflowed (SFL, BICEP) there.
+    and the 10% disk is overflowed for SFL and BICEP there.
     """
     out = np.full((len(PERC), len(PROJS), NSIMS_2021, NBINS_2021), np.nan)
     for i in range(len(PERC)):

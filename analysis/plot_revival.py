@@ -77,7 +77,7 @@ def main():
     ax = axes[1]
     m = 3  # f_sky = 1.5%
     dl = ell * (ell + 1) / (2 * np.pi)
-    order = ["ProjBICEP", "ProjSFL", "ProjSIN", "ProjZEA", "ProjSTG"]
+    order = ["ProjBICEP", "ProjSFL", "ProjZEA", "ProjSTG"]
     colors = plt.cm.plasma(np.linspace(0.05, 0.8, len(order)))
 
     for c, proj in zip(colors, order):

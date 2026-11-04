@@ -35,7 +35,7 @@ L_WALL = 4800.0               # above this the 2 arcmin pixel, not the geometry
 # reach the sheared measurements.
 L_CLEAN = (1000, 4000)
 L_ALIAS = 4000.0              # EE aliasing quoted over L_ALIAS < l < L_WALL
-L_RISE = 4250.0               # BICEP's and SIN's BB/EE leave the model above this
+L_RISE = 4250.0               # BICEP's BB/EE leaves the model above this
 BAND_LIMIT = S.LMAX
 
 
@@ -116,9 +116,9 @@ def main():
 
     # Only what the prose quotes. Measurement-over-model is quoted as a range
     # across projections, not per projection, so no per-projection macro for it.
-    for p in ("ProjSFL", "ProjSIN", "ProjBICEP"):
+    for p in ("ProjSFL", "ProjBICEP"):
         M.add(f"EEin{short[p]}oneK", f(at(ratio[P[p]], 1000)))
-    for p in ("ProjSFL", "ProjSIN", "ProjSTG", "ProjBICEP"):
+    for p in ("ProjSFL", "ProjSTG", "ProjBICEP"):
         M.add(f"EEin{short[p]}threeK", f(at(ratio[P[p]], 3000)))
     # ZEA is quoted as a deviation from unity across the band, not at points.
     for p in ("ProjSFL", "ProjBICEP"):
@@ -163,8 +163,8 @@ def main():
         M.add(f"BBmodel{short[p]}", f(mm / m_bb[j][sel].mean()))
     orders = np.log10(bb[MASK, jstg].mean(0)[sel].mean() / m_bb[jstg][sel].mean())
     M.add("STGmodelorders", f"{orders:.0f}")
-    # How far the five projections' BB actually spreads on this disk, rather
-    # than a remembered "five orders of magnitude".
+    # How far the projections' BB actually spreads on this disk, rather than
+    # a remembered figure.
     lvl = [bb[MASK, j].mean(0)[sel].mean() for j in P.values()]
     M.add("bbdecades", _WORDS[int(round(np.log10(max(lvl) / min(lvl))))])
 
@@ -198,19 +198,14 @@ def main():
 
     # What FlattenPol's residual rotation is worth in the model: BB/EE with
     # Delta over BB/EE with the polar angle, mean over L_CLEAN, 5% disk. SFL
-    # carries nearly all of it; the zenithal three are quoted as one bound.
+    # carries nearly all of it, ZEA a sliver.
     nod = dict(mom, cell_sin2_2delta=np.zeros_like(mom["cell_sin2_2delta"]))
-    dz = []
-    for p in ("ProjSFL", "ProjSIN", "ProjZEA"):
+    for p, nd in (("ProjSFL", 1), ("ProjZEA", 2)):
         j = P[p]
         b0, e0 = SL.predicted_spectra(nod, MASK, j, ell, ell_th, cl_th,
                                       band_limit=BAND_LIMIT)
         d = float(((m_bb[j] / m_ee[j]) / (b0 / e0))[cband].mean() - 1)
-        if p == "ProjSFL":
-            M.add("flattenSFL", pct(d, 1))
-        else:
-            dz.append(d)
-    M.add("flattenZenithal", pct(max(dz), 2))
+        M.add(f"flatten{short[p]}", pct(d, nd))
 
     # Flattening by the polar angle instead (`polar_flatten`): the production
     # SFL maps reflattened, 20 sims. `flattenSFLmaps` is the BB/EE drop on the
@@ -237,10 +232,10 @@ def main():
     M.add("cleanhi", f"{L_CLEAN[1]}")
 
     # The near-Nyquist rise: floor-subtracted BB/EE over the model in the last
-    # bin below the wall. BICEP and SIN climb above L_RISE; SFL, with as much
-    # excess EE, does not, so SFL's is quoted too.
+    # bin below the wall. BICEP climbs above L_RISE; SFL, with as much excess
+    # EE, does not, so SFL's is quoted too.
     top = int(np.flatnonzero(S.BIN_HI <= L_WALL)[-1])
-    for p in ("ProjBICEP", "ProjSIN", "ProjSFL"):
+    for p in ("ProjBICEP", "ProjSFL"):
         j = P[p]
         r = ((bb[MASK, j].mean(0) / ee[MASK, j].mean(0) - floor_bin)
              / (m_bb[j] / m_ee[j]))
@@ -345,7 +340,7 @@ def main():
     M.add("offdiagnoise", f(cov["noise"], 2))
 
     # The law off its training set: SPT's 1500d field. Only the two the
-    # prose contrasts; the other three are printed by shear_leakage.report.
+    # prose contrasts; the other two are printed by shear_leakage.report.
     field = _field_1500d()
     for label in ("SFL", "BICEP"):
         M.add(f"tfd{label}", f"${sci(field[label])}$")
@@ -356,7 +351,7 @@ def main():
     # SFL/BICEP ratio of the per-sim values with its error, `tfdmeaslaw` the
     # SFL measurement over the leading-order law 2<g^2> on the pipeline mask,
     # and `tfdmeasmodel` the worst |meas/model - 1| over L_CLEAN among the
-    # four leaking projections (STG is the floor).
+    # three leaking projections (STG is the floor).
     import field_1500d as FD
     fd = FD.load()
     lab = [S.PROJ_LABEL[p] for p in S.PROJS]
@@ -378,7 +373,7 @@ def main():
     omega_floor = 1e-6                # true zenithal omega is a ~1e-8 f.d. floor
     max_zenithal_omega = 0.0
     rows = []
-    for label in ("SFL", "BICEP", "SIN", "ZEA", "STG"):
+    for label in ("SFL", "BICEP", "ZEA", "STG"):
         c = curl[label]
         om = c["omega_rms"]
         if om < omega_floor:

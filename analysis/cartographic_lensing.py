@@ -118,7 +118,7 @@ def field_1500d_moments(nside=1024):
 if __name__ == "__main__":
     mom = field_1500d_moments()
     print(f"{'proj':<8}{'kappa_rms':>12}{'gamma_rms':>12}{'omega_rms':>14}{'d_rms_deg':>12}")
-    for label in ("SFL", "BICEP", "SIN", "ZEA", "STG"):
+    for label in ("SFL", "BICEP", "ZEA", "STG"):
         m = mom[label]
         print(f"{label:<8}{m['kappa_rms']:>12.4f}{m['gamma_rms']:>12.4f}"
               f"{m['omega_rms']:>14.3e}{m['d_rms_deg']:>12.3f}")
