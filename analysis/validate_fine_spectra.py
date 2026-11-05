@@ -152,7 +152,8 @@ def field_scan(out):
         row.get(f'condition_spin{spin}') is not None and row[f'condition_spin{spin}'] < 1000
         for row in results if row['delta_ell'] == width for spin in (0, 2))]
     chosen = min(acceptable) if acceptable else None
-    payload = dict(condition_limit=1000, chosen_delta_ell=chosen,
+    payload = dict(condition_limit=1000, finest_tested_delta_ell=chosen,
+                   tested_widths=widths, width_scope='multiples of five; intervening integers untested',
                    correlation_ell_range=[100, 5000], seeds=sp.NSIMS, scan=results)
     (out/'field_conditioning.json').write_text(json.dumps(payload, indent=2, allow_nan=False)+'\n')
     if chosen is None:
