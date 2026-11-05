@@ -621,7 +621,8 @@ outputs:
         memory: 16Gi
         disk: 4Gi
         time_limit: 20h
-        extra: {classad_JobDurationCategory: Long}
+        # Medium accepts pilots with shorter remaining lifetimes than Long.
+        extra: {classad_JobDurationCategory: Medium}
 
   # Scalar measurements share geometry and binning with the polarization suite.
   - id: scalar_white_alms
