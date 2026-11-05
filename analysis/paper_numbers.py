@@ -642,18 +642,26 @@ def scalar_numbers():
     diagonal_sem = diagonal_white * np.sqrt(
         (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
     predicted_diagonal = predictions[:, 1] / (predictions[:, 0] / truth[0]) / truth[1]
+    # Calibrate the common residual response on TT while keeping R's
+    # spectrum-dependent shape. This is a known-input forward closure test.
+    full_white = closure[:, 1] / closure[:, 0]
+    full_sem = full_white * np.sqrt(
+        (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
+    np.testing.assert_allclose(full_white, diagonal_white / predicted_diagonal,
+                               rtol=2e-12)
     np.savez(ROOT / 'paper' / 'scalar_summary.npz', ell=S.ELL,
              projections=S.PROJS, footprints=['disk5', 'field1500d'],
              spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
              predicted=predictions, ratio=closure, ratio_sem=sem / predictions,
              diagonal_white=diagonal_white, diagonal_white_sem=diagonal_sem,
-             predicted_diagonal_white=predicted_diagonal, truth=truth)
+             predicted_diagonal_white=predicted_diagonal, truth=truth,
+             full_white=full_white, full_white_sem=full_sem)
     import csv
     with (ROOT / 'paper' / 'scalar_summary.csv').open('w', newline='') as stream:
         writer = csv.writer(stream)
         writer.writerow(['footprint', 'projection', 'spectrum', 'ell', 'measured',
                          'sem', 'forward_model', 'measured_over_forward', 'ratio_sem',
-                         'white_after_tt_diagonal', 'diagonal_sem', 'predicted_diagonal'])
+                         'white_after_tt_diagonal', 'diagonal_sem', 'predicted_diagonal', 'full_tt_calibrated_white', 'full_sem'])
         for fi, footprint in enumerate(('disk5', 'field1500d')):
             for j, proj in enumerate(S.PROJS):
                 for k, sky in enumerate(('TT', 'white')):
@@ -663,7 +671,9 @@ def scalar_numbers():
                                          closure[fi,k,j,b], sem[fi,k,j,b]/predictions[fi,k,j,b],
                                          diagonal_white[fi,j,b] if k else '',
                                          diagonal_sem[fi,j,b] if k else '',
-                                         predicted_diagonal[fi,j,b] if k else ''])
+                                         predicted_diagonal[fi,j,b] if k else '',
+                                         full_white[fi,j,b] if k else '',
+                                         full_sem[fi,j,b] if k else ''])
     M = Macros()
     clean = (S.ELL >= 1000) & (S.ELL < 4000)
     for fi, footprint in enumerate(('Disk', 'Field')):
@@ -676,6 +686,13 @@ def scalar_numbers():
                 M.add(prefix + 'RatioMean', f(np.mean(closure[fi, k, j, clean])))
             M.add(f'Scalar{footprint}{label}WhiteDiagonalMeanError',
                   pct(np.mean(diagonal_white[fi, j, clean] - 1)))
+            for name, curve in (('Diagonal', diagonal_white), ('Full', full_white)):
+                for stat, operation in (('Min', np.min), ('Max', np.max), ('Mean', np.mean)):
+                    # The diagonal mean already has its established macro name.
+                    if name == 'Diagonal' and stat == 'Mean':
+                        continue
+                    M.add(f'Scalar{footprint}{label}White{name}{stat}Error',
+                          pct(operation(curve[fi, j, clean] - 1)))
             print(footprint, label, 'TT/forward', closure[fi, 0, j, clean].mean(),
                   'white/forward', closure[fi, 1, j, clean].mean(),
                   'white TT-diagonal error', (diagonal_white[fi, j, clean] - 1).mean())
