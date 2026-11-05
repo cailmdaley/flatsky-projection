@@ -939,6 +939,16 @@ def scalar_numbers():
             print(footprint, label, 'TT/forward', closure[fi, 0, j, clean].mean(),
                   'white/forward', closure[fi, 1, j, clean].mean(),
                   'white TT-diagonal error', (diagonal_white[fi, j, clean] - 1).mean())
+    # Rounded values quoted in the text, 1500d field over the clean range.
+    error = diagonal_white[1][:, clean] - 1
+    closure_error = np.abs(full_white[1][:, clean] - 1)
+    for j, proj in enumerate(S.PROJS):
+        label = S.PROJ_LABEL[proj]
+        M.add(f'tf{label}mean', pct(abs(error[j].mean()), 0))
+        M.add(f'tf{label}worst', pct(np.abs(error[j]).max(), 0))
+    M.add('tfclosureworst', pct(closure_error.max(), 1))
+    common = [S.PROJS.index(p) for p in ('ProjSTG', 'ProjZEA')]
+    M.add('tfdroopcommon', pct(np.abs((full_white[1][common][:, clean] - 1).mean(1)).max(), 2))
     (ROOT / 'paper' / 'scalar_numbers.tex').write_text(M.tex())
     print('Wrote paper/scalar_numbers.tex and paper/scalar_summary.npz')
 

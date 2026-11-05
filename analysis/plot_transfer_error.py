@@ -1,23 +1,18 @@
-"""What a diagonal transfer function misses that the coupling matrix keeps.
+"""What a diagonal transfer function misses that the coupling matrix keeps, as measured.
 
-Pure prediction: no simulations enter. `shear_leakage.coupling_matrix` writes
-Eq. (forward) as a matrix R(l, l') from the sky spectrum to the expected
-flat-sky spectrum, for one projection on one footprint -- here SPT's 1500d
-field, for the most sheared projection (SFL) and an equal-area zenithal one
-with little shear (ZEA).
+Reads `paper/scalar_summary.npz` from `paper_numbers.py --scalar-only`: 20 CMB
+TT skies and 20 independent unit-C_l white skies through the scalar leg on the
+1500d field, for all four projections.
 
-Plotted is the error of a diagonal correction. F_b = <R C>_b / <C>_b is
-calibrated on the unlensed Planck TT and EE, per dl = 50 bandpower, and
-applied to a white spectrum; the curve is the recovered bandpower over the
-truth, minus one (`shear_leakage.diagonal_transfer_error`). Both projections
-are equal-area, so a D_l-flat (tSZ-like) spectrum gives the same curves. F_b
-encodes the CMB's own slope and acoustic phase, which a foreground does not
-share.
+  top     recovered white bandpower over the truth, minus one, after a diagonal
+          correction F_b = measured TT / input TT. Dashed lines are the same
+          quantity from the forward model alone. F_b carries the CMB's own
+          response to the projection, including its acoustic phase.
+  bottom  measured white over the coupling matrix applied to the white input,
+          with the common measured/model residual of TT divided out, minus one.
 
-Run inside the project container:
-    OMP_NUM_THREADS=4 systemd-run --user --scope -p MemoryMax=12G bash env.sh python3 analysis/plot_transfer_error.py
-
-Output: figures/transfer_error.pdf
+Run:  bash env.sh python3 analysis/plot_transfer_error.py
+Out:  figures/transfer_error.pdf
 """
 
 import sys
@@ -26,18 +21,13 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 import paper_style as PS
-import shear_leakage as SL
-import spectra as S
-import theory as T
 
 ROOT = Path(__file__).resolve().parent.parent
 FIGURE = ROOT / "figures" / "transfer_error.pdf"
-
-PROJS = ("ProjSFL", "ProjZEA")
-STEP, PER_BAND = 5.0, 10            # dl = 50 bandpowers from 5-l sampling
+FIELD = 1                    # index of the 1500d field in the summary
 ELL_LO, ELL_HI = 500.0, 4800.0
+ZOOM = 5.0                   # bottom axis half-range, percent
 
 
 def main():
@@ -46,41 +36,41 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
 
-    th = T.load()
-    lp = th["ell"].astype(float)
-    white = np.where(lp >= 2, 1.0, 0.0)
-    mom = SL.field_moments_1500d()
-    ell_b = np.arange(ELL_LO + STEP / 2, ELL_HI, STEP)
-    ell_c = ell_b.reshape(-1, PER_BAND).mean(-1)
-
+    d = np.load(ROOT / "paper" / "scalar_summary.npz")
+    ell = d["ell"]
+    keep = (ell >= ELL_LO) & (ell <= ELL_HI)
     plt.rcParams.update(PS.rc())
-    fig, ax_e = plt.subplots(figsize=(PS.COL_W, 2.4), layout="constrained")
+    fig, (top, bot) = plt.subplots(
+        2, 1, figsize=(PS.COL_W, 3.3), sharex=True, layout="constrained",
+        height_ratios=(1.7, 1))
 
-    for proj in PROJS:
-        j = S.PROJS.index(proj)
-        col = PS.PROJ_COLORS[proj]
-        R = SL.coupling_matrix(mom, 0, j, ell_b, lp, band_limit=None)
-        for X, ls in (("TT", "-"), ("EE", "--")):
-            err = SL.diagonal_transfer_error(R[f"{X}<-{X}"], ell_b, lp,
-                                             th[f"unlensed_{X}"], white,
-                                             per_band=PER_BAND)
-            ax_e.plot(ell_c, 100 * err, color=col, ls=ls, lw=PS.LW)
-            print(f"  {X} diagonal-correction error at l = 1000/2000/3000/4000:"
-                  + "".join(f" {100 * np.interp(L, ell_c, err):+.1f}%"
-                            for L in (1000, 2000, 3000, 4000)))
+    for j, proj in enumerate(d["projections"]):
+        color = PS.PROJ_COLORS[str(proj)]
+        measured = 100 * (d["diagonal_white"][FIELD, j] - 1)
+        model = 100 * (d["predicted_diagonal_white"][FIELD, j] - 1)
+        closure = 100 * (d["full_white"][FIELD, j] - 1)
+        sem = 100 * d["full_white_sem"][FIELD, j]
+        top.plot(ell[keep], measured[keep], color=color, lw=1.1)
+        top.plot(ell[keep], model[keep], color=PS.INK, lw=0.5, ls=(0, (3, 2)))
+        bot.fill_between(ell[keep], (closure - sem)[keep], (closure + sem)[keep],
+                         color=color, alpha=0.25, lw=0)
+        bot.plot(ell[keep], closure[keep], color=color, lw=0.9)
 
-    ax_e.axhline(0.0, color=PS.RULE, lw=PS.LW_REF, zorder=1)
-    ax_e.set_xlim(ELL_LO, ELL_HI)
-    ax_e.set_xlabel(r"$\ell$")
-    ax_e.set_ylabel(r"$\hat C_b / C_b - 1$ [\%]")
-    handles = ([Line2D([], [], color=PS.PROJ_COLORS[p]) for p in PROJS]
-               + [Line2D([], [], color=PS.INK_SOFT, ls=ls) for ls in ("-", "--")])
-    labels = [PS.PROJ_LABEL[p] for p in PROJS] + [r"$TT$", r"$EE$"]
-    fig.legend(handles, labels, ncol=4, loc="outside upper center")
+    for ax in (top, bot):
+        ax.axhline(0, color=PS.RULE, lw=0.6, zorder=0)
+        ax.set_xlim(ELL_LO, ELL_HI)
+    bot.set_ylim(-ZOOM, ZOOM)
+    top.set_ylabel(r"diagonal error [\%]")
+    bot.set_ylabel(r"$R$ error [\%]")
+    bot.set_xlabel(r"$\ell$")
 
-    FIGURE.parent.mkdir(exist_ok=True)
+    handles = [Line2D([], [], color=PS.PROJ_COLORS[str(p)], lw=1.3,
+                      label=PS.PROJ_LABEL[str(p)]) for p in d["projections"]]
+    handles.append(Line2D([], [], color=PS.INK, lw=0.6, ls=(0, (3, 2)), label="model"))
+    fig.legend(handles=handles, loc="outside upper center", ncol=5, frameon=False,
+               handlelength=1.5, columnspacing=1.0)
     fig.savefig(FIGURE)
-    print(f"\nwrote {FIGURE}")
+    print(f"Wrote {FIGURE}")
 
 
 if __name__ == "__main__":
