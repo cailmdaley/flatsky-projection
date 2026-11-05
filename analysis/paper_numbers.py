@@ -638,10 +638,10 @@ def scalar_numbers():
     sem = measured.std(axis=3, ddof=1) / np.sqrt(S.NSIMS)
     closure = mean / predictions
     # Independent realization ensembles: their sample-mean errors add.
-    diagonal_white = mean[:, 1] / (mean[:, 0] / truth[0])
+    diagonal_white = mean[:, 1] / (mean[:, 0] / truth[0]) / truth[1]
     diagonal_sem = diagonal_white * np.sqrt(
         (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
-    predicted_diagonal = predictions[:, 1] / (predictions[:, 0] / truth[0])
+    predicted_diagonal = predictions[:, 1] / (predictions[:, 0] / truth[0]) / truth[1]
     np.savez(ROOT / 'paper' / 'scalar_summary.npz', ell=S.ELL,
              projections=S.PROJS, footprints=['disk5', 'field1500d'],
              spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
