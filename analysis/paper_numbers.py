@@ -879,13 +879,24 @@ def scalar_numbers():
         (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
     np.testing.assert_allclose(full_white, diagonal_white / predicted_diagonal,
                                rtol=2e-12)
+    clean = (S.ELL >= 1000) & (S.ELL < 4000)
+    # Seed influences retain covariance between bands of the same realization.
+    summary_sems = {}
+    for name, curve in (('diagonal', diagonal_white), ('full', full_white)):
+        iw = ((measured[:, 1] / mean[:, 1, :, None, :] - 1)
+              * curve[:, :, None, :])[..., clean].mean(-1)
+        it = -((measured[:, 0] / mean[:, 0, :, None, :] - 1)
+               * curve[:, :, None, :])[..., clean].mean(-1)
+        summary_sems[name] = np.sqrt((iw.var(-1, ddof=1) + it.var(-1, ddof=1)) / S.NSIMS)
     np.savez(ROOT / 'paper' / 'scalar_summary.npz', ell=S.ELL,
              projections=S.PROJS, footprints=['disk5', 'field1500d'],
              spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
              predicted=predictions, ratio=closure, ratio_sem=sem / predictions,
              diagonal_white=diagonal_white, diagonal_white_sem=diagonal_sem,
              predicted_diagonal_white=predicted_diagonal, truth=truth,
-             full_white=full_white, full_white_sem=full_sem)
+             full_white=full_white, full_white_sem=full_sem,
+             full_mean_sem=summary_sems['full'], diagonal_mean_sem=summary_sems['diagonal'],
+             summary_range=[1000, 4000])
     import csv
     with (ROOT / 'paper' / 'scalar_summary.csv').open('w', newline='') as stream:
         writer = csv.writer(stream)
@@ -905,7 +916,6 @@ def scalar_numbers():
                                          full_white[fi,j,b] if k else '',
                                          full_sem[fi,j,b] if k else ''])
     M = Macros()
-    clean = (S.ELL >= 1000) & (S.ELL < 4000)
     for fi, footprint in enumerate(('Disk', 'Field')):
         for j, proj in enumerate(S.PROJS):
             label = S.PROJ_LABEL[proj]
@@ -923,6 +933,9 @@ def scalar_numbers():
                         continue
                     M.add(f'Scalar{footprint}{label}White{name}{stat}Error',
                           pct(operation(curve[fi, j, clean] - 1)))
+            for name in ('Diagonal', 'Full'):
+                M.add(f'Scalar{footprint}{label}White{name}MeanErrorSEM',
+                      pct(summary_sems[name.lower()][fi, j]))
             print(footprint, label, 'TT/forward', closure[fi, 0, j, clean].mean(),
                   'white/forward', closure[fi, 1, j, clean].mean(),
                   'white TT-diagonal error', (diagonal_white[fi, j, clean] - 1).mean())
