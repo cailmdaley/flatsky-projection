@@ -485,10 +485,240 @@ def main():
     M.add("TBhalfSFL", pct(abs(tetb["1500d, RA 0 to 50", "ProjSFL"]["tb_te"]), 1))
     M.add("DeltamaxSFL", f"\\ang{{{np.degrees(tetb['1500d', 'ProjSFL']['delta_max']):.1f}}}")
 
+    prose_numbers(M, mom)
+
     OUT.write_text(M.tex())
     print(M.tex())
     print(f"wrote {OUT}  ({len(M)} macros)")
     _audit(M)
+
+
+# ==========================================================================
+# Prose numbers: the 1500d field as reference footprint
+#
+# `prose_numbers` writes every macro Sects. 2-5 quote on SPT's 1500d field, on
+# which the spectra figure and the scalar and leakage narrative rest, together
+# with the literature footprints and the HEALPix pixel. The seven disks remain
+# the sweep of Sect. 4.3 and keep their macros in `main`.
+#
+# A single dl = 50 band resolves the acoustic oscillation of a ratio to the
+# input, so EE ratios are quoted as ratios of power averaged with a Hann window
+# of half width L_HANN, which nulls a period of L_HANN, one acoustic spacing.
+# ==========================================================================
+
+L_HANN = 300.0
+L_BB_TOP = 4400.0             # BICEP's and ZEA's BB leave the model above this
+
+
+def _hann(y, ell, L):
+    d = ell - L
+    s = np.abs(d) < L_HANN
+    w = np.cos(np.pi * d[s] / (2 * L_HANN))**2
+    return (w * y[s]).sum() / w.sum()
+
+
+def prose_numbers(M, mom):
+    import json
+    from scipy.signal import find_peaks
+    import field_1500d as FD
+    import healpix_sheared_window as HW
+    import plot_model_residuals as PMR
+
+    fd = FD.load()
+    # The model of the residuals figure: every multipole, averaged per band.
+    d = PMR.load_data()
+    pm = d["mom"]
+    lab = [S.PROJ_LABEL[p] for p in S.PROJS]
+    J = {l: j for j, l in enumerate(lab)}
+    sheared = ("SFL", "ZEA", "BICEP")
+    ell = fd["ell"]
+    cl, ee, bb = fd["cl_ee"], fd["ee_mean"], fd["bb_mean"]
+    m_ee, m_bb, m_tt = d["model"]["EE"], d["model"]["BB"], d["model"]["TT"]
+    tt_sims = d["measured"]["TT"]
+    tt, cl_tt = tt_sims.mean(1), S.theory("unlensed_TT")
+    g2 = fd["pipeline_g2"]
+    wide = (ell > 500) & (ell < L_WALL)
+    wide_bb = (ell > 500) & (ell < L_BB_TOP)
+    clean = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
+
+    idx = json.loads(FD.MASK_INDEX.read_text())
+    M.add("fieldfsky", pct(idx["masks"][0]["fsky_binary"], 1))
+
+    # ---- scalar: the acoustic spacing against the shear's band ------------
+    th = T.load()
+    ell_th, cl_th = th["ell"].astype(float), th["unlensed_EE"]
+    tail = (ell_th > 3000) & (ell_th < 4500)
+    n_tail = np.polyfit(np.log(ell_th[tail]), np.log(cl_th[tail]), 1)[0]
+    M.add("gsqSFLfield", f(g2[J["SFL"]]))
+    M.add("liftEEtailField", pct(n_tail * (n_tail + 2) / 4 * g2[J["SFL"]], 0))
+    span = (ell_th > 500) & (ell_th < 4000)
+    peaks = find_peaks(cl_th[span])[0]
+    spacing = float(np.diff(peaks).mean())
+    M.add("acousticspacing", f"{10 * round(spacing / 10):.0f}")
+    M.add("hannwidth", f"{2 * L_HANN:.0f}")
+    for l in ("SFL", "BICEP"):
+        rms = np.sqrt(g2[J[l]])
+        M.add(f"grms{l}field", f(rms, 2))
+        M.add(f"lsmear{l}", f"{10 * round(spacing / (2 * rms) / 10):.0f}")
+
+    ratio = ee / cl
+    for l in lab:
+        for L, word in ((1000., "oneK"), (3000., "threeK"), (4000., "fourK")):
+            M.add(f"EEbox{l}{word}", f(_hann(ee[J[l]], ell, L) / _hann(cl, ell, L), 2))
+        if l in ("SFL", "STG", "BICEP"):
+            M.add(f"TTbox{l}fourK", f(_hann(tt[J[l]], ell, 4000.) / _hann(cl_tt, ell, 4000.), 2))
+    s_one = (ell > 850) & (ell < 1450)
+    s_three = (ell > 2850) & (ell < 3150)
+    for l, s in (("SFL", s_one), ("STG", s_three)):
+        M.add(f"EEswing{l}lo", f(ratio[J[l]][s].min(), 2))
+        M.add(f"EEswing{l}hi", f(ratio[J[l]][s].max(), 2))
+    centres = np.arange(800., 4500., 50.)
+    z = J["ZEA"]
+    zmeas = [_hann(ee[z], ell, L) / _hann(cl, ell, L) for L in centres]
+    zmod = [_hann(m_ee[z], ell, L) / _hann(cl, ell, L) for L in centres]
+    M.add("EEboxZEAdev", pct(np.max(np.abs(np.array(zmeas) - 1)), 0))
+    M.add("EEboxZEAmodeldev", pct(np.max(np.abs(np.array(zmod) - 1)), 0))
+    for L, word in ((1000., "OneK"), (3000., "ThreeK")):
+        v = [_hann(ee[j], ell, L) / _hann(m_ee[j], ell, L) for j in J.values()]
+        M.add(f"EEmodelRange{word}Field", rng(min(v), max(v), 3))
+    v = [float((ee[j] / m_ee[j])[wide].mean()) for j in J.values()]
+    M.add("wideEErangeField", rng(min(v), max(v), 3))
+
+    # The droop: Hann-averaged measured over model, TT and EE. `droopwithin` is
+    # the worst departure up to l = 2000, `drooptop` the range near the wall;
+    # `lowlstruct` the worst single band below l = 1000.
+    pairs = [(tt[j], m_tt[j]) for j in J.values()] + [(ee[j], m_ee[j]) for j in J.values()]
+    M.add("droopwithin", pct(max(abs(_hann(a, ell, L) / _hann(b, ell, L) - 1)
+                                 for a, b in pairs for L in np.arange(800., 2001., 50.)), 0))
+    top = [_hann(a, ell, 4500.) / _hann(b, ell, 4500.) for a, b in pairs]
+    M.add("drooptop", rng(min(top), max(top), 2))
+    below = (ell > 500) & (ell < 1000)
+    M.add("lowlstruct", pct(max(np.max(np.abs((a / b - 1)[below])) for a, b in pairs), 0))
+    M.add("EEmodelworstclean", pct(max(np.max(np.abs((ee[j] / m_ee[j] - 1)[clean]))
+                                       for j in J.values()), 0))
+    alias = (ell > L_ALIAS) & (ell < L_WALL)
+    transfer = ee[J["STG"]] / m_ee[J["STG"]]
+    for l in ("SFL", "BICEP"):
+        rel = (ee[J[l]] / m_ee[J[l]]) / transfer
+        M.add(f"EEalias{l}field", pct(float(rel[alias].mean()) - 1, 1))
+
+    # Per-band closure against the scatter of the 20-sim mean, after dividing
+    # out STG's measured shortfall: the worst of the sheared projections.
+    ee_sims = S.load_field("EE")
+    sem = ee_sims.std(1, ddof=1) / np.sqrt(ee_sims.shape[1])
+    chi2, frac = [], []
+    for l in sheared:
+        j = J[l]
+        chi2.append(float((((ee[j] - m_ee[j] * transfer) / sem[j])[clean]**2).mean()))
+        frac.append(float(np.sqrt(((ee[j] / (m_ee[j] * transfer) - 1)[clean]**2).mean())))
+    M.add("chisqEE", f(max(chi2), 1))
+    M.add("rmsEEresid", pct(max(frac), 1))
+
+    # Mean dilation of STG, weighted as the numerator of the forward model.
+    s1, s2, w = SL._cells(pm, 0, J["STG"])
+    wmean = np.sum(w * (s1 * s2)**2 * (s1 + s2) / 2) / np.sum(w * (s1 * s2)**2)
+    M.add("STGshiftthreeK", f"{10 * round(3000 * (wmean - 1) / 10):.0f}")
+
+    # ---- leakage on the field ---------------------------------------------
+    sel = (ell > 500) & (ell < 3000)
+    floor_bin = bb[J["STG"]] / ee[J["STG"]]
+    def band(y, lo, hi):
+        return y[(ell > lo) & (ell < hi)].mean()
+    M.add("floorField", f"${sci(band(bb[J['STG']], *SL.BANDS[0]) / band(ee[J['STG']], *SL.BANDS[0]))}$")
+    M.add("floorFieldTop", f"${sci(band(bb[J['STG']], *SL.BANDS[-1]) / band(ee[J['STG']], *SL.BANDS[-1]))}$")
+    lvl = [bb[j][sel].mean() for j in J.values()]
+    M.add("bbdecadesField", _WORDS[int(round(np.log10(max(lvl) / min(lvl))))])
+    widev, cleanv, last = [], [], int(np.flatnonzero(S.BIN_HI <= L_WALL)[-1])
+    for l in sheared:
+        j = J[l]
+        M.add(f"BBmodel{l}field", f(bb[j][sel].mean() / m_bb[j][sel].mean()))
+        widev.append(float(((bb[j] / ee[j]) / (m_bb[j] / m_ee[j]))[wide_bb].mean()))
+        r = (bb[j] / ee[j] - floor_bin) / (m_bb[j] / m_ee[j])
+        cleanv.append(float(r[clean].mean()))
+        M.add(f"rise{l}field", f(r[last], 2))
+    M.add("wideBBrangeField", rng(min(widev), max(widev), 3))
+    M.add("cleanBBrangeField", rng(min(cleanv), max(cleanv), 3))
+    M.add("cleanBBworstField", pct(max(abs(v_ - 1) for v_ in cleanv), 1))
+    M.add("lBBtop", f"{L_BB_TOP:.0f}")
+    bic_excess = (bb[J["BICEP"]] / ee[J["BICEP"]] - m_bb[J["BICEP"]] / m_ee[J["BICEP"]])[last]
+    M.add("BICEPexcessfloor", f"{bic_excess / floor_bin[last]:.0f}")
+    M.add("magfactorField", rf"{pm['s1_max'][0, J['BICEP']]:.1f}\times")
+
+    # BICEP's BB/EE below l = 1000 against its plateau, in 100-wide bands.
+    edges = np.arange(300., 1000., 100.)
+    bic = J["BICEP"]
+    low = [band(bb[bic], e, e + 100) / band(ee[bic], e, e + 100) for e in edges]
+    lowm = [band(m_bb[bic], e, e + 100) / band(m_ee[bic], e, e + 100) for e in edges]
+    M.add("BBEEBICEPlow", f(max(low), 3))
+    M.add("BBEEBICEPlowmodel", f(max(lowm), 3))
+    M.add("BBEEBICEPhigh", f(band(bb[bic], 3000, L_WALL) / band(ee[bic], 3000, L_WALL), 3))
+
+    for l in ("SFL", "BICEP"):
+        j = J[l]
+        t = [(band(bb[j], lo, hi) / band(ee[j], lo, hi)
+              - band(bb[J["STG"]], lo, hi) / band(ee[J["STG"]], lo, hi)) / (2 * g2[j])
+             for lo, hi in SL.BANDS[1:]]
+        M.add(f"tilt{l}fieldlo", f(t[0], 2))
+        M.add(f"tilt{l}fieldhi", f(t[-1], 2))
+
+    leak_zea = band(bb[z], *SL.BANDS[0]) / band(ee[z], *SL.BANDS[0])
+    lensed = float(th["lensed_BB"][1000] / th["lensed_EE"][1000])
+    M.add("ZEAleakField", f"${sci(leak_zea)}$")
+    M.add("ZEAoverlens", pct(leak_zea / lensed, 0))
+
+    # Power conservation, field and disks; disk pairs as in `main`.
+    d_ee, d_bb = S.load("EE").mean(2), S.load("BB").mean(2)
+    d_eb = S.load("EE", leg=S.EB_LEG).mean(2)
+    dev = np.abs(((d_ee + d_bb) / d_eb)[:, :, wide].mean(-1) - 1)
+    P = {p: j for j, p in enumerate(S.PROJS)}
+    for i, p in SL.CLIPPED:
+        dev[i, P[p]] = np.nan
+    fdev = [abs(((ee[j] + bb[j]) / fd["ee_eb_mean"][j])[wide].mean() - 1) for j in J.values()]
+    M.add("powerconserveAll", f"${sci(max(np.nanmax(dev), max(fdev)))}$")
+
+    # Adjacent-band correlation of the 20 sims on the field: mean of the first
+    # off-diagonal over 500 < l < L_WALL, with the error of that mean.
+    def adjacent(x):
+        return float(np.mean(np.diag(np.corrcoef(x[:, wide], rowvar=False), 1)))
+    M.add("adjEESFL", f(adjacent(ee_sims[J["SFL"]]), 2))
+    M.add("adjEEZEA", f(adjacent(ee_sims[J["ZEA"]]), 2))
+    M.add("adjnoise", f(1 / np.sqrt((S.NSIMS - 1) * (wide.sum() - 1)), 2))
+
+    # ---- a matched filter on a sheared grid ---------------------------------
+    # An isotropic Gaussian filter on an equal-area grid recovers sqrt(1 - g^2)
+    # of a compact source's amplitude in white noise.
+    s1, s2, w = SL._cells(pm, 0, J["SFL"])
+    g = (s1 - s2) / (s1 + s2)
+    M.add("filterSFLmean", pct(float(np.sum(w * (1 - np.sqrt(1 - g**2))) / np.sum(w)), 1))
+    M.add("filterSFLmax", pct(float(1 - np.sqrt(1 - g[w > 0].max()**2)), 0))
+
+    # ---- Pires et al. (2020): their 10 x 10 deg gnomonic field --------------
+    # TAN has principal scales sec^2 r and sec r, so g = tan^2(r / 2); uniform
+    # weight over the square on the tangent plane.
+    a = np.tan(np.deg2rad(5.0))
+    x = (np.arange(800) + .5) / 800 * 2 * a - a
+    r = np.arctan(np.hypot(*np.meshgrid(x, x)))
+    M.add("TANtenBBEE", f"${sci(2 * np.mean(np.tan(r / 2)**4), 0)}$")
+
+    # ---- HEALPix pixels -----------------------------------------------------
+    px = HW.pixel_shear()
+    hp_g = px["g"]
+    M.add("hpgmaxeq", f(hp_g[np.abs(px["z"]) < 2 / 3].max(), 2))
+    M.add("hpgsq", f(np.mean(hp_g**2), 3))
+    ours, square = [], []
+    for nside in (1024, 4096):
+        for x_ in (0.5, 1, 1.5, 2, 2.5, 3 - 1 / nside):
+            p, s_, q = HW.sheared_window(nside, x_)
+            ours.append(abs(s_ / p - 1))
+            square.append(abs(q / p - 1))
+    M.add("hpwinmatch", f"${sci(max(ours), 0)}$")
+    M.add("hpwinsquare", pct(max(square), 1))
+
+    # ---- ZEA's last band on the 5% disk ------------------------------------
+    meas = SL.measured_ratios()
+    gz = mom["g2"][MASK, P["ProjZEA"]]
+    M.add("ZEAlastexcess", pct(meas[-1, MASK, P["ProjZEA"]] / (2 * gz) - 1, 1))
+    M.add("ZEAlastfloor", pct(meas[-1, MASK, P[SL.FLOOR_PROJ]] / (2 * gz), 1))
 
 
 def _audit(M):
@@ -700,10 +930,40 @@ def scalar_numbers():
     print('Wrote paper/scalar_numbers.tex and paper/scalar_summary.npz')
 
 
+def section5_numbers():
+    """Compute Section 5 geometry macros from specified footprint charts."""
+    import section5_geometry as G5
+
+    M = Macros()
+    footprints = G5.literature_footprints()
+    footprints["HEALPixFaceNested"] = G5.healpix_face_g2()
+    for name, g2 in footprints.items():
+        M.add(f"gSq{name}", sci(g2, 3))
+        M.add(f"bbEe{name}", sci(2*g2, 3))
+    responses = G5.footprint_response(verbose=False)
+    for (footprint, projection), (g2, zero, diagonal) in responses.items():
+        prefix = f"anis{footprint[0].upper() + footprint[1:]}{projection[4:]}"
+        M.add(prefix + "GSq", sci(g2, 3))
+        M.add(prefix + "BBEE", sci(2*g2, 3))
+        M.add(prefix + "Aligned", pct(zero, 3))
+        M.add(prefix + "Diagonal", pct(diagonal, 3))
+    for (footprint, projection), (sphere, azimuth, low, high) in G5.beam_footprints(verbose=False).items():
+        prefix = f"beam{footprint[0].upper() + footprint[1:]}{projection[4:]}"
+        M.add(prefix + "Azimuth", f(azimuth, 5))
+        M.add(prefix + "Min", f(low, 5))
+        M.add(prefix + "Max", f(high, 5))
+    M.add("beamSphere", f(sphere, 5))
+    path = ROOT / "paper" / "section5_numbers.tex"
+    path.write_text(M.tex())
+    print(f"Wrote {path}")
+
+
 if __name__ == "__main__":
     if "--check-scalar-forward" in sys.argv:
         check_scalar_forward()
     elif "--scalar-only" in sys.argv:
         scalar_numbers()
+    elif "--section5-only" in sys.argv:
+        section5_numbers()
     else:
         main()
