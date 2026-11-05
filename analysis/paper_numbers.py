@@ -613,10 +613,12 @@ def scalar_numbers():
     th = T.load()
     lp = th['ell'].astype(float)
     inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
-    # Ten midpoint samples per production band resolve acoustic structure.
-    fine = np.arange(2.5, S.LMAX, 5.)
-    truth = np.stack([np.interp(fine, lp, cl).reshape(S.NBINS, 10).mean(1)
+    # Use the production integer-multipole average on [lo, hi).
+    fine = np.arange(S.LMAX, dtype=float)
+    truth = np.stack([np.interp(fine, lp, cl).reshape(S.NBINS, S.DELTA_L).mean(1)
                       for cl in inputs])
+    np.testing.assert_allclose(truth[0], S.theory('unlensed_TT'), rtol=1e-14)
+    np.testing.assert_allclose(truth[1, 0], (S.DELTA_L - 2) / S.DELTA_L)
     measured, predictions = [], []
     for field in (False, True):
         mom = _moments_1500d() if field else SL.load_moments()
@@ -627,7 +629,7 @@ def scalar_numbers():
         pred = []
         for j, proj in enumerate(S.PROJS):
             values = _scalar_forward(mom, mask, j, fine, lp, inputs)
-            pred.append(values.reshape(2, S.NBINS, 10).mean(2))
+            pred.append(values.reshape(2, S.NBINS, S.DELTA_L).mean(2))
         predictions.append(np.stack(pred, axis=1))
     # Axes: footprint, sky(TT/white), projection, seed, band.
     measured = np.stack(measured)
