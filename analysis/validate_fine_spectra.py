@@ -130,6 +130,19 @@ def field_scan(out):
                     rho /= np.sqrt((centered[:, :-1]**2).sum(axis=0)*(centered[:, 1:]**2).sum(axis=0))
                     row[f'{key}_adjacent_rho_mean'] = float(rho.mean())
                     row[f'{key}_adjacent_rho_quantiles'] = np.quantile(rho, [.16, .5, .84]).tolist()
+            if width == 50 and len(cls) == 3:
+                for key, arr in cls.items():
+                    reference = []
+                    for seed in range(sp.NSIMS):
+                        directory = (sp.ROOT/'results/highell/scalar_tt_field_bandpowers'
+                                     if key == 'tt' else sp.FIELD_DIR)
+                        with np.load(sp._path(proj, seed, directory)) as z:
+                            reference.append(z['cl'][0] if key == 'tt' else z[key][0, 0, 0, 0])
+                    reference = np.asarray(reference)
+                    sigma = float(np.max(abs(arr-reference)/reference.std(axis=0, ddof=1)))
+                    row[f'{key}_width50_residual_in_seed_sigma'] = sigma
+                    if sigma > 1e-5:
+                        raise AssertionError(f'width-five response aggregation fails width-50 regression: {row}')
             results.append(row)
             if len(cls) == 3:
                 bandpowers[proj, width] = (ell, cls)
