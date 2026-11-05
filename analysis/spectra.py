@@ -272,3 +272,135 @@ def load_scalar(spec="TT", field=False):
                     raise ValueError(f"{directory}: scalar bins differ from EE")
                 out[:, j, seed] = z["cl"]
     return out[0] if field else out
+
+
+def rebin_pseudo(pseudo, counts, edges):
+    """Rebin unit-width pseudo-C_ell with Fourier-cell weighting.
+
+    Integer edges select unions of the stored [ell, ell+1) annuli.
+    Empty fine annuli contribute zero weight; an empty target bin raises.
+    Averaging decoupled bandpowers or averaging pseudo-spectra without these
+    counts does not implement the NaMaster estimator.
+    """
+    edges = np.asarray(edges)
+    if (edges.ndim != 1 or len(edges) < 2 or
+            not np.all(edges == edges.astype(int)) or
+            np.any(np.diff(edges) <= 0) or edges[0] < 0 or edges[-1] > len(counts)):
+        raise ValueError('edges must be increasing integers within the stored ell range')
+    edges = edges.astype(int)
+    weights = np.diff(np.r_[0, np.cumsum(counts)][edges])
+    if np.any(weights == 0):
+        raise ValueError('target binning contains empty Fourier annuli')
+    return np.stack([(pseudo[..., lo:hi] * counts[lo:hi]).sum(axis=-1) / weight
+                     for lo, hi, weight in zip(edges[:-1], edges[1:], weights)], axis=-1)
+
+
+def decouple_fine(path, delta_ell=50, *, workspace=None, masks_dir=None,
+                  cache_dir=None):
+    """Return TT, EE, BB bandpowers from a saved finest pseudo-spectrum.
+
+    ``delta_ell`` is a positive integer; the last bin ends at stored lmax.
+    Supply ``workspace`` as a directory of w00/w22 FITS files at this width
+    or a finer width whose bins partition these bins exactly, or
+    ``masks_dir`` to build and cache a workspace for this width.
+    Workspace construction can take hours and should run on the grid.
+    The flat pixel window is divided out after decoupling, as in production.
+    Only the QU leg is stored by the finest pseudo-spectrum stage.
+    """
+    import pymaster as nmt
+    sys.path.insert(0, str(ROOT / 'src' / 'stages'))
+    from namaster_spectra import compute_pixel_window, load_mask
+    from coupling_matrices import atomic_write_workspace
+
+    if int(delta_ell) != delta_ell or delta_ell < 1:
+        raise ValueError('delta_ell must be a positive integer')
+    with np.load(path) as z:
+        counts, pol, tt = z['counts'], z['pol'], z['tt']
+        proj, mask_index = str(z['projection']), int(z['mask_index'])
+        purify_b = bool(z['purify_b'])
+        geometry = tuple(float(z[k]) for k in ('nx', 'ny', 'lx_rad', 'ly_rad'))
+        mask_hash = str(z['mask_sha256'])
+    lmax = len(counts)
+    edges = np.unique(np.r_[np.arange(0, lmax, int(delta_ell)), lmax])
+    pseudo_pol = rebin_pseudo(pol, counts, edges)
+    pseudo_tt = rebin_pseudo(tt, counts, edges)
+    bins = nmt.NmtBinFlat(edges[:-1].astype(float), edges[1:].astype(float))
+    target = (Path(workspace) if workspace is not None else
+              Path(cache_dir or ROOT / 'results' / 'highell' / 'fine_workspace_cache') /
+              f'd{int(delta_ell)}' / proj / mask_hash)
+    target.mkdir(parents=True, exist_ok=True)
+    result = {}
+    for spin, pseudo in [(0, pseudo_tt), (2, pseudo_pol)]:
+        ws_path = target / f'w{spin}{spin}_{proj}_{mask_index}.fits'
+        w = nmt.NmtWorkspaceFlat()
+        if ws_path.exists():
+            w.read_from(str(ws_path))
+        elif masks_dir is not None:
+            mask, _, lx, ly = load_mask(Path(masks_dir), proj, mask_index)
+            f = nmt.NmtFieldFlat(lx, ly, mask, None, spin=spin,
+                                 purify_b=purify_b if spin == 2 else False)
+            w.compute_coupling_matrix(f, f, bins)
+            import hashlib
+            if hashlib.sha256(mask.tobytes()).hexdigest() != mask_hash:
+                raise ValueError('masks_dir mask differs from the stored pseudo-spectrum mask')
+            atomic_write_workspace(w, ws_path)
+            from astropy.io import fits
+            with fits.open(ws_path, mode='update') as hdus:
+                hdus[0].header['MASKHASH'] = mask_hash
+        else:
+            raise FileNotFoundError(f'{ws_path}; supply matching workspaces or masks_dir')
+        # Flat workspaces interleave spectra within each bin in their FITS MCM.
+        from astropy.io import fits
+        with fits.open(ws_path) as hdus:
+            stored_geometry = tuple(hdus['FS_INFO'].header[k] for k in ('NX', 'NY', 'LX', 'LY'))
+            if not np.allclose(geometry, stored_geometry, rtol=1e-12, atol=0):
+                raise ValueError(f'{ws_path}: workspace geometry differs from pseudo-spectrum')
+            if hdus[0].header.get('MASKHASH', mask_hash) != mask_hash:
+                raise ValueError(f'{ws_path}: workspace mask differs from pseudo-spectrum')
+            stored_edges = hdus['BINS_SUMMARY'].data
+            source_edges = np.r_[stored_edges.field(0), stored_edges.field(1)[-1]]
+            if spin == 2 and bool(hdus[0].header['PURE_B1']) != purify_b:
+                raise ValueError(f'{ws_path}: workspace purification differs from pseudo-spectrum')
+            same_bins = np.array_equal(source_edges, edges)
+            if not same_bins:
+                matrix = rebin_flat_response(hdus['MCM_BINNED'].data, source_edges,
+                                             edges, counts, 1 if spin == 0 else 4)
+        if same_bins:
+            cl = w.decouple_cell(pseudo)
+        else:
+            from scipy.linalg import solve
+            cl = solve(matrix, pseudo.T.reshape(-1)).reshape(-1, pseudo.shape[0]).T
+        if not np.isfinite(cl).all():
+            raise ValueError(f'{ws_path}: nonfinite decoupled spectrum')
+        if spin == 0:
+            result['tt'] = cl[0]
+        else:
+            result.update(ee=cl[0], bb=cl[3])
+    ell = bins.get_effective_ells()
+    window = compute_pixel_window('flat_only', bins, ell, lmax)
+    return dict(ell_eff=ell, **{key: value / window for key, value in result.items()})
+
+
+def rebin_flat_response(matrix, source_edges, target_edges, counts, ncls):
+    """Rebin a NaMaster flat-sky response as P M Q.
+
+    Rows and columns interleave spectra inside each bin in NaMaster FITS files.
+    P averages output pseudo-spectra by Fourier-cell count; Q holds each input
+    bandpower constant across its constituent source bins.
+    Target edges must be a subset of source edges with the same endpoints.
+    """
+    source_edges, target_edges = np.asarray(source_edges), np.asarray(target_edges)
+    if (source_edges[0] != target_edges[0] or source_edges[-1] != target_edges[-1]
+            or not np.isin(target_edges, source_edges).all()):
+        raise ValueError('target bins must be unions of source bins over the same range')
+    pos = np.searchsorted(source_edges, target_edges)
+    fine_counts = np.diff(np.r_[0, np.cumsum(counts)][source_edges.astype(int)])
+    nsource = len(source_edges) - 1
+    rows = matrix.reshape(nsource, ncls, nsource, ncls)
+    # Sum source columns: a constant target C_l fills each input source bin.
+    columns = np.stack([rows[:, :, lo:hi, :].sum(axis=2)
+                        for lo, hi in zip(pos[:-1], pos[1:])], axis=2)
+    out = np.stack([(columns[lo:hi] * fine_counts[lo:hi, None, None, None]).sum(axis=0)
+                    / fine_counts[lo:hi].sum()
+                    for lo, hi in zip(pos[:-1], pos[1:])])
+    return out.reshape((len(target_edges) - 1) * ncls, -1)

@@ -544,6 +544,85 @@ outputs:
         disk: 8Gi
         time_limit: 1h
 
+  - id: fine_pseudo_spectra
+    type: data
+    label: "Unit-width disk TT and polarization pseudo-spectra"
+    description: |
+      Raw coupled spectra in unit-width annuli, with Fourier-cell counts for
+      exact integer-edge rebinning before decoupling. Retains all EE/EB/BE/BB
+      rows and TT, the mask geometry and purification metadata.
+      Reads existing projected maps; pixel windows are applied after decoupling.
+    inputs: [projected_qu, scalar_tt_maps, flatsky_masks]
+    decisions: [b_purification, ell_max]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/fine_pseudo_spectra.py
+        --qu-maps {inputs.projected_qu} --tt-maps {inputs.scalar_tt_maps}
+        --masks {inputs.flatsky_masks}
+        --projection {units.projection} --seed {units.seed}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 8Gi
+        time_limit: 1h
+
+  - id: fine_field_pseudo_spectra
+    type: data
+    label: "Unit-width 1500d field TT and polarization pseudo-spectra"
+    description: |
+      Raw coupled spectra in unit-width annuli, with Fourier-cell counts for
+      exact integer-edge rebinning before decoupling. Retains all EE/EB/BE/BB
+      rows and TT, the mask geometry and purification metadata.
+      Reads existing projected maps; pixel windows are applied after decoupling.
+    inputs: [projected_qu, scalar_tt_maps, field_flatsky_masks]
+    decisions: [b_purification, ell_max]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/fine_pseudo_spectra.py
+        --qu-maps {inputs.projected_qu} --tt-maps {inputs.scalar_tt_maps}
+        --masks {inputs.field_flatsky_masks}
+        --projection {units.projection} --seed {units.seed}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs 2 --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 8Gi
+        time_limit: 1h
+
+  - id: fine_field_coupling
+    type: data
+    label: "1500d field width-five coupling response"
+    description: |
+      Width-five spin-0 and spin-2 responses for conditioning and fine-bin
+      diagnostics. The raw pseudo-spectra remain at unit width independently.
+    inputs: [field_flatsky_masks]
+    decisions: [b_purification, ell_max]
+    units:
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/coupling_matrices.py
+        --masks {inputs.field_flatsky_masks}
+        --projections {units.projection} --mask-indices 0
+        --purify-b {decisions.b_purification}
+        --lmax {decisions.ell_max} --delta-ell 5
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 16
+        memory: 16Gi
+        disk: 4Gi
+        time_limit: 20h
+        extra: {classad_JobDurationCategory: Long}
+
   # Scalar measurements share geometry and binning with the polarization suite.
   - id: scalar_white_alms
     type: data
