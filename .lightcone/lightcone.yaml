@@ -1,7 +1,12 @@
 target: local
+remote_store:
+  mount: /sptgrid/user/cailmdaley/pol_project/lightcone-stage
+  uri: davs://osg-gridftp.grid.uchicago.edu:2880/sptgrid/user/cailmdaley/pol_project/lightcone-stage
+  scratch: /sptlocal/user/cailmdaley/pol_project/lightcone-stage-tmp
 remote_payload:
   - .lightcone/snakefile-config.json
   - env.sh
+  - stage-inputs.sh
   - src
   - spt3g_build.tar.gz
   - lightcone_py.tar.gz

@@ -122,6 +122,7 @@ for staged in *__*.tar.gz .lightcone/stage/*__*.tar.gz; do
     tar -xzf "$staged"
 done
 shopt -u nullglob
+bash stage-inputs.sh
 
 if [ "$RELOCATED" = 1 ]; then
     set +e; snakemake "$@"; status=$?; set -e
