@@ -10,7 +10,9 @@ SFL on the 5% reference disk, and the unlensed EE spectrum of the simulations.
       of radius l rho(chi), drawn with R undone, as after flattening. One mode
       shows the direction offset delta psi.
   (c) The grid value at l is the direction average of C(l rho(chi)) over the
-      band l s2 to l s1, for one acoustic peak and one damping-tail multipole.
+      band l s2 to l s1, marked for one multipole. Averaged at every l, the
+      spectrum loses its acoustic peaks. Drawn at l^6 C_l, as in the spectra
+      figure, so that the peaks read on a linear axis.
 
 One colour rule across the panels: teal is the sky, ink is the grid.
 
@@ -36,14 +38,15 @@ FIGURE = ROOT / "figures" / "shear_schematic.pdf"
 
 PROJ = "ProjSFL"
 POINT = (22.5, G.DELTA_CENTER_DEG)   # (alpha, delta) in deg; g is the 5% disk's rms
-ELL_PEAK_SEARCH = (900, 1050)        # the EE maximum near l = 1000
-ELL_TAIL = 3000.0
+ELL_BAND = 2000.0                    # the multipole whose band panel (c) marks
+ELL_RANGE = (300.0, 4800.0)
+POWER = 6
 CHI_MODE = np.deg2rad(-45.0)         # the mode drawn in panel (b)
 
-SKY = PS.SPECTRUM_COLORS["EE"]
+SKY = "#009988"
 GRID = PS.SECONDARY[0]
 AXIS = PS.SECONDARY[2]
-BAND = "#DDDDDD"
+BAND = "#E4E4E4"
 
 
 def decompose(J):
@@ -181,42 +184,32 @@ def panel_fourier(ax, d):
             ha="left", va="bottom", linespacing=1.15)
 
 
-def panel_spectrum(ax, ell_th, cl, cases):
-    """(c), main axes: the sky spectrum with each band and its mean."""
-    m = (ell_th >= 200) & (ell_th <= 4300)
-    ax.semilogy(ell_th[m], cl[m], color=SKY, lw=PS.LW)
-    for c in cases:
-        ax.axvspan(c["lo"], c["hi"], color=BAND, lw=0, zorder=0)
-        sky, = ax.plot(c["ell"], c["C"], "o", mfc="white", mec=SKY, ms=4, mew=0.9,
-                       ls="none", zorder=5)
-        grid, = ax.plot(c["ell"], c["mean"], "_", color=GRID, ms=9, mew=1.3,
-                        ls="none", zorder=6)
-    ax.set_xlim(200, 4300)
-    ax.set_ylim(2e-8, 3e-3)
+def panel_spectrum(ax, d, ell_th, cl):
+    """(c): the sky spectrum, one band, and the spectrum averaged over its band."""
+    s1, s2 = d["s1"], d["s2"]
+    m = (ell_th >= ELL_RANGE[0]) & (ell_th <= ELL_RANGE[1])
+    ell = ell_th[m]
+    smooth = d["mu"] * np.array([direction_mean(l, s1, s2, ell_th, cl) for l in ell])
+    unit = 1e15
+    weight = ell**POWER / unit
+
+    lo, hi = ELL_BAND * s2, ELL_BAND * s1
+    ax.axvspan(lo, hi, color=BAND, lw=0, zorder=0)
+    sky, = ax.plot(ell, weight * cl[m], color=SKY, lw=PS.LW)
+    grid, = ax.plot(ell, weight * smooth, color=GRID, lw=1.5 * PS.LW)
+    ax.plot(ELL_BAND, np.interp(ELL_BAND, ell, weight * smooth), "o", mfc="white",
+            mec=GRID, ms=4, mew=0.9, zorder=5)
+    ax.set_xlim(*ELL_RANGE)
+    ax.set_ylim(0, None)
     ax.grid(False)
     ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(r"$C_\ell^{EE}\ [\mu{\rm K}^2]$")
+    ax.set_ylabel(rf"$\ell^{{{POWER}}}\,C_\ell^{{EE}}$ [$10^{{15}}\ \mu{{\rm K}}^2$]")
     ax.set_xticks([1000, 2000, 3000, 4000])
+    top = ax.get_ylim()[1]
+    for x, ha, name in ((lo, "right", r"$\ell s_2$"), (hi, "left", r"$\ell s_1$")):
+        ax.text(x + (40 if ha == "left" else -40), 0.97 * top, name, ha=ha, va="top")
     ax.legend([sky, grid], [r"$C(\ell)$", r"$\langle C(\ell\rho)\rangle_\chi$"],
-              loc="upper right", handlelength=1.0)
-
-
-def panel_zoom(ax, ell_th, cl, c, ylim, yticks, text_xy, shape):
-    """(c), zoom: the band in linear units of C(l), where curvature is curvature."""
-    m = (ell_th >= c["lo"]) & (ell_th <= c["hi"])
-    ax.set_facecolor(BAND)
-    ax.plot(ell_th[m], cl[m] / c["C"], color=SKY, lw=PS.LW)
-    ratio = c["mean"] / c["C"]
-    ax.axhline(ratio, color=GRID, lw=1.3)
-    ax.plot(c["ell"], 1, "o", mfc="white", mec=SKY, ms=4, mew=0.9, zorder=5)
-    ax.set_xlim(c["lo"], c["hi"])
-    ax.set_ylim(*ylim)
-    ax.grid(False)
-    ax.set_yticks(yticks)
-    ax.set_xticks([c["lo"], c["ell"], c["hi"]])
-    ax.set_xticklabels([r"$\ell s_2$", rf"${c['ell']:.0f}$", r"$\ell s_1$"])
-    ax.text(*text_xy, f"{shape}\nmean ${ratio:.2f}$", transform=ax.transAxes,
-            ha="center", va="center", linespacing=1.15)
+              loc="upper right", handlelength=1.4)
 
 
 def main():
@@ -230,21 +223,11 @@ def main():
           f"rotation = {np.degrees(d['rot']):.2f} deg, "
           f"delta psi at chi = {np.degrees(CHI_MODE):.0f} deg: "
           f"{np.degrees(delta_psi(CHI_MODE, d['s1'], d['s2'])):.2f} deg")
+    print(f"l = {ELL_BAND:.0f}: band {ELL_BAND * d['s2']:.0f}-{ELL_BAND * d['s1']:.0f}")
 
     th = T.load()
     ell_th = th["ell"].astype(float)
     cl = th["unlensed_EE"]
-    window = (ell_th >= ELL_PEAK_SEARCH[0]) & (ell_th <= ELL_PEAK_SEARCH[1])
-    ell_peak = ell_th[window][np.argmax(cl[window])]
-
-    cases = []
-    for ell in (ell_peak, ELL_TAIL):
-        c = dict(ell=ell, lo=ell * d["s2"], hi=ell * d["s1"],
-                 C=np.interp(ell, ell_th, cl),
-                 mean=d["mu"] * direction_mean(ell, d["s1"], d["s2"], ell_th, cl))
-        print(f"l = {ell:.0f}: band {c['lo']:.0f}-{c['hi']:.0f}, "
-              f"grid/sky = {c['mean'] / c['C']:.3f}")
-        cases.append(c)
 
     plt.rcParams.update(PS.rc())
     W, H = PS.TEXT_W, 2.3
@@ -255,13 +238,7 @@ def main():
 
     panel_sky_to_grid(axes(0.0, 0.1, 2.3, 2.3 * 4.7 / 5.3), d)
     panel_fourier(axes(2.18, 0.1, 2.0, 2.0), d)
-    panel_spectrum(axes(4.72, 0.34, 1.3, 1.88), ell_th, cl, cases)
-    panel_zoom(axes(6.42, 1.44, 0.72, 0.78), ell_th, cl, cases[0], (0, 1.2),
-               (0, 0.5, 1), (0.5, 0.2), "concave")
-    panel_zoom(axes(6.42, 0.34, 0.72, 0.78), ell_th, cl, cases[1], (0, 6),
-               (0, 2, 4, 6), (0.62, 0.72), "convex")
-    fig.text(6.12 / W, 1.28 / H, r"$C(\ell\rho)\,/\,C(\ell)$", rotation=90,
-             ha="center", va="center")
+    panel_spectrum(axes(4.72, 0.34, 2.46, 1.88), d, ell_th, cl)
 
     for x, s in ((0.0, "(a)"), (2.2, "(b)"), (4.2, "(c)")):
         fig.text(x / W, 0.995, s, ha="left", va="top")
