@@ -1,11 +1,12 @@
 """How a map projection becomes a shear, and what the shear does to a spectrum.
 
 Schematic for Sect. 2 of the paper, drawn with real numbers throughout: the
-SFL Jacobian at one sky position, chosen so that its g equals the rms shear of
-SFL on the 5% reference disk, and the unlensed EE spectrum of the simulations.
+SFL Jacobian at one sky position in SPT's 1500d field, chosen so that its g
+equals the rms shear of SFL on that field, and the unlensed EE spectrum of the
+simulations.
 
-  (a) J sends a circle on the sky to an ellipse on the grid; its principal
-      axes, marked on both, show the rotation R and the stretches s1, s2.
+  (a) The grid's square pixels are parallelograms on the sky: the same lattice
+      drawn both ways, with a sky circle and the ellipse J makes of it.
   (b) The grid ring |l| = const reads the sky's Fourier plane on the ellipse
       of radius l rho(chi), drawn with R undone, as after flattening. One mode
       shows the direction offset delta psi.
@@ -37,10 +38,13 @@ ROOT = Path(__file__).resolve().parent.parent
 FIGURE = ROOT / "figures" / "shear_schematic.pdf"
 
 PROJ = "ProjSFL"
-POINT = (22.5, G.DELTA_CENTER_DEG)   # (alpha, delta) in deg; g is the 5% disk's rms
+POINT = (26.26, G.DELTA_CENTER_DEG)  # (alpha, delta) in deg; g is the field's rms
 ELL_BAND = 2000.0                    # the multipole whose band panel (c) marks
 ELL_RANGE = (300.0, 4800.0)
 POWER = 6
+LATTICE_N = 6                        # pixels on a side in panel (a)
+LATTICE_PITCH = 1 / 3                # pixel side, in units of the circle's radius
+PIXEL_LW = 0.5
 CHI_MODE = np.deg2rad(-45.0)         # the mode drawn in panel (b)
 
 SKY = "#009988"
@@ -54,7 +58,7 @@ def decompose(J):
     U, s, Vt = np.linalg.svd(J)
     R = U @ Vt
     return dict(
-        U=U, V=Vt.T, s1=s[0], s2=s[1], mu=s[0] * s[1],
+        J=J, U=U, V=Vt.T, s1=s[0], s2=s[1], mu=s[0] * s[1],
         g=(s[0] - s[1]) / (s[0] + s[1]),
         rot=np.arctan2(R[1, 0], R[0, 0]),
         u1=np.arctan2(U[1, 0], U[0, 0]) % np.pi,
@@ -94,46 +98,44 @@ def arc(ax, r, a, b, color, lw=PS.LW_REF):
     ax.plot(r * np.cos(t), r * np.sin(t), color=color, lw=lw, solid_capstyle="butt")
 
 
+def lattice(n, pitch, T):
+    """Segments of an n x n square lattice centred on 0, each mapped by T."""
+    t = np.linspace(-n / 2, n / 2, 2) * pitch
+    edges = (np.arange(n + 1) - n / 2) * pitch
+    for e in edges:
+        for pts in (np.array([t, [e, e]]), np.array([[e, e], t])):
+            yield T @ pts
+
+
 def panel_sky_to_grid(ax, d):
-    """(a): the circle, the ellipse, and the principal axes on each."""
-    ax.set_xlim(-1.25, 4.05)
-    ax.set_ylim(-3.0, 1.7)
+    """(a): the grid's pixels and one sky circle, on the sky and on the grid."""
+    ax.set_xlim(-1.45, 4.05)
+    ax.set_ylim(-2.45, 1.87)
     ax.set_aspect("equal")
     ax.axis("off")
 
     cx = 2.75
+    J, Jinv = d["J"], np.linalg.inv(d["J"])
+
+    for x, y in lattice(LATTICE_N, LATTICE_PITCH, Jinv):
+        ax.plot(x, y, color=GRID, lw=PIXEL_LW, solid_capstyle="round")
+    for x, y in lattice(LATTICE_N, LATTICE_PITCH, np.eye(2)):
+        ax.plot(x + cx, y, color=GRID, lw=PIXEL_LW, solid_capstyle="round")
+
     ax.plot(*ellipse(1, 1, 0), color=SKY, lw=1.5 * PS.LW)
     gx, gy = ellipse(d["s1"], d["s2"], d["u1"])
-    ax.plot(gx + cx, gy, color=GRID, lw=1.5 * PS.LW)
+    ax.plot(gx + cx, gy, color=SKY, lw=1.5 * PS.LW)
 
-    # Each principal axis on the sky lands on the matching one on the grid.
-    v1, v2 = d["V"][:, 0], d["V"][:, 1]
-    u1, u2 = d["U"][:, 0], d["U"][:, 1]
-    for v in (v1, v2):
-        ax.plot([-v[0], v[0]], [-v[1], v[1]], color=SKY, lw=PS.LW_REF)
-    if u1[0] < 0:
-        u1 = -u1
-    if u2[1] < 0:
-        u2 = -u2
-    for u, s in ((u1, d["s1"]), (u2, d["s2"])):
-        ax.plot([cx - s * u[0], cx + s * u[0]], [-s * u[1], s * u[1]],
-                color=GRID, lw=PS.LW_REF)
-    ax.text(cx + 1.02 * d["s1"] * u1[0] + 0.03, 1.02 * d["s1"] * u1[1] + 0.05,
-            r"$s_1$", ha="left", va="bottom")
-    ax.text(cx + 1.02 * d["s2"] * u2[0] - 0.05, 1.02 * d["s2"] * u2[1] + 0.03,
-            r"$s_2$", ha="right", va="bottom")
+    arrow(ax, (1.32, 0), (cx - 1.12, 0), GRID, ms=8)
+    ax.text(0.5 * (1.32 + cx - 1.12), 0.1, r"$J$", ha="center", va="bottom")
+    bottom = -1.1
+    ax.text(0, bottom, "sky", ha="center", va="top")
+    ax.text(cx, bottom, "grid", ha="center", va="top")
 
-    arrow(ax, (1.14, 0), (cx - 1.12, 0), GRID, ms=8)
-    ax.text(0.5 * (1.14 + cx - 1.12), 0.1, r"$J$", ha="center", va="bottom")
-    ax.text(0, -1.12, "sky", ha="center", va="top")
-    ax.text(cx, -1.12, "grid", ha="center", va="top")
-
-    rows = [rf"$J = R\,\Sigma$: rotation $R$ by ${np.degrees(d['rot']):+.1f}^\circ$",
-            rf"magnification $\mu = s_1 s_2 = {d['mu']:.2f}$",
-            rf"shear $g = (s_1 - s_2)/(s_1 + s_2) = {d['g']:.2f}$",
-            rf"with $s_1 = {d['s1']:.2f}$, $s_2 = {d['s2']:.2f}$"]
+    rows = [rf"$J = R\,\Sigma$: $s_1 = {d['s1']:.2f}$, $s_2 = {d['s2']:.2f}$",
+            rf"$g = (s_1 - s_2)/(s_1 + s_2) = {d['g']:.2f}$"]
     for i, row in enumerate(rows):
-        ax.text(-1.1, -1.72 - 0.36 * i, row, ha="left", va="center")
+        ax.text(-1.3, -1.82 - 0.38 * i, row, ha="left", va="center")
 
 
 def panel_fourier(ax, d):
@@ -223,20 +225,19 @@ def main():
           f"rotation = {np.degrees(d['rot']):.2f} deg, "
           f"delta psi at chi = {np.degrees(CHI_MODE):.0f} deg: "
           f"{np.degrees(delta_psi(CHI_MODE, d['s1'], d['s2'])):.2f} deg")
-    print(f"l = {ELL_BAND:.0f}: band {ELL_BAND * d['s2']:.0f}-{ELL_BAND * d['s1']:.0f}")
 
+    plt.rcParams.update(PS.rc())
     th = T.load()
     ell_th = th["ell"].astype(float)
     cl = th["unlensed_EE"]
 
-    plt.rcParams.update(PS.rc())
     W, H = PS.TEXT_W, 2.3
     fig = plt.figure(figsize=(W, H))
 
     def axes(x, y, w, h):
         return fig.add_axes([x / W, y / H, w / W, h / H])
 
-    panel_sky_to_grid(axes(0.0, 0.1, 2.3, 2.3 * 4.7 / 5.3), d)
+    panel_sky_to_grid(axes(0.0, 0.1, 2.3, 2.1), d)
     panel_fourier(axes(2.18, 0.1, 2.0, 2.0), d)
     panel_spectrum(axes(4.72, 0.34, 2.46, 1.88), d, ell_th, cl)
 
