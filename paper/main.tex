@@ -46,17 +46,15 @@
 
 \abstract
 {Flat-sky analyses of the cosmic microwave background project the sphere onto a plane, and every projection distorts the field it maps.}
-{We measure the resulting distortion of temperature and polarization power spectra on simulations and predict it with no free parameters.}
+{We measure the distortion of temperature and polarization power spectra on simulations and predict it with no free parameters.}
 {We project unlensed simulations four ways onto the SPT 1500d field and seven apodized disks covering 0.75--10\% of the sky and estimate their spectra with NaMaster.
-Near any point a projection is a rotation, which polarization pipelines remove, a magnification, and a shear $g$ that follows in closed form from its definition.
-We fold these into a forward model over the analysis mask.}
+Near any point a projection is a rotation, which polarization pipelines remove, a magnification, and a shear $g$ known in closed form, and we fold these into a forward model over the analysis mask.}
 {The shear averages $C(\ell)$ over a band of multipoles as wide as the acoustic spacing, which washes out acoustic peaks and lifts the damping tail: Sanson--Flamsteed on the 1500d field carries \EEboxSFLfourK\ times the input $EE$ power near $\ell = 4000$.
 The shear also turns the $E$/$B$ basis, so that a fraction $2\gsq$ of $EE$ appears as $BB$, with $\gsq$ the footprint mean of $g^2$ under the squared mask.
-The forward model reproduces the measured $EE$, acoustic structure included, to within \EEmodelworstclean\ in every band over $\cleanlo < \ell < \cleanhi$, and the leakage relation holds to \fitrms\ rms over \decades\ decades in $\gsq$ across \numpairs\ projection--mask pairs, which are not independent tests.
-Two cylindrical projections that leak nearly equally on round masks differ by a factor of \tfdratiomeas\ on the 1500d field, as the forward model predicts.}
+The forward model reproduces the measured $EE$, acoustic structure included, to within \EEmodelworstclean\ in every band over $\cleanlo < \ell < \cleanhi$, and the leakage relation holds to \fitrms\ rms over \decades\ decades in $\gsq$ across \numpairs\ projection--mask pairs, which are not independent tests.}
 {The distortion can be computed for any footprint before observing.
 We recommend the stereographic projection for $B$-mode work and the zenithal equal-area projection for temperature and $E$-mode work.
-On Sanson--Flamsteed, a diagonal transfer function calibrated on the CMB misses a white spectrum by up to \tfSFLworst, whereas the projection's coupling matrix predicts it to within \tfclosureworst, and an $E$-mode template built from the Jacobian removes the leaked $B$ down to the noise on $E$.}
+On Sanson--Flamsteed, a CMB-calibrated diagonal transfer function misses a white spectrum by up to \tfSFLworst, whereas the coupling matrix predicts it to within \tfclosureworst, and an $E$-mode template built from the Jacobian removes the leaked $B$ down to the noise on $E$.}
 
 \keywords{cosmic background radiation -- methods: data analysis -- techniques: image processing}
 
@@ -139,6 +137,7 @@ The $Q/U$ leg projects the $Q$ and $U$ maps, flattens them, and decomposes the r
 The $E/B$ leg decomposes into $E$ and $B$ on the sphere first and projects the two resulting maps as scalars, which have no basis to misalign, so its $B$ stays zero.
 The two legs share everything else, so their difference isolates the effect of projecting a spin-two field.
 The $T$ leg projects $T$ as a scalar.
+A second set of 20 skies with a white spectrum, $C_\ell = 1$, passes through the $T$ leg alone.
 
 We estimate spectra with NaMaster 1.5.1 \citep{alonso19}, in its flat-sky mode.
 Flattened $Q$ and $U$ enter as a spin-two field with $B$-mode purification, and the maps of the $E/B$ and $T$ legs as spin-zero fields.
@@ -148,7 +147,7 @@ The \SI{2}{\arcminute} pixel has its Nyquist multipole at $\ell = \lnyquist$, an
 
 Our reference footprint is SPT's 1500d field, $\pm\SI{50}{\degree}$ in RA and \SIrange{-70}{-42}{\degree} in declination, \fieldfsky\ of the sky.
 A further seven circular disks concentric with the grid, \SI{315}{deg\squared} to \SI{4206}{deg\squared} or 0.75\% to 10\% of the sky, sweep the sky fraction (Sect.~\ref{sec:footprints}).
-All masks have a C2 apodization of \SI{2.5}{\degree}.
+All masks $W$ have a C2 apodization of \SI{2.5}{\degree}.
 We quote the disks' fractions as the areas of the unapodized disks.
 
 The analysis is an ASTRA specification run with \texttt{lightcone} on the Open Science Pool, and each output records its recipe, container, analysis decisions and input hashes, so the chain from input maps to bandpowers can be rerun.
@@ -164,26 +163,26 @@ Every line comes from the same skies, so the differences between lines come from
   \caption{
     Simulated spectra on the SPT 1500d field, one line per projection through all bands of width $\Delta\ell = 50$, each the mean of 20 realizations.
     Top row: $\ell^6 C_\ell$ for $TT$, $EE$ and $BB$, with the unlensed input as a thin grey line beneath; the input $BB$ is zero, and ZEA's $BB$ is multiplied by 100.
-    Bottom row: $TT$ and $EE$ over the input on a shared axis, and $BB/EE$, with lensed $BB/EE$ dashed for scale.
+    Bottom row: measured over input $TT$ and $EE$, and $BB/EE$, with lensed $BB/EE$ dashed for scale.
     STG's $BB$ lies on zero and is omitted from $BB/EE$.
   }
   \label{fig:spectra}
 \end{figure*}
 
 Measured over input, $TT$ and $EE$ oscillate with $\ell$ by tens of percent: over $850 < \ell < 1450$, SFL's $EE$ swings between \EEswingSFLlo\ and \EEswingSFLhi\ of the input.
-A single band therefore says little, so we quote power averaged with a Hann window of full width \hannwidth, twice the acoustic spacing of \acousticspacing.
+A single band therefore says little, so we quote power averaged with a Hann window of full width \hannwidth, twice the spacing of the acoustic peaks, $\Delta\ell \approx \acousticspacing$.
 Near $\ell = 1000$, SFL and BICEP carry \EEboxSFLoneK\ and \EEboxBICEPoneK\ of the input $EE$ power; near $\ell = 3000$, \EEboxSFLthreeK\ and \EEboxBICEPthreeK; and near $\ell = 4000$, \EEboxSFLfourK\ and \EEboxBICEPfourK.
 ZEA stays within \EEboxZEAdev\ of the input.
 STG carries \EEboxSTGoneK, \EEboxSTGthreeK\ and \EEboxSTGfourK\ at the same multipoles.
 $TT$ follows the same envelope, with SFL, BICEP and STG at \TTboxSFLfourK, \TTboxBICEPfourK\ and \TTboxSTGfourK\ near $\ell = 4000$; below $\ell \approx 3000$ the oscillations of the two spectra differ in amplitude and phase, as their acoustic structures do.
 
 The $BB$ bandpowers are pure leakage, and across the four projections they span \bbdecadesField\ orders of magnitude.
-SFL and BICEP leak most, and $BB/EE$ stays close to flat with $\ell$ for every projection, without the oscillations of $EE$.
+SFL and BICEP leak most, and $BB/EE$ changes slowly with $\ell$, without the oscillations of $EE$.
 The lensed $BB/EE$ ratio gives a scale: for the Planck 2018 cosmology it is \lensedBBEE\ at $\ell = 1000$, and on the 1500d field SFL leaks \tfdSFLoverlens\ times that ratio and ZEA \ZEAoverlens\ of it.
-STG's $BB$ is the pipeline's floor, \floorField\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFieldTop\ over $\floorTopBand$.
+STG's $BB$ is much smaller, \floorField\ of $EE$ over $1000 < \ell < 3000$, rising to \floorFieldTop\ over $\floorTopBand$; we call it the pipeline's floor and return to it in Sect.~\ref{subsec:validation}.
 Projection moves power between $E$ and $B$ without creating it: averaged over $500 < \ell < \lwall$, the $EE+BB$ of the $Q/U$ leg equals the $EE$ of the $E/B$ leg to \powerconserveAll\ on the field and on every usable disk.
 
-\section{Local distortion by a map projection} \label{sec:law}
+\section{Distortion of a spectrum by a map projection} \label{sec:law}
 
 We derive the differences between the lines of Fig.~\ref{fig:spectra} from the geometry of each projection, and build a forward model that predicts the projected spectra from the projection and the analysis mask (Eq.~\eqref{eq:forward} in Sect.~\ref{subsec:footprint}).
 
@@ -204,7 +203,7 @@ The symmetric factor $\Sigma$ carries a \textbf{magnification} $\mu = s_1 s_2 = 
   g = \frac{s_1 - s_2}{s_1 + s_2},
 \end{equation}
 the anisotropic stretch, which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
-The shear depends only on the ratio of the singular values, as it must, since a uniform dilation cannot leak $E$ into $B$.
+The shear depends only on the ratio of the singular values, since a uniform dilation cannot leak $E$ into $B$.
 In the language of weak lensing, $g$ is the modulus of the reduced shear $\abs{\gamma}/(1+\kappa)$ (Appendix~\ref{app:kernels}).
 A projection is \textit{conformal}, preserving local angles, where $g = 0$, and \textit{equal-area} where $\mu = 1$; STG is conformal everywhere, and SFL and ZEA are equal-area everywhere.
 
@@ -303,7 +302,7 @@ A spin-two field also carries a basis, and flattening (Sect.~\ref{subsec:sims}) 
 \end{equation}
 Flattening by the angle of $R$ would remove all of the rotation and leave exactly the shear $\Sigma$.
 Equation~\eqref{eq:rot_angle} misses that angle by $\Delta = \order{g^2}$, which raises SFL's leakage on the 1500d field by \flattenSFLfield\ and affects the other projections far less; the forward model carries $\Delta$, and Appendix~\ref{app:flatten} gives the angle of $R$ in closed form, which removes it.
-For a conformal projection $\Sigma$ is a multiple of the identity, so flattening is exact and nothing leaks.
+For a conformal projection $\Sigma$ is a multiple of the identity, so flattening is exact and the leakage vanishes.
 
 Flattening leaves the shear, and the shear misaligns modes.
 A plane wave $\vbell$ on the grid originates from the sky mode $\vb*{q} = J^{T}\vbell$, whose direction differs from that of $\vbell$ by
@@ -393,24 +392,26 @@ Figure~\ref{fig:residuals} divides the spectra of Fig.~\ref{fig:spectra} by the 
 \subsection{Scalar spectra} \label{subsec:scalar_validation}
 
 The forward model follows the oscillations of Fig.~\ref{fig:spectra} in phase and in amplitude for every projection.
-Neither mask-induced coupling nor a pixel window depends on where the acoustic peaks fall, so neither can produce this structure, and the model's own ZEA curve stays within \EEboxZEAmodeldev\ of the input.
-Measured over modelled $TT$ and $EE$ stays within \droopwithin\ up to $\ell = 2000$ and droops to \drooptop\ near $\ell = 4500$, and $BB$ droops with them, so the droop is common to all three spectra, with STG and ZEA lowest and SFL highest.
-A white spectrum sees the same droop: averaged over $\cleanlo < \ell < \cleanhi$, its measured over modelled power matches that of $TT$ to \tfdroopcommon\ for STG and ZEA (Sect.~\ref{subsec:correct}), so the droop is a multiplicative response of the pipeline rather than a feature of the input spectrum.
+Mask-induced coupling and pixel windows do not depend on where the acoustic peaks fall, so the projection accounts for this structure, and for ZEA the model stays within \EEboxZEAmodeldev\ of the input.
+Every $EE$ band over $\cleanlo < \ell < \cleanhi$ lies within \EEmodelworstclean\ of the model.
+Measured over modelled $TT$ and $EE$ stays within \droopwithin\ of unity up to $\ell = 2000$ and falls to \drooptop\ near $\ell = 4500$.
+$BB$ falls with them, so this droop is common to all three spectra, with STG and ZEA lowest and SFL highest.
+The white skies droop the same way: averaged over $\cleanlo < \ell < \cleanhi$, their measured over modelled power matches that of $TT$ to \tfdroopcommon\ for STG and ZEA, so for these projections the droop is multiplicative and independent of the input spectrum.
 We attribute it to the transfer function of the bilinear interpolation, an inference we have not tested.
 Resampling also aliases power additively toward the Nyquist scale.
-Over $\aliaslo < \ell < \lwall$, relative to the forward model, SFL and BICEP measure \EEaliasSFLfield\ and \EEaliasBICEPfield\ more $EE$ than STG does, which we read as aliased power folding back.
+Over $\aliaslo < \ell < \lwall$, relative to the forward model, SFL and BICEP measure \EEaliasSFLfield\ and \EEaliasBICEPfield\ more $EE$ than STG does, which we read as aliased power.
 Below $\ell = 1000$ single bands scatter about the model by up to \lowlstruct, a structure we have not explained.
-After dividing out STG's measured shortfall, the worst sheared projection has $\chi^2/{\rm dof} = \chisqEE$ per band over $\cleanlo < \ell < \cleanhi$ against the scatter of the mean of 20 realizations, an rms residual of \rmsEEresid: the model is accurate to about that level per band, which is coarser than the simulations' statistical reach.
+After dividing out the droop as measured on STG, the worst sheared projection has $\chi^2/{\rm dof} = \chisqEE$ per band over $\cleanlo < \ell < \cleanhi$ against the scatter of the mean of 20 realizations, an rms residual of \rmsEEresid: the model is accurate to about that level per band, which is coarser than the simulations' statistical reach.
 
 \subsection{Leakage} \label{subsec:validation}
 
 The forward model reproduces the $BB$ of the three sheared projections: averaged over $500 < \ell < 3000$, measured over modelled $BB$ is $\BBmodelSFLfield$ for SFL, $\BBmodelZEAfield$ for ZEA, and $\BBmodelBICEPfield$ for BICEP.
-STG has no shear, so its predicted $BB$ is zero and its measured $BB$ is the floor of Sect.~\ref{subsec:spectra}.
+STG has no shear, so its predicted $BB$ is zero and its measured floor (Sect.~\ref{subsec:spectra}) comes from the pipeline.
 
 Over $500 < \ell < \lBBtop$ the measured $BB/EE$ is \wideBBrangeField\ of the forward model for the three sheared projections (Fig.~\ref{fig:residuals}).
 Over $\cleanlo < \ell < \cleanhi$, with the STG floor subtracted and below the multipoles that aliased power reaches, the agreement is \cleanBBrangeField.
 Above $\ell = \lBBtop$ BICEP's and ZEA's $BB$ rise sharply: in the last bin ($\risetopbin$) the floor-subtracted ratio to the model is \riseBICEPfield\ and \riseZEAfield, and BICEP's excess is \BICEPexcessfloor\ times the STG floor, while SFL's ratio stays at \riseSFLfield.
-We read this as folded power, which the local model does not contain, and quote no leakage above $\ell = \lBBtop$.
+We read this as aliased power, which the local model does not contain, and quote no leakage above $\ell = \lBBtop$.
 
 The leakage does not follow the acoustic structure as $EE$ does, but it is not flat for every projection.
 SFL and ZEA stay close to flat: floor-subtracted over $2\gsq$, SFL falls from $\tiltSFLfieldlo$ over $1000 < \ell < 1500$ to $\tiltSFLfieldhi$ over $4000 < \ell < 4500$.
@@ -436,8 +437,7 @@ Subtracting the STG floor moves the coefficient to $\fitcoefsub$ and leaves the 
 The offset from 2 is the mean, over that band, of an $\ell$-dependent tilt.
 
 The footprint relation is flat in $\ell$, while the measured ratios tilt, and the forward model predicts the tilts through the weight of Sect.~\ref{subsec:footprint}.
-We rebin to \numbandbands\ bands of $\Delta\ell = 500$ over $\bandlo < \ell < \bandhi$ and drop any band whose measured $BB/EE$ is less than twenty times the STG floor, which removes the smallest masks in the highest bands; we drop these bands rather than subtract the floor because we have not tested whether the floor is independent of projection at that precision.
-That leaves \numbands\ points.
+We rebin to \numbandbands\ bands of $\Delta\ell = 500$ over $\bandlo < \ell < \bandhi$ and drop any band whose measured $BB/EE$ is less than twenty times the STG floor, which removes the smallest masks in the highest bands and leaves \numbands\ points.
 Measured over modelled, these have mean and scatter $\bandbybandratio$ and a worst case of \bandbybandworst, with nothing fitted.
 The weight contains two competing effects: the curvature of $C$ lifts the $E$ power of high-shear positions, and dilation to a higher wavenumber lowers it on the damping tail, so the sign of a tilt depends on the footprint.
 On the 5\% disk SFL's floor-subtracted ratio to $2\gsq$ rises from $\tiltSFLlo$ to $\tiltSFLhi$ and BICEP's falls from $\tiltBICEPlo$ to $\tiltBICEPhi$, whereas on the 1500d field both fall (Sect.~\ref{subsec:validation}).
@@ -447,7 +447,7 @@ ZEA, the least sheared of the three, gives the cleanest single test: its pipelin
   \includegraphics[width=\textwidth]{shear_leakage.pdf}
   \caption{
     Measured $BB/EE$ against $\gsq$ for every usable sheared projection--mask pair (left), and its fractional residual from $2\gsq$ against disk sky fraction (right), both averaged over $1000<\ell<3000$.
-    The line is $BB/EE = 2\gsq$, with nothing fitted; the band is the scatter about the fitted coefficient.
+    The line is $BB/EE = 2\gsq$; the band is the rms scatter of the pairs about the fitted coefficient of Sect.~\ref{subsec:sweep}.
     The two excluded pairs are SFL and BICEP on the 10\% disk.
   }
   \label{fig:shear_leakage}
@@ -466,13 +466,13 @@ Against the lensed $BB/EE$ of Sect.~\ref{subsec:spectra}, the cylindrical projec
 \subsection{Choosing a projection} \label{subsec:choose}
 
 For $B$-mode work we recommend STG.
-Conformality, rather than equal area, minimizes leakage, as \citet{wallis17} found empirically for weak-lensing convergence maps: ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
+Conformal projections leak least, as \citet{wallis17} found empirically for weak-lensing convergence maps: ``the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
 The closed form explains that ranking and gives a coefficient for any projection and footprint.
 On the 1500d field STG's $BB/EE$ is the pipeline floor, \floorField, against \ZEAleakField\ for ZEA.
 
 For temperature and $E$-mode work we recommend ZEA.
 STG removes the shear by adding magnification, which leaves \EEboxSTGthreeK\ of the input $EE$ power near $\ell = 3000$ and \EEboxSTGfourK\ near $\ell = 4000$ on the 1500d field (Sect.~\ref{subsec:spectra}).
-ZEA preserves area exactly, shears only as $r^2/8$ near the tangent point, and stays within \EEboxZEAdev\ of the input $EE$ on the field, nearly all of it the shortfall shared with STG, while it leaks \ZEAoverlens\ of the lensed $BB/EE$.
+ZEA preserves area exactly, shears only as $r^2/8$ near the tangent point, and stays within \EEboxZEAdev\ of the input $EE$ on the field, nearly all of it the droop of Sect.~\ref{subsec:scalar_validation}, while it leaks \ZEAoverlens\ of the lensed $BB/EE$.
 An analysis that wants both can keep STG and correct the magnification with the scalar block of Eq.~\eqref{eq:coupling}, or keep ZEA and subtract the leakage (Sect.~\ref{subsec:correct}).
 
 \subsection{Correcting a projected analysis} \label{subsec:correct}
@@ -481,14 +481,15 @@ Whichever projection an analysis keeps, it can budget both effects before taking
 The leakage budget is one quadrature: evaluate the Jacobian of the projection on the analysis grid (analytically from Table~\ref{table:projs}, or by finite differences), take $g$ from its singular values, and average $g^2$ over the footprint with weight $W^2$; the leaked $BB$ is $2\gsq$ of $EE$.
 The scalar distortion depends on the spectrum, so its budget is Eq.~\eqref{eq:forward} evaluated with the spectrum in question.
 
-The coupling matrix of Eq.~\eqref{eq:coupling} predicts the response of any input spectrum.
+Equation~\eqref{eq:coupling} is linear in the input spectrum, so the same matrix should predict the response of a spectrum other than the CMB's.
 A diagonal transfer function $F_\ell$ calibrated on CMB-only simulations absorbs the projection as the CMB's own response, which depends on the CMB's slope and acoustic phase, so a component with a different spectrum is corrected wrongly.
 We measure the size of the error with 20 independent realizations of a white, Poisson-source-like spectrum through the $T$ leg on the 1500d field (Fig.~\ref{fig:transfer_error}).
 With $F_\ell$ taken from the measured $TT$ of Sect.~\ref{subsec:spectra}, over $\cleanlo < \ell < \cleanhi$ the corrected white bandpowers are low by \tfSFLmean\ on average for SFL and by up to \tfSFLworst, low by \tfBICEPmean\ on average for BICEP, with bands off by up to \tfBICEPworst\ of either sign, and high by \tfSTGmean\ for STG, up to \tfSTGworst.
 ZEA stays within \tfZEAworst.
 The forward model predicts these errors band by band to within \tfclosureworst\ for all four projections.
-The same number measures $R$ directly, as the measured white bandpowers over $R$ applied to the white input, with the common droop of Sect.~\ref{subsec:scalar_validation} divided out using $TT$.
-This tests $R$ as a forward prediction; we have not inverted it on noisy bandpowers.
+The same number compares the measured white bandpowers with $R$ applied to the white input, after dividing out the droop of Sect.~\ref{subsec:scalar_validation} measured on $TT$.
+The mean of that residual over the same range is consistent with zero for STG and ZEA, but $\ScalarFieldSFLWhiteFullMeanError \pm \ScalarFieldSFLWhiteFullMeanErrorSEM$ for SFL and $\ScalarFieldBICEPWhiteFullMeanError \pm \ScalarFieldBICEPWhiteFullMeanErrorSEM$ for BICEP, a shape error at the half-percent level whose mechanism we have not isolated.
+This tests $R$ forward on one known spectrum; we have not inverted it on noisy bandpowers or tested its spin-two blocks this way.
 The same framework should remove the mean leakage, by solving the joint $EE$/$BB$ system of Eq.~\eqref{eq:coupling} or by subtracting $R^{BB\leftarrow EE}$ applied to the estimated $EE$, which we have not run on simulations.
 Either way, the leaked $E$ keeps its sample variance in the $B$ bandpowers.
 
@@ -496,9 +497,9 @@ Either way, the leaked $E$ keeps its sample variance in the $B$ bandpowers.
   \includegraphics[width=\columnwidth]{transfer_error.pdf}
   \caption{
     Bandpower error for a white spectrum on the SPT 1500d field through the $T$ leg, mean of 20 realizations.
-    Top: after a diagonal transfer function calibrated on the measured $TT$ of the CMB, with the forward model's prediction dashed.
+    Top: error after a diagonal transfer function $F_\ell$ equal to measured over input $TT$ of the CMB skies, with the forward model's prediction dashed.
     The transfer function carries the acoustic phase of the calibrating spectrum, which sets the oscillation.
-    Bottom: against the coupling matrix applied to the white input, with the $TT$ residual of Fig.~\ref{fig:residuals} divided out; bands show the standard error.
+    Bottom: measured white bandpowers over the coupling matrix applied to the white input, divided by measured over modelled $TT$, minus one; bands show the standard error.
   }
   \label{fig:transfer_error}
 \end{figure}
@@ -564,9 +565,9 @@ In the distortion-field parameterization of \citet{hu03}, the projection is, at 
 
 \subsection{Grids, transforms, and other flat-sky analyses} \label{subsec:flatsky}
 
-The transform, rather than the grid, decides whether an analysis is flat.
+The transform decides whether an analysis is flat.
 A two-dimensional FFT treats the grid as a plane, so it remaps the field and every result above applies.
-A spherical harmonic transform evaluates harmonics at the true sky positions of the same pixels, so it remaps nothing.
+A spherical harmonic transform evaluates harmonics at the true sky positions of the same pixels, so it does not remap the field.
 ACT's maps use an equidistant cylindrical CAR grid, the family of BICEP's, but ACT analyses them with spherical harmonic transforms, using the grid's rows as quadrature rings \citep{choi20, naess25, louis25}.
 That analysis has no flat-sky step and no flattening, so it has no projection leakage, and the grid enters through its pixel window alone.
 A CAR pixel has a fixed size in grid units, so we infer that its window in sky units depends on declination; we found no paper that quantifies this.
@@ -574,7 +575,7 @@ A CAR pixel has a fixed size in grid units, so we infer that its window in sky u
 HEALPix \citep{gorski05} has a chart as well, which \citet{calabretta07} write as a projection, and the same reading applies.
 Its equal-area rings are uniform in $\sin\delta$ in the equatorial zone, which elongates pixels: taking each pixel as the parallelogram its corners span gives $g$ up to \hpgmaxeq\ at the edge of that zone and $\gsq = \hpgsq$ over the sky.
 Averaging the two-sinc window of these parallelograms over mode direction and over pixels reproduces the HEALPix pixel window to \hpwinmatch\ up to $\ell = 3N_{\rm side}$ at $N_{\rm side} = 1024$ and 4096, where a square pixel of the same area is off by \hpwinsquare; \citet{halltessore25} give the leading-order form of this window through each pixel's second moment.
-A spherical transform remaps nothing, so we expect no leakage from this shear: a window common to $Q$ and $U$ multiplies $E$ and $B$ equally, which leaves only its spatial variation and aliasing to mix them.
+A spherical transform does not remap the field, so we expect no leakage from this shear: a window common to $Q$ and $U$ multiplies $E$ and $B$ equally, which leaves only its spatial variation and aliasing to mix them.
 That expectation is an argument, not a test.
 
 Reprojection undoes the distortion of a map, but not that of operations performed on it before reprojecting.
@@ -590,14 +591,13 @@ The closed form extends to other flat-sky work.
 For the gnomonic \ang{10} fields of \citet{pires20}, Eq.~\eqref{eq:law_footprint} gives $BB/EE$ of \TANtenBBEE\ under uniform weight, which quantifies the residual they call negligible.
 \citet{casas23} report ``significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane'', and BICEP/Keck note that ``other map projections will have significantly lower distortion'' \citep{bk7}.
 In each case Eq.~\eqref{eq:law_footprint} gives the expected leakage from the projection and the footprint.
-Avoiding pixelization errors and avoiding projection are separate properties.
 \citet{ge24} replace bilinear interpolation with non-uniform FFTs and verify round trips between grids to $\lesssim 0.3\%$ out to $\ell = 3500$; this measures interpolation fidelity, whereas the shear belongs to the projection, so a perfect resampler onto a non-conformal grid still leaks $2\gsq$ of $EE$ into $BB$.
 \citet{wolz25} and \citet{cornish25} estimate spectra directly from catalogues by summing spherical harmonics at true sky positions, which involves no projection and so no leakage.
 
 \section{Conclusions} \label{sec:conclusions}
 
 A map projection's shear follows in closed form from its definition.
-The shear averages a spectrum over a band of multipoles, which washes out acoustic peaks and lifts the damping tail, and it leaks a fraction $2\gsq$ of $EE$ into $BB$; a parameter-free forward model built from the Jacobian and the analysis mask matches simulations at the percent level across four projections, the SPT 1500d field and seven disks.
+The shear averages a spectrum over a band of multipoles, which washes out acoustic peaks and lifts the damping tail, and it leaks a fraction $2\gsq$ of $EE$ into $BB$; a parameter-free forward model built from the Jacobian and the analysis mask matches simulations to a few percent across four projections, the SPT 1500d field and seven disks.
 For $B$-mode work STG or a curved-sky method avoids the leakage, and for temperature and $E$-mode work ZEA or a curved-sky method avoids most of the distortion.
 An analysis that keeps a sheared grid can compute the effect for its footprint before observing: a diagonal transfer function calibrated on the CMB misrecovers a white spectrum by up to \tfSFLworst\ on SFL, while the projection's coupling matrix predicts it to within \tfclosureworst.
 An $E$-mode template built from the Jacobian removes the leaked $B$ map by map down to the noise on $E$.
@@ -682,7 +682,7 @@ Writing $e^{2i\delta\psi} = (1 + g e^{-2i\chi})/(1 + g e^{+2i\chi})$, that avera
   &= \frac{s^2}{2}\,g^2\qty[1 - \frac{s^2-1}{4}\,g^2 + \order{g^4}].
 \end{aligned}
 \end{equation}
-The leading coefficient $s^2/2$ is the whole first-order content: scalars are blind to misalignment at every order, and nonzero spins feel it as $s^2 g^2/2$.
+Scalars do not respond to misalignment at any order, and nonzero spins respond at leading order as $s^2 g^2/2$.
 The quartic correction is spin-specific: at $s = 2$ it is the $-\tfrac34 g^2$ of Eq.~\eqref{eq:law}, while at $s = 1$ it vanishes, so $\expval{\sin^2\delta\psi}_\chi = g^2/2$ exactly.
 
 
