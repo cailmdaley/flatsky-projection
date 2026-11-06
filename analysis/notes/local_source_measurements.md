@@ -139,6 +139,10 @@ At the sampled southeastern corner, adding the exactly known pixel-white varianc
 The raw 16 fine-sky ratios are also retained in the JSON, including SFL cluster 0.736±0.059 and ZEA cluster 0.959±0.053.
 They share a low central CMB realization variance (central cluster sigma 6.07 uK versus predicted 8.29 uK); that subset is not evidence of an extra physical significance loss.
 The transferred estimates reduce this particular subset variance while retaining its gain uncertainty.
+An independent Opus review rebuilt the transfer and stratified jackknife from the per-seed JSON files, reproducing all six estimates and errors to four printed decimals.
+A separate Gaussian delta-method covariance with explicit 16/64 overlap gives SFL errors of 0.0093 (point) and 0.0337 (cluster), consistent with the jackknife's 0.0105 and 0.0397.
+These are approximate statistical errors for this centre/corner pair, not a bound on residual pixelization or a full-field catalogue uncertainty.
+See `local_source_transfer_review.md` for the independent calculation and its scope.
 
 The coarse suppression is location-dependent: for SFL points, the paired Nside2048/Nside8192 CMB variance ratio is approximately 0.52 at the centre and 0.83 at the sampled corner.
 Consequently, an accidental agreement of a coarse corner/centre ratio cannot validate the unsampled covariance model, and one global variance rescaling is insufficient.
