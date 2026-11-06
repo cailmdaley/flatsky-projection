@@ -109,7 +109,8 @@ def run():
     The native HEALPix face estimate depends strongly on face class; it is not a reconstruction of Jeffrey's selected DES pixels.</p>
     <h2>Reproduction</h2><p><code>bash env.sh python3 analysis/paper_numbers.py --section5-only</code> writes <code>paper/section5_numbers.tex</code> and <code>paper/section5_summary.json</code>.
     The paired map recipe is <code>analysis/beams/astra.yaml</code>; run <code>lc run --executor local -u baseline beam_response</code> there.
-    <code>analysis/beam_report.py</code> retains target-bin predictions, production-workspace B spectra, and cross terms.
+    <code>analysis/beam_report.py</code> retains target-bin predictions, production-workspace B spectra, and cross terms; <code>paper/beam_analysis_provenance.json</code> fingerprints its inputs outside lc.
+    <code>analysis/paper_numbers.py --beam-only</code> writes the measured <code>paper/beam_numbers.tex</code>, including broad-band means and signed diagnostics.
     <code>analysis/check_section5_geometry.py</code> and <code>analysis/check_beam_inputs.py</code> carry the verification gates.
     This thread does not edit <code>paper/main.tex</code>.</p></body></html>'''
     DEST.write_text(page)
