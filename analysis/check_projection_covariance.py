@@ -50,6 +50,39 @@ def test_cropped_projection():
         print(proj, 'cropped projection gate pass', float(abs(actual-expected).max()))
 
 
+def test_cropped_rebin8():
+    """Exercise production oversampling and FlattenPol at sampled mask pixels."""
+    from spt3g import core, maps
+    rng = np.random.default_rng(421)
+    sky = [maps.HealpixSkyMap(rng.normal(size=12*32**2),
+                              pol_conv=maps.MapPolConv.COSMO) for _ in range(2)]
+    for proj in ('ProjZEA', 'ProjSFL', 'ProjSTG'):
+        mask, window, _, _ = load_mask(ROOT/'results/highell/field_flatsky_masks', proj, 0)
+        stub = mask_stub(proj, window)
+        full = maps.FlatSkyMap(3300, 3300, 2*core.G3Units.arcmin,
+                              proj=maps.MapProjection.names[proj],
+                              delta_center=-56*core.G3Units.deg,
+                              pol_conv=maps.MapPolConv.COSMO)
+        yy, xx = np.nonzero(mask > 0)
+        select = rng.choice(len(yy), 512, replace=False)
+        yy, xx = yy[select], xx[select]
+        outputs = []
+        for template, oy, ox in ((full, window[0].start, window[1].start), (stub, 0, 0)):
+            qu = []
+            for hmap in sky:
+                m = template.clone(False)
+                selected = maps.G3SkyMapMask(m)
+                for pixel in np.ravel_multi_index((yy+oy, xx+ox), m.shape):
+                    selected[int(pixel)] = True
+                maps.reproj_map(hmap, m, rebin=8, interp=True, mask=selected)
+                qu.append(m)
+            maps.flatten_pol(*qu)
+            outputs.append(np.array([np.asarray(m)[yy+oy, xx+ox] for m in qu]))
+        np.testing.assert_allclose(outputs[0], outputs[1], rtol=0, atol=1e-8)
+        print(proj, 'sampled rebin8 + FlattenPol gate pass',
+              float(abs(outputs[0]-outputs[1]).max()))
+
+
 def test_control_random_streams():
     import pymaster as nmt
     from bin_covariance_controls import control_seed
@@ -66,5 +99,7 @@ if __name__ == '__main__':
     test_counterexample()
     if '--projection' in sys.argv:
         test_cropped_projection()
+    if '--rebin8' in sys.argv:
+        test_cropped_rebin8()
     if '--random' in sys.argv:
         test_control_random_streams()
