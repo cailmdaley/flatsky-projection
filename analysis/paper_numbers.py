@@ -1006,6 +1006,18 @@ def beam_numbers():
     print(f'Wrote {path}')
 
 
+def covariance_numbers():
+    """Write final matched-ensemble macros; partial comparisons fail closed."""
+    from bin_covariance_numbers import numbers
+
+    M = Macros()
+    for name, value in numbers().items():
+        M.add(name, value)
+    path = ROOT / 'paper' / 'covariance_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 def section5_numbers():
     """Compute Section 5 geometry macros from specified footprint charts."""
     import section5_geometry as G5
@@ -1072,6 +1084,8 @@ if __name__ == "__main__":
         check_scalar_forward()
     elif "--scalar-only" in sys.argv:
         scalar_numbers()
+    elif "--covariance-only" in sys.argv:
+        covariance_numbers()
     elif "--section5-only" in sys.argv:
         section5_numbers()
     elif "--window-only" in sys.argv:
