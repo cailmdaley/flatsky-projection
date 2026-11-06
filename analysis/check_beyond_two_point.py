@@ -38,6 +38,10 @@ if '--results' in sys.argv:
                if r['chart'] == 'STG' and r['diameter'] == 60.)
     third = stg['statistics']['smooth_third']
     assert stg['g2'] == 0 and third['bias'] > 5*third['se']
+    for chart in ('TAN', 'STG'):
+        stat = next(r for r in summary['records']
+                    if r['chart'] == chart and r['diameter'] == 60.)['statistics']['smooth_third']
+        assert .8 < stat['bootstrap_se']/stat['se'] < 1.2
     # These are sampling-control tolerances, not physical upper limits.
     for key, tolerance in [('smooth_variance', .001), ('smooth_third', .003),
                            ('wavelet_l1', .001), ('peaks_gt_2sigma', .03)]:

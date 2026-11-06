@@ -12,6 +12,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.5868648757001759,
           "single_patch_signal_std": 0.23555338563545905,
           "bias_over_single_patch_signal_std": 0.0,
@@ -33,6 +38,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.296593498028339,
           "single_patch_signal_std": 1.086821076517139,
           "bias_over_single_patch_signal_std": 0.0,
@@ -54,6 +64,11 @@
         "smooth_variance": {
           "bias": 0.005839985883467375,
           "se": 0.00032280073420068895,
+          "bootstrap_se": 0.00031731791934361817,
+          "bootstrap_95_interval": [
+            0.005268681539786638,
+            0.006513924956530724
+          ],
           "reference_mean": 0.23985176932941651,
           "single_patch_signal_std": 0.11166430663527355,
           "bias_over_single_patch_signal_std": 0.01254412434211085,
@@ -75,6 +90,11 @@
         "smooth_third": {
           "bias": 0.010954595129973037,
           "se": 0.0013238604200392285,
+          "bootstrap_se": 0.0013248271147053127,
+          "bootstrap_95_interval": [
+            0.008639127015746711,
+            0.013840248968103467
+          ],
           "reference_mean": 0.20610737269931823,
           "single_patch_signal_std": 0.1942975463548158,
           "bias_over_single_patch_signal_std": 0.011620439185065024,
@@ -96,6 +116,11 @@
         "wavelet_l1": {
           "bias": 0.0009164763242738612,
           "se": 0.00023511637987624776,
+          "bootstrap_se": 0.00022758591615072842,
+          "bootstrap_95_interval": [
+            0.0004660523022263755,
+            0.0013578330406545495
+          ],
           "reference_mean": 0.16932586394223614,
           "single_patch_signal_std": 0.0319154853973924,
           "bias_over_single_patch_signal_std": 0.004862315062986806,
@@ -117,6 +142,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.03260869565217391,
           "se": 0.018132223724138655,
+          "bootstrap_se": 0.018068998570487674,
+          "bootstrap_95_interval": [
+            0.0,
+            0.07228915662650602
+          ],
           "reference_mean": 3.8333333333333335,
           "single_patch_signal_std": 2.3895909540204223,
           "bias_over_single_patch_signal_std": 0.05231020806707143,
@@ -146,6 +176,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.5867968280373054,
           "single_patch_signal_std": 0.2354760444335642,
           "bias_over_single_patch_signal_std": 0.0,
@@ -167,6 +202,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.2953821051591488,
           "single_patch_signal_std": 1.0851635145462584,
           "bias_over_single_patch_signal_std": 0.0,
@@ -188,6 +228,11 @@
         "smooth_variance": {
           "bias": 0.001917372459931848,
           "se": 0.00016984329919575184,
+          "bootstrap_se": 0.00016552657463218446,
+          "bootstrap_95_interval": [
+            0.001607129026818022,
+            0.00225887865330268
+          ],
           "reference_mean": 0.23989312836137108,
           "single_patch_signal_std": 0.11162830309674551,
           "bias_over_single_patch_signal_std": 0.004120500490349198,
@@ -209,6 +254,11 @@
         "smooth_third": {
           "bias": 0.003477436059508003,
           "se": 0.0005576674803719905,
+          "bootstrap_se": 0.000567807943167538,
+          "bootstrap_95_interval": [
+            0.0025475855647265344,
+            0.0047612364302392005
+          ],
           "reference_mean": 0.2061381754307925,
           "single_patch_signal_std": 0.19421885026351665,
           "bias_over_single_patch_signal_std": 0.003690848357466973,
@@ -230,6 +280,11 @@
         "wavelet_l1": {
           "bias": 0.00031278602633701136,
           "se": 9.22727882687104e-05,
+          "bootstrap_se": 8.886993118459477e-05,
+          "bootstrap_95_interval": [
+            0.00013641589016628522,
+            0.0004838198865181
+          ],
           "reference_mean": 0.16933649716659463,
           "single_patch_signal_std": 0.031889943360519084,
           "bias_over_single_patch_signal_std": 0.0016609026069372601,
@@ -251,6 +306,11 @@
         "peaks_gt_2sigma": {
           "bias": -0.01075268817204301,
           "se": 0.01058096757326769,
+          "bootstrap_se": 0.01028122298488406,
+          "bootstrap_95_interval": [
+            -0.034482758620689655,
+            0.0
+          ],
           "reference_mean": 3.875,
           "single_patch_signal_std": 2.4013130466113926,
           "bias_over_single_patch_signal_std": -0.017351617993107766,
@@ -280,6 +340,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.586989859671413,
           "single_patch_signal_std": 0.23526458676971573,
           "bias_over_single_patch_signal_std": 0.0,
@@ -301,6 +366,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.2979969291966997,
           "single_patch_signal_std": 1.0856824004884515,
           "bias_over_single_patch_signal_std": 0.0,
@@ -322,6 +392,11 @@
         "smooth_variance": {
           "bias": -6.389665205201446e-05,
           "se": 0.00011422111398789186,
+          "bootstrap_se": 0.00011100436122425297,
+          "bootstrap_95_interval": [
+            -0.00027906387097904596,
+            0.0001518770974264583
+          ],
           "reference_mean": 0.23992671890348408,
           "single_patch_signal_std": 0.11156263814713704,
           "bias_over_single_patch_signal_std": -0.00013741620250624036,
@@ -343,6 +418,11 @@
         "smooth_third": {
           "bias": -0.00020533049490977583,
           "se": 0.00037338607734452723,
+          "bootstrap_se": 0.00036633522578990773,
+          "bootstrap_95_interval": [
+            -0.0008518893083147742,
+            0.0005737633087841546
+          ],
           "reference_mean": 0.20623580215252868,
           "single_patch_signal_std": 0.19415259627456827,
           "bias_over_single_patch_signal_std": -0.00021810936416326573,
@@ -364,6 +444,11 @@
         "wavelet_l1": {
           "bias": -4.076816786388118e-06,
           "se": 4.864984145879491e-05,
+          "bootstrap_se": 4.777136861758891e-05,
+          "bootstrap_95_interval": [
+            -9.687216643278853e-05,
+            9.239914095167944e-05
+          ],
           "reference_mean": 0.1693474448055169,
           "single_patch_signal_std": 0.03189937373041023,
           "bias_over_single_patch_signal_std": -2.1643011287613387e-05,
@@ -385,6 +470,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.0,
           "se": 0.015702502576404678,
+          "bootstrap_se": 0.015756963604068967,
+          "bootstrap_95_interval": [
+            -0.029411764705882353,
+            0.033707865168539325
+          ],
           "reference_mean": 3.8333333333333335,
           "single_patch_signal_std": 2.42570772580179,
           "bias_over_single_patch_signal_std": 0.0,
@@ -414,6 +504,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6099042720327006,
           "single_patch_signal_std": 0.10984886743134954,
           "bias_over_single_patch_signal_std": 0.0,
@@ -435,6 +530,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.280904531710964,
           "single_patch_signal_std": 0.49422346324056365,
           "bias_over_single_patch_signal_std": 0.0,
@@ -456,6 +556,11 @@
         "smooth_variance": {
           "bias": 0.023478562678585852,
           "se": 0.0008096161151907101,
+          "bootstrap_se": 0.0007772307558849747,
+          "bootstrap_95_interval": [
+            0.021967936762781578,
+            0.02500402938512966
+          ],
           "reference_mean": 0.26187781434786905,
           "single_patch_signal_std": 0.053322481021475396,
           "bias_over_single_patch_signal_std": 0.11530811321065922,
@@ -477,6 +582,11 @@
         "smooth_third": {
           "bias": 0.047678048745121285,
           "se": 0.003510151544319358,
+          "bootstrap_se": 0.0033760856148743502,
+          "bootstrap_95_interval": [
+            0.041559141349225594,
+            0.05464899416477875
+          ],
           "reference_mean": 0.21657344113452917,
           "single_patch_signal_std": 0.08690862748376353,
           "bias_over_single_patch_signal_std": 0.11881212927036301,
@@ -498,6 +608,11 @@
         "wavelet_l1": {
           "bias": 0.0016612076691489674,
           "se": 0.00035781253944356794,
+          "bootstrap_se": 0.0003500110781051273,
+          "bootstrap_95_interval": [
+            0.001010590509072494,
+            0.0023674839661522464
+          ],
           "reference_mean": 0.17179352313349028,
           "single_patch_signal_std": 0.013907155615262876,
           "bias_over_single_patch_signal_std": 0.02052071077900858,
@@ -519,6 +634,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.047858942065491177,
           "se": 0.013266108622167743,
+          "bootstrap_se": 0.013145551704909919,
+          "bootstrap_95_interval": [
+            0.02427151754638474,
+            0.07588075880758809
+          ],
           "reference_mean": 16.541666666666668,
           "single_patch_signal_std": 4.671645894363018,
           "bias_over_single_patch_signal_std": 0.1694620449768937,
@@ -548,6 +668,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6098963079905214,
           "single_patch_signal_std": 0.10986484318588613,
           "bias_over_single_patch_signal_std": 0.0,
@@ -569,6 +694,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.2816467140713,
           "single_patch_signal_std": 0.4942175415133135,
           "bias_over_single_patch_signal_std": 0.0,
@@ -590,6 +720,11 @@
         "smooth_variance": {
           "bias": 0.007724873811612931,
           "se": 0.00029582631594659816,
+          "bootstrap_se": 0.0002837844966203969,
+          "bootstrap_95_interval": [
+            0.007162401058322127,
+            0.008275849406974886
+          ],
           "reference_mean": 0.26185147914460294,
           "single_patch_signal_std": 0.053318665166046546,
           "bias_over_single_patch_signal_std": 0.037937364475965116,
@@ -611,6 +746,11 @@
         "smooth_third": {
           "bias": 0.015568463530917417,
           "se": 0.001241953284662997,
+          "bootstrap_se": 0.0011928452800715542,
+          "bootstrap_95_interval": [
+            0.013353825504140996,
+            0.018004231520006807
+          ],
           "reference_mean": 0.21656918300910302,
           "single_patch_signal_std": 0.0869025642576616,
           "bias_over_single_patch_signal_std": 0.03879804303128541,
@@ -632,6 +772,11 @@
         "wavelet_l1": {
           "bias": 0.0006531445992297243,
           "se": 0.00012635482813635093,
+          "bootstrap_se": 0.00012376013845281694,
+          "bootstrap_95_interval": [
+            0.00041946469815109567,
+            0.0009037182331563784
+          ],
           "reference_mean": 0.17178712306631297,
           "single_patch_signal_std": 0.013908247563382877,
           "bias_over_single_patch_signal_std": 0.008067287495182008,
@@ -653,6 +798,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.012626262626262626,
           "se": 0.009260542341101881,
+          "bootstrap_se": 0.009320403138254687,
+          "bootstrap_95_interval": [
+            -0.0026881720430107525,
+            0.032967730239303786
+          ],
           "reference_mean": 16.5,
           "single_patch_signal_std": 4.773113103169898,
           "bias_over_single_patch_signal_std": 0.04364726517688759,
@@ -682,6 +832,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6100098383812299,
           "single_patch_signal_std": 0.10984021045110108,
           "bias_over_single_patch_signal_std": 0.0,
@@ -703,6 +858,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.2820103105642733,
           "single_patch_signal_std": 0.4941912358992508,
           "bias_over_single_patch_signal_std": 0.0,
@@ -724,6 +884,11 @@
         "smooth_variance": {
           "bias": -4.281457404949618e-05,
           "se": 5.998337800102161e-05,
+          "bootstrap_se": 5.8446234117548e-05,
+          "bootstrap_95_interval": [
+            -0.00015713107793761987,
+            7.208562253519963e-05
+          ],
           "reference_mean": 0.26186969620812867,
           "single_patch_signal_std": 0.053334096750934507,
           "bias_over_single_patch_signal_std": -0.00021021898152658866,
@@ -745,6 +910,11 @@
         "smooth_third": {
           "bias": -7.848516665349392e-05,
           "se": 0.00016275835806750196,
+          "bootstrap_se": 0.00016009409508372337,
+          "bootstrap_95_interval": [
+            -0.0003917879179141212,
+            0.0002398867686217679
+          ],
           "reference_mean": 0.21656852113575212,
           "single_patch_signal_std": 0.08691833623478792,
           "bias_over_single_patch_signal_std": -0.0001955561646661759,
@@ -766,6 +936,11 @@
         "wavelet_l1": {
           "bias": 8.212833634723294e-05,
           "se": 5.459390002466887e-05,
+          "bootstrap_se": 5.33309231457442e-05,
+          "bootstrap_95_interval": [
+            -2.2366887966049606e-05,
+            0.0001865387517900453
+          ],
           "reference_mean": 0.1717883938212834,
           "single_patch_signal_std": 0.013906095857495769,
           "bias_over_single_patch_signal_std": 0.001014569087750125,
@@ -787,6 +962,11 @@
         "peaks_gt_2sigma": {
           "bias": -0.004999999999999999,
           "se": 0.005036141121067235,
+          "bootstrap_se": 0.0049230904328147525,
+          "bootstrap_95_interval": [
+            -0.01518987341772152,
+            0.004750593824228028
+          ],
           "reference_mean": 16.666666666666668,
           "single_patch_signal_std": 4.62193886162287,
           "bias_over_single_patch_signal_std": -0.018029951461554613,
@@ -816,6 +996,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6506812745695553,
           "single_patch_signal_std": 0.09301669663304461,
           "bias_over_single_patch_signal_std": 0.0,
@@ -837,6 +1022,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.5044707070614605,
           "single_patch_signal_std": 0.5471198165649099,
           "bias_over_single_patch_signal_std": 0.0,
@@ -858,6 +1048,11 @@
         "smooth_variance": {
           "bias": 0.09033288071093898,
           "se": 0.001389524158306165,
+          "bootstrap_se": 0.0013505094923123506,
+          "bootstrap_95_interval": [
+            0.08769062618643542,
+            0.09297993320873765
+          ],
           "reference_mean": 0.2917580788711141,
           "single_patch_signal_std": 0.04931984873157439,
           "bias_over_single_patch_signal_std": 0.5343760861586845,
@@ -879,6 +1074,11 @@
         "smooth_third": {
           "bias": 0.19559757858873736,
           "se": 0.007789206117319627,
+          "bootstrap_se": 0.007430685262938934,
+          "bootstrap_95_interval": [
+            0.18177879597395702,
+            0.21054393094056337
+          ],
           "reference_mean": 0.29804256714618915,
           "single_patch_signal_std": 0.1540991826853111,
           "bias_over_single_patch_signal_std": 0.3783044363655969,
@@ -900,6 +1100,11 @@
         "wavelet_l1": {
           "bias": 0.0029662970117626457,
           "se": 0.0006923003104895736,
+          "bootstrap_se": 0.0006722884798122545,
+          "bootstrap_95_interval": [
+            0.0016553383190024765,
+            0.0042904440141691615
+          ],
           "reference_mean": 0.17302310988939273,
           "single_patch_signal_std": 0.00877567676732095,
           "bias_over_single_patch_signal_std": 0.0584841428688431,
@@ -921,6 +1126,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.22501532801961988,
           "se": 0.011330839306120485,
+          "bootstrap_se": 0.011090474959148363,
+          "bootstrap_95_interval": [
+            0.2039320764204791,
+            0.24716981132075472
+          ],
           "reference_mean": 67.95833333333333,
           "single_patch_signal_std": 11.693473343732379,
           "bias_over_single_patch_signal_std": 1.3077095416532416,
@@ -950,6 +1160,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6504881048047411,
           "single_patch_signal_std": 0.09293491603798557,
           "bias_over_single_patch_signal_std": 0.0,
@@ -971,6 +1186,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.5036257073829702,
           "single_patch_signal_std": 0.5461808221976103,
           "bias_over_single_patch_signal_std": 0.0,
@@ -992,6 +1212,11 @@
         "smooth_variance": {
           "bias": 0.02918608121229611,
           "se": 0.0004442222082887467,
+          "bootstrap_se": 0.00043150899152781904,
+          "bootstrap_95_interval": [
+            0.028323363747369653,
+            0.030015752047696267
+          ],
           "reference_mean": 0.29174721289452576,
           "single_patch_signal_std": 0.049317272410212616,
           "bias_over_single_patch_signal_std": 0.17265670692764012,
@@ -1013,6 +1238,11 @@
         "smooth_third": {
           "bias": 0.06056861911663828,
           "se": 0.002200230408641307,
+          "bootstrap_se": 0.0021024271059590445,
+          "bootstrap_95_interval": [
+            0.05667246014063782,
+            0.06480449893668912
+          ],
           "reference_mean": 0.2980265903729907,
           "single_patch_signal_std": 0.1540860469938145,
           "bias_over_single_patch_signal_std": 0.11714921234663561,
@@ -1034,6 +1264,11 @@
         "wavelet_l1": {
           "bias": 0.0020521553967383964,
           "se": 0.00023396635127630522,
+          "bootstrap_se": 0.00022732559207569477,
+          "bootstrap_95_interval": [
+            0.0016044793185406817,
+            0.0024953331736848232
+          ],
           "reference_mean": 0.17301048069800773,
           "single_patch_signal_std": 0.008775623720772912,
           "bias_over_single_patch_signal_std": 0.040458023606491915,
@@ -1055,6 +1290,11 @@
         "peaks_gt_2sigma": {
           "bias": 0.06396063960639606,
           "se": 0.005108590448896912,
+          "bootstrap_se": 0.004996818586557007,
+          "bootstrap_95_interval": [
+            0.05461165048543689,
+            0.07421389683603134
+          ],
           "reference_mean": 67.75,
           "single_patch_signal_std": 11.580530888183578,
           "bias_over_single_patch_signal_std": 0.3741912503989722,
@@ -1084,6 +1324,11 @@
         "raw_variance": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 0.6505005046543509,
           "single_patch_signal_std": 0.0929468759479994,
           "bias_over_single_patch_signal_std": 0.0,
@@ -1105,6 +1350,11 @@
         "raw_third": {
           "bias": 0.0,
           "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
           "reference_mean": 1.503705678115689,
           "single_patch_signal_std": 0.5461835051980717,
           "bias_over_single_patch_signal_std": 0.0,
@@ -1126,6 +1376,11 @@
         "smooth_variance": {
           "bias": -0.00034855136623201363,
           "se": 8.248315869371461e-05,
+          "bootstrap_se": 8.104518855536442e-05,
+          "bootstrap_95_interval": [
+            -0.0005066993443440401,
+            -0.0001887083852803022
+          ],
           "reference_mean": 0.2917428356187471,
           "single_patch_signal_std": 0.049315357227830474,
           "bias_over_single_patch_signal_std": -0.00206198169615874,
@@ -1147,6 +1402,11 @@
         "smooth_third": {
           "bias": -0.000937753035346212,
           "se": 0.0004042263605248908,
+          "bootstrap_se": 0.00039800062095231336,
+          "bootstrap_95_interval": [
+            -0.0017200172439532082,
+            -0.00016554887448246117
+          ],
           "reference_mean": 0.29801929873031235,
           "single_patch_signal_std": 0.15407554792639563,
           "bias_over_single_patch_signal_std": -0.0018138407147486276,
@@ -1168,6 +1428,11 @@
         "wavelet_l1": {
           "bias": 0.00010864083183866206,
           "se": 7.00978580680587e-05,
+          "bootstrap_se": 6.835309876887973e-05,
+          "bootstrap_95_interval": [
+            -2.8402034772671125e-05,
+            0.00024036760082079916
+          ],
           "reference_mean": 0.17301115618158103,
           "single_patch_signal_std": 0.008776639215376783,
           "bias_over_single_patch_signal_std": 0.002141602891913875,
@@ -1189,6 +1454,11 @@
         "peaks_gt_2sigma": {
           "bias": -0.0018472906403940886,
           "se": 0.002585361625804582,
+          "bootstrap_se": 0.002532195974315466,
+          "bootstrap_95_interval": [
+            -0.006909547738693468,
+            0.0030600223661162293
+          ],
           "reference_mean": 67.66666666666667,
           "single_patch_signal_std": 11.47271495356688,
           "bias_over_single_patch_signal_std": -0.010895415819699883,

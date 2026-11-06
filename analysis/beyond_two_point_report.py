@@ -29,6 +29,7 @@ def summarize():
     assert [d['seed'] for d in data] == list(range(24))
     names = data[0]['statistics']
     records = []
+    bootstrap_indices = np.random.default_rng(4).integers(0, len(data), (20000, len(data)))
     for j, row in enumerate(data[0]['rows']):
         t = np.array([d['rows'][j]['reference'] for d in data])
         m = np.array([d['rows'][j]['measured'] for d in data])
@@ -36,6 +37,8 @@ def summarize():
         difference = m-t
         bias = difference.mean(0)/t.mean(0)
         se = (difference-bias*t).std(0, ddof=1)/len(data)**.5/t.mean(0)
+        bootstrap = difference[bootstrap_indices].mean(1)/t[bootstrap_indices].mean(1)
+        interval = np.percentile(bootstrap, [2.5, 97.5], axis=0)
         record = dict(chart=row['chart'], diameter=row['diameter'],
                       g2=row['g2'], mean_log_mu=row['mean_log_mu'], statistics={})
         for k, name in enumerate(names):
@@ -52,6 +55,8 @@ def summarize():
                 controls[resolution] = dict(bias=float(cbias[k]),
                                            paired_drift=float(cbias[k]-bbias[k]))
             record['statistics'][name] = dict(bias=float(bias[k]), se=float(se[k]),
+                bootstrap_se=float(bootstrap[:, k].std(ddof=1)),
+                bootstrap_95_interval=interval[:, k].tolist(),
                 reference_mean=float(t[:, k].mean()),
                 single_patch_signal_std=float(t[:, k].std(ddof=1)),
                 bias_over_single_patch_signal_std=float(difference[:, k].mean()/t[:, k].std(ddof=1)),
@@ -102,6 +107,12 @@ def report(summary):
     for row in summary['records']:
         cells = [f'{100*row["statistics"][k]["bias"]:.2f} ± {100*row["statistics"][k]["se"]:.2f}' for k in keys]
         lines.append(f'| {row["chart"]} | {row["diameter"]:g}° | '+ ' | '.join(cells)+' |')
+    lines += ['', 'The paired standard errors are checked by 20,000 whole-sky bootstrap resamples.']
+    for chart in ('TAN', 'STG'):
+        stat = next(r for r in summary['records']
+                    if r['chart'] == chart and r['diameter'] == 60.)['statistics']['smooth_third']
+        low, high = np.array(stat['bootstrap_95_interval'])*100
+        lines.append(f'The 60° {chart} third-moment shift has a paired percentile 95% interval of [{low:.2f}, {high:.2f}]%.')
     lines += ['', '## Model and estimator', '',
         'The scalar field is exp(G − 0.7²/2) − 1, where G is an isotropic Gaussian sphere with rms 0.7.',
         'Its input spectrum is proportional to (ℓ + 20)^−1.5 exp[−ℓ(ℓ+1)(0.25°)²], with monopole and dipole zero.',

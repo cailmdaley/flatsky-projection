@@ -20,6 +20,10 @@ The reference applies the Gaussian filter on the sphere before projection; the m
 | STG | 60° | 2.92 ± 0.04 | 6.06 ± 0.22 | 0.21 ± 0.02 | 6.40 ± 0.51 |
 | ZEA | 60° | -0.03 ± 0.01 | -0.09 ± 0.04 | 0.01 ± 0.01 | -0.18 ± 0.26 |
 
+The paired standard errors are checked by 20,000 whole-sky bootstrap resamples.
+The 60° TAN third-moment shift has a paired percentile 95% interval of [18.18, 21.05]%.
+The 60° STG third-moment shift has a paired percentile 95% interval of [5.67, 6.48]%.
+
 ## Model and estimator
 
 The scalar field is exp(G − 0.7²/2) − 1, where G is an isotropic Gaussian sphere with rms 0.7.
