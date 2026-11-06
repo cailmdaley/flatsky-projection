@@ -115,7 +115,7 @@ The twenty-seed diagonal response ratios at $30\le L<60$ are:
 | SFL | $0.472\pm0.016$ | $0.692\pm0.018$ |
 | STG | $0.864\pm0.014$ | $0.886\pm0.018$ |
 | ZEA | $0.960\pm0.016$ | $0.978\pm0.020$ |
-| BICEP | $0.564\pm0.014$ | $0.741\pm0.018$ |
+| BICEP | $0.564\pm0.014$ | $0.741\pm0.017$ |
 
 These are measured response changes in this estimator with its unprojected isotropic filters, not biases in an SPT analysis.
 A Nside4096/two-arcminute control uses four matched seeds, the same spherical harmonic realization, and the same continuous grid potential and flat Gaussian control.
@@ -134,6 +134,7 @@ The SFL correlation is 0.9984, but its four-percent amplitude discrepancy is rea
 On matched seeds, the curl template amplitude rises by $(1.687\pm0.026)\%$ for SFL and $(1.277\pm0.016)\%$ for BICEP when the grids are refined.
 Numerical sampling therefore contributes to the discrepancy; the remaining offset cannot be assigned to continuum physics from this test.
 The gradient template amplitudes change by up to five percent.
+These comparisons fit each grid's reconstruction to the same phase-adjusted template; they are not full-map residual tests or independent fine-grid predictions.
 The predictor also approximates finite-$L$ leg support and filtering near the mask boundary; exact normalization alone does not make it an exact mean-field calculation.
 STG's curl mean field is consistent with zero.
 
