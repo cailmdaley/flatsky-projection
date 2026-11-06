@@ -76,7 +76,7 @@ def main():
         arrays[proj]=np.stack([predg,predc])
         print(proj,'predicted masked RMS below L30',np.sqrt(np.sum(abs(arrays[proj][:,(ls2>0)&(ls2<900)])**2,axis=-1)),flush=True)
     a.out.parent.mkdir(parents=True,exist_ok=True)
-    np.savez_compressed(a.out,**arrays,lx=qe.x[0,ix],ly=qe.y[iy,0])
+    np.savez_compressed(a.out,**arrays,lx=qe.x[0,ix],ly=qe.y[iy,0],pixel_rad=pixel)
 
 
 if __name__=='__main__':

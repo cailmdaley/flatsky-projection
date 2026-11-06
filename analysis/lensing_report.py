@@ -32,6 +32,8 @@ def main():
     p.add_argument('--inputs',type=Path,default=Path('results/highell/lensing_qe_sims'))
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--allow-partial',action='store_true')
+    p.add_argument('--prediction',type=Path,help='Squeezed affine metric prediction NPZ')
+    p.add_argument('--expected-seeds',type=int,default=20)
     a=p.parse_args()
     result={}; arrays={}; files={}
     for proj in PROJS:
@@ -39,7 +41,7 @@ def main():
         if a.allow_partial:
             matches=[f for f in matches if (f.parent/'.lightcone-manifest.json').exists()]
         if not a.allow_partial:
-            assert len(matches)==20,(proj,len(matches))
+            assert len(matches)==a.expected_seeds,(proj,len(matches))
         if len(matches)<3:
             continue
         d=[np.load(f) for f in matches]
@@ -51,14 +53,18 @@ def main():
         # Parseval: stored normalized FFTs give <W^4> on the full canvas.
         # Mask Fourier content above L=300 is negligible for a 2.5-degree taper.
         mf=np.array([v['spherical']-v['flat'] for v in d])
+        spherical=np.array([v['spherical'] for v in d])
         rows=[]
         for lo,hi in zip((2,10,30,60,120),(10,30,60,120,240)):
             keep=(ls>=lo)&(ls<hi)
             powers=[power_error(mf[:,i,keep]/np.sqrt(w4)) for i in range(2)]
-            # Mean-field power / single-realization reconstruction scatter.
-            noise=np.sum(mf[:,:,keep].var(axis=0,ddof=1),axis=-1)/w4
+            # Keep the spherical estimator noise separate from the extra
+            # uncertainty introduced by the finite flat-control ensemble.
+            noise=np.sum(spherical[:,:,keep].var(axis=0,ddof=1),axis=-1)/w4
+            difference_noise=np.sum(mf[:,:,keep].var(axis=0,ddof=1),axis=-1)/w4
             rows.append({'L':[lo,hi], 'mean_field_power':powers,
-                         'single_realization_noise_power':noise.tolist()})
+                         'spherical_realization_noise_power':noise.tolist(),
+                         'difference_realization_noise_power':difference_noise.tolist()})
         responses=[]
         for lo,hi in ((30,60),(60,120),(120,240)):
             keep=(ls>=lo)&(ls<hi)
@@ -73,7 +79,15 @@ def main():
                     val,se=ratio_error(sph[i][:,j],flat[i][:,i])
                     row.append(val); err.append(se)
                 matrix.append(row); error.append(err)
-            responses.append({'L':[lo,hi],'response_over_flat':matrix,'SE':error})
+            flat_normalized=[]
+            flat_error=[]
+            for i in range(2):
+                values=[ratio_error(flat[i][:,j],flat[i][:,i]) for j in range(2)]
+                flat_normalized.append([v[0] for v in values])
+                flat_error.append([v[1] for v in values])
+            responses.append({'L':[lo,hi],'response_over_flat':matrix,'SE':error,
+                              'flat_response_over_its_diagonal':flat_normalized,
+                              'flat_response_SE':flat_error})
         metric=d[0]['metric_W']
         pe,pb=(np.sum(abs(v)**2) for v in metric[1:])
         keep=(ls>=2)&(ls<30)
@@ -82,10 +96,34 @@ def main():
             m=mf.mean(axis=0)[i]
             corr.append(float(np.vdot(g[keep],m[keep]).real/np.sqrt(
                 np.vdot(g[keep],g[keep]).real*np.vdot(m[keep],m[keep]).real)))
-        result[proj]={'seeds':len(d),'metric_rms':d[0]['metric_rms'].tolist(),
-                      'metric_pseudo_B_fraction':float(pb/(pe+pb)),
+        result[proj]={'seeds':len(d),
+                      'response_normalization':'Rows are injected gradient/curl; columns are reconstructed gradient/curl. Each spherical element is divided by the flat diagonal for that injection, not by a full response-matrix inverse. Flat off-diagonals are reported separately.',
+                      'metric_rms':d[0]['metric_rms'].tolist(),
+                      'metric_pseudo_B_fraction':None if proj=='ProjSTG' else float(pb/(pe+pb)),
                       'mean_field':rows,'response':responses,
+                      'low_L_mean_field_power':[power_error(mf[:,i,keep]/np.sqrt(w4)) for i in range(2)],
                       'low_L_metric_correlation_kappa_B':corr}
+        if a.prediction:
+            predfile=np.load(a.prediction)
+            prediction=predfile[proj]*np.exp(.5j*(xx+yy)*(float(d[0]['pixel_rad'])-float(predfile['pixel_rad'])))
+            fits=[]
+            for lo,hi in ((2,10),(10,30),(2,30),(30,60)):
+                band=(ls>=lo)&(ls<hi)
+                estimates=[]
+                for i in range(2):
+                    if proj=='ProjSTG' and i==1:
+                        estimates.append(None)  # model is numerical zero
+                        continue
+                    model=prediction[i,band]
+                    observed=mf[:,i,band]
+                    slopes=np.einsum('k,sk->s',model.conj(),observed).real/np.sum(abs(model)**2)
+                    avg=observed.mean(axis=0)
+                    rho=np.vdot(model,avg).real/np.sqrt(np.vdot(model,model).real*np.vdot(avg,avg).real)
+                    estimates.append({'amplitude':float(slopes.mean()),
+                                      'SE':float(slopes.std(ddof=1)/np.sqrt(len(slopes))),
+                                      'correlation':float(rho)})
+                fits.append({'L':[lo,hi],'gradient_curl':estimates})
+            result[proj]['squeezed_metric_prediction_fit']=fits
         arrays[proj+'_mean_field']=mf.mean(axis=0)
         arrays[proj+'_metric']=d[0]['metric_W2']
     a.out.mkdir(parents=True,exist_ok=True)
