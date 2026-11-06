@@ -972,6 +972,33 @@ outputs:
 # ---------------------------------------------------------------------------
 # DECISIONS
 # ---------------------------------------------------------------------------
+# Additive paired band-limit intervention; existing outputs are unchanged.
+  - id: window_bandlimit_test
+    type: data
+    label: Paired sky-bandlimit test of grid aliasing
+    description: |
+      One spherical QU realization, with the input alms cut to 5000 before
+      synthesis, compared to the same seed's production cutoff-6000 map.
+      All four paper projections, with the existing purified field estimator.
+    inputs: [preprocessed_alms, projected_qu, field_flatsky_masks, field_coupling]
+    units:
+      seed: [0]
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/window_bandlimit_test.py
+        --alms {inputs.preprocessed_alms}
+        --production-maps {inputs.projected_qu}
+        --masks {inputs.field_flatsky_masks}
+        --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed}
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 24Gi
+        disk: 12Gi
+        time_limit: 3h
+
 decisions:
   intermediate_nside:
     label: "Intermediate Healpix synthesis resolution"
