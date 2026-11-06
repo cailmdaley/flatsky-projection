@@ -29,9 +29,9 @@
       "oracle": {
         "noiseless_residual_over_raw": 1.0051678138028798e-05,
         "isolated_noisy_residual_over_raw": 0.01557757277210183,
-        "isolated_noisy_residual_SE_over_raw": 5.3745639834614735e-05,
+        "isolated_noisy_residual_SE_over_raw": 9.777969591098886e-05,
         "cross_mean_over_raw_signal": 0.00010252381270028341,
-        "cross_mean_SE_over_raw_signal": 0.00030046688547894786,
+        "cross_mean_SE_over_raw_signal": 0.0003004308492825343,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.982592675364447,
         "paired_seed_bootstrap_gain_95pct": [
           11.320158465192073,
@@ -43,9 +43,9 @@
       "wide": {
         "noiseless_residual_over_raw": 0.009183652509148462,
         "isolated_noisy_residual_over_raw": 0.0244515800923213,
-        "isolated_noisy_residual_SE_over_raw": 0.00010751465620552296,
+        "isolated_noisy_residual_SE_over_raw": 0.00013730649061217853,
         "cross_mean_over_raw_signal": 0.009552639035281972,
-        "cross_mean_SE_over_raw_signal": 0.00027918198685205183,
+        "cross_mean_SE_over_raw_signal": 0.0002811085060846462,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 21.506070118137583,
         "paired_seed_bootstrap_gain_95pct": [
           12.36500637715593,
@@ -57,9 +57,9 @@
       "masked": {
         "noiseless_residual_over_raw": 1.1391997672659203e-05,
         "isolated_noisy_residual_over_raw": 0.015579019739692442,
-        "isolated_noisy_residual_SE_over_raw": 5.372106288275829e-05,
+        "isolated_noisy_residual_SE_over_raw": 9.787277646677635e-05,
         "cross_mean_over_raw_signal": 0.00010300029012165565,
-        "cross_mean_SE_over_raw_signal": 0.00030065271060285585,
+        "cross_mean_SE_over_raw_signal": 0.000300616598851133,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.970241987580998,
         "paired_seed_bootstrap_gain_95pct": [
           11.307799778880277,
@@ -71,9 +71,9 @@
       "pseudo": {
         "noiseless_residual_over_raw": 1.1690831282743697e-05,
         "isolated_noisy_residual_over_raw": 0.015579224411881781,
-        "isolated_noisy_residual_SE_over_raw": 5.387714871760399e-05,
+        "isolated_noisy_residual_SE_over_raw": 9.79235419816497e-05,
         "cross_mean_over_raw_signal": 0.0001043675741454407,
-        "cross_mean_SE_over_raw_signal": 0.00030081086285223437,
+        "cross_mean_SE_over_raw_signal": 0.00030077422500764497,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.95974257056852,
         "paired_seed_bootstrap_gain_95pct": [
           11.307390013988885,
@@ -85,15 +85,15 @@
       "local_Wiener_noise_prediction_over_raw": 0.015507382609487906,
       "oracle_over_local_noise_prediction": 1.0045262417508793,
       "estimator_cost_isolated_masked_over_oracle": 1.0000928878723137,
-      "estimator_extra_relative_SE": 2.0858286098765727e-05
+      "estimator_extra_relative_SE": 2.0885934106126593e-05
     },
     "1000-2000": {
       "oracle": {
         "noiseless_residual_over_raw": 6.367105031740738e-06,
         "isolated_noisy_residual_over_raw": 0.03993981075500194,
-        "isolated_noisy_residual_SE_over_raw": 4.700303479210221e-05,
+        "isolated_noisy_residual_SE_over_raw": 0.00011826219232945569,
         "cross_mean_over_raw_signal": 0.0022856638683814556,
-        "cross_mean_SE_over_raw_signal": 0.0003746624829982197,
+        "cross_mean_SE_over_raw_signal": 0.0003745186054240307,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.65555220138449,
         "paired_seed_bootstrap_gain_95pct": [
           4.716770888713415,
@@ -105,9 +105,9 @@
       "wide": {
         "noiseless_residual_over_raw": 0.0088680354493709,
         "isolated_noisy_residual_over_raw": 0.048232144206171175,
-        "isolated_noisy_residual_SE_over_raw": 0.00010271957407465316,
+        "isolated_noisy_residual_SE_over_raw": 0.00013871033231001897,
         "cross_mean_over_raw_signal": 0.012102390898061557,
-        "cross_mean_SE_over_raw_signal": 0.0004062571494177594,
+        "cross_mean_SE_over_raw_signal": 0.0004049520028702478,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 7.982408885946012,
         "paired_seed_bootstrap_gain_95pct": [
           4.375612206208903,
@@ -119,9 +119,9 @@
       "masked": {
         "noiseless_residual_over_raw": 7.190892789717447e-06,
         "isolated_noisy_residual_over_raw": 0.03993739723431142,
-        "isolated_noisy_residual_SE_over_raw": 4.707117196973357e-05,
+        "isolated_noisy_residual_SE_over_raw": 0.00011855025339421659,
         "cross_mean_over_raw_signal": 0.002282666423317761,
-        "cross_mean_SE_over_raw_signal": 0.0003747402667645969,
+        "cross_mean_SE_over_raw_signal": 0.0003745995311744032,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.653755593146709,
         "paired_seed_bootstrap_gain_95pct": [
           4.717092876878392,
@@ -133,9 +133,9 @@
       "pseudo": {
         "noiseless_residual_over_raw": 7.410969139654853e-06,
         "isolated_noisy_residual_over_raw": 0.03993763325242793,
-        "isolated_noisy_residual_SE_over_raw": 4.705872153408987e-05,
+        "isolated_noisy_residual_SE_over_raw": 0.00011853574942114481,
         "cross_mean_over_raw_signal": 0.002283555646843724,
-        "cross_mean_SE_over_raw_signal": 0.0003746835646553409,
+        "cross_mean_SE_over_raw_signal": 0.0003745407831574148,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.655065194744976,
         "paired_seed_bootstrap_gain_95pct": [
           4.718814385813089,
@@ -147,15 +147,15 @@
       "local_Wiener_noise_prediction_over_raw": 0.03989524137696691,
       "oracle_over_local_noise_prediction": 1.0011171602551265,
       "estimator_cost_isolated_masked_over_oracle": 0.9999395710534202,
-      "estimator_extra_relative_SE": 1.569007489874454e-05
+      "estimator_extra_relative_SE": 1.569749831281199e-05
     },
     "2000-3000": {
       "oracle": {
         "noiseless_residual_over_raw": 2.525382514273969e-06,
         "isolated_noisy_residual_over_raw": 0.33984697270808073,
-        "isolated_noisy_residual_SE_over_raw": 0.0004422437195956677,
+        "isolated_noisy_residual_SE_over_raw": 0.0007263886635159522,
         "cross_mean_over_raw_signal": 0.14831789932934983,
-        "cross_mean_SE_over_raw_signal": 0.0037050936079596475,
+        "cross_mean_SE_over_raw_signal": 0.003808420146470751,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0360393960275471,
         "paired_seed_bootstrap_gain_95pct": [
           0.7393113490987321,
@@ -167,9 +167,9 @@
       "wide": {
         "noiseless_residual_over_raw": 0.009362542841197084,
         "isolated_noisy_residual_over_raw": 0.3457657759359237,
-        "isolated_noisy_residual_SE_over_raw": 0.00046718419283098,
+        "isolated_noisy_residual_SE_over_raw": 0.0007463568192594459,
         "cross_mean_over_raw_signal": 0.16222774998076622,
-        "cross_mean_SE_over_raw_signal": 0.0036836224462459106,
+        "cross_mean_SE_over_raw_signal": 0.0037973965376263763,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0420782802342008,
         "paired_seed_bootstrap_gain_95pct": [
           0.7426385400529307,
@@ -181,9 +181,9 @@
       "masked": {
         "noiseless_residual_over_raw": 3.004789043990424e-06,
         "isolated_noisy_residual_over_raw": 0.33978693442847213,
-        "isolated_noisy_residual_SE_over_raw": 0.0004420824177215102,
+        "isolated_noisy_residual_SE_over_raw": 0.0007243785152756146,
         "cross_mean_over_raw_signal": 0.1482848184294324,
-        "cross_mean_SE_over_raw_signal": 0.0037044978602598375,
+        "cross_mean_SE_over_raw_signal": 0.003807651861443104,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0362060091854914,
         "paired_seed_bootstrap_gain_95pct": [
           0.7397461472479541,
@@ -195,9 +195,9 @@
       "pseudo": {
         "noiseless_residual_over_raw": 3.194056140769099e-06,
         "isolated_noisy_residual_over_raw": 0.339789727462174,
-        "isolated_noisy_residual_SE_over_raw": 0.00044251713002152633,
+        "isolated_noisy_residual_SE_over_raw": 0.000724507382997891,
         "cross_mean_over_raw_signal": 0.1482903237075927,
-        "cross_mean_SE_over_raw_signal": 0.003704351183358714,
+        "cross_mean_SE_over_raw_signal": 0.003807552570551359,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0362470386340588,
         "paired_seed_bootstrap_gain_95pct": [
           0.7395814281616512,
@@ -209,15 +209,15 @@
       "local_Wiener_noise_prediction_over_raw": 0.33953594265148834,
       "oracle_over_local_noise_prediction": 1.0009160445700196,
       "estimator_cost_isolated_masked_over_oracle": 0.9998233373122903,
-      "estimator_extra_relative_SE": 1.4640961477977811e-05
+      "estimator_extra_relative_SE": 1.4634020179531424e-05
     },
     "3000-4000": {
       "oracle": {
         "noiseless_residual_over_raw": 8.68096907575212e-06,
         "isolated_noisy_residual_over_raw": 0.8836853374056717,
-        "isolated_noisy_residual_SE_over_raw": 0.0014364341156032157,
+        "isolated_noisy_residual_SE_over_raw": 0.00040016850224759937,
         "cross_mean_over_raw_signal": 0.7949978936297886,
-        "cross_mean_SE_over_raw_signal": 0.056569365819743596,
+        "cross_mean_SE_over_raw_signal": 0.056645168545572465,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9964945674495573,
         "paired_seed_bootstrap_gain_95pct": [
           0.9761617154954786,
@@ -229,9 +229,9 @@
       "wide": {
         "noiseless_residual_over_raw": 0.010468237371287612,
         "isolated_noisy_residual_over_raw": 0.8856659074175129,
-        "isolated_noisy_residual_SE_over_raw": 0.001444910925097739,
+        "isolated_noisy_residual_SE_over_raw": 0.0003960681762968117,
         "cross_mean_over_raw_signal": 0.7994614697637282,
-        "cross_mean_SE_over_raw_signal": 0.056562165436362534,
+        "cross_mean_SE_over_raw_signal": 0.056637785221301036,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9966214215554323,
         "paired_seed_bootstrap_gain_95pct": [
           0.9763956901213766,
@@ -243,9 +243,9 @@
       "masked": {
         "noiseless_residual_over_raw": 9.219734205438736e-06,
         "isolated_noisy_residual_over_raw": 0.8836686901213898,
-        "isolated_noisy_residual_SE_over_raw": 0.0014380013192846171,
+        "isolated_noisy_residual_SE_over_raw": 0.0003998126544709763,
         "cross_mean_over_raw_signal": 0.7950064672783309,
-        "cross_mean_SE_over_raw_signal": 0.05657490361290259,
+        "cross_mean_SE_over_raw_signal": 0.0566505865855989,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9963970263059372,
         "paired_seed_bootstrap_gain_95pct": [
           0.9759747964160629,
@@ -257,9 +257,9 @@
       "pseudo": {
         "noiseless_residual_over_raw": 9.46072862267675e-06,
         "isolated_noisy_residual_over_raw": 0.8836703301755144,
-        "isolated_noisy_residual_SE_over_raw": 0.0014375578492163434,
+        "isolated_noisy_residual_SE_over_raw": 0.00040000644659566296,
         "cross_mean_over_raw_signal": 0.7950072509530365,
-        "cross_mean_SE_over_raw_signal": 0.05657360058907888,
+        "cross_mean_SE_over_raw_signal": 0.05664927517582939,
         "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9964199756860304,
         "paired_seed_bootstrap_gain_95pct": [
           0.9760012249465904,
@@ -271,7 +271,7 @@
       "local_Wiener_noise_prediction_over_raw": 0.8843841716933503,
       "oracle_over_local_noise_prediction": 0.9992098068802606,
       "estimator_cost_isolated_masked_over_oracle": 0.9999811615248356,
-      "estimator_extra_relative_SE": 6.643694463040091e-06
+      "estimator_extra_relative_SE": 6.651876203061643e-06
     }
   },
   "source_manifest": {

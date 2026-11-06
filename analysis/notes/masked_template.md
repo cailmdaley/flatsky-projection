@@ -57,6 +57,7 @@ A supplementary reference subtracts a fixed diagonal BB/EE ratio times each real
 This allows EE-amplitude conditioning but is not the full non-diagonal R estimator, nor an optimal conditional estimator.
 The ratio is set by the noiseless ensemble means, so its calibration uncertainty is also excluded.
 Paired seed bootstraps give indicative confidence intervals on standard-deviation gains; twenty seeds do not resolve small gains precisely.
+Residual/raw ratio errors use the paired delta method, retaining denominator sample variance and numerator/denominator covariance; `analysis/masked_template_results/uncertainty-check.md` cross-checks this against a paired bootstrap.
 
 ## Paper changes
 
