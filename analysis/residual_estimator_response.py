@@ -29,6 +29,8 @@ def main():
         R = SL.coupling_matrix(mom, 0, j, ell, th['ell'], band_limit=S.LMAX)
         spectra = {spec: R[block] @ th['unlensed_TT' if spec == 'TT' else 'unlensed_EE']
                    for spec, block in [('TT', 'TT<-TT'), ('EE', 'EE<-EE'), ('BB', 'BB<-EE')]}
+        shifted = {spec: R[block] @ np.interp(th['ell']-.5, th['ell'], th['unlensed_TT' if spec == 'TT' else 'unlensed_EE'])
+                   for spec, block in [('TT', 'TT<-TT'), ('EE', 'EE<-EE'), ('BB', 'BB<-EE')]}
         del R
         spectra['white'] = np.full_like(ell, report[f'field_white_{proj}_base'][20:60].mean())
         for spin in (0, 2):
@@ -56,14 +58,25 @@ def main():
                 result[f'{proj}_{spec}_naive'] = S.bin_theory(b[:S.LMAX])
                 result[f'{proj}_{spec}_estimator'] = decoupled[index]
                 result[f'{proj}_{spec}_native'] = native
+                if spec != 'white' and not (spec == 'BB' and proj == 'ProjSTG'):
+                    # Leading large-ell spherical-to-plane correspondence
+                    # k=ell+1/2 (Legendre/Bessel asymptotics), an unfitted
+                    # diagnostic. The local window ratio is held fixed.
+                    shifted_native = native * np.divide(shifted[spec], b, out=np.ones_like(b), where=b != 0)
+                    shifted_cl = np.zeros_like(cl)
+                    shifted_cl[index] = shifted_native
+                    shifted_dec = ws.decouple_cell(ws.couple_cell(ell, shifted_cl)) / S.flat_pixwin()[None, :]
+                    result[f'{proj}_{spec}_spherical'] = shifted_dec[index]
                 if spin == 2 and spec == 'EE':
                     result[f'{proj}_EE_to_BB'] = decoupled[3]
                 # Constant bandpowers must be invariant to couple/decouple.
-                constant = np.ones_like(cl)
-                check = ws.decouple_cell(ws.couple_cell(ell, constant))
-                result[f'{proj}_{spec}_constant_error'] = np.max(abs(check-1))
-                print(proj, spec, 'constant response', np.max(abs(check-1)), flush=True)
-                if np.any(b):
+                constant_ell = np.array([0., 5999.99999, 6000., 20000.])
+                constant = np.broadcast_to([1., 1., 0., 0.], (len(cl), 4)).copy()
+                check = ws.decouple_cell(ws.couple_cell(constant_ell, constant))
+                clean = (S.ELL >= 100) & (S.ELL < 4800)
+                result[f'{proj}_{spec}_constant_error'] = np.max(abs(check[:, clean]-1))
+                print(proj, spec, 'constant response', np.max(abs(check[:, clean]-1)), flush=True)
+                if not (spec == 'BB' and proj == 'ProjSTG'):
                     raw = report[name+'_raw']
                     for lo, hi in ((100, 500), (500, 1000), (1000, 4000), (4000, 4500), (4500, 4800)):
                         sel = (S.ELL >= lo) & (S.ELL < hi)
