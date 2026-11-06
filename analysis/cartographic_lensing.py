@@ -1,20 +1,22 @@
-"""Effective lensing fields of a projection, referred to the TAN chart.
+"""Chart-comparison fields relative to TAN, NOT lensing-estimator predictions.
 
-What this establishes
-----------------------
-Section `subsec:qe` of the paper treats the composite map from the analysis
-grid to the gnomonic (TAN) chart, C = P_TAN o P^-1, as a lens: its gradient
-decomposes into an effective convergence, shear and curl exactly as gravitational
-lensing does (Appendix `app:eff`, Eq. eq:eff_lensing),
+The composite from the analysis grid to the gnomonic chart,
+C = P_TAN o P^-1, has a mathematically valid displacement decomposition:
 
     D_ij = dC_i/dx_j - delta_ij,
     kappa = -(D11+D22)/2,  gamma1 = -(D11-D22)/2,
     gamma2 = -(D12+D21)/2,  omega = (D12-D21)/2,
 
-and the effective displacement d(x) = C(x) - x itself. This module puts
-numbers on Table `table:curl`, using the same Jacobian machinery as the rest
-of the paper (`geometry.relative_jacobian`) rather than the hand-written
-finite differences of the retired `notes/curl.py`.
+The displacement itself is d(x) = C(x) - x.
+These fields include TAN's own distortion; their omega RMS does not predict
+a temperature quadratic estimator's curl mean field or response.
+The former estimator interpretation in the manuscript's Table `table:curl`
+is ruled out by the metric derivation and measured simulations in
+`notes/cartographic-lensing-reconstruction.md` and `analysis/lensing_qe.py`.
+This module remains only to reproduce the chart-comparison quantities until
+the sole manuscript writer retires that table.
+It uses `geometry.relative_jacobian` rather than the hand-written finite
+differences of the retired `notes/curl.py`.
 
 C_ij is exactly `geometry.relative_jacobian("ProjTAN", proj, alpha, delta)`:
 that function returns J_to . J_from^-1, the operator carrying the *from*
