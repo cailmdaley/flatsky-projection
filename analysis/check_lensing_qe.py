@@ -12,6 +12,20 @@ def run():
     j=np.array([[[1.1,.2],[.1,.9]]])
     for a,b in zip(metric_strain(j),metric_strain(j@rot)):
         np.testing.assert_allclose(a,b,atol=1e-14)
+    # A radial zenithal shear is E-only before an asymmetric window;
+    # a linearly varying bending shear has equal pseudo E/B on a round one.
+    u=np.linspace(-8,8,256,endpoint=False)
+    x,y=np.meshgrid(u,u)
+    radius2=x*x+y*y
+    radial=np.exp(-radius2/2)
+    g1,g2=(x*x-y*y)*radial,2*x*y*radial
+    e,b=shear_eb(g1,g2,u[1]-u[0],np.ones_like(x))
+    np.testing.assert_allclose(np.sum(abs(b)**2)/np.sum(abs(e)**2),0,atol=1e-12)
+    e,b=shear_eb(g1,g2,u[1]-u[0],np.exp(-x*x/8-y*y/2))
+    assert np.sum(abs(b)**2)/np.sum(abs(e)**2)>.01
+    e,b=shear_eb(y,np.zeros_like(y),u[1]-u[0],radial)
+    # Finite-square Fourier quadrature approaches the continuum 1:1 split.
+    np.testing.assert_allclose(np.sum(abs(b)**2)/np.sum(abs(e)**2),1,rtol=.02)
     shape=(192,256)
     pixel=np.deg2rad(6/60)
     ell=np.arange(4000)

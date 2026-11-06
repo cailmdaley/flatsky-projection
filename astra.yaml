@@ -846,6 +846,31 @@ outputs:
         disk: 4Gi
         time_limit: 1h
 
+  - id: lensing_qe_resolution
+    type: data
+    label: TT quadratic-estimator resolution control
+    description: |
+      Four spherical TT seeds per chart at Nside4096 and two-arcminute grid
+      pixels, retaining the same sky band limit, estimator leg cuts and
+      injection L ranges as lensing_qe_sims. Tests numerical interpolation
+      and output-grid sampling together; this is not a new science filter.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry]
+    units:
+      seed: 0..4
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_sims.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 4096 --sky-lmax 4000 --res-arcmin 2
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 12Gi
+        disk: 4Gi
+        time_limit: 1h
+
   - id: eb_residual_maps
     type: data
     label: "Map-space E/B residuals"
