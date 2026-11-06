@@ -27,7 +27,7 @@ be free of.
 
 pymaster agrees mechanically, not just physically: ``NmtFieldFlat`` raises
 ``ValueError`` if ``purify_e``/``purify_b`` is requested for anything but a
-spin-2 field (verified against pymaster 1.5.1's ``field.py``), because B-mode
+spin-2 field (verified against pymaster's ``field.py``), because B-mode
 purification is a statement about the spin-2 E/B ambiguity at the mask
 boundary -- a scalar field has no such ambiguity to purify. So the EB leg's
 auto-spectra are two independent spin-0 measurements,
@@ -35,7 +35,7 @@ auto-spectra are two independent spin-0 measurements,
 each decoupled through the *scalar* (spin-0/spin-0) mode-coupling matrix,
 which is a different linear operator from the spin-2 one (different `ncls`:
 1 vs. 4; different mixing kernel -- confirmed empirically against pymaster
-1.5.1 on a toy grid before writing this).
+2.0 on a toy grid before writing this).
 
 That is why this stage writes ``w00_{proj}_{i}.fits`` alongside every
 ``w22_{proj}_{i}.fits``: the EB leg cannot be decoupled without it. Both

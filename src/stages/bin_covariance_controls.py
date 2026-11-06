@@ -17,7 +17,7 @@ PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
 
 
 def control_seed(projection_index, realization):
-    # NaMaster 1.5.1 seeds OpenMP workers with base_seed+thread.
+    # NaMaster seeds OpenMP workers with base_seed+thread.
     # Consecutive bases share streams; separate every realization and chart.
     return 200000+1000000*projection_index+1024*realization
 

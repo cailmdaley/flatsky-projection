@@ -25,7 +25,7 @@ enforces the physical point mechanically: ``NmtFieldFlat`` raises
 ``ValueError`` if purification is requested for anything but a spin-2 field,
 because B-mode purification is specifically about the spin-2 E/B ambiguity at
 the mask boundary, which a scalar field does not have (checked against
-pymaster 1.5.1's ``field.py`` before writing this).
+pymaster's ``field.py`` before writing this).
 
 So the E/B leg is two independent spin-0 auto-spectra:
 ``NmtFieldFlat(lx, ly, mask, [E])`` and ``NmtFieldFlat(lx, ly, mask, [B])``,
