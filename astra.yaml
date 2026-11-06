@@ -85,6 +85,19 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: lensing_qe_theory
+    type: data
+    label: TT theory for lensing response simulations
+    source: analysis/theory_spectra.npz
+  - id: lensing_qe_estimator
+    type: data
+    label: TT quadratic estimator implementation
+    source: analysis/lensing_qe.py
+  - id: lensing_qe_geometry
+    type: data
+    label: Projection coordinate and Jacobian implementation
+    source: analysis/geometry.py
+
   - id: unlensed_sims
     type: data
     label: "Unlensed TQU realizations"
@@ -777,6 +790,33 @@ outputs:
       resources:
         cpus: 2
         memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: lensing_qe_sims
+    type: data
+    label: TT quadratic-estimator mean fields and gradient/curl response
+    description: |
+      Isotropic spherical Gaussian TT realizations projected onto the four
+      paper grids, with the C2-apodized 1500d field mask. Paired signed grid
+      gradient and curl deflections are evaluated before projection on the
+      sphere, and compared with identical-mask flat Gaussian controls.
+      These controlled grid-potential injections test the estimator response,
+      not a cosmological lensing power spectrum. No TAN reference is used.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_sims.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 2048 --sky-lmax 4000 --res-arcmin 4
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 8Gi
         disk: 4Gi
         time_limit: 1h
 
