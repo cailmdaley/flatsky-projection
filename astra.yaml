@@ -1133,6 +1133,24 @@ outputs:
         disk: 12Gi
         time_limit: 3h
 
+  - id: masked_template_pilot
+    type: data
+    label: Masked noisy pure-E template on the SFL 1500d field
+    inputs: [projected_qu, flatsky_masks]
+    units:
+      seed: [0]
+      projection: [ProjSFL]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/masked_template.py
+        --maps {inputs.projected_qu} --masks {inputs.flatsky_masks}
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 4
+        memory: 16Gi
+        disk: 24Gi
+        time_limit: 3h
+
 decisions:
   intermediate_nside:
     label: "Intermediate Healpix synthesis resolution"
