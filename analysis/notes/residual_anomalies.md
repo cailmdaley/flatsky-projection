@@ -136,7 +136,7 @@ Doubling the sampling at Nside4096 lowers BB/ownEE by 32.39±0.15%, while EE cha
 The independent reviewer checked the coherent EE change against the finite-subsample window, agreeing to roughly 1e-4.
 A common multiplicative window cannot explain the B change in conformal STG.
 Interpolation/finite averaging demonstrably contributes additive numerical B at Nside4096.
-The ZEA two-sky mean BB/ownEE changes from 4.341e-4 in production to 5.552e-4 at4096/8 and 5.119e-4 at4096/16; it does not support a chart-independent floor subtraction.
+The ZEA two-sky mean BB/ownEE changes from 4.341e-4 in production to 5.552e-4 at 4096/8 and 5.119e-4 at 4096/16; it does not support a chart-independent floor subtraction.
 
 The STG floor below 500 barely responds to either sampling intervention, and its 500–1000 value changes by at most about 4%.
 These numerical sampling terms therefore do not explain the low-ell floor.
@@ -145,7 +145,7 @@ The plot `ring_controls.png` shows the low-ell stability and upper-band sensitiv
 No Nside8192/rebin16 control was run.
 Changing Nside also changes the interpolation lattice and code path, and the high-ell spectral shapes of the Nside4096 term and refined production remainder differ.
 Therefore these controls do not establish how much of the remaining Nside8192 production floor comes from finite averaging.
-A paired8192/16 intervention would be the smallest next test if a quantitative decomposition is needed; this report instead closes with that limitation explicit.
+A paired 8192/16 intervention would be the smallest next test if a quantitative decomposition is needed; this report instead closes with that limitation explicit.
 
 ## Quoted ranges and remaining causes
 
@@ -153,9 +153,9 @@ Keep ell=4000 as the common upper edge for BB band-mean comparisons because of t
 Do not call 1000–4000 a universally closed precision range.
 ZEA's independent BB band mean against the radial-plus-spherical diagnostic is +0.273±0.025% there, with resolved bin structure; SFL's mean is −0.010±0.026%, but its bin-structure test also rejects the approximation.
 STG BB is a floor diagnostic, and BICEP has no independent 260-sky test.
-Do not extend the common BB lower edge below1000 using a TT/EE result: ZEA retains strong low-ell BB structure, especially around EE troughs, that neither mask-product refinement nor the ring controls remove.
+Do not extend the common BB lower edge below 1000 using a TT/EE result: ZEA retains strong low-ell BB structure, especially around EE troughs, that neither mask-product refinement nor the ring controls remove.
 Inhomogeneous leakage and nonlocal projection/estimator response remain hypotheses for that structure, not established quantitative explanations.
-TT/EE may be shown through4800 as diagnostics, with the estimator conventions, input distinction and remaining per-bin errors stated.
+TT/EE may be shown through 4800 as diagnostics, with the estimator conventions, input distinction and remaining per-bin errors stated.
 No range is moved merely to improve agreement.
 
 Ruled out as complete explanations are pure sample variance for the repeatable acoustic pattern, input cutoff changes for the lower additive ZEA/STG floor, a common coherent window for the controlled Nside4096 B term, and mask-product sampling for the entire production BB floor.
@@ -190,5 +190,6 @@ The reproduction order is:
 10. `analysis/paper_numbers.py --residual-only`
 11. `lc verify -u highell` and `analysis/check_residual_provenance.py` using the installed lightcone Python environment.
 
-The sole macro writer generates the bounded claims in `paper/residual_numbers.tex`, including the STG EE covariance-test probability alongside its small mean and largest bin error.
+The sole macro writer implements the bounded claims for `paper/residual_numbers.tex`, including `residSTGEEFitP` alongside the STG EE mean and largest bin error.
+Its shared quoted-only policy omits macros until `main.tex` uses them, so the generated file is currently header-only; rerun `--residual-only` after adopting the relevant prose.
 The manuscript author should replace the original unexplained positive STG TT claim, qualify the clean-band EE agreement, explain the low-ell reference mismatch, and retain the numerical-BB limitation rather than claiming closure.
