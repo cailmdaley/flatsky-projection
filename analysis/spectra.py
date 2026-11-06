@@ -37,12 +37,16 @@ The run divides out the 2 arcmin flat-sky top-hat and nothing else
 (`pixel_window: flat_only`, recorded in every unit's `index_*.json`, which
 `load` checks). The inputs carry no HEALPix window -- the C_l of the
 preprocessed alms matches theory flat to l = 6000 -- so there is none to
-divide. The bandpowers are therefore final as loaded.
+divide. Loading additionally removes the coherent ring-interpolation and
+finite-8x8-rebin windows, using `simulation_window`. These are integrated with
+the known input spectrum and the full local Jacobian separately for each
+projection, footprint and spin block. The interpolation window acts in the sky
+frame; the grid average acts in the map frame. Neither is a universal scalar
+W(ell). Pass `correct_windows=False` to recover the production files unchanged.
 
-What no analytic window captures is the bilinear interpolation transfer. It is
-common to every projection and to EE and BB alike, and it is why the measured
-spectra sit a few percent under the forward model, growing toward the pixel
-scale.
+This removes only windows introduced by the simulation, not the geometric
+projection effect. It does not remove aliased power or calibrate the STG BB
+estimator floor. See `pipeline_windows.py` and the controlled projector tests.
 
 The 2021 run
 ------------
@@ -110,13 +114,13 @@ def _path(proj, seed, d=HIGHELL_DIR):
     return d / f"bandpowers_{proj}_seed{seed:04d}.npz"
 
 
-def load(spec="EE", leg=QU_LEG):
+def load(spec="EE", leg=QU_LEG, correct_windows=True):
     """Bandpowers as (n_masks, n_projs, NSIMS, NBINS), QU leg by default.
 
     `leg=EB_LEG` reads the E/B leg instead, whose "EE" and "BB" are the
     spin-0 auto-spectra of the sphere-decomposed E and B maps. The 2 arcmin
-    flat-sky window is already divided out; nothing further is applied (see
-    the module docstring).
+    flat-sky top-hat is already divided out. By default the remaining known
+    simulation windows are removed too (see the module docstring).
     """
     key = spec.lower()
     if key not in ("ee", "bb", "tt"):
@@ -130,10 +134,12 @@ def load(spec="EE", leg=QU_LEG):
             if arr.shape != (len(PERC), NBINS):
                 raise ValueError(f"{_path(proj, s).name}: {arr.shape}")
             out[:, j, s, :] = arr
+    if correct_windows:
+        out /= simulation_window(spec, leg=leg)[:, :, None, :]
     return out
 
 
-def load_field(spec="EE", leg=QU_LEG):
+def load_field(spec="EE", leg=QU_LEG, correct_windows=True):
     """1500d-field bandpowers as (n_projs, NSIMS, NBINS), QU leg by default.
 
     Same pipeline, maps and binning as `load`, on SPT's 1500d field
@@ -151,7 +157,21 @@ def load_field(spec="EE", leg=QU_LEG):
             if arr.shape != (NBINS,):
                 raise ValueError(f"{_path(proj, s, FIELD_DIR).name}: {arr.shape}")
             out[j, s] = arr
+    if correct_windows:
+        out /= simulation_window(spec, field=True, leg=leg)[:, None, :]
     return out
+
+
+def simulation_window(spec="EE", field=False, leg=QU_LEG):
+    """Effective window for the known simulation input, not an arbitrary sky.
+
+    Includes anisotropic ring interpolation in the sky frame and the exact
+    eight-sample grid average, relative to the continuous top-hat already
+    divided out in production. Shape matches `load`/`load_field` without seeds.
+    `pipeline_windows.effective_window` caches the no-fit geometric integral.
+    """
+    from pipeline_windows import effective_window
+    return effective_window(spec, field, leg)
 
 
 def ell_eff():
@@ -253,11 +273,12 @@ def transfer_2021(ell=ELL_2021):
     return flat_pixwin(ell)
 
 
-def load_scalar(spec="TT", field=False):
+def load_scalar(spec="TT", field=False, correct_windows=True):
     """Scalar bandpowers, (mask, projection, seed, band), or field without mask.
 
     `spec` is TT or white. Both use the EE bins and flat_only window correction.
-    White skies have unit input C_l from ell=2 through LMAX.
+    White skies have unit input C_l from ell=2 through LMAX. By default their
+    own effective simulation window is removed, not the CMB-calibrated one.
     """
     kind = {"tt": "tt", "white": "white"}[spec.lower()]
     suffix = "_field" if field else ""
@@ -271,7 +292,11 @@ def load_scalar(spec="TT", field=False):
                 if not np.array_equal(z["ell_eff"], ELL):
                     raise ValueError(f"{directory}: scalar bins differ from EE")
                 out[:, j, seed] = z["cl"]
-    return out[0] if field else out
+    out = out[0] if field else out
+    if correct_windows:
+        window = simulation_window(spec, field=field)
+        out /= window[:, None, :] if field else window[:, :, None, :]
+    return out
 
 
 def rebin_pseudo(pseudo, counts, edges):

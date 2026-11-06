@@ -21,16 +21,18 @@ numerator's. Getting this right matters only for a projection whose
 magnification varies across the footprint, and not at all for the two
 equal-area projections.
 
-Range. The production run carries sky power to l = 6000, but the 2 arcmin
-pixel has a Nyquist multipole of 5400 and the resampling residual arrives
-before it: above l ~ 4800 every projection rises onto one common curve that is
-the pixel and not the geometry. The figure stops at l = 4800 and makes no
-claim beyond it.
+Range. The 2 arcmin grid has an axis Nyquist multipole of 5400. The input
+sky cutoff at 6000 is mapped to different directional cutoffs by each
+projection. Aliasing can therefore arrive below 4800 on sheared projections,
+and matters particularly for the small geometric BB of ZEA. This diagnostic
+retains 4800 to expose that rise; it is not a universal clean-data cutoff.
 
-Pixel windows. The production bandpowers already have the 2 arcmin flat-sky
-top-hat divided out (see `spectra`). What remains is the bilinear
-interpolation transfer, which no analytic window captures and which this
-figure shows.
+Pixel windows. `spectra` removes the coherent ring-interpolation and finite
+8x8-rebin windows separately for each projection and spin block, inside the
+sky-frame forward integral. No parameter is fitted. Aliased power and the
+STG estimator floor are not removed. Bands show pointwise standard errors,
+not independent errors across bins or projections; use paired-seed contrasts
+(`report_pipeline_windows.py`) to compare projections.
 
 STG is left out of BB: its model is the rounding of zero shear, and its
 measured BB is the pipeline's floor. `plot_projection_spectra.measured_tt`
@@ -59,7 +61,7 @@ FIGURE = ROOT / "figures" / "model_residuals.pdf"
 SPECTRA = PPS.SPECTRA
 ELL_MIN, ELL_MAX = PPS.ELL_MIN, PPS.ELL_MAX
 BAND_LIMIT = S.LMAX     # 6000: the run's own harmonic band limit
-Y_LIM = (0.92, 1.06)
+Y_LIM = {'TT': (0.98, 1.02), 'EE': (0.98, 1.02), 'BB': (0.97, 1.24)}
 BAND_ALPHA = 0.25
 FIG_H = 2.2
 
@@ -99,7 +101,7 @@ def plot(plt, d):
     x = ell[keep]
 
     fig, axes = plt.subplots(1, len(SPECTRA), figsize=(PS.TEXT_W, FIG_H),
-                             sharex=True, sharey=True, layout="constrained")
+                             sharex=True, sharey=False, layout="constrained")
     for ax, spec in zip(axes, SPECTRA):
         ax.axhline(1.0, color=PPS.REF_COLOR, lw=PPS.REF_LW, zorder=PPS.REF_Z)
         measured = d["measured"][spec]
@@ -117,10 +119,10 @@ def plot(plt, d):
         ax.set_xlabel(r"$\ell$")
         ax.set_ylabel(rf"$C_\ell^{{{spec}}} / C_\ell^{{{spec},\,\mathrm{{model}}}}$")
         ax.tick_params(labelleft=True)
+        ax.set_ylim(*Y_LIM[spec])
 
     axes[0].set_xlim(ELL_MIN, ELL_MAX)
     axes[0].set_xticks([1000, 2000, 3000, 4000])
-    axes[0].set_ylim(*Y_LIM)
 
     fig.legend([Line2D([], [], color=PS.PROJ_COLORS[p], lw=PS.LW)
                 for p in S.PROJS], [S.PROJ_LABEL[p] for p in S.PROJS],

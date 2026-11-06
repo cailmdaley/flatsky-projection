@@ -133,14 +133,23 @@ def run():
             clean.append(float(rr[cband].mean()))
         out[f"{name}_clean"] = np.array(clean)
     CACHE.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(CACHE, projs=S.PROJS, **out)
+    np.savez(CACHE, projs=S.PROJS, simulation_windows=_simulation_windows(), **out)
     return out
+
+
+def _simulation_windows():
+    """The three known-input windows used by the cached measurements."""
+    return np.stack([S.simulation_window('EE', field=True),
+                     S.simulation_window('BB', field=True),
+                     S.simulation_window('EE', field=True, leg=S.EB_LEG)])
 
 
 def load(refresh=False):
     if CACHE.exists() and not refresh:
         with np.load(CACHE) as f:
-            if "projs" in f.files and list(f["projs"]) == S.PROJS:
+            if ("projs" in f.files and list(f["projs"]) == S.PROJS
+                    and "simulation_windows" in f.files
+                    and np.array_equal(f['simulation_windows'], _simulation_windows())):
                 return {k: f[k] for k in f.files}
     return run()
 
