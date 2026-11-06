@@ -190,6 +190,8 @@ They test the covariance consequences of position/direction dependence under the
 Final artifacts are `results/highell/bin_covariance_comparison/{comparison.json,moments.npz,comparison.png,binwise.png}`.
 The old20,13-sky and44-sky artifacts are superseded for final measurement claims.
 Run `analysis/paper_numbers.py --covariance-only` for the generated `paper/covariance_numbers.tex`; it refuses incomplete or old seed sets.
+The central writer emits only macros cited by `paper/main.tex`, so add the intended macro references there and regenerate; an unquoted covariance result is deliberately omitted from the LaTeX file.
+`analysis/bin_covariance_numbers.py:numbers()` returns the complete validated dictionary independently of that publication filter.
 
 ## The SPT references
 
