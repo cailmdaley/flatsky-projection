@@ -85,6 +85,22 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: residual_pure_e_implementation
+    type: data
+    label: Periodic pure-E mask-product and Fourier-refinement implementation
+    source: src/stages/residual_pure_e_test.py
+  - id: residual_map_implementation
+    type: data
+    label: Paired production-map upsampling implementation
+    source: src/stages/residual_map_upsample.py
+  - id: residual_ring_implementation
+    type: data
+    label: Paired synthesis-ring and subsample implementation
+    source: src/stages/residual_ring_test.py
+  - id: residual_control_theory
+    type: data
+    label: CAMB E spectrum for pure-E flat controls
+    source: src/stages/data/bin_covariance_theory.npz
   - id: local_source_estimator
     type: data
     label: Local compact-source profiles and matched-filter implementation
@@ -1123,7 +1139,7 @@ outputs:
       then projected with8x or16x subsamples on the same output pixels.
       The8192/8x reference must reproduce production. These controls
       distinguish additive interpolation/sampling B from a coherent window.
-    inputs: [preprocessed_alms, projected_qu, field_flatsky_masks, field_coupling]
+    inputs: [preprocessed_alms, projected_qu, field_flatsky_masks, field_coupling, residual_ring_implementation]
     units:
       seed: [0, 1]
       projection: [ProjSTG, ProjZEA]
@@ -1147,7 +1163,7 @@ outputs:
       and pure-B estimation, with two padded/tapered boundary controls.
       Native spectra gate exact reproduction of production. No synthesis,
       reprojection, spherical cutoff or physical pixel window changes.
-    inputs: [projected_qu, field_flatsky_masks, field_coupling]
+    inputs: [projected_qu, field_flatsky_masks, field_coupling, residual_map_implementation, residual_pure_e_implementation]
     units:
       seed: [0, 1, 2, 3]
       projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
@@ -1172,7 +1188,7 @@ outputs:
       cutoff4000/6000 interventions isolate additive estimator contamination
       from spherical reprojection. The production workspace is a diagnostic
       normalization only for the fine-grid leg.
-    inputs: [field_flatsky_masks, field_coupling]
+    inputs: [field_flatsky_masks, field_coupling, residual_pure_e_implementation, residual_control_theory]
     units:
       seed: [0, 1, 2, 3]
       projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
