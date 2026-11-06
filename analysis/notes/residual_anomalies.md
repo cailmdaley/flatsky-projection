@@ -159,14 +159,15 @@ TT/EE may be shown through 4800 as diagnostics, with the estimator conventions, 
 No range is moved merely to improve agreement.
 
 Ruled out as complete explanations are pure sample variance for the repeatable acoustic pattern, input cutoff changes for the lower additive ZEA/STG floor, a common coherent window for the controlled Nside4096 B term, and mask-product sampling for the entire production BB floor.
-Established contributions are the net radial/spherical reference correction, the original input-spectrum mismatch, native pure-B mask-product leakage and the Nside4096 sampling-dependent additive B term.
+Established contributions to production residuals are the net radial/spherical reference correction, the original input-spectrum mismatch and native pure-B mask-product leakage.
+A separate sampling-dependent additive B term is demonstrated only in the Nside4096 control.
 Their distinction is essential: none licenses a universal production floor correction.
 
 ## Review, provenance and reproduction
 
 Two independent Opus reviews are preserved beside the residual-anomalies fiber as `residual-review.json` and `residual-final-review.json`, with their briefs and attributed FFT/covariance scripts.
-The final review accepts the FFT arithmetic, covariance tests, four-seed measurements and macros, and requires the band-specific and native-power wording incorporated here.
-Its ring assessment used both STG seeds and the first ZEA seed; the final canonical report includes both ZEA seeds.
+The final review accepts the FFT arithmetic, covariance tests, four-seed measurements and macro definitions, with the band-specific and native-power wording incorporated here.
+Its canonical-ring follow-up, `residual-ring-review.json`, independently confirms both ZEA seeds, the final ring numbers and scoped interpretation, with no consequential blockers.
 
 All 36 control units ran through `lc run --executor htcondor --profile htcondor9` and are canonical.
 `lc verify -u highell` passed the materialized chain before the last ring gather; `check_residual_provenance.py` additionally checks all three final canonical hashes, all 36 unit hashes and upstream versions.
