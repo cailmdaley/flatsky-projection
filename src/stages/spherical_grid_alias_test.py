@@ -2,7 +2,8 @@
 
 The white zero-B input cutoff is swept while reconstructing ell<=256
 on Nside=128 and 384x768 CAR. The matched reference cuts the same alms to
-256 *before* synthesis. Their difference isolates out-of-band aliasing.
+256 *before* synthesis. Their difference isolates out-of-band response: sampling aliasing for point
+samples, plus finite-pixel mode coupling for the averaged maps.
 """
 import argparse
 import json

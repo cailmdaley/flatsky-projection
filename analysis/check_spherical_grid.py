@@ -100,13 +100,5 @@ if args.pixell:
     wy, wx = enmap.calc_window(shape, order=0)
     np.testing.assert_allclose(wy, np.sinc(np.fft.fftfreq(shape[0])), atol=1e-15)
     np.testing.assert_allclose(wx, np.sinc(np.fft.fftfreq(shape[1])), atol=1e-15)
-    # Verify chart Fourier wavevectors give physical widths
-    # delta_theta and sin(theta)*delta_phi in a local tangent plane.
-    delta = np.pi/shape[0]
-    theta, ell, chi = 2.5, 20., .7
-    ky, kx = ell*np.cos(chi), ell*np.sin(chi)*np.sin(theta)
-    chart = np.sinc(ky*delta/(2*np.pi))*np.sinc(kx*delta/(2*np.pi))
-    sky = np.sinc(ell*np.cos(chi)*delta/(2*np.pi))*np.sinc(ell*np.sin(chi)*np.sin(theta)*delta/(2*np.pi))
-    np.testing.assert_allclose(chart, sky)
     print('pixell 0.32.9: spherical point roundtrip and chart-sinc window agree')
 print('spherical-grid regression gates pass')

@@ -1138,8 +1138,9 @@ outputs:
     label: Paired out-of-band spherical grid injection
     description: |
       Same zero-B alms cut at 256 or extended to 384, 512, 640 or 768,
-      reconstructed to 256. Differences isolate bandwidth-dependent aliasing
-      on Nside 128 and 384x768 CAR; these are not equal-area grids.
+      reconstructed to 256. Differences isolate out-of-band response from
+      sampling aliasing and finite-pixel mode coupling on Nside 128 and
+      384x768 CAR; these are not equal-area grids.
     units:
       input_lmax: [384, 512, 640, 768]
       seed: [0, 1, 2]
