@@ -85,6 +85,14 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: local_source_estimator
+    type: data
+    label: Local compact-source profiles and matched-filter implementation
+    source: analysis/local_measurements.py
+  - id: local_source_simulator
+    type: data
+    label: Spherical compact-source CMB injection implementation
+    source: src/stages/local_source_sims.py
   - id: lensing_qe_theory
     type: data
     label: TT theory for lensing response simulations
@@ -1136,6 +1144,7 @@ outputs:
   - id: local_source_geometry
     type: data
     label: Local compact-source matched-filter geometry and affine noise controls
+    inputs: [local_source_estimator, lensing_qe_theory, lensing_qe_geometry]
     recipe:
       command: >-
         mkdir -p {output} &&
@@ -1149,6 +1158,7 @@ outputs:
   - id: local_source_sims
     type: data
     label: Spherical CMB compact-source matched-filter injections on the 1500d field
+    inputs: [local_source_estimator, local_source_simulator, lensing_qe_theory, lensing_qe_geometry]
     description: |
       Exact spherical beam-sized and beta-model source profiles on SFL, ZEA,
       BICEP, plus a common beam-smoothed HEALPix CMB and 18 uK arcmin noise.
