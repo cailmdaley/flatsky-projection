@@ -16,6 +16,12 @@ from namaster_spectra import load_mask, atomic_save
 PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
 
 
+def control_seed(projection_index, realization):
+    # NaMaster 1.5.1 seeds OpenMP workers with base_seed+thread.
+    # Consecutive bases share streams; separate every realization and chart.
+    return 200000+1000000*projection_index+1024*realization
+
+
 def prepare(args):
     import numpy as np
     from astropy.io import fits
@@ -81,7 +87,7 @@ def simulate(args):
             counts = mode_counts(mask.shape, lx, ly, 6000)
             for seed in range(args.batch*args.batch_size, (args.batch+1)*args.batch_size):
                 t, q, u = nmt.synfast_flat(nx, ny, lx, ly, cls, [0, 2],
-                                           seed=200000+1000*j+seed)
+                                           seed=control_seed(j, seed))
                 f2 = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=True, lite=True)
                 pol = nmt.compute_coupled_cell_flat(f2, f2, bins)
                 del f2, q, u

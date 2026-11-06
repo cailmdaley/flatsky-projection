@@ -50,7 +50,21 @@ def test_cropped_projection():
         print(proj, 'cropped projection gate pass', float(abs(actual-expected).max()))
 
 
+def test_control_random_streams():
+    import pymaster as nmt
+    from bin_covariance_controls import control_seed
+    fields = [nmt.synfast_flat(256, 256, 1., 1., [np.ones(6001)], [0],
+                               seed=control_seed(0, seed))[0] for seed in (0, 1)]
+    a, b = [np.fft.rfft2(field) for field in fields]
+    overlap = abs(a @ b.conj().T)/np.outer(np.linalg.norm(a, axis=1),
+                                          np.linalg.norm(b, axis=1))
+    assert overlap.max() < 1-1e-12, 'distinct skies reused Fourier-row random streams'
+    print('NaMaster independent-seed gate pass; maximum Fourier-row overlap', overlap.max())
+
+
 if __name__ == '__main__':
     test_counterexample()
     if '--projection' in sys.argv:
         test_cropped_projection()
+    if '--random' in sys.argv:
+        test_control_random_streams()
