@@ -14,8 +14,11 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10,
+    'axes.labelsize': 11, 'xtick.labelsize': 10, 'ytick.labelsize': 10,
+    'legend.fontsize': 8, 'text.usetex': False})
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src/stages'))
-from spherical_grid_test import regions
+from spherical_grid_test import regions, hp
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT/'analysis/figures'
@@ -92,6 +95,22 @@ def main():
                 prediction=prediction(128, lo, hi, region, 8),
                 continuum_prediction=prediction(128, lo, hi, region)))
     report['car_windows'] = windows
+    hp_windows = []
+    for nside in (128, 256):
+        wp = hp.pixwin(nside, pol=True, lmax=256)[1]
+        wh = hp.pixwin(nside*8, pol=True, lmax=256)[1]
+        ds = [d for d in data if d['settings']['nside']==nside and d['settings']['factor']==8]
+        for region in ('fullsky', 'field1500'):
+            for band in range(4):
+                rows = [selected(d, 'healpix_average', region)[band] for d in ds]
+                lo, hi = rows[0]['lo'], rows[0]['hi']
+                hp_windows.append(dict(nside=nside, region=region, lo=lo, hi=hi,
+                    amplitude=float(np.mean([r['amplitude'] for r in rows])),
+                    global_pixwin_prediction=float(np.average(wp[lo:hi]/wh[lo:hi], weights=2*np.arange(lo,hi)+1))))
+    report['healpix_windows'] = hp_windows
+    # These fail if point-sample leakage or the predicted CAR trend is lost.
+    assert max(r['bb_over_ee'] for r in report['pixel_tests'] if r['method'].endswith('_point')) < 1e-18
+    assert max(abs(r['amplitude']-r['prediction']) for r in windows) < .004
     (OUT/'spherical_grid_summary.json').write_text(json.dumps(report, indent=2)+'\n')
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.8))
     colors = {'healpix': '#6a3d9a', 'car': '#007f88'}
@@ -102,7 +121,7 @@ def main():
                          [r['bb_over_ee'] for r in rows], style+'o', color=colors[grid],
                          label=f'{grid.upper()}, Nside={nside}' if grid=='healpix' else f'CAR, {180/(3*nside):.3f} deg')
     axes[0].set(yscale='log', xlabel=r'$\ell$', ylabel=r'$\langle W^2 B^2\rangle/\langle W^2 E^2\rangle$')
-    axes[0].legend(fontsize=8, frameon=False)
+    axes[0].legend(fontsize=8, frameon=False, loc='lower left', bbox_to_anchor=(0, 1.01), ncol=2)
     for region, label, color in [('dec0', '0 deg', '#444444'), ('dec-30', '-30 deg', '#e69f00'),
                                  ('dec-56', '-56 deg', '#0072b2'), ('dec-75', '-75 deg', '#cc79a7')]:
         rows = [r for r in windows if r['region']==region]
@@ -110,7 +129,7 @@ def main():
         axes[1].plot(x, [r['amplitude'] for r in rows], 'o', color=color, label=label)
         axes[1].plot(x, [r['prediction'] for r in rows], '-', color=color)
     axes[1].set(xlabel=r'$\ell$', ylabel='E cross-amplitude / input')
-    axes[1].legend(fontsize=8, frameon=False, title='Declination')
+    axes[1].legend(fontsize=8, frameon=False, title='Declination', title_fontsize=9)
     for ax in axes:
         ax.spines[['top', 'right']].set_visible(False)
     fig.tight_layout()
