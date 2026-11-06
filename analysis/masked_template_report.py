@@ -76,6 +76,8 @@ def main():
         band['oracle_over_local_noise_prediction']=float(vals['bb_isolated_oracle'].mean()/pred[sel].mean())
         band['estimator_cost_isolated_masked_over_oracle']=float(
             vals['bb_isolated_masked'].mean()/vals['bb_isolated_oracle'].mean())
+        paired=(vals['bb_isolated_masked']-vals['bb_isolated_oracle'])/vals['bb_isolated_oracle'].mean()
+        band['estimator_extra_relative_SE']=float(paired.std(ddof=1)/np.sqrt(n)) if n>1 else None
         result['bands'][f'{lo}-{hi}']=band
     out=Path(a.out);out.mkdir(parents=True,exist_ok=True)
     (out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
