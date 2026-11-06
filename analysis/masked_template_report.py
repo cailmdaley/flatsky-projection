@@ -18,7 +18,8 @@ def main():
     files=sorted(Path(a.input).glob('masked_template_seed*.npz'))
     data=[dict(np.load(f)) for f in files]
     n=len(data);ell=data[0]['ell']
-    rows={k:np.array([d[k] for d in data]) for k in data[0] if k.startswith('bb_')}
+    rows={k:np.array([d[k] for d in data]) for k in data[0] if k.startswith(('bb_','ee_'))}
+    variants=[k for k in ('oracle','wide','masked','pseudo') if 'bb_cross_'+k in rows]
     # Local white-E-noise prediction with the SAME isotropic Wiener prior.
     # The signal term uses the actual raw BB (no fitted noise amplitude).
     # Angular pixel response is averaged; boundary/pure-B coupling is omitted.
@@ -34,14 +35,14 @@ def main():
     rng=np.random.default_rng(98372)
     boots=rng.integers(n,size=(4000,n))
     result={'nseed':n,'delta_P_per_split_uK_arcmin':5,
-        'scope':'SFL, polar reflattening, 1500d C2 mask; coupled pure-B spectra divided by mean W^2. Pure-E multipoles retain W attenuation; scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction only; no EE-conditioned R test.',
+        'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
         'bands':{}}
     for lo,hi in ((900,1100),(1000,2000),(2000,3000),(3000,4000)):
         sel=(ell>=lo)&(ell<hi)
         # Average C_l within the band before moments across seeds.
         vals={k:v[:,sel].mean(1) for k,v in rows.items()}
         band={}
-        for key in ('oracle','masked'):
+        for key in variants:
             raw=vals['bb_signal']
             residual=vals['bb_isolated_'+key]
             cross=vals['bb_cross_'+key]
@@ -58,10 +59,15 @@ def main():
                 'cross_mean_over_raw_signal':float(cross.mean()/raw.mean()),
                 'cross_mean_SE_over_raw_signal':float(cross.std(ddof=1)/np.sqrt(n)/raw.mean()) if n>1 else None,
                 'cross_standard_deviation_gain_vs_fixed_power_subtraction':float(gain) if gain is not None else None,
-                'paired_seed_bootstrap_gain_95pct':interval}
+                'paired_seed_bootstrap_gain_95pct':interval,
+                'sample_RMS_gain_without_residual_debiasing':float(np.std(orig,ddof=1)/np.sqrt(np.mean(cross**2))) if n>1 else None}
+            if n>1 and 'ee_cross_raw' in vals:
+                ratio=vals['bb_signal'].mean()/vals['ee_signal'].mean()
+                conditioned=orig-ratio*vals['ee_cross_raw']
+                band[key]['cross_standard_deviation_gain_vs_EE_amplitude_conditioned']=float(np.std(conditioned,ddof=1)/np.std(cross,ddof=1))
         band['local_Wiener_noise_prediction_over_raw']=float(pred[sel].mean()/vals['bb_signal'].mean())
         band['oracle_over_local_noise_prediction']=float(vals['bb_isolated_oracle'].mean()/pred[sel].mean())
-        band['edge_cost_isolated_masked_over_oracle']=float(
+        band['estimator_cost_isolated_masked_over_oracle']=float(
             vals['bb_isolated_masked'].mean()/vals['bb_isolated_oracle'].mean())
         result['bands'][f'{lo}-{hi}']=band
     out=Path(a.out);out.mkdir(parents=True,exist_ok=True)

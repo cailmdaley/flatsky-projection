@@ -5,7 +5,9 @@ No Q/U outside W>0 enter. They lose ambiguous boundary modes, so applying
 C/(C+N) is a simple isotropic Wiener weight, not the optimal cut-sky posterior.
 The oracle uses exactly the same noisy Q/U but takes E before masking.
 All output B spectra use NaMaster purification. Independent noise splits
-allow unbiased cross-spectra, retaining signal and noise sample variance.
+allow noise-unbiased cross-spectra, retaining signal and noise sample variance.
+A 0.5-degree E taper shares the 2.5-degree analysis mask's support; using
+that wider analysis taper for E is retained as a control, not an edge limit.
 """
 import numpy as np
 from scipy import fft
@@ -41,7 +43,7 @@ def run(maps_path, masks_path, seed, out):
     import template_subtraction as T
     import pymaster as nmt
     from spt3g import core
-    fft.set_workers(4)
+    print(f'seed{seed}: constructing template geometry',flush=True)
     # Grid uses seed zero only for geometry; it is identical for every seed.
     with tempfile.TemporaryDirectory() as td:
         root=Path(td)
@@ -51,11 +53,20 @@ def run(maps_path, masks_path, seed, out):
         (root/'flatsky_masks').symlink_to(Path(masks_path).resolve())
         T.RUN=root
         gr=T.Grid('ProjSFL')
+    print(f'seed{seed}: geometry ready; symbol truncation {gr.trunc:.3g}',flush=True)
     fr=next(core.G3File(str(Path(maps_path)/f'qu_ProjSFL_seed{seed:04d}.g3')))
     z=(np.asarray(fr['Q'],float)+1j*np.asarray(fr['U'],float))*gr.extra
-    del fr
     q,u=z.real.copy(),z.imag.copy(); del z
     w=np.zeros(gr.shape); w[gr.field['box']]=gr.field['mask']
+    yy,xx=np.nonzero(w>0)
+    alpha,delta=fr['Q'].xy_to_angle(core.DoubleVector(xx.astype(float)),core.DoubleVector(yy.astype(float)))
+    alpha,delta=np.asarray(alpha),np.asarray(delta)
+    ra_max,dlo,dhi=T.PF.FIELD
+    ra=np.degrees(T.PF._wrap(alpha));dec=np.degrees(delta)
+    we=np.zeros(gr.shape)
+    we[yy,xx]=(T.PF._c2_taper(np.minimum(dec-dlo,dhi-dec),.5)
+               *T.PF._c2_taper((ra_max-np.abs(ra))*np.cos(delta),.5))
+    del fr,yy,xx,alpha,delta,ra,dec
     bins=nmt.NmtBinFlat(np.arange(0,6000,50,dtype=float),
                         np.arange(50,6050,50,dtype=float))
     def field(qq,uu):
@@ -66,23 +77,31 @@ def run(maps_path, masks_path, seed, out):
         return nmt.compute_coupled_cell_flat(a,b,bins)[3]/np.mean(gr.field['mask']**2)
     result={'ell':bins.get_effective_ells(), 'seed':seed,
             'tan2':gr.weighted(gr.tan2,'field'), 'level':5.,
-            'trunc':gr.trunc}
-    # Noiseless controls isolate the information cost of the edge.
-    e,_=gr.eb(q,u)
+            'trunc':gr.trunc, 'template_apod_deg':.5}
+    for name,window in [('masked',we),('wide',w)]:
+        result['local_taper_cost_'+name]=(gr.weighted(gr.tan2*(1-window[gr.tbox])**2,'field')
+                                         /result['tan2'])
+    # Noiseless controls isolate this estimator's mask/taper cost.
     wf=gr.c_ee/(gr.c_ee+(5*T.ARCMIN_RAD)**2)
     def subtract(qq,uu,ee):
-        tq,tu=gr.qu_of_b(gr.template(ee))
+        tq,tu=gr.qu_of_b(T.TEMPLATE_SIGN*gr.template(ee))
         return field(qq-tq,uu-tu)
     raw=field(q,u)
     result['bb_signal']=cell(raw,raw)
-    for name,ee in [('oracle',e),('masked',pure_e(q,gr.usign*u,w,gr.res))]:
+    result['ee_signal']=nmt.compute_coupled_cell_flat(raw,raw,bins)[0]/np.mean(gr.field['mask']**2)
+    estimators={'oracle':lambda qq,uu:gr.eb(qq,uu)[0],
+                'wide':lambda qq,uu:pure_e(qq,gr.usign*uu,w,gr.res),
+                'masked':lambda qq,uu:pure_e(qq,gr.usign*uu,we,gr.res),
+                'pseudo':lambda qq,uu:gr.eb(we*qq,we*uu)[0]}
+    for name,estimate in estimators.items():
+        ee=estimate(q,u)
         f=subtract(q,u,ee)
         result['bb_signal_'+name]=cell(f,f)
         print(f'seed{seed}: noiseless {name}',flush=True)
-    del e,raw,f,ee
+    del raw,f,ee
     # Each split has Delta_P=5 uK arcmin, isotropic independent Q/U noise.
-    split_fields={name:[] for name in ('raw','oracle','masked')}
-    isolated={name:[] for name in ('oracle','masked')}
+    split_fields={name:[] for name in ['raw']+list(estimators)}
+    isolated={name:[] for name in estimators}
     for split in range(2):
         rng=np.random.default_rng(np.random.SeedSequence([827346,seed,split]))
         sigma=5*T.ARCMIN_RAD/gr.res
@@ -90,17 +109,16 @@ def run(maps_path, masks_path, seed, out):
         nu=rng.standard_normal(gr.shape)*sigma
         qq,uu=q+nq,u+nu
         split_fields['raw'].append(field(qq,uu))
-        ee,_=gr.eb(qq,uu)
-        split_fields['oracle'].append(subtract(qq,uu,wf*ee))
-        isolated['oracle'].append(subtract(q,u,wf*ee))
-        ee=pure_e(qq,gr.usign*uu,w,gr.res)
-        split_fields['masked'].append(subtract(qq,uu,wf*ee))
-        isolated['masked'].append(subtract(q,u,wf*ee))
+        for name,estimate in estimators.items():
+            ee=estimate(qq,uu)
+            split_fields[name].append(subtract(qq,uu,wf*ee))
+            isolated[name].append(subtract(q,u,wf*ee))
         del ee,nq,nu,qq,uu
         print(f'seed{seed}: split{split}',flush=True)
     for name,fields in split_fields.items():
         result['bb_cross_'+name]=cell(*fields)
         result['bb_auto_'+name]=.5*(cell(fields[0],fields[0])+cell(fields[1],fields[1]))
+    result['ee_cross_raw']=nmt.compute_coupled_cell_flat(*split_fields['raw'],bins)[0]/np.mean(gr.field['mask']**2)
     for name,fields in isolated.items():
         result['bb_isolated_'+name]=.5*(cell(fields[0],fields[0])+cell(fields[1],fields[1]))
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
