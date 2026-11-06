@@ -637,6 +637,32 @@ outputs:
         # Medium accepts pilots with shorter remaining lifetimes than Long.
         extra: {classad_JobDurationCategory: Medium}
 
+  - id: bin_covariance_pilot
+    type: data
+    label: "Field covariance independent-sky pilot"
+    description: |
+      Four independent Gaussian skies through the production field estimator.
+      T and E are independent (auto-spectrum covariance only); true B is zero.
+      Keeps unit-width TT and pure-B polarization pseudos, no full-sky maps.
+      This pilot gates the larger covariance ensemble.
+    inputs: [field_flatsky_masks]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    units:
+      seed: 0..4
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_sims.py
+        --masks {inputs.field_flatsky_masks} --seed {units.seed}
+        --nside {decisions.intermediate_nside}
+        --interpolation {decisions.interpolation}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 8
+        memory: 24Gi
+        disk: 4Gi
+        time_limit: 4h
+
   # Scalar measurements share geometry and binning with the polarization suite.
   - id: scalar_white_alms
     type: data
