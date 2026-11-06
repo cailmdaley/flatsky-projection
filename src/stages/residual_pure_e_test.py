@@ -50,8 +50,9 @@ def main():
               'seed': args.seed, 'mask_shape': mask.shape}
     for cutoff in (4000, 6000):
         cl = ee * (ell <= cutoff)
-        # NaMaster uses a constant seed but identical grid / stream layout,
-        # so the lower-cutoff control retains exactly the same low modes.
+        # At two threads synfast_flat assigns seed+thread by arrival order, so
+        # the two cutoffs do not reliably share low modes; each cutoff is
+        # analysed on its own, native against refined on the same map.
         q, u = nmt.synfast_flat(nx, ny, lx, ly, [cl, np.zeros_like(cl), np.zeros_like(cl)],
                                  [2], seed=900000+1024*args.seed)
         for factor, m in ((1, mask), (2, fine_mask)):
