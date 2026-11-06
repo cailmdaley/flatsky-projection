@@ -1,5 +1,6 @@
 """Independent 260-sky check of production20 residuals, never pooling skies."""
 from pathlib import Path
+import json
 import numpy as np
 from scipy.stats import chi2, f
 import spectra as S
@@ -14,6 +15,7 @@ def main():
     new = load_native([S.ROOT/'results/highell/bin_covariance_pilot',
                        S.ROOT/'results/highell/bin_covariance_sims'])
     result = {'ell': S.ELL}
+    rows = []
     for (proj, spec), native in new.items():
         spec = spec.upper()
         prefix = f'field_{spec}_{proj}'
@@ -34,6 +36,9 @@ def main():
                 ratio = (value[:, sel]/model[sel] - (0 if floor else 1)).mean(-1)
                 radial = (value[:, sel]/exact[sel] - (0 if floor else 1)).mean(-1)
                 curved = (value[:, sel]/spherical[sel] - (0 if floor else 1)).mean(-1)
+                rows.append(dict(projection=proj, spectrum=spec, ensemble=name, lo=lo, hi=hi,
+                                 bin_residual=float(ratio.mean()), bin_se=float(ratio.std(ddof=1)/np.sqrt(len(ratio))),
+                                 spherical_residual=float(curved.mean()), spherical_se=float(curved.std(ddof=1)/np.sqrt(len(curved)))))
                 print(f'{lo}-{hi} {name}: bin {100*ratio.mean():+.5f} +/- {100*ratio.std(ddof=1)/np.sqrt(len(ratio)):.5f} %, radial-response {100*radial.mean():+.5f} +/- {100*radial.std(ddof=1)/np.sqrt(len(radial)):.5f} %, spherical {100*curved.mean():+.5f} +/- {100*curved.std(ddof=1)/np.sqrt(len(curved)):.5f} %', flush=True)
         if not floor:
             for lo, hi in ((100, 1000), (500, 1000), (1000, 4000)):
@@ -48,7 +53,28 @@ def main():
                 dim, n = len(d), len(y)
                 p = f.sf((n-dim)*stat/((n-1)*dim), dim, n-dim)
                 print(f'old-new {lo}-{hi}: T2 {stat:.3f}, dim {dim}, covariance-corrected F p {p:.5g}', flush=True)
+                for label, theory in [('bin', model), ('radial', exact), ('spherical', spherical)]:
+                    residual = arr[:, sel]/theory[sel]-1
+                    mean = residual.mean(0)
+                    covr = np.cov(residual, rowvar=False)
+                    t2 = float(n*mean @ np.linalg.solve(covr, mean))
+                    prob = f.sf((n-dim)*t2/((n-1)*dim), dim, n-dim)
+                    print(f'new-model {label} {lo}-{hi}: T2 {t2:.3f}, dim {dim}, F p {prob:.5g}, max residual {100*max(abs(mean)):.4f} %', flush=True)
+    for spec in ('TT', 'EE'):
+        select = (S.ELL >= 1000) & (S.ELL < 4000)
+        ratios = {}
+        for proj in S.PROJS:
+            value = report[f'field_{spec}_{proj}_raw']
+            ratios[proj] = value/estimator[f'{proj}_{spec}_spherical']-1
+            conditioned = value/estimator[f'{proj}_{spec}_realized']-1
+            for lo, hi in ((1000, 4000), (4500, 4800)):
+                sel = (S.ELL >= lo) & (S.ELL < hi)
+                r = conditioned[:, sel].mean(-1)
+                print(f'realized-input {proj} {spec} {lo}-{hi}: {100*r.mean():+.5f} +/- {100*r.std(ddof=1)/np.sqrt(len(r)):.5f} %', flush=True)
+        delta = (ratios['ProjBICEP'][:, select]-ratios['ProjZEA'][:, select]).mean(-1)
+        print(f'paired spherical BICEP-ZEA {spec} 1000-4000: {100*delta.mean():+.5f} +/- {100*delta.std(ddof=1)/np.sqrt(len(delta)):.5f} %', flush=True)
     np.savez(ROOT/'residual_independent_means.npz', **result)
+    (ROOT/'residual_independent_summary.json').write_text(json.dumps(rows, indent=2)+'\n')
 
 
 if __name__ == '__main__':

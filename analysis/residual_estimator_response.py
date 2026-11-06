@@ -24,6 +24,7 @@ def main():
     th = T.load()
     ell = np.arange(8001, dtype=float)
     mom = FD.pipeline_moments()
+    inputs = np.load('/sptlocal/user/cailmdaley/pol_project/residual_input_spectra.npz')
     result = {'ell': S.ELL, 'input_ell': ell}
     for j, proj in enumerate(S.PROJS):
         R = SL.coupling_matrix(mom, 0, j, ell, th['ell'], band_limit=S.LMAX)
@@ -31,6 +32,8 @@ def main():
                    for spec, block in [('TT', 'TT<-TT'), ('EE', 'EE<-EE'), ('BB', 'BB<-EE')]}
         shifted = {spec: R[block] @ np.interp(th['ell']-.5, th['ell'], th['unlensed_TT' if spec == 'TT' else 'unlensed_EE'])
                    for spec, block in [('TT', 'TT<-TT'), ('EE', 'EE<-EE'), ('BB', 'BB<-EE')]}
+        realized = {spec: R[block] @ np.interp(th['ell']-.5, inputs['ell'], inputs['TT' if spec == 'TT' else 'EE'].mean(0), right=0.)
+                    for spec, block in [('TT', 'TT<-TT'), ('EE', 'EE<-EE'), ('BB', 'BB<-EE')]}
         del R
         spectra['white'] = np.full_like(ell, report[f'field_white_{proj}_base'][20:60].mean())
         for spin in (0, 2):
@@ -67,6 +70,10 @@ def main():
                     shifted_cl[index] = shifted_native
                     shifted_dec = ws.decouple_cell(ws.couple_cell(ell, shifted_cl)) / S.flat_pixwin()[None, :]
                     result[f'{proj}_{spec}_spherical'] = shifted_dec[index]
+                    realized_cl = np.zeros_like(cl)
+                    realized_cl[index] = native * np.divide(realized[spec], b, out=np.ones_like(b), where=b != 0)
+                    realized_dec = ws.decouple_cell(ws.couple_cell(ell, realized_cl)) / S.flat_pixwin()[None, :]
+                    result[f'{proj}_{spec}_realized'] = realized_dec[index]
                 if spin == 2 and spec == 'EE':
                     result[f'{proj}_EE_to_BB'] = decoupled[3]
                 # Constant bandpowers must be invariant to couple/decouple.
@@ -84,7 +91,9 @@ def main():
                         new = (raw[:, sel]/decoupled[index, sel]-1).mean(-1)
                         shift = (decoupled[index, sel]/report[name+'_windowed'][sel]-1).mean()
                         print(f' {lo}-{hi}: old {100*old.mean():+.4f}, response shift {100*shift:+.4f}, new {100*new.mean():+.4f} +/- {100*new.std(ddof=1)/np.sqrt(S.NSIMS):.4f} %', flush=True)
-        np.savez(args.out, **result)
+    temporary = args.out.with_suffix('.tmp.npz')
+    np.savez(temporary, **result)
+    temporary.replace(args.out)
 
 
 if __name__ == '__main__':

@@ -1115,6 +1115,30 @@ outputs:
 # DECISIONS
 # ---------------------------------------------------------------------------
 # Additive paired band-limit intervention; existing outputs are unchanged.
+  - id: residual_ring_test
+    type: data
+    label: Paired synthesis-ring and finite-subsample BB controls
+    description: |
+      Original production alms synthesized at Nside4096 instead of8192,
+      then projected with8x or16x subsamples on the same output pixels.
+      The8192/8x reference must reproduce production. These controls
+      distinguish additive interpolation/sampling B from a coherent window.
+    inputs: [preprocessed_alms, projected_qu, field_flatsky_masks, field_coupling]
+    units:
+      seed: [0, 1]
+      projection: [ProjSTG, ProjZEA]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_ring_test.py
+        --alms {inputs.preprocessed_alms} --maps {inputs.projected_qu}
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 12Gi
+        disk: 6Gi
+        time_limit: 1h
+
   - id: residual_map_upsample
     type: data
     label: Paired production-map estimator de-aliasing intervention
