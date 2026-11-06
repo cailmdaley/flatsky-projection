@@ -101,6 +101,8 @@ def report(summary):
         '## Paired differences', '',
         'Values are percent differences of ensemble means, with paired Monte Carlo standard errors from 24 skies.',
         'The reference applies the Gaussian filter on the sphere before projection; the measurement filters after projection.', '',
+        '![Paired fractional differences for moments, wavelet L1 and peaks.](comparison.png)', '',
+        'Fractional differences are shown against sky-disk diameter; bars are paired Monte Carlo errors and exclude the sampling shifts tabulated below.', '',
         '| Chart | Sky-disk diameter | Smoothed variance | Third central moment | Wavelet L1 | Peaks > 2σ |',
         '|---|---:|---:|---:|---:|---:|']
     keys = ('smooth_variance', 'smooth_third', 'wavelet_l1', 'peaks_gt_2sigma')
