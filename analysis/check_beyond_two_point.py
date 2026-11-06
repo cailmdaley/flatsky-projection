@@ -62,6 +62,17 @@ if '--results' in sys.argv:
         drift = max(abs(r['statistics'][key]['controls']['both']['paired_drift'])
                     for r in summary['calibrated_records'])
         assert drift < tolerance, (key, drift)
+    tan = next(r for r in summary['records']
+               if r['chart'] == 'TAN' and r['diameter'] == 60.)['statistics']
+    matched = next(r for r in summary['calibrated_records']
+                   if r['chart'] == 'TAN' and r['diameter'] == 60.)['statistics']
+    assert abs(matched['smooth_third']['bias']) < .15*abs(tan['smooth_third']['bias'])
+    assert abs(matched['peaks_gt_2sigma']['bias']) < .1*abs(tan['peaks_gt_2sigma']['bias'])
+    # Calibration removes most moment/peak shifts, but NOT wavelet L1.
+    wavelet = matched['wavelet_l1']
+    assert wavelet['bias'] < -3*wavelet['se']
+    assert abs(wavelet['bias']) > .5*abs(tan['wavelet_l1']['bias'])
+    assert abs(wavelet['controls']['both']['paired_drift']) < .1*abs(wavelet['bias'])
     # Exercise the real writer and quoted-macro filter without editing paper.
     import tempfile
     from unittest.mock import patch

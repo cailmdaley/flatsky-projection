@@ -2974,5 +2974,61 @@
       "raw_variance": 0.0002969555956251508,
       "raw_third": 0.0005619448611442219
     }
+  ],
+  "wavelet_calibration_decomposition": [
+    {
+      "chart": "TAN",
+      "diameter": 14.6,
+      "mean_scale_term": 0.0008466146641364717,
+      "se": 0.00017933395099052588
+    },
+    {
+      "chart": "STG",
+      "diameter": 14.6,
+      "mean_scale_term": 0.00028438022623459257,
+      "se": 5.9911093752794966e-05
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 14.6,
+      "mean_scale_term": 6.8290508820254504e-18,
+      "se": 6.853084282332343e-18
+    },
+    {
+      "chart": "TAN",
+      "diameter": 30.0,
+      "mean_scale_term": 0.002192469446681345,
+      "se": 0.0003768025473935218
+    },
+    {
+      "chart": "STG",
+      "diameter": 30.0,
+      "mean_scale_term": 0.000770278177085082,
+      "se": 0.00012498619657836041
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 30.0,
+      "mean_scale_term": 6.73201659083555e-18,
+      "se": 6.7249073887340626e-18
+    },
+    {
+      "chart": "TAN",
+      "diameter": 60.0,
+      "mean_scale_term": 0.0052090489599460185,
+      "se": 0.0004731523050098598
+    },
+    {
+      "chart": "STG",
+      "diameter": 60.0,
+      "mean_scale_term": 0.0023589732465998073,
+      "se": 0.00016168007098086462
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 60.0,
+      "mean_scale_term": 0.0,
+      "se": 0.0
+    }
   ]
 }

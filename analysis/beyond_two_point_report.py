@@ -111,9 +111,22 @@ def summarize():
             means = np.array([r['statistics'][key]['reference_mean'] for r in rows])
             entry[key] = float(np.ptp(means)/means[2])  # ZEA normalization.
         raw_spreads.append(entry)
+    baseline_data = [load(p) for p in sorted(BASE.glob('seed*.json'))]
+    calibrated_data = [load(p) for p in sorted((RESULTS/'beyond_two_point_calibrated').glob('seed*.json'))]
+    decomposition = []
+    for j, row in enumerate(records):
+        truth = np.array([d['rows'][j]['reference'][4] for d in baseline_data])
+        fixed = np.array([d['rows'][j]['measured'][4] for d in baseline_data])
+        matched = np.array([d['rows'][j]['measured'][4] for d in calibrated_data])
+        difference = fixed-matched
+        term = difference.mean()/truth.mean()
+        error = (difference-term*truth).std(ddof=1)/24**.5/truth.mean()
+        decomposition.append(dict(chart=row['chart'], diameter=row['diameter'],
+                                  mean_scale_term=float(term), se=float(error)))
     return dict(nseed=24, ncontrol=4, model='signal-only scalar lognormal',
                 records=records, calibrated_records=calibrated,
-                raw_cross_chart_spreads=raw_spreads)
+                raw_cross_chart_spreads=raw_spreads,
+                wavelet_calibration_decomposition=decomposition)
 
 
 def figure(summary):
@@ -155,7 +168,7 @@ def table(lines, records):
 def report(summary):
     lines = ['# Scalar lognormal projection control', '',
         'Fixed central filter scales change the variance and third moment, but the third-moment response largely follows the variance.',
-        'Reduced skewness S3 = M3/M2² shows no significant change in this toy field.',
+        'At fixed central scale, reduced skewness S3 = M3/M2² shows no significant change in this toy field.',
         'Most of the large raw-moment and peak shifts disappear after matching the mean angular filter scale.',
         'These are signal-only filtering controls, not irreducible non-Gaussian biases or weak-lensing survey forecasts.', '',
         '## Fixed central filter scale', '',
@@ -174,6 +187,16 @@ def report(summary):
         'It is a global scale calibration, not a map-level removal of projection.', '',
         'The same 24 skies give the following residual differences on 60° disks.', '']
     table(lines, [r for r in summary['calibrated_records'] if r['diameter'] == 60.])
+    wavelet = next(r for r in summary['calibrated_records']
+                   if r['chart'] == 'TAN' and r['diameter'] == 60.)['statistics']['wavelet_l1']
+    term = next(r for r in summary['wavelet_calibration_decomposition']
+                if r['chart'] == 'TAN' and r['diameter'] == 60.)
+    lines += ['', 'Wavelet L1 is the exception: mean-scale calibration does not remove most of its shift.',
+        f'TAN 60° retains a {100*wavelet["bias"]:.2f} ± {100*wavelet["se"]:.2f}% wavelet response with its sign reversed.',
+        f'The fixed-scale value partly cancels a paired mean-scale term of +{100*term["mean_scale_term"]:.2f} ± {100*term["se"]:.2f}% against that residual.',
+        'These paired errors use the same reference and skies, not independent subtraction errors.',
+        'Calibrated reduced skewness is a separate, marginal measurement; the fixed-scale null must not be used to assert that every calibrated statistic is zero.',
+        'ZEA has μ=1, so its scale factor is exactly one and its calibrated row repeats the same measurement rather than adding evidence.']
     lines += ['', 'The unit-central-scale percentages are therefore not invariant properties of a chart or statistic.',
         'Calibrated residuals describe this chosen mean-scale matching rule; no universal residual law is established.', '',
         '## Model and estimator', '',
@@ -208,7 +231,13 @@ def report(summary):
                   for c in ('sphere', 'plane', 'both')]
         values += [max(abs(r['statistics'][k]['controls']['both']['paired_drift']) for r in summary['calibrated_records'])*100]
         lines.append('| '+k+' | '+' | '.join(f'{v:.3f}' for v in values)+' |')
-    lines += ['', 'Small wavelet and ZEA shifts are not continuum-accuracy measurements or upper limits.',
+    control = wavelet['controls']['both']
+    coarse = control['bias']-control['paired_drift']
+    lines += ['',
+        f'The calibrated TAN 60° wavelet shift is stable under doubled sampling on the four control skies: {100*coarse:.3f}% → {100*control["bias"]:.3f}%.',
+        'This is evidence that the residual is not just the observed interpolation drift; it is still not a continuum value or survey bound.',
+        'The fixed-scale TAN wavelet shift has a much larger sampling drift and should not be quoted as a precision result.',
+        'Small ZEA shifts are not continuum-accuracy measurements or upper limits.',
         'The small-disk peak changes remain unresolved at the sampling-control level.', '',
         '## Interpretation and inference', '',
         'At fixed central chart scale there is no universal shear-only law: STG has g=0 yet its smoothed moments change.',
@@ -216,7 +245,7 @@ def report(summary):
         'For the monotonic second and third moments here, a smoothing-scale derivative times ⟨ln μ⟩ explains the leading response.',
         'The second-order-in-radius magnification response versus fourth-order g² comparison assumes unit chart scale at the tangent point; a global scale matching removes most of it.',
         'It must not be presented as an irreducible distortion that survives scale calibration.',
-        'Wavelet L1 is near a stationary point of its scale response in this toy spectrum, so its small shift and its failure to scale simply with ⟨ln μ⟩ are not evidence of general wavelet robustness.',
+        'The independent Opus scale scan found wavelet L1 near a stationary point of its response in this toy spectrum; its small fixed-scale shift partly cancels the surviving residual and is not evidence of general wavelet robustness.',
         'No quantitative universal wavelet response law is established.',
         'For homogeneous isotropic fields and local isotropic filters, pure fixed-determinant shear can have a leading quadratic response with a field- and statistic-dependent coefficient.',
         'Continuous unfiltered scalar values and extrema are invariant under coordinate relabelling on a matched footprint with the correct measure.', '',
@@ -232,7 +261,8 @@ def report(summary):
         'If retained, put it after the scalar-versus-spin-two footprint discussion and quote both raw and normalized moments.',
         'The conclusion should reserve survey-error bounds for a dedicated study.', '',
         r'On scalar lognormal skies, applying a fixed central-width Gaussian filter after projection rather than on the sphere changes the third moment by \ngTANThirdLarge\ on a $60^\circ$ gnomonic disk, but the reduced skewness $S_3=M_3/M_2^2$ is consistent with zero shift (\ngTANReducedSkewnessLarge\ with jackknife error \ngTANReducedSkewnessLargeError).',
-        r'Most of the raw-moment change is removed by matching the mean angular filter scale; the large third-moment shift alone does not establish an independent higher-order bias.',
+        r'Matching the mean angular filter scale leaves a third-moment shift of \ngCalTANThirdLarge\ (error \ngCalTANThirdLargeError), whereas the mean absolute amplitude of a $0.5^\circ$ minus $1^\circ$ Gaussian wavelet retains a shift of \ngCalTANWaveletLarge\ (error \ngCalTANWaveletLargeError).',
+        r'The large raw third-moment shift alone does not establish an independent higher-order bias, and mean-scale calibration does not remove every statistic’s response.',
         r'Projection therefore belongs in the simulations and filtering convention of a higher-order analysis \citep{jeffrey25}; realistic safe-patch bounds require a dedicated weak-lensing study.', '',
         'To use the macros, input paper/beyond_two_point_numbers.tex and run analysis/paper_numbers.py --beyond-two-point-only after editing main.tex.', '',
         '## Reproduction', '',
