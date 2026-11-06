@@ -1076,8 +1076,8 @@ def spherical_numbers(M):
         M.add(f"sphere{name}Point", f"${sci(point, 0)}$")
         row = next(r for r in tests if r['method'] == method + '_average' and r['lo'] == top)
         e = int(np.floor(np.log10(row['bb'])))
-        M.add(f'sphere{name}Average', rf"$({row['bb'] / 10.0**e:.2f} \\pm {row['bb_sem'] / 10.0**e:.2f})"
-                                      rf"\\times10^{{{e}}}$")
+        M.add(f'sphere{name}Average', rf"$({row['bb'] / 10.0**e:.2f} \pm {row['bb_sem'] / 10.0**e:.2f})"
+                                      rf"\times10^{{{e}}}$")
     M.add('sphereCARWindowError',
           pct(max(abs(r['amplitude'] - r['prediction']) for r in data['car_windows']), 1))
 
@@ -1127,9 +1127,35 @@ def local_source_numbers(M=None):
         print(f'Wrote {output}')
 
 
+def choosing_numbers():
+    """Conditional known-shape inverse test; never a noisy BB forecast."""
+    data = json.loads((ROOT/'analysis/figures/choosing_projection_summary.json').read_text())
+    M = Macros()
+    charts = {r['projection']: r for r in data['geometry']['charts']}
+    z, stg = charts['ProjZEA'], charts['ProjSTG']
+    M.add('choiceZEACentreDec', f(-z['centre'][1], 2))
+    M.add('choiceZEATuneGain', pct(1-z['optimum_g2']/z['default_g2'], 1))
+    M.add('choiceZEAAffineGain', pct(1-data['geometry']['affine_zea']['g2']/z['default_g2'], 1))
+    M.add('choiceSTGPlaneArea', pct(stg['area_magnification']-1, 2))
+    M.add('choiceSTGWhitePlane', pct(stg['sky_white_noise_plane_factor']-1, 2))
+    for row in data['measurements']:
+        if row['width'] != 500:
+            continue
+        prefix = 'choice'+row['projection'][4:]+row['spectrum']
+        M.add(prefix+'VarianceRatio', f(row['variance_over_zea'], 2)
+              if row['spectrum'] != 'BB' else sci(row['variance_over_zea'], 1))
+        M.add(prefix+'MeanBias', sci(row['mean_bias'], 1))
+        M.add(prefix+'MeanBiasError', sci(row['mean_bias_se'], 1))
+    path = ROOT/'paper/choosing_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 if __name__ == "__main__":
     if "--masked-template-only" in sys.argv:
         masked_template_numbers()
+    elif "--choosing-only" in sys.argv:
+        choosing_numbers()
     elif "--local-source-only" in sys.argv:
         local_source_numbers()
     elif "--check-scalar-forward" in sys.argv:
@@ -1150,3 +1176,4 @@ if __name__ == "__main__":
         window_numbers()
         beam_numbers()
         section5_numbers()
+        covariance_numbers()

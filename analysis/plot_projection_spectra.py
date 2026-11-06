@@ -56,7 +56,7 @@ INPUT_COLOR = PS.SECONDARY[0]
 REF_Z = 1.0
 INPUT_Z = 3.0           # over the data, which would otherwise hide it
 DATA_Z = {"ProjSFL": 2.0, "ProjBICEP": 2.1, "ProjSTG": 2.2, "ProjZEA": 2.3}
-FIG_H = 4.0
+FIG_H = 3.5
 
 
 def measured_tt():
