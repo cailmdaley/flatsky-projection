@@ -17,7 +17,9 @@ import spectra as sp
 from projection_covariance import PROJS, SPECS, correlation
 from validate_fine_spectra import read_matrix, decouple_many
 
-RANGES = ((500, 2000), (2000, 3500), (3500, 4800), (500, 4800))
+# The 2018 SPT spectra stop at3000; keep that comparison separate from our
+# extension to4800 rather than calling the latter a reproduction of SPT.
+RANGES = ((500, 2000), (2000, 3000), (2000, 3500), (3500, 4800), (500, 4800))
 
 
 def load_ensemble(directories, widths):
@@ -147,7 +149,7 @@ def plot_comparison(rows, out):
                             label=ps.PROJ_LABEL[proj] if source == 'projected' else 'Homogeneous')
             ax.text(.95, .95, spec.upper(), transform=ax.transAxes, ha='right', va='top')
             if j == 0:
-                ax.legend(frameon=False, fontsize=8)
+                ax.legend(frameon=False, fontsize=8, loc='upper left')
                 ax.set_ylabel(r'$\mathrm{Corr}(\widehat C_b,\widehat C_{b+\Delta b})$')
             if i == 2:
                 ax.set_xlabel(r'$\Delta\ell$')

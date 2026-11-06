@@ -81,7 +81,7 @@ Propagating the input group-power covariance through $R$ instead gives $4.25$ fo
 
 ## A projection counterexample
 
-On an unbounded plane with a spatially constant nonsingular Jacobian $J$, a homogeneous Gaussian sky remains homogeneous after remapping.
+On an unbounded plane with a spatially constant nonsingular Jacobian $J=\partial\boldsymbol{x}_{\rm plane}/\partial\boldsymbol{x}_{\rm sky}$, a homogeneous Gaussian sky remains homogeneous after remapping.
 The projected Fourier covariance is diagonal in its **two-dimensional** wavevector,
 
 $$
@@ -113,7 +113,8 @@ At width 50 over $3500\leq\ell<4800$, the measured adjacent correlations and del
 
 These numbers are preliminary, generated in `results/highell/bin_correlation_diagnostic/measured.json`; the table is a research note, not paper-number source.
 STG's BB lies at the numerical floor and does not measure shear-induced B covariance.
-The SFL BB trend is visible, but these decoupled TT/EE products do not reproduce the large positive ZEA correlations described by SPT.
+The SFL BB trend is visible, but these decoupled TT/EE products do not establish the source of the large correlations described by SPT.
+The table's extension above3500 is outside the2018 SPT spectra's range, which stops at3000; it must not be presented as a direct reproduction of that analysis.
 Neither an all-off-diagonal average nor this preliminary table settles agreement with SPT's different estimator and mask.
 An average over **all** off-diagonal entries is particularly unsuitable for excluding local band correlations: with $N$ bins and correlation $r$ only between immediate neighbours, that average is just $2r/N$.
 For 86 bins, even adjacent correlation 0.2 contributes only 0.0047 to the all-off-diagonal average.
@@ -122,13 +123,37 @@ For 86 bins, even adjacent correlation 0.2 contributes only 0.0047 to the all-of
 Without mask decoupling, ZEA's high-$\ell$ adjacent correlation is $0.092\pm0.060$ for EE and $0.213\pm0.053$ for pure BB; SFL gives $0.134\pm0.045$ and $0.261\pm0.058$.
 Mask decoupling thus matters numerically, but these coupled products still do not establish a large positive ZEA EE excess over a matched Gaussian control.
 
+## Matched homogeneous Gaussian controls
+
+`bin_covariance_flat_controls` contains256 independent homogeneous Gaussian skies per chart, materialized through `lc` on OSG.
+All canonical and sixteen unit content hashes were checked against their manifests.
+Their radial TT/EE/BB input means come from the production20, keeping the native sampling window; T, E and B are independent in each control.
+The masks, pure-B estimator, unit-width pseudos and mask-response decoupling match the projected ensemble.
+NaMaster1.5.1 initializes OpenMP workers with base-seed+thread, so consecutive base seeds reuse Fourier streams; `control_seed` separates bases by1024, and the executable gate pins four actual OpenMP threads and requires all inter-sky Fourier-row overlaps below0.9.
+
+The preliminary comparison of the production20 against these256 controls shows that a small mean off-diagonal correlation can coexist with substantially enlarged variances.
+At width50 over3500–4800, the mean per-bin **fractional variance ratio**, $(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm projected}/(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm homogeneous}$, is3.79±0.31 for SFL TT,3.43±0.24 for SFL EE and4.36±0.37 for SFL BB.
+ZEA BB gives2.98±0.23, while its TT and EE give0.95±0.05 and1.07±0.06.
+Errors delete whole skies separately in each independent ensemble; the small finite-control-sample bias of a variance ratio is not removed.
+These are research diagnostics in `/sptlocal/user/cailmdaley/pol_project/bin_correlations/comparison-production20/`, pending confirmation by the260 newly synthesized projected skies.
+The controls' broad-band mean offsets of about0.2–0.4% for TT/EE and1% for ZEA BB are measured rather than assumed away; positive deterministic per-bin rescalings cancel exactly from correlation and fractional variance.
+The control spectra's linear interpolation and the small difference between production-alm power and the new CAMB reference explain part of those offsets, as checked in the independent review.
+
+STG BB's adjacent correlation is0.440±0.012 in controls **without any projection**, compared with0.382±0.044 in the production20.
+Its projected/control mean ratio is0.883±0.002, so this is not a clean matched-B signal comparison.
+An estimator E-to-B residual is a plausible cause, not yet isolated; STG's high-ell BB must be excluded from projection-covariance conclusions.
+The projected and control ensembles are unlensed and noise-free, with no source holes or time-domain filtering.
+They test whether radial spectra and the same simple mask determine the covariance, not whether they reproduce SPT's full estimator.
+
 ## The SPT references
 
 Balkenhol et al. (2023), arXiv:2212.05642, Appendix A.2, describes a 1000-sky CMB-only Monte Carlo measurement, with the HEALPix sky masked before projection.
 The paper states that the correlation structure is dominated by projection and replaces its band-diagonal estimates with second-order polynomial fits.
 The covariance revisions broaden cosmological parameter uncertainties by up to 15%.
 Section IV.A says projection-induced correlations fall to at most 20% only for separations of at least $\Delta\ell=100$; it uses wider bins for the null tests.
-That statement does not provide a single high-$\ell$ correlation amplitude to match at every bin or identify $R$ as its source.
+Figure8's caption also states that the minimum-variance TT/TE/EE data bandpowers are correlated by **up to40% for neighboring bins**.
+This provides a quantitative comparison target within its multipole range, not a universal amplitude for every bin, and does not identify $R$ as its source.
+`analysis/compare_bin_covariance.py` explicitly includes2000–3000 alongside the extension to4800.
 
 Camphuis et al., arXiv:2506.20707, Section III.B, explicitly says excess high-$\ell$ bin correlations that were difficult to compute analytically motivated the move to full spherical harmonic transforms.
 It does not provide a quantitative excess-correlation curve in that discussion.
