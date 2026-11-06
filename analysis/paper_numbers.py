@@ -1075,8 +1075,8 @@ def spherical_numbers(M):
         M.add(f"sphere{name}Point", f"${sci(point, 0)}$")
         row = next(r for r in tests if r['method'] == method + '_average' and r['lo'] == top)
         e = int(np.floor(np.log10(row['bb'])))
-        M.add(f'sphere{name}Average', rf"$({row['bb'] / 10.0**e:.2f} \\pm {row['bb_sem'] / 10.0**e:.2f})"
-                                      rf"\\times10^{{{e}}}$")
+        M.add(f'sphere{name}Average', rf"$({row['bb'] / 10.0**e:.2f} \pm {row['bb_sem'] / 10.0**e:.2f})"
+                                      rf"\times10^{{{e}}}$")
     M.add('sphereCARWindowError',
           pct(max(abs(r['amplitude'] - r['prediction']) for r in data['car_windows']), 1))
 
@@ -1133,3 +1133,4 @@ if __name__ == "__main__":
         window_numbers()
         beam_numbers()
         section5_numbers()
+        covariance_numbers()
