@@ -1,8 +1,8 @@
 """Report the edge-limited template and split-cross sample-variance test.
 
 Power subtraction means subtraction of a FIXED ensemble R_BB<-EE C_EE
-prediction, whose variance is exactly that of raw BB. This is not a test of
-conditioning that prediction on the realization's measured EE spectrum.
+prediction, whose variance is exactly that of raw BB. A supplementary
+EE-amplitude-conditioned diagonal reference is not the full R estimator.
 """
 import argparse
 import json
@@ -14,10 +14,13 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('--input',required=True)
     p.add_argument('--out',required=True)
+    p.add_argument('--expected-seeds',type=int,default=20)
     a=p.parse_args()
     files=sorted(Path(a.input).glob('masked_template_seed*.npz'))
     data=[dict(np.load(f)) for f in files]
-    n=len(data);ell=data[0]['ell']
+    n=len(data)
+    assert sorted(int(d['seed']) for d in data)==list(range(a.expected_seeds)), 'incomplete or duplicated seed set'
+    ell=data[0]['ell']
     rows={k:np.array([d[k] for d in data]) for k in data[0] if k.startswith(('bb_','ee_'))}
     variants=[k for k in ('oracle','wide','masked','pseudo') if 'bb_cross_'+k in rows]
     # Local white-E-noise prediction with the SAME isotropic Wiener prior.
@@ -34,7 +37,9 @@ def main():
           +float(data[0]['tan2'])*noise*np.mean(wf**2,axis=1))
     rng=np.random.default_rng(98372)
     boots=rng.integers(n,size=(4000,n))
+    import hashlib
     result={'nseed':n,'delta_P_per_split_uK_arcmin':5,
+        'source_sha256':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
         'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
         'bands':{}}
     for lo,hi in ((900,1100),(1000,2000),(2000,3000),(3000,4000)):
@@ -81,16 +86,22 @@ def main():
     styles={'signal':('Raw projection','-',PS.SECONDARY[0]),
             'isolated_oracle':('Noisy E, full-grid oracle','--',PS.SECONDARY[1]),
             'isolated_masked':('Noisy E, masked pure E','-',PS.SECONDARY[2]),
-            'signal_masked':('Masked pure E, noise-free',':',PS.SECONDARY[1])}
+            'isolated_wide':('Noisy E, wide-taper control',':',PS.SECONDARY[1])}
     for key,(label,ls,col) in styles.items():
+        if 'bb_'+key not in rows:
+            continue
         axes[0].plot(ell[keep],(rows['bb_'+key].mean(0)*fac)[keep],ls=ls,color=col,label=label)
     axes[0].plot(ell[keep],(pred*fac)[keep],':',color=PS.SECONDARY[0],label='Local Wiener noise limit')
     axes[0].set(yscale='log',xlabel=r'$\ell$',ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]')
     axes[0].legend(fontsize=6.5)
     if n>1:
         for key,ls,col in [('oracle','--',PS.SECONDARY[1]),('masked','-',PS.SECONDARY[0])]:
-            gain=rows['bb_cross_raw'].std(0,ddof=1)/rows['bb_cross_'+key].std(0,ddof=1)
-            axes[1].plot(ell[keep],gain[keep],ls=ls,color=col,label=key.capitalize()+' E')
+            centers=[1000,1500,2500,3500]
+            stats=[band[key] for band in result['bands'].values()]
+            gain=np.array([v['cross_standard_deviation_gain_vs_fixed_power_subtraction'] for v in stats])
+            bounds=np.array([v['paired_seed_bootstrap_gain_95pct'] for v in stats])
+            errors=np.maximum(np.array([gain-bounds[:,0],bounds[:,1]-gain]),0) if n>2 else None
+            axes[1].errorbar(centers,gain,yerr=errors,ls=ls,color=col,marker='o' if key=='masked' else 's',mfc='white',capsize=2,label=key.capitalize()+' E')
         axes[1].axhline(1,color=PS.RULE,lw=.7)
         axes[1].set(xlabel=r'$\ell$',ylabel=r'$\sigma(BB_{\rm raw})/\sigma(BB_{\rm residual})$')
         axes[1].legend()
