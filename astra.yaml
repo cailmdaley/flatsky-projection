@@ -85,6 +85,23 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: lensing_qe_theory
+    type: data
+    label: TT theory for lensing response simulations
+    source: analysis/theory_spectra.npz
+  - id: lensing_qe_estimator
+    type: data
+    label: TT quadratic estimator implementation
+    source: analysis/lensing_qe.py
+  - id: lensing_qe_geometry
+    type: data
+    label: Projection coordinate and Jacobian implementation
+    source: analysis/geometry.py
+  - id: lensing_qe_simulator
+    type: data
+    label: Shared spherical TT lensing simulation implementation
+    source: src/stages/lensing_qe_sims.py
+
   - id: unlensed_sims
     type: data
     label: "Unlensed TQU realizations"
@@ -624,6 +641,101 @@ outputs:
         # Medium accepts pilots with shorter remaining lifetimes than Long.
         extra: {classad_JobDurationCategory: Medium}
 
+  - id: bin_covariance_pilot
+    type: data
+    label: "Field covariance independent-sky pilot"
+    description: |
+      Four independent Gaussian skies through the production field estimator.
+      T and E are independent (auto-spectrum covariance only); true B is zero.
+      Keeps unit-width TT and pure-B polarization pseudos, no full-sky maps.
+      This pilot gates the larger covariance ensemble.
+    inputs: [field_flatsky_masks]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    units:
+      seed: 0..4
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_sims.py
+        --masks {inputs.field_flatsky_masks} --seed {units.seed}
+        --nside {decisions.intermediate_nside}
+        --interpolation {decisions.interpolation}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 8
+        memory: 24Gi
+        disk: 4Gi
+        time_limit: 4h
+
+  - id: bin_covariance_sims
+    type: data
+    label: "Independent projected field covariance skies"
+    description: |
+      256 independent skies in addition to the four pilot skies, with identical
+      production geometry and unit-width spectra. No maps are retained.
+      Auto-spectrum covariance only: T and E are independent and true B is zero.
+    inputs: [field_flatsky_masks]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    units:
+      seed: 4..260
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_sims.py
+        --masks {inputs.field_flatsky_masks} --seed {units.seed}
+        --nside {decisions.intermediate_nside}
+        --interpolation {decisions.interpolation}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 8
+        memory: 24Gi
+        disk: 4Gi
+        time_limit: 4h
+
+  - id: bin_covariance_control_spectra
+    type: data
+    label: "Matched homogeneous covariance control spectra"
+    description: |
+      The mean TT/EE/BB spectra of the production 20 field skies, mask-decoupled
+      at width50, retaining their native sampling window. Used only to draw
+      homogeneous Gaussian controls with matched radial spectra.
+    inputs: [fine_field_pseudo_spectra, fine_field_coupling]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_controls.py prepare
+        --pseudos {inputs.fine_field_pseudo_spectra}
+        --workspaces {inputs.fine_field_coupling}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        # The 1.4 GB coupling archive plus its 2.6 GB unpacked FITS and runtime.
+        disk: 8Gi
+        time_limit: 1h
+
+  - id: bin_covariance_flat_controls
+    type: data
+    label: "Matched homogeneous field covariance ensemble"
+    description: |
+      256 independent homogeneous Gaussian flat-sky skies per projection,
+      matched to the observed radial TT/EE/BB powers, through identical
+      field masks and pure-B unit-width estimators. This control separates
+      ordinary mask covariance from projection-induced inhomogeneity/anisotropy.
+    inputs: [bin_covariance_control_spectra, field_flatsky_masks]
+    units:
+      batch: 0..16
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_controls.py simulate
+        --spectra {inputs.bin_covariance_control_spectra}
+        --masks {inputs.field_flatsky_masks} --batch {units.batch}
+        --batch-size 16 --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 4
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
   # Scalar measurements share geometry and binning with the polarization suite.
   - id: scalar_white_alms
     type: data
@@ -777,6 +889,59 @@ outputs:
       resources:
         cpus: 2
         memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: lensing_qe_sims
+    type: data
+    label: TT quadratic-estimator mean fields and gradient/curl response
+    description: |
+      Isotropic spherical Gaussian TT realizations projected onto the four
+      paper grids, with the C2-apodized 1500d field mask. Paired signed grid
+      gradient and curl deflections are evaluated before projection on the
+      sphere, and compared with identical-mask flat Gaussian controls.
+      These controlled grid-potential injections test the estimator response,
+      not a cosmological lensing power spectrum. No TAN reference is used.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry]
+    units:
+      seed: 0..20
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_sims.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 2048 --sky-lmax 4000 --res-arcmin 4
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 8Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: lensing_qe_resolution
+    type: data
+    label: TT quadratic-estimator resolution control
+    description: |
+      Four spherical TT seeds per chart at Nside4096 and two-arcminute grid
+      pixels, retaining the same sky band limit, estimator leg cuts and
+      injection L ranges as lensing_qe_sims. Fourier embedding preserves
+      the same continuous injection and flat control as the four-arcminute
+      run. Tests numerical interpolation and grid sampling together.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry, lensing_qe_simulator]
+    units:
+      seed: 0..4
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_resolution.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 4096 --sky-lmax 4000 --res-arcmin 2
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 12Gi
         disk: 4Gi
         time_limit: 1h
 

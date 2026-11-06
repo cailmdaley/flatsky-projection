@@ -169,7 +169,7 @@ def field_scan(out):
             ax.plot(ell, dl, color=color, lw=.7 if width == chosen else 1.8,
                     alpha=.7 if width == chosen else 1,
                     label=rf'{sp.PROJ_LABEL[proj]}, $\Delta\ell={width}$')
-    ax.set(xlim=(100, 6000), yscale='log', xlabel=r'$\ell$', ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]')
+    ax.set(xlim=(100, 4800), yscale='log', xlabel=r'$\ell$', ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]')
     ax.legend(ncol=2, fontsize=8)
     fig.savefig(out/'field_fine_vs_50.png', dpi=180)
     plt.close(fig)
