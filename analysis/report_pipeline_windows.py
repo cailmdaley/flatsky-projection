@@ -26,10 +26,11 @@ def main():
         mom=FD.pipeline_moments() if field else SL.load_moments(verbose=False)
         reference={}
         for j,proj in enumerate(S.PROJS):
-            R=SL.coupling_matrix(mom,0 if field else 5,j,ell,th['ell'],band_limit=S.LMAX)
+            R=SL.coupling_matrix(mom,0 if field else 5,j,np.arange(S.LMAX,dtype=float),
+                                 th['ell'],band_limit=S.LMAX)
             for spec,block in (('TT','TT<-TT'),('white','TT<-TT'),('EE','EE<-EE'),('BB','BB<-EE')):
                 cl=np.where(th['ell']>=2,1.,0.) if spec=='white' else th['unlensed_TT' if spec=='TT' else 'unlensed_EE']
-                reference[(proj,spec)]=(R[block]@cl).reshape(120,5).mean(-1)
+                reference[(proj,spec)]=(R[block]@cl).reshape(S.NBINS,S.DELTA_L).mean(-1)
             del R
         for spec in ('TT','white','EE','BB'):
             cl=th['unlensed_TT' if spec=='TT' else 'unlensed_EE'] if spec!='white' else np.where(th['ell']>=2,1.,0.)

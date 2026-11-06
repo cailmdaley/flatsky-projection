@@ -12,8 +12,8 @@ import healpy as hp
 from pipeline_windows import interpolation_power, grid_power
 
 
-def run(n=128, nside=8192):
-    dec0 = np.deg2rad(-56.)
+def run(n=1024, nside=8192, dec_deg=-56.):
+    dec0 = np.deg2rad(dec_deg)
     rng = np.random.default_rng(123)
     # Sample many subpixel phases at the field centre. Populate only the
     # interpolation stencil, so this test never allocates a full Nside8192 map.
@@ -37,7 +37,7 @@ def run(n=128, nside=8192):
             amp = value * np.exp(-1j*(qe*ra*np.cos(dec0) + qn*(dec-dec0)))
             measured = abs(amp.mean())**2
             predicted = float(interpolation_power(qe, qn, dec0, nside))
-            rows.append(dict(ell=ell, angle=float(angle), actual=measured,
+            rows.append(dict(dec=dec_deg, ell=ell, angle=float(angle), actual=measured,
                              predicted=predicted, residual=measured/predicted-1))
             print(rows[-1], flush=True)
     # Rebin alone: apply the actual sample-centre offsets of an 8x8 pixel.
@@ -58,4 +58,4 @@ if __name__ == '__main__':
     p.add_argument('--out', default='/sptlocal/user/cailmdaley/pol_project/pipeline_window_control.json')
     args=p.parse_args()
     with open(args.out,'w') as f:
-        json.dump(run(),f,indent=2)
+        json.dump([r for dec in (-70., -56., -42.) for r in run(dec_deg=dec)],f,indent=2)

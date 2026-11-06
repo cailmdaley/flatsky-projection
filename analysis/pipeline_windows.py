@@ -91,7 +91,9 @@ def response(proj, ell, ell_sky, cl, spec='TT', field=True, mask=5,
         power = np.interp(qnorm, ell_sky, cl, left=0, right=0)
         power *= qnorm <= band_limit
         if spec != 'TT':
-            angle = np.arctan2(q[..., 1], q[..., 0]) + polar_angle[:, None] - out_angle[None, :] + residual[:, None]
+            # COSMO Stokes convention and eastward plane x: FlattenPol's
+            # residual enters with the opposite sign to flattening_residual.
+            angle = np.arctan2(q[..., 1], q[..., 0]) + polar_angle[:, None] - out_angle[None, :] - residual[:, None]
             spin = np.sin(2 * angle)**2
             power *= spin if spec == 'BB' else 1 - spin
         win = interpolation_power(q[..., 0], q[..., 1], np.deg2rad(dec)[:, None])
@@ -132,7 +134,11 @@ def effective_window(spec='EE', field=False, leg=0):
     import spectra as S
     import theory as T
     spec = spec.upper()
-    payload = Path(__file__).read_bytes() + Path(S.THEORY_NPZ).read_bytes()
+    sources = [Path(__file__), S.ROOT / 'analysis' / 'geometry.py',
+               S.ROOT / 'analysis' / 'shear_leakage.py',
+               S.ROOT / 'analysis' / 'spectra.py',
+               S.ROOT / 'src' / 'stages' / 'make_masks.py']
+    payload = b''.join(path.read_bytes() for path in sources) + Path(S.THEORY_NPZ).read_bytes()
     for directory in ('healpix_masks', 'field_healpix_mask'):
         payload += (S.ROOT / 'results' / 'highell' / directory / 'index.json').read_bytes()
     key = hashlib.sha256(payload).hexdigest()[:16]

@@ -13,10 +13,10 @@ import spectra as S
 from pipeline_windows import interpolation_power, grid_power
 
 
-def check(proj, ell=4800., angle=.37, n=32):
+def check(proj, ell=4800., angle=.37, n=32, ra0=35., dec0=-60.):
     res=np.deg2rad(2/60)
     out=G._flat_map(proj,n=n)
-    x,y=out.angle_to_xy(np.deg2rad(35.),np.deg2rad(-60.))
+    x,y=out.angle_to_xy(np.deg2rad(ra0),np.deg2rad(dec0))
     out.x_center += (n-1)/2-x
     out.y_center += (n-1)/2-y
     # All true sample locations in the projector's 8x8 average.
@@ -44,7 +44,7 @@ def check(proj, ell=4800., angle=.37, n=32):
             values.append(np.asarray(dest).copy())
         amp=((values[0]+1j*values[1])*np.exp(-1j*phase)).mean()
         predicted=expected_interp*(float(grid_power(kx,ky,rebin=rebin)) if rebin>1 else 1.)
-        row=dict(proj=proj,ell=ell,interp=interp,rebin=rebin,power=float(abs(amp)**2),prediction=predicted)
+        row=dict(proj=proj,ra=ra0,dec=dec0,ell=ell,interp=interp,rebin=rebin,power=float(abs(amp)**2),prediction=predicted)
         row['ratio']=row['power']/predicted
         print(row,flush=True)
         rows.append(row)
@@ -52,6 +52,7 @@ def check(proj, ell=4800., angle=.37, n=32):
     return rows
 
 if __name__=='__main__':
-    rows=[r for p in S.PROJS for r in check(p)]
+    rows=[r for point in ((35.,-60.),(-35.,-45.)) for p in S.PROJS
+          for r in check(p,ra0=point[0],dec0=point[1])]
     with open('/sptlocal/user/cailmdaley/pol_project/pipeline_projector_control.json','w') as f:
         json.dump(rows,f,indent=2)
