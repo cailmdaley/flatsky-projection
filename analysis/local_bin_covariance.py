@@ -6,7 +6,8 @@ approximately FFT_x[W(x)^2 P(x,(k+k')/2)](k-k'). Wick squares that kernel.
 Locally straight annulus boundaries give the radial pair-overlap factor
 max(0, 1-|d_parallel-separation|/width). This retains finite-bin coupling,
 unlike the wide-bin W^4 <P^2> asymptote. Pure-B boundary terms, curvature of
-annuli and nonlocal/curvature corrections to local stationarity are omitted.
+annuli, reciprocal-grid alias images and nonlocal/curvature corrections to
+local stationarity are omitted.
 Compare coupled bandpowers, not mask-decoupled bandpowers, to this prediction.
 
 Requires the pipeline-window thread's analysis/pipeline_windows.py on PYTHONPATH.
@@ -22,8 +23,10 @@ def overlap_kernel(power, mask, pixel_size, angles, width, separations):
     """Return Wick pair sums with normalization common to all separations.
 
     power has shape (ny,nx,nangle); the mask and pixel_size use the same
-    coarse spatial grid. FFT normalization cancels in correlations and
-    projected/control fractional-variance ratios.
+    coarse spatial grid. Its x coordinate MUST increase along cos(angle),
+    and y along sin(angle). Reflect native westward map pixels before calling
+    this function with an eastward analytical power. FFT normalization cancels
+    in correlations and projected/control fractional-variance ratios.
     """
     ny, nx = mask.shape
     dx = 2*np.pi*np.fft.fftfreq(nx, pixel_size)

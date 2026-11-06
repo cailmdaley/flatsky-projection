@@ -49,6 +49,14 @@ def main():
         # variance ratio and every correlation, for any direction sampling.
         scaled = overlap_kernel(3*one, mask, 1, angles, width, width*np.arange(3))
         np.testing.assert_allclose(scaled, 9*c, rtol=1e-10)
+    # The translated triangles partition unity, so summing all radial lags
+    # must recover the wide-bin Parseval value, even for finite bin widths.
+    width = .3
+    separations = width*np.arange(-16, 17)
+    v = overlap_kernel(power[..., None]*one, mask, 1, angles, width, separations)
+    c = overlap_kernel(one, mask, 1, angles, width, separations)
+    wide = np.sum(mask**4*power**2)/np.sum(mask**4)/mu**2
+    np.testing.assert_allclose(v.sum()/c.sum()/mu**2, wide, rtol=1e-12)
     # A constant-shear homogeneous plane can have strongly directional power
     # and enlarged diagonal variance without any correlation of disjoint rings.
     angular = 1+.8*np.cos(2*angles)

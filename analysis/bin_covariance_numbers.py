@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT/'results/highell/bin_covariance_comparison/comparison.json'
 
 
-def numbers(source=SOURCE):
+def numbers(source=SOURCE, prediction=ROOT/'results/highell/bin_covariance_local_prediction/prediction.json'):
     data = json.loads(Path(source).read_text())
     for proj in ('ProjZEA', 'ProjSFL', 'ProjSTG'):
         for ensemble, n in (('projected', 260), ('control', 256)):
@@ -32,16 +32,21 @@ def numbers(source=SOURCE):
         name = 'cov'+proj[4:]+spec.upper()+'HighVariance'
         out[name] = f"{row['fractional_variance_ratio']:.2f}"
         out[name+'Error'] = f"{row['jackknife_se']:.2f}"
-    for proj in ('ProjZEA', 'ProjSFL'):
-        for spec in ('tt', 'ee', 'bb'):
-            for lo, hi, band, width in ((2000, 3000, 'SPT', 100), (3500, 4800, 'High', 50)):
-                # Balkenhol Table III uses width100 above2000, not width50.
-                for separation, lag in ((width, 'Adjacent'), (2*width, 'Second')):
-                    row = select('correlations', proj, spec, lo, hi, width=width,
-                                 separation=separation)
-                    prefix = 'cov'+proj[4:]+spec.upper()+band+lag
-                    for field, label in (('projected', ''), ('control', 'Control'), ('excess', 'Excess')):
-                        out[prefix+label] = f"{row[field+'_rho']:.3f}"
-                        out[prefix+label+'Error'] = f"{row[field+'_se']:.3f}"
+    # Keep only the specific comparisons needed by the proposed paper claims.
+    # Balkenhol Table III uses width100 above2000, not width50.
+    for proj, spec, lo, hi, band, width in (
+            ('ProjZEA', 'tt', 2000, 3000, 'SPT', 100),
+            ('ProjZEA', 'ee', 2000, 3000, 'SPT', 100),
+            ('ProjZEA', 'bb', 3500, 4800, 'High', 50),
+            ('ProjSFL', 'bb', 3500, 4800, 'High', 50)):
+        row = select('correlations', proj, spec, lo, hi, width=width, separation=width)
+        prefix = 'cov'+proj[4:]+spec.upper()+band+'Adjacent'
+        for field, label in (('projected', ''), ('excess', 'Excess')):
+            out[prefix+label] = f"{row[field+'_rho']:.3f}"
+            out[prefix+label+'Error'] = f"{row[field+'_se']:.3f}"
+    from summarize_bin_covariance import local_summary
+    summary = local_summary(data, json.loads(Path(prediction).read_text()))
+    out['covLocalVarianceWorst'] = f"{100*summary['worst_fractional_variance_difference']:.1f}\\%"
+    out['covLocalAdjacentWorst'] = f"{summary['worst_adjacent_rho_difference']:.3f}"
     assert all(name.isalpha() for name in out)
     return out
