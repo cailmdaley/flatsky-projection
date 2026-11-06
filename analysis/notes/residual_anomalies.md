@@ -25,8 +25,10 @@ The net correction is physical; the two intermediate shifts must not be describe
 The reviewer independently reproduced the radial closure with a padded two-dimensional FFT forward model and the actual Fourier-cell counts.
 
 `analysis/residual_estimator_response.py` keeps the simple integer-bin average, the radial estimator response, and the additional spherical correspondence as separate arrays.
-The constant-spectrum couple/decouple check is restricted to the workspace's input range and to complete Fourier circles below4800.
-A constant extended beyond6000 would add out-of-workspace power and would not be a valid identity check.
+`analysis/check_residual_fft_response.py` independently tests Fourier-cell counts, normalization and the radial response against a padded two-dimensional mask-covariance convolution on all four actual grids.
+Its direct masked-map Fourier normalization agrees with NaMaster to the asserted1e-10 tolerance without fitting a normalization.
+The maximum per-bin coupled-response discrepancy is0.30% over100–4800, with an asserted0.5% envelope; the rms discrepancies are0.015–0.049%.
+This replaces a non-asserting constant-spectrum identity diagnostic, which did not test the physical response.
 The production pixel-grid corner radius is below the diagnostic's input limit8000.
 Its high-multipole radial continuation is only an approximation to the full anisotropic, sampled map.
 
@@ -58,12 +60,19 @@ These are bounded band means, **not** a per-bin closure claim.
 STG EE still has resolved acoustic structure, including a maximum absolute mean residual of roughly0.85% below1000 and0.78% over1000–4000 against this radial-plus-spherical diagnostic.
 On the same260 skies, ZEA and STG TT below1000 are consistent with the full band covariance after these operators, whereas STG EE is not.
 The residual below1000 is therefore neither wholly sample variance nor wholly explained by the radial model.
+Over1000–4000 the full-covariance probabilities for TT are0.419,0.063 and0.239 for SFL,STG and ZEA, whereas EE gives0.0053,6.1e-17 and0.0030.
+These diagnostic probabilities use the radial-plus-spherical reference, not an exact inhomogeneous model.
+For example, STG EE has a band mean−0.048±0.013% and a maximum bin residual0.784%; its small mean does not imply closure.
+The report also prints and stores one-dimensional per-sky band-mean tests, which need not agree with tests of bin structure.
 
 The production20-minus-independent260 low-ell differences are consistent with the measured band covariance: for ZEA100–1000, the approximate covariance-corrected F-test gives p=0.44 for TT and0.94 for EE.
 These are diagnostic probabilities, not exact finite-sample coverage claims for arbitrary non-Gaussian projected spectra.
 They test a difference of ensembles, not whether either ensemble agrees with the original simple model.
 `analysis/report_residual_means.py` prints both tests separately.
 The independent-sky comparison shows that most of the large acoustic pattern is repeatable, while the extra excursions of the original20 are consistent with sample variance.
+
+After conditioning on the original all-sky input mean, the production20-versus-independent260 full-covariance test over4000–4800 gives p=0.970 for STG TT and0.294 for STG EE; ZEA gives0.307 and0.322.
+That conditions on the input *mean*, not on its finite-footprint realization, and does not prove that every original upper-band excursion is an input-spectrum effect.
 
 The paired production BICEP−ZEA contrast over1000–4000 changes from+0.120±0.021% to+0.0585±0.0214% in TT, and from+0.171±0.040% to+0.0022±0.0404% in EE.
 The remaining roughly0.06% TT projection contrast is not attributed here.
@@ -107,8 +116,12 @@ A change in map area is normalized out before using the original workspace.
 The refined/padded outputs remain diagnostic, not replacement production bandpowers.
 
 The four-seed ZEA4500–4800 paired change is about−2.59 percentage points relative to the window-plus-alias model, leaving about+4.91%.
-The same intervention barely changes SFL or BICEP BB and changes EE by much less than0.01%.
-Thus the pure-B mask-product sampling effect explains part of the projection-dependent BB floor, but it does not close ZEA.
+The same intervention barely changes SFL or BICEP BB.
+All four projections pass the native production roundtrip and64/128-padding paired-change gates.
+Using the mean native C_ell over4500–4800, the removed fraction is30.8% of STG's floor and32.5% of ZEA's excess over window+alias.
+Other weightings give different fractions: in particular, the earlier independent review's approximate26% ZEA used a different excess definition.
+The direct paired change and remaining fractional residual above are unambiguous and are the preferred paper numbers.
+Thus the pure-B mask-product sampling effect explains about one third of this upper-band additive contamination, but it does not close ZEA.
 The detailed final figures and generated summary carry the exact four-seed values and the padding checks.
 Subtracting STG, either before or after refinement, is a partial comparison and is never treated as a universal floor calibration.
 
@@ -138,9 +151,9 @@ It also finds statistically resolved EE and BB bin structure that small band mea
 
 Before scientific closure, finish the detached grid jobs and ring/subsample report, regenerate the compact summary from complete canonical outputs, and add executable gates.
 The constant-response diagnostic currently records an error without asserting; replace or supplement it with an independently checked Fourier-cell/FFT forward gate rather than calling it a complete response validation.
-The pure-E report still computes an unused production `floor`; add the explicit native-unit production comparison.
-Rename `exact` in the mean report because the radial reference is approximate, extend the ensemble test above4000 and include a one-dimensional band-mean test plus the already-computed realized-input control.
-No new paper macros or manuscript changes have landed yet.
+The pure-E report now compares planar contamination with the production excess explicitly in native C_ell units, with the pixel window restored only on the production side.
+The mean report uses `radial_model` rather than `exact`, tests the upper bands and stores both one-dimensional band-mean and full-covariance tests plus the realized-input control.
+`paper_numbers.py --residual-only` generates the bounded claims in `paper/residual_numbers.tex`; the manuscript itself is unchanged.
 
 ## Reproduction
 
@@ -154,11 +167,13 @@ Local reports, in order:
 - `analysis/residual_input_spectra.py`
 - `analysis/residual_estimator_response.py`
 - `analysis/report_residual_means.py`
+- `analysis/check_residual_fft_response.py`
 - `analysis/report_residual_pure_e.py`
 - `analysis/report_residual_map_upsample.py`
 - `analysis/report_residual_rings.py`
 - `analysis/summarize_residual_anomalies.py`
 - `analysis/plot_residual_anomalies.py`
+- `analysis/paper_numbers.py --residual-only`
 
 Large arrays and logs use `/sptlocal/user/cailmdaley/pol_project/residual_*`.
 The compact summary and inspected plots live in `analysis/figures/residual_anomalies/`.

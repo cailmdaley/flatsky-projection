@@ -1033,6 +1033,46 @@ def window_numbers():
     print(f'Wrote {path}')
 
 
+def residual_numbers():
+    """Generate only the bounded residual claims, never a closure calibration.
+
+    Run summarize_residual_anomalies.py after all canonical controls and gates.
+    The radial response remains an approximate diagnostic; the summary retains
+    covariant per-bin tests alongside band means so those cannot be confused.
+    """
+    import json
+    d = json.loads((ROOT/'analysis/figures/residual_anomalies/summary.json').read_text())
+    M = Macros()
+
+    def find(rows, **keys):
+        matches = [r for r in rows if all(r[k] == v for k, v in keys.items())]
+        assert len(matches) == 1, keys
+        return matches[0]
+
+    def uncertainty(row, mean='mean', se='se', nd=3):
+        return rf"$({100*row[mean]:+.{nd}f}\pm{100*row[se]:.{nd}f})\%$"
+
+    stg = find(d['production_conditioned'], projection='ProjSTG', spectrum='TT', lo=4500, hi=4800)
+    M.add('residSTGTTUpper', uncertainty(stg))
+    for spec in ('TT', 'EE'):
+        row = find(d['paired'], spectrum=spec)
+        M.add('residBICEPZEA'+spec, uncertainty(row))
+    zea = find(d['map_interventions'], projection='ProjZEA', spectrum='BB', lo=4500, hi=4800)
+    assert zea['nseed'] == 4
+    M.add('residZEABBRefineDeltaPP', rf"$({100*zea['delta']:+.2f}\pm{100*zea['delta_se']:.2f})$")
+    M.add('residZEABBRefineRemaining', uncertainty(zea, 'fine', 'fine_se', nd=2))
+    M.add('residMapSeeds', str(zea['nseed']))
+    row = find(d['independent_clean'], projection='ProjSTG', spectrum='EE')
+    M.add('residSTGEEClean', uncertainty(row, 'spherical_residual', 'spherical_se'))
+    tests = find(d['ensemble_tests'], projection='ProjSTG', spectrum='EE',
+                 null='new-model-spherical', lo=1000, hi=4000)
+    M.add('residSTGEEMaxBin', pct(tests['max_bin_residual'], 2))
+    assert all(name.isalpha() for name in M)
+    path = ROOT/'paper/residual_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 def beam_numbers():
     """Write measured beam macros without rerunning the geometry calculation."""
     import json
@@ -1121,5 +1161,7 @@ if __name__ == "__main__":
         window_numbers()
     elif "--beam-only" in sys.argv:
         beam_numbers()
+    elif "--residual-only" in sys.argv:
+        residual_numbers()
     else:
         main()
