@@ -10,6 +10,14 @@ from pathlib import Path
 import numpy as np
 
 
+def ratio_sem(y, x):
+    """Delta-method SEM of mean(y)/mean(x), retaining paired covariance."""
+    if len(y)<2:
+        return None
+    ratio=np.mean(y)/np.mean(x)
+    return float(np.std(y-ratio*x,ddof=1)/np.sqrt(len(y))/np.mean(x))
+
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--input',required=True)
@@ -62,9 +70,9 @@ def main():
             band[key]={
                 'noiseless_residual_over_raw':float(vals['bb_signal_'+key].mean()/raw.mean()),
                 'isolated_noisy_residual_over_raw':float(residual.mean()/raw.mean()),
-                'isolated_noisy_residual_SE_over_raw':float(residual.std(ddof=1)/np.sqrt(n)/raw.mean()) if n>1 else None,
+                'isolated_noisy_residual_SE_over_raw':ratio_sem(residual,raw),
                 'cross_mean_over_raw_signal':float(cross.mean()/raw.mean()),
-                'cross_mean_SE_over_raw_signal':float(cross.std(ddof=1)/np.sqrt(n)/raw.mean()) if n>1 else None,
+                'cross_mean_SE_over_raw_signal':ratio_sem(cross,raw),
                 'cross_standard_deviation_gain_vs_fixed_power_subtraction':float(gain) if gain is not None else None,
                 'paired_seed_bootstrap_gain_95pct':interval,
                 'sample_RMS_gain_without_residual_debiasing':float(np.std(orig,ddof=1)/np.sqrt(np.mean(cross**2))) if n>1 else None}
@@ -76,8 +84,7 @@ def main():
         band['oracle_over_local_noise_prediction']=float(vals['bb_isolated_oracle'].mean()/pred[sel].mean())
         band['estimator_cost_isolated_masked_over_oracle']=float(
             vals['bb_isolated_masked'].mean()/vals['bb_isolated_oracle'].mean())
-        paired=(vals['bb_isolated_masked']-vals['bb_isolated_oracle'])/vals['bb_isolated_oracle'].mean()
-        band['estimator_extra_relative_SE']=float(paired.std(ddof=1)/np.sqrt(n)) if n>1 else None
+        band['estimator_extra_relative_SE']=ratio_sem(vals['bb_isolated_masked'],vals['bb_isolated_oracle'])
         result['bands'][f'{lo}-{hi}']=band
     out=Path(a.out);out.mkdir(parents=True,exist_ok=True)
     (out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')

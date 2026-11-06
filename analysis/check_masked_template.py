@@ -35,7 +35,12 @@ def main():
         residual=bg-f*np.tan(angle)*eg
         expected=2*np.sin(angle)*(1-f)+3*(np.cos(angle)**2+f*np.sin(angle)**2)/np.cos(angle)
         np.testing.assert_allclose(residual,expected,atol=1e-14)
-    print('pure E sign, pure B annihilation, product-rule response, observed support, spherical B response gates pass')
+    from masked_template_report import ratio_sem
+    samples=np.arange(1.,21.)
+    assert ratio_sem(2*samples,samples)<1e-14
+    expected=2*np.std(samples,ddof=1)/(np.sqrt(20)*np.mean(samples)**2)
+    np.testing.assert_allclose(ratio_sem(np.full(20,2.),samples),expected)
+    print('pure E sign, pure B annihilation, product-rule response, observed support, spherical B response and paired-ratio SEM gates pass')
     import argparse
     p=argparse.ArgumentParser()
     p.add_argument('--oracle-regression',nargs=2,metavar=('NEW_NPZ','OLD_NPZ'))
