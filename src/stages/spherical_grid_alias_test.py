@@ -34,7 +34,7 @@ for method in ('healpix_point', 'car_point', 'healpix_average', 'car_average'):
     records[f'{method}_alias'] = records[f'{method}_extended']-records[f'{method}_inband']
 out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
-np.savez(out/'alms.npz', sky=sky, truth=truth, **records)
+np.savez(out/f'{args.seed}-alms.npz', sky=sky, truth=truth, **records)
 result = dict(settings=dict(seed=args.seed, input_lmax=512, analysis_lmax=256, nside=128, factor=4),
               statistics={name: statistics(a, truth, 256) for name, a in records.items()})
-(out/'statistics.json').write_text(json.dumps(result, indent=2)+'\n')
+(out/f'{args.seed}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')

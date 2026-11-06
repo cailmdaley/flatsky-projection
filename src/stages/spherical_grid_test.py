@@ -166,12 +166,13 @@ def main():
     del averaged, raw
     output = Path(args.out)
     output.mkdir(parents=True, exist_ok=True)
-    np.savez(output/'alms.npz', truth=truth, **records)
+    prefix = f'{args.nside}-{args.factor}-{args.seed}'
+    np.savez(output/f'{prefix}-alms.npz', truth=truth, **records)
     result = dict(settings=vars(args), statistics={})
     for name, a in records.items():
         print('Statistics', name, flush=True)
         result['statistics'][name] = statistics(a, truth, args.lmax)
-    (output/'statistics.json').write_text(json.dumps(result, indent=2)+'\n')
+    (output/f'{prefix}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')
 
 
 if __name__ == '__main__':
