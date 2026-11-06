@@ -85,6 +85,22 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: residual_pure_e_implementation
+    type: data
+    label: Periodic pure-E mask-product and Fourier-refinement implementation
+    source: src/stages/residual_pure_e_test.py
+  - id: residual_map_implementation
+    type: data
+    label: Paired production-map upsampling implementation
+    source: src/stages/residual_map_upsample.py
+  - id: residual_ring_implementation
+    type: data
+    label: Paired synthesis-ring and subsample implementation
+    source: src/stages/residual_ring_test.py
+  - id: residual_control_theory
+    type: data
+    label: CAMB E spectrum for pure-E flat controls
+    source: src/stages/data/bin_covariance_theory.npz
   - id: masked_template_operator
     type: data
     label: Masked pure-E template estimator
@@ -1135,6 +1151,78 @@ outputs:
 # DECISIONS
 # ---------------------------------------------------------------------------
 # Additive paired band-limit intervention; existing outputs are unchanged.
+  - id: residual_ring_test
+    type: data
+    label: Paired synthesis-ring and finite-subsample BB controls
+    description: |
+      Original production alms synthesized at Nside4096 instead of8192,
+      then projected with8x or16x subsamples on the same output pixels.
+      The8192/8x reference must reproduce production. These controls
+      distinguish additive interpolation/sampling B from a coherent window.
+    inputs: [preprocessed_alms, projected_qu, field_flatsky_masks, field_coupling, residual_ring_implementation]
+    units:
+      seed: [0, 1]
+      projection: [ProjSTG, ProjZEA]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_ring_test.py
+        --alms {inputs.preprocessed_alms} --maps {inputs.projected_qu}
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 6Gi
+        time_limit: 1h
+
+  - id: residual_map_upsample
+    type: data
+    label: Paired production-map estimator de-aliasing intervention
+    description: |
+      Fixed native projected Q/U maps Fourier-interpolated before masking
+      and pure-B estimation, with two padded/tapered boundary controls.
+      Native spectra gate exact reproduction of production. No synthesis,
+      reprojection, spherical cutoff or physical pixel window changes.
+    inputs: [projected_qu, field_flatsky_masks, field_coupling, residual_map_implementation, residual_pure_e_implementation]
+    units:
+      seed: [0, 1, 2, 3]
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_map_upsample.py
+        --maps {inputs.projected_qu} --masks {inputs.field_flatsky_masks}
+        --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: residual_pure_e_test
+    type: data
+    label: Pure-E estimator sampling and mask-product controls
+    description: |
+      Identical periodic pure-E fields sampled at native or twice-finer
+      resolution before the production mask and pure-B estimator. Separate
+      cutoff4000/6000 interventions isolate additive estimator contamination
+      from spherical reprojection. The production workspace is a diagnostic
+      normalization only for the fine-grid leg.
+    inputs: [field_flatsky_masks, field_coupling, residual_pure_e_implementation, residual_control_theory]
+    units:
+      seed: [0, 1, 2, 3]
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_pure_e_test.py
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 3Gi
+        time_limit: 1h
+
   - id: window_bandlimit_test
     type: data
     label: Paired sky-bandlimit test of grid aliasing
