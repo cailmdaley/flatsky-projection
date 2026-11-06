@@ -695,12 +695,12 @@ outputs:
       The mean TT/EE/BB spectra of the production 20 field skies, mask-decoupled
       at width50, retaining their native sampling window. Used only to draw
       homogeneous Gaussian controls with matched radial spectra.
-    inputs: [fine_field_pseudo_spectra, field_coupling]
+    inputs: [fine_field_pseudo_spectra, fine_field_coupling]
     recipe:
       command: >-
         bash env.sh python3 src/stages/bin_covariance_controls.py prepare
         --pseudos {inputs.fine_field_pseudo_spectra}
-        --workspaces {inputs.field_coupling}
+        --workspaces {inputs.fine_field_coupling}
         --max-procs {resources.cpus} --out {output}
       resources:
         cpus: 2

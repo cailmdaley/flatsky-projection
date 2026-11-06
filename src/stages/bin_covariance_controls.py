@@ -18,7 +18,8 @@ PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
 
 def prepare(args):
     import numpy as np
-    import pymaster as nmt
+    from astropy.io import fits
+    from scipy.linalg import solve
     data = {}
     for proj in PROJS:
         raw = [np.load(args.pseudos/f'pseudo_{proj}_seed{s:04d}_mask0.npz') for s in range(20)]
@@ -30,9 +31,18 @@ def prepare(args):
         for spin, key in ((0, 'tt'), (2, 'pol')):
             cl = np.mean([r[key] for r in raw], axis=0)
             coupled = (cl.reshape(-1, 120, 50)*weight[None, :, :]).sum(-1)/total[None, :]
-            w = nmt.NmtWorkspaceFlat()
-            w.read_from(str(args.workspaces/f'w{spin}{spin}_{proj}_0.fits'))
-            decoupled = w.decouple_cell(coupled)
+            ncls = 1 if spin == 0 else 4
+            # Aggregate the existing width-five response exactly to width50.
+            # P M Q uses mode-count-weighted rows and constant input columns,
+            # as in analysis/spectra.py:rebin_flat_response.
+            with fits.open(args.workspaces/f'w{spin}{spin}_{proj}_0.fits') as h:
+                np.testing.assert_array_equal(h['BINS_SUMMARY'].data.field(0), np.arange(0, 6000, 5))
+                matrix = h['MCM_BINNED'].data.copy()
+            columns = matrix.reshape(120, 10, ncls, 120, 10, ncls).sum(axis=4)
+            fine_counts = counts.reshape(120, 10, 5).sum(-1)
+            matrix = ((columns*fine_counts[:, :, None, None, None]).sum(axis=1)
+                      / total[:, None, None, None]).reshape(120*ncls, 120*ncls)
+            decoupled = solve(matrix, coupled.T.reshape(-1)).reshape(120, ncls).T
             for spec, index in ([('tt', 0)] if spin == 0 else [('ee', 0), ('bb', 3)]):
                 power = decoupled[index]
                 # The Gaussian controls need a nonnegative spectrum; only the
