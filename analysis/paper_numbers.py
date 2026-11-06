@@ -495,7 +495,6 @@ def main():
 # ==========================================================================
 
 L_HANN = 300.0
-L_BB_TOP = 4400.0             # BICEP's and ZEA's BB leave the model above this
 
 
 def _hann(y, ell, L):
@@ -525,7 +524,7 @@ def prose_numbers(M, mom):
     tt, cl_tt = tt_sims.mean(1), S.theory("unlensed_TT")
     g2 = fd["pipeline_g2"]
     wide = (ell > 500) & (ell < L_WALL)
-    wide_bb = (ell > 500) & (ell < L_BB_TOP)
+    wide_bb = (ell > 500) & (ell < L_CLEAN[1])
     clean = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
 
     idx = json.loads(FD.MASK_INDEX.read_text())
@@ -604,7 +603,6 @@ def prose_numbers(M, mom):
     M.add("wideBBrangeField", rng(min(widev), max(widev), 3))
     M.add("cleanBBrangeField", rng(min(cleanv), max(cleanv), 3))
     M.add("cleanBBworstField", pct(max(abs(v_ - 1) for v_ in cleanv), 1))
-    M.add("lBBtop", f"{L_BB_TOP:.0f}")
     bic_excess = (bb[J["BICEP"]] / ee[J["BICEP"]] - m_bb[J["BICEP"]] / m_ee[J["BICEP"]])[last]
     M.add("BICEPexcessfloor", f"{bic_excess / floor_bin[last]:.0f}")
     M.add("magfactorField", rf"{pm['s1_max'][0, J['BICEP']]:.1f}\times")
@@ -984,10 +982,10 @@ def beam_numbers():
         prefix = 'beamMeasured' + name
         M.add(prefix + 'Difference', pct(response['fractional_difference'], 3))
         M.add(prefix + 'Prediction', pct(response['prediction'], 3))
-        M.add(prefix + 'SFL', f(response['sfl_mean'], 5))
-        M.add(prefix + 'Sphere', f(response['sphere_mean'], 5))
-        M.add(prefix + 'SectorMin', f(response['sfl_sector_min'], 5))
-        M.add(prefix + 'SectorMax', f(response['sfl_sector_max'], 5))
+        M.add(prefix + 'SFL', f(response['sfl_mean'], 3))
+        M.add(prefix + 'Sphere', f(response['sphere_mean'], 3))
+        M.add(prefix + 'SectorMin', f(response['sfl_sector_min'], 3))
+        M.add(prefix + 'SectorMax', f(response['sfl_sector_max'], 3))
         # Absolute response residual, in percentage points (not percent of response).
         M.add(prefix + 'ModelResidual', f(100*response['sector_model_max_abs_1000_3000'], 3))
         M.add(prefix + 'QuadrupoleSlope', f(response['quadrupole_amplitude_slope_1000_3000'], 3))
@@ -1000,6 +998,9 @@ def beam_numbers():
                                ('cross_mismatch', 'CrossMismatch'),
                                ('mismatch_power_change', 'MismatchChange')):
                 M.add(prefix + projection[4:] + label, sci(diagnostic[key], 3))
+    gaps = [abs(r['bands'][b]['measured'] - r['bands'][b]['predicted'])
+            for r in data['response'].values() for b in ('1000_2000', '2000_3000')]
+    M.add('beamBandAgreement', f(100 * max(gaps), 3))
     assert all(name.isalpha() for name in M)
     path = ROOT / 'paper' / 'beam_numbers.tex'
     path.write_text(M.tex())
@@ -1018,8 +1019,8 @@ def section5_numbers():
              'parameters':{'a2':.3,'n':-3.,'fwhm_arcmin':1.,'beam_ell':3000.,
                            'mask_quadrature_nside':128,'face_nside':2048}}
     for name, g2 in footprints.items():
-        M.add(f"gSq{name}", sci(g2, 3))
-        M.add(f"bbEe{name}", sci(2*g2, 3))
+        M.add(f"gSq{name}", sci(g2, 1))
+        M.add(f"bbEe{name}", sci(2*g2, 1))
     names = {'disk5': 'Disk', 'field1500d': 'Field', 'fieldEast': 'East'}
     for attachment in ('sky','grid'):
         responses = G5.footprint_response(verbose=False,attachment=attachment)
@@ -1027,10 +1028,10 @@ def section5_numbers():
             summary['anisotropic'][f'{attachment}_{footprint}_{projection}']={
                 'g2':float(g2),'chi_zero':float(zero),'chi_diagonal':float(diagonal)}
             prefix = f"anis{attachment.title()}{names[footprint]}{projection[4:]}"
-            M.add(prefix + "GSq", sci(g2, 3))
-            M.add(prefix + "BBEE", sci(2*g2, 3))
-            M.add(prefix + "Aligned", pct(zero, 3))
-            M.add(prefix + "Diagonal", pct(diagonal, 3))
+            M.add(prefix + "GSq", sci(g2, 1))
+            M.add(prefix + "BBEE", sci(2*g2, 1))
+            M.add(prefix + "Aligned", pct(zero, 2))
+            M.add(prefix + "Diagonal", pct(diagonal, 1))
     for (footprint, projection), (sphere, azimuth, low, high) in G5.beam_footprints(verbose=False).items():
         summary['beam_sky_prediction'][f'{footprint}_{projection}']={
             'sphere':float(sphere),'mean':float(azimuth),'min':float(low),'max':float(high)}
