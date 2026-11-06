@@ -1,10 +1,11 @@
 """Compare a Gaussian on the SFL grid with the same Gaussian on the sphere.
 
 The input is an existing lc Q/U map and its E-only harmonic realization.
-Filtered and unfiltered paths are paired so their transfer ratios divide out
-their own sampling windows. ZEA is the response target; STG is a conformal
-control for B modes. Differential B power is also compared with the mismatch
-between the unfiltered paths, which measures their sampling floor.
+Filtered and unfiltered paths are paired to measure end-to-end power response;
+sampling cancels only where it factorizes. ZEA is the response target; the
+conformal STG target removes leading target-side shear, not filter-induced B.
+Differential B power is compared with the unfiltered path mismatch. Both can
+contain coherent physical and numerical contributions, not independent noise.
 """
 
 import argparse
@@ -141,7 +142,7 @@ def run(args):
                 result[f'{footprint}_{proj}_{origin}_response'] = filt.sum(1)/base.sum(1)
 
             # NaMaster's purified pseudo-B excludes ambiguous boundary modes.
-            # Ratios share the same mask and need no pixel-window correction.
+            # No window correction: these are end-to-end B diagnostics.
             baseline = cropped['sphere_base']
             mismatch = cropped['sfl_base']-baseline
             differential = ((cropped['sfl_beam']-cropped['sfl_base'])

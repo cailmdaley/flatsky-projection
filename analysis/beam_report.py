@@ -1,10 +1,14 @@
 """Model and plot the lc beam experiment, retaining its numerical controls."""
 
 from pathlib import Path
+import hashlib
 import json
+import subprocess
 import sys
 
 import numpy as np
+# Load NaMaster's CFITSIO before spt3g (via geometry), which loads an older ABI.
+import pymaster as nmt
 
 import section5_geometry as G5
 
@@ -39,7 +43,6 @@ def target_model(ell,chi):
 
 def b_diagnostics():
     """Use the production pure-B workspaces and retain all cross terms."""
-    import pymaster as nmt
     sys.path.insert(0, str(ROOT/'src'/'stages'))
     from beam_reprojection import mask_slices
     lo=np.arange(0.,6000.,50.)
@@ -117,7 +120,7 @@ def plot(data,model):
                                     ('differential','Filter differential','-')):
                 ax.semilogy(ell,data[p+tag+'_bb']/base,style,color=PS.SECONDARY[0],label=label)
             ax.set(xlim=(500,4000),ylabel=r'Pure pseudo-$BB$/baseline pseudo-$EE$')
-            ax.set_title('STG numerical control')
+            ax.set_title('Conformal STG target')
             if row==0:
                 ax.legend(fontsize=5.9)
         for ax in axs[:,0]:
@@ -145,9 +148,28 @@ def report(data,model,bdiag):
             'sphere_mean':float(data[p+'sphere_response'][idx]),
             'sfl_sector_min':float(data[p+'sfl_response2d'][idx].min()),
             'sfl_sector_max':float(data[p+'sfl_response2d'][idx].max())}
+        response=result['response'][footprint]
+        response['bands']={}
+        measured_ratio=data[p+'sfl_response']/data[p+'sphere_response']-1
+        predicted_ratio=model[footprint+'_source']/model[footprint+'_sphere']-1
+        for lo,hi in ((1000,2000),(2000,3000),(3000,4000)):
+            band=(data['ell']>=lo)&(data['ell']<hi)
+            response['bands'][f'{lo}_{hi}']={
+                'measured':float(measured_ratio[band].mean()),
+                'predicted':float(predicted_ratio[band].mean())}
         clean=(data['ell']>=1000)&(data['ell']<=3000)
         residual=data[p+'sfl_response2d']-model[footprint+'_source2d']
-        result['response'][footprint]['sector_model_max_abs_1000_3000']=float(abs(residual[clean]).max())
+        response['sector_model_max_abs_1000_3000']=float(abs(residual[clean]).max())
+        sphere_residual=data[p+'sphere_response2d']-model[footprint+'_sphere2d']
+        response['sphere_sector_model_max_abs_1000_3000']=float(abs(sphere_residual[clean]).max())
+        cosine=np.cos(2*data['chi'])
+        measured2d=data[p+'sfl_response2d']/data[p+'sphere_response2d']-1
+        predicted2d=model[footprint+'_source2d']/model[footprint+'_sphere2d']-1
+        observed_amplitude=2*np.mean(measured2d*cosine,axis=1)
+        predicted_amplitude=2*np.mean(predicted2d*cosine,axis=1)
+        response['quadrupole_amplitude_slope_1000_3000']=float(
+            np.dot(observed_amplitude[clean],predicted_amplitude[clean])
+            /np.dot(predicted_amplitude[clean],predicted_amplitude[clean]))
         keep=(bdiag['ell']>=1000)&(bdiag['ell']<3000)
         for proj in ('ProjZEA','ProjSTG'):
             p=f'{footprint}_{proj}_'
@@ -156,11 +178,35 @@ def report(data,model,bdiag):
                   ('sfl_base','sfl_beam','sphere_base','sphere_beam','mismatch','differential')}
             for other in ('mismatch','sfl_base','sphere_base'):
                 vals['cross_'+other]=float(bdiag[p+'cross_'+other][3,keep].mean()/ee)
+            vals['mismatch_power_change'] = vals['differential'] + 2*vals['cross_mismatch']
             result['b_diagnostic'][footprint+'_'+proj]=vals
     path=ROOT/'paper'/'beam_summary.json'
     path.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
     return result
+
+
+def write_provenance():
+    """Fingerprint postprocessing inputs separately from lc's map manifest."""
+    paths=[MAPS/'.lightcone-manifest.json', MAPS/'summary.npz', MODEL, BCACHE,
+           ROOT/'src/stages/beam_reprojection.py',
+           ROOT/'analysis/beam_report.py', ROOT/'analysis/section5_geometry.py',
+           ROOT/'analysis/geometry.py', ROOT/'analysis/healpix_sheared_window.py',
+           ROOT/'src/stages/make_masks.py', ROOT/'analysis/paper_numbers.py']
+    for proj in ('ProjZEA','ProjSTG'):
+        for maskdir,workdir,mi in (('flatsky_masks','coupling_matrices',5),
+                                  ('field_flatsky_masks','field_coupling',0)):
+            paths.extend((ROOT/'results/highell'/maskdir/f'mask_{proj}_{mi}.npz',
+                          ROOT/'results/highell'/workdir/f'w22_{proj}_{mi}.fits'))
+    hashes={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in paths}
+    provenance={'git_revision':subprocess.check_output(
+        ['git','-C',str(ROOT),'rev-parse','HEAD'],text=True).strip(),
+        'inputs_sha256':hashes,
+        'note':'Map products have an lc manifest; these analysis products are outside lc. '
+               'The retained B cache is fingerprinted, not assumed to be an lc output.'}
+    (ROOT/'paper/beam_analysis_provenance.json').write_text(
+        json.dumps(provenance,indent=2)+'\n')
 
 
 def run():
@@ -183,6 +229,7 @@ def run():
         bdiag=b_diagnostics()
     plot(data,model)
     report(data,model,bdiag)
+    write_provenance()
 
 
 if __name__=='__main__':

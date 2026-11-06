@@ -189,11 +189,15 @@ def invalid_radial_propagation(out):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--out', type=Path, default=ROOT/'results/highell/bin_correlation_diagnostic')
+    p.add_argument('--out', type=Path,
+                   help='Defaults to separate production20 or extra-MC diagnostic directories')
     p.add_argument('--radial', action='store_true')
     p.add_argument('--extra', type=Path, nargs='+',
                    help='Unit-width MC directories to pool (replaces the 20-sky ensemble)')
     args = p.parse_args()
+    if args.out is None:
+        args.out = ROOT/'results/highell'/('bin_correlation_mc_diagnostic' if args.extra
+                                          else 'bin_correlation_diagnostic')
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out/'counterexample.json').write_text(json.dumps(counterexample(), indent=2)+'\n')
     measure(args.out, args.extra)

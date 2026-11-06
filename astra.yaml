@@ -102,6 +102,15 @@ inputs:
     label: Shared spherical TT lensing simulation implementation
     source: src/stages/lensing_qe_sims.py
 
+  - id: lensing_qe_sky_injection
+    type: data
+    label: Analytic shared spherical lens potential
+    source: analysis/lensing_sky_injection.py
+  - id: lensing_qe_sky_simulator
+    type: data
+    label: Shared spherical-lens TT response implementation
+    source: src/stages/lensing_qe_sky_sims.py
+
   - id: unlensed_sims
     type: data
     label: "Unlensed TQU realizations"
@@ -945,6 +954,32 @@ outputs:
         disk: 4Gi
         time_limit: 1h
 
+  - id: lensing_qe_sky_response
+    type: data
+    label: TT response to shared physical spherical gradient and curl lenses
+    description: |
+      Four independent spherical TT and smooth scalar-potential seeds shared
+      across all four charts. Analytic gradient/curl deflections are applied
+      through the sphere's exponential map before projection. The potential
+      varies with seed; it is not a cosmological lensing realization. Flat
+      controls use the identical chart-projected tangent displacement.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry, lensing_qe_sky_injection, lensing_qe_sky_simulator]
+    units:
+      seed: 0..4
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_sky_sims.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 2048 --sky-lmax 4000 --res-arcmin 4
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 8Gi
+        disk: 4Gi
+        time_limit: 1h
+
   - id: eb_residual_maps
     type: data
     label: "Map-space E/B residuals"
@@ -1097,6 +1132,50 @@ outputs:
         memory: 24Gi
         disk: 12Gi
         time_limit: 3h
+
+  - id: spherical_grid_alias_test
+    type: data
+    label: Paired out-of-band spherical grid injection
+    description: |
+      Same zero-B alms cut at 256 or extended to 384, 512, 640 or 768,
+      reconstructed to 256. Differences isolate out-of-band response from
+      sampling aliasing and finite-pixel mode coupling on Nside 128 and
+      384x768 CAR; these are not equal-area grids.
+    units:
+      input_lmax: [384, 512, 640, 768]
+      seed: [0, 1, 2]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/spherical_grid_alias_test.py
+        --input-lmax {units.input_lmax} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 2Gi
+        time_limit: 2h
+
+  - id: spherical_grid_test
+    type: data
+    label: Zero-B spherical HEALPix and CAR pixel tests
+    description: |
+      Paired point-sample and explicit pixel-average tests, with global
+      spherical E/B reconstruction selected on the 1500d footprint.
+      Fixed ell<=256 input-bandwidth controls, not scale-invariant or
+      production high-ell measurements; the two grids are not equal-area.
+    units:
+      nside: [128, 256]
+      factor: [4, 8]
+      seed: [0, 1, 2]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/spherical_grid_test.py
+        --nside {units.nside} --factor {units.factor} --seed {units.seed}
+        --lmax 256 --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 2Gi
+        time_limit: 2h
 
 decisions:
   intermediate_nside:

@@ -17,7 +17,9 @@ import spectra as sp
 from projection_covariance import PROJS, SPECS, correlation
 from validate_fine_spectra import read_matrix, decouple_many
 
-RANGES = ((500, 2000), (2000, 3500), (3500, 4800), (500, 4800))
+# The 2018 SPT spectra stop at3000; keep that comparison separate from our
+# extension to4800 rather than calling the latter a reproduction of SPT.
+RANGES = ((500, 2000), (2000, 3000), (2000, 3500), (3500, 4800), (500, 4800))
 
 
 def load_ensemble(directories, widths):
@@ -68,12 +70,45 @@ def jackknife(values, statistic):
     return float(estimate), float(se)
 
 
-def lag_statistic(values, lag):
-    # Work on just the requested range, retaining the sky as the resampling unit.
+def binwise_lag(values, lag):
     centered = values-values.mean(0)
     cross = np.sum(centered[:, :-lag]*centered[:, lag:], axis=0)
     ss = np.sum(centered**2, axis=0)
-    return np.mean(cross/np.sqrt(ss[:-lag]*ss[lag:]))
+    return cross/np.sqrt(ss[:-lag]*ss[lag:])
+
+
+def lag_statistic(values, lag):
+    # Work on just the requested range, retaining the sky as the resampling unit.
+    return np.mean(binwise_lag(values, lag))
+
+
+def binwise_comparison(projected, control):
+    """Individual pairs, so a range average cannot conceal localized structure.
+
+    Errors are pointwise, not simultaneous confidence limits for the curve.
+    """
+    rows = []
+    for (proj, width, spec, estimator), a in projected.items():
+        if width != 50:
+            continue
+        b = control[proj, width, spec, estimator]
+        ell = np.arange(a.shape[1])*width+width/2
+        select = (ell >= 500) & (ell < 4800)
+        for lag in (1, 2, 4):
+            result = dict(projection=proj, spectrum=spec, estimator=estimator,
+                          width=width, separation=lag*width,
+                          ell_left=ell[select][:-lag].tolist(),
+                          ell_right=ell[select][lag:].tolist())
+            for label, x in (('projected', a[:, select]), ('control', b[:, select])):
+                rho = binwise_lag(x, lag)
+                deleted = np.array([binwise_lag(np.delete(x, i, axis=0), lag)
+                                    for i in range(len(x))])
+                se = np.sqrt((len(x)-1)/len(x)*np.sum(
+                    (deleted-deleted.mean(0))**2, axis=0))
+                result[label+'_rho'] = rho.tolist()
+                result[label+'_se'] = se.tolist()
+            rows.append(result)
+    return rows
 
 
 def relative_variance(a, b):
@@ -147,11 +182,39 @@ def plot_comparison(rows, out):
                             label=ps.PROJ_LABEL[proj] if source == 'projected' else 'Homogeneous')
             ax.text(.95, .95, spec.upper(), transform=ax.transAxes, ha='right', va='top')
             if j == 0:
-                ax.legend(frameon=False, fontsize=8)
+                ax.legend(frameon=False, fontsize=8, loc='upper left')
                 ax.set_ylabel(r'$\mathrm{Corr}(\widehat C_b,\widehat C_{b+\Delta b})$')
             if i == 2:
                 ax.set_xlabel(r'$\Delta\ell$')
     fig.savefig(out/'comparison.png', dpi=180)
+    plt.close(fig)
+
+
+def plot_binwise(rows, out):
+    import matplotlib.pyplot as plt
+    import paper_style as ps
+    ps.rc()
+    fig, axes = plt.subplots(2, 3, figsize=(9, 4.7), sharex=True, sharey=True,
+                             layout='constrained')
+    for i, proj in enumerate(('ProjZEA', 'ProjSFL')):
+        for j, spec in enumerate(SPECS):
+            ax = axes[i, j]
+            row = next(r for r in rows if r['projection'] == proj and r['spectrum'] == spec
+                       and r['estimator'] == 'decoupled' and r['separation'] == 50)
+            ell = np.asarray(row['ell_left'])+25
+            ax.axhline(0, color='.8', lw=.7)
+            for source, color in (('projected', ps.PROJ_COLORS[proj]), ('control', '.3')):
+                rho, se = np.array(row[source+'_rho']), np.array(row[source+'_se'])
+                ax.plot(ell, rho, color=color, lw=.8,
+                        label=ps.PROJ_LABEL[proj] if source == 'projected' else 'Homogeneous')
+                ax.fill_between(ell, rho-se, rho+se, color=color, alpha=.15, linewidth=0)
+            ax.text(.95, .95, spec.upper(), transform=ax.transAxes, ha='right', va='top')
+            if j == 0:
+                ax.legend(frameon=False, fontsize=8, loc='upper left')
+                ax.set_ylabel(r'$\mathrm{Corr}(\widehat C_b,\widehat C_{b+1})$')
+            if i == 1:
+                ax.set_xlabel(r'$\ell$')
+    fig.savefig(out/'binwise.png', dpi=180)
     plt.close(fig)
 
 
@@ -168,6 +231,7 @@ def main():
     a, a_seeds = load_ensemble(args.projected, args.widths)
     b, b_seeds = load_ensemble(args.control, args.widths)
     result = compare(a, b, args.widths)
+    result['binwise'] = binwise_comparison(a, b)
     result['inputs'] = dict(projected=[str(d) for d in args.projected],
                             control=[str(d) for d in args.control],
                             projected_seeds=a_seeds, control_seeds=b_seeds,
@@ -182,6 +246,8 @@ def main():
             moments[prefix+'_correlation'] = correlation(values)
     np.savez_compressed(args.out/'moments.npz', **moments)
     plot_comparison(result, args.out)
+    if result['binwise']:
+        plot_binwise(result['binwise'], args.out)
 
 
 if __name__ == '__main__':

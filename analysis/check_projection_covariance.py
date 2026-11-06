@@ -84,14 +84,21 @@ def test_cropped_rebin8():
 
 
 def test_control_random_streams():
+    import ctypes
     import pymaster as nmt
     from bin_covariance_controls import control_seed
+    # An environment change is too late if another test initialized OpenMP.
+    # Pin the actual runtime: the old consecutive-seed bug is invisible at1.
+    omp = ctypes.CDLL('libgomp.so.1')
+    omp.omp_set_num_threads(4)
+    assert omp.omp_get_max_threads() == 4
     fields = [nmt.synfast_flat(256, 256, 1., 1., [np.ones(6001)], [0],
                                seed=control_seed(0, seed))[0] for seed in (0, 1)]
     a, b = [np.fft.rfft2(field) for field in fields]
     overlap = abs(a @ b.conj().T)/np.outer(np.linalg.norm(a, axis=1),
                                           np.linalg.norm(b, axis=1))
-    assert overlap.max() < 1-1e-12, 'distinct skies reused Fourier-row random streams'
+    # Reality constraints can perturb one cell in an otherwise reused row.
+    assert overlap.max() < .9, 'distinct skies reused Fourier-row random streams'
     print('NaMaster independent-seed gate pass; maximum Fourier-row overlap', overlap.max())
 
 
