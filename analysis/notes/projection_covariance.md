@@ -130,9 +130,10 @@ STG BB has no geometrical signal in this model and is excluded.
 The exact toy-operator check is scalar; no exact EE/BB Wick trace with the actual NaMaster pure-B amplitude operator has been computed.
 The BB comparisons below validate only the stated broad-band statistics of the complete pipeline, not a precision full-matrix pure-B prediction.
 ZEA BB above4500 also contains alias/floor contributions absent from this leading geometrical model, so its agreement after broad-band averaging must not be read as a geometrical closure of those top bins.
-`analysis/check_local_bin_covariance.py` tests its finite-bin overlap against exact discrete Wick annulus-pair counts for an amplitude-modulated white Gaussian field, and checks that uniform-mask anisotropic power enlarges diagonal variance without correlating disjoint annuli.
+`analysis/check_local_bin_covariance.py` tests finite-bin overlap against exact discrete Wick annulus-pair counts for an amplitude-modulated white Gaussian field, the lag-sum/Parseval invariant, and the uniform-mask anisotropic limit.
+`analysis/check_local_covariance_orientation.py` checks spatial/directional orientation against an exact Wick trace on a sheared chart, with a wrong-reflection negative control.
 The complete projected/control comparison now tests this approximation on two broad bands:2000–3000 at width100 and3500–4800 at width50.
-Across the eight non-floor auto-spectra in each band, predicted fractional-variance ratios differ from the Monte Carlo values by at most5.6%, and the largest absolute difference in predicted adjacent correlation is about0.02.
+Across the eight non-floor auto-spectra in each band, the largest fractional difference in predicted variance ratio is5.5%, and the largest absolute difference in predicted adjacent correlation is about0.02.
 These are bounds on those sixteen **band-averaged summaries**, not on every covariance-matrix element or every multipole.
 For high-ell SFL TT/EE/BB, predicted coupled variance ratios are3.525/3.820/5.036 against measured3.670±0.088/3.945±0.098/5.185±0.128; predicted adjacent correlations are0.145/0.154/0.226 against0.130±0.013/0.142±0.014/0.226±0.013.
 The wide-bin approximation instead gives4.336/4.779/7.110, demonstrating why finite annuli matter.
@@ -218,10 +219,11 @@ A defensible replacement is:
 
 The matched-binning2000–3000 comparison at width100 gives ZEA adjacent TT/EE correlations−0.016±0.020/−0.019±0.022 after mask decoupling, with projected-minus-control excess0.044±0.029/−0.008±0.031.
 The corresponding coupled TT/EE values are0.031±0.020/0.027±0.022.
+The largest individual adjacent-pair estimates in this range are0.083/0.067 for decoupled TT/EE and0.133/0.110 for coupled TT/EE, with per-pair errors around0.06; these maxima are descriptive, not simultaneous confidence limits.
 Thus our simple-mask Lambert experiment does **not** reproduce an up-to40% neighbouring TT/EE correlation in that range.
 This is not a contradiction of SPT's results: their maximum need not occur in this band; their mask, masking-before-projection, filtering and minimum-variance multifrequency/TE estimator differ, and our input is unlensed.
 The exact source of their reported excess remains unassigned.
-The leading local model explains the broad-band variance inflation and neighbouring correlations measured **here**, not SPT's full covariance.
+The leading local model reproduces the broad-band **coupled** variance ratios and neighbouring correlations measured here, not SPT's full covariance.
 
 For the paper, replace the disk-averaged ordinary-sky assertion and its20-sky field follow-up with the260/256 comparison, stating the auto-spectrum and simple-mask scope.
 Replace the inference from broad $R$ rows with the exact mean-versus-covariance distinction above.

@@ -10,7 +10,6 @@ annuli, reciprocal-grid alias images and nonlocal/curvature corrections to
 local stationarity are omitted.
 Compare coupled bandpowers, not mask-decoupled bandpowers, to this prediction.
 
-Requires the pipeline-window thread's analysis/pipeline_windows.py on PYTHONPATH.
 """
 import argparse
 import json

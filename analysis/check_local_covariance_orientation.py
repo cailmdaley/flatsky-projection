@@ -1,8 +1,8 @@
-"""Orientation-sensitive exact Wick gate proposed/tested by the Opus reviewer.
+"""Detect a west/east reflection with an orientation-sensitive exact Wick gate.
 
 Map (x,y) samples the flat-sky chart (x*(1+y/L),y), retaining spatial AND
-angular power structure. The earlier isotropic/modulated-white gates could
-not detect a west/east reflection. Uses ~1GB memory with 96x96 pixels.
+angular power structure. Direction-independent or spatially uniform power
+cannot detect this reflection. Uses ~1GB memory with 96x96 pixels.
 """
 import numpy as np
 from local_bin_covariance import overlap_kernel
@@ -27,7 +27,7 @@ def main():
     nleft, nright = map(len, rings)
     fourier = np.exp(-1j*(np.outer(kx.ravel()[modes], x.ravel()[keep])+
                           np.outer(ky.ravel()[modes], y.ravel()[keep])))*mask.ravel()[keep]
-    # Contiguous real arrays activate BLAS; .real strided views were very slow.
+    # Contiguous real arrays enable BLAS rather than strided-view multiplication.
     projected = ((np.ascontiguousarray(fourier.real)@covariance+
                   1j*(np.ascontiguousarray(fourier.imag)@covariance))@fourier.conj().T)
     del covariance
