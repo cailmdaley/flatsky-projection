@@ -91,18 +91,13 @@ def main():
         metric=d[0]['metric_W']
         pe,pb=(np.sum(abs(v)**2) for v in metric[1:])
         keep=(ls>=2)&(ls<30)
-        corr=[]
-        for i,g in enumerate((d[0]['metric_W2'][0],d[0]['metric_W2'][2])):
-            m=mf.mean(axis=0)[i]
-            corr.append(float(np.vdot(g[keep],m[keep]).real/np.sqrt(
-                np.vdot(g[keep],g[keep]).real*np.vdot(m[keep],m[keep]).real)))
         result[proj]={'seeds':len(d),
+                      'response_scope':'TT legs 300-1200, fixed grid-potential seed 904; SE covers TT skies only, conditional on this injection. Not a chart-only response or cosmological lensing bias.',
                       'response_normalization':'Rows are injected gradient/curl; columns are reconstructed gradient/curl. Each spherical element is divided by the flat diagonal for that injection, not by a full response-matrix inverse. Flat off-diagonals are reported separately.',
                       'metric_rms':d[0]['metric_rms'].tolist(),
                       'metric_pseudo_B_fraction':None if proj=='ProjSTG' else float(pb/(pe+pb)),
                       'mean_field':rows,'response':responses,
-                      'low_L_mean_field_power':[power_error(mf[:,i,keep]/np.sqrt(w4)) for i in range(2)],
-                      'low_L_metric_correlation_kappa_B':corr}
+                      'low_L_mean_field_power':[power_error(mf[:,i,keep]/np.sqrt(w4)) for i in range(2)]}
         if a.prediction:
             predfile=np.load(a.prediction)
             prediction=predfile[proj]*np.exp(.5j*(xx+yy)*(float(d[0]['pixel_rad'])-float(predfile['pixel_rad'])))
