@@ -1151,7 +1151,7 @@ outputs:
         --projection {units.projection} --seed {units.seed} --out {output}
       resources:
         cpus: 2
-        memory: 12Gi
+        memory: 8Gi
         disk: 6Gi
         time_limit: 1h
 
@@ -1175,7 +1175,7 @@ outputs:
         --projection {units.projection} --seed {units.seed} --out {output}
       resources:
         cpus: 2
-        memory: 12Gi
+        memory: 4Gi
         disk: 4Gi
         time_limit: 1h
 
@@ -1199,7 +1199,7 @@ outputs:
         --projection {units.projection} --seed {units.seed} --out {output}
       resources:
         cpus: 2
-        memory: 8Gi
+        memory: 4Gi
         disk: 3Gi
         time_limit: 1h
 
