@@ -5,22 +5,20 @@ survey's edges (RA +-50 deg, dec -70 to -42 deg, `field_bandpowers`). The field
 is wide and short, which also splits SFL from BICEP. Data only: the forward
 model is compared with these spectra in `plot_model_residuals`.
 
-  top     y = l^6 C_l, TT, EE, BB, on linear axes, with the sims' input, the
-          binned unlensed CAMB spectrum, beneath them. l^6 puts the peak near
-          l = 2000 and keeps the damping tail well above the axis out to
-          l = 4800, so the acoustic peaks can be seen to wash out under SFL
-          and BICEP. The input BB is zero because the sims are unlensed. ZEA's
-          BB is two orders of magnitude below SFL's, so it is drawn scaled
-          (`SCALE`) and a legend in the panel says so.
+  top     D_l = l(l+1) C_l / 2 pi for TT, EE, BB on logarithmic axes, the
+          standard plot of a CMB spectrum, with the sims' input, the binned
+          unlensed CAMB spectrum, as a thin line over them. The sims are
+          unlensed, so the input BB is zero, and the BB panel carries the
+          lensed BB for scale.
   bottom  TT / input, EE / input, BB / EE. The two scalar ratios share a y
           axis, because they share a shape: both track the local slope of C(l)
           and, for the sheared projections, rise above l = 3000. BB/EE is pure
           leakage, since the true B is zero, and the lensed BB/EE of the real
           sky is drawn for scale.
 
-With zero shear STG's BB is the pipeline's own E-to-B floor, not a leakage. Its
-bandpowers lie on zero in the BB spectrum panel and are left out of BB/EE; the
-floor's value is quoted in the text.
+With zero shear STG's BB is the pipeline's own E-to-B floor, not a leakage. It
+is drawn in the BB spectrum panel, where the log axis reaches it, and left out
+of BB/EE so that axis stays on the leakage.
 
 Every projection is one line through every dl = 50 bandpower, the mean over
 the 20 realizations. There are no error bars: `print_error_reach` reports the
@@ -51,13 +49,13 @@ SCALAR_TT_DIR = ROOT / "results" / "highell" / "scalar_tt_field_bandpowers"
 ELL_MIN, ELL_MAX = 300.0, 4800.0
 
 SPECTRA = ("TT", "EE", "BB")
-POWER = 6
 DATA_LW = 1.2
-REF_LW = 0.6            # the input and unity, thin and beneath the data
+REF_LW = 0.6            # the input and unity
 REF_COLOR = PS.SECONDARY[2]
+INPUT_COLOR = PS.SECONDARY[0]
 REF_Z = 1.0
+INPUT_Z = 3.0           # over the data, which would otherwise hide it
 DATA_Z = {"ProjSFL": 2.0, "ProjBICEP": 2.1, "ProjSTG": 2.2, "ProjZEA": 2.3}
-SCALE = {("BB", "ProjZEA"): 100}
 FIG_H = 4.0
 
 
@@ -88,7 +86,7 @@ def plot(plt, d):
     ell = d["ell"]
     keep = (ell > ELL_MIN) & (ell < ELL_MAX)
     x = ell[keep]
-    weight = ell ** POWER
+    dl = ell * (ell + 1) / (2 * np.pi)
 
     fig, axes = plt.subplots(2, len(SPECTRA), figsize=(PS.TEXT_W, FIG_H),
                              sharex=True, layout="constrained",
@@ -108,20 +106,17 @@ def plot(plt, d):
         measured = d["measured"][spec]
         cl_in = d["input"][spec]
 
-        drawn = [(weight * cl_in)[keep]]
-        if measured is not None:
-            drawn.append((weight * measured.mean(1))[:, keep])
-        exponent = int(np.floor(np.log10(max(np.max(y) for y in drawn))))
-        unit = 10.0 ** exponent
-
-        top.plot(x, (weight * cl_in / unit)[keep], color=REF_COLOR, lw=REF_LW,
-                 zorder=REF_Z)
-        top.set_ylabel(rf"$\ell^{{{POWER}}}\, C_\ell^{{{spec}}}$ "
-                       rf"[$10^{{{exponent}}}\ \mu{{\rm K}}^2$]")
+        if spec == "BB":
+            top.plot(x, (dl * d["lensed_bb"])[keep], "--",
+                     color=PS.SECONDARY[1], lw=PS.LW_REF, zorder=REF_Z)
+        else:
+            top.plot(x, (dl * cl_in)[keep], color=INPUT_COLOR, lw=REF_LW,
+                     zorder=INPUT_Z)
+        top.set_ylabel(rf"$D_\ell^{{{spec}}}$ [$\mu{{\rm K}}^2$]")
+        top.set_yscale("log")
         if measured is not None:
             for j, proj in enumerate(S.PROJS):
-                data_line(top, proj, weight * measured[j],
-                          SCALE.get((spec, proj), 1) / unit)
+                data_line(top, proj, dl * measured[j])
         top.margins(y=0.04)
 
         if spec == "BB":
@@ -148,24 +143,20 @@ def plot(plt, d):
     ratio.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
     ratio.set_minor_formatter(plt.NullFormatter())
 
+    axes[0, 0].set_xscale("log")
     axes[0, 0].set_xlim(ELL_MIN, ELL_MAX)
-    axes[0, 0].set_xticks([1000, 2000, 3000, 4000])
+    axes[0, 0].set_xticks([500, 1000, 2000, 4000])
+    axes[0, 0].xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
+    axes[0, 0].xaxis.set_minor_formatter(plt.NullFormatter())
     fig.align_ylabels(axes)
 
     handles = [Line2D([], [], color=PS.PROJ_COLORS[p], lw=DATA_LW)
                for p in S.PROJS]
     labels = [S.PROJ_LABEL[p] for p in S.PROJS]
-    handles += [Line2D([], [], color=REF_COLOR, lw=REF_LW),
+    handles += [Line2D([], [], color=INPUT_COLOR, lw=REF_LW),
                 Line2D([], [], color=PS.SECONDARY[1], lw=PS.LW_REF, ls="--")]
-    labels += ["input", r"lensed $BB/EE$"]
+    labels += ["input", "lensed"]
     fig.legend(handles, labels, ncol=len(labels), loc="outside upper center")
-
-    bb = axes[0, SPECTRA.index("BB")]
-    scaled = [(proj, s) for (spec, proj), s in SCALE.items() if spec == "BB"]
-    bb.legend([Line2D([], [], color=PS.PROJ_COLORS[proj], lw=DATA_LW)
-               for proj, _ in scaled],
-              [rf"{S.PROJ_LABEL[proj]} $\times\,{s}$" for proj, s in scaled],
-              loc="upper right")
 
     FIGURE.parent.mkdir(exist_ok=True)
     fig.savefig(FIGURE)

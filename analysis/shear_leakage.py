@@ -228,8 +228,8 @@ def flattening_residual(jac):
     coordinates are the inverse of `geometry.jacobian` up to positive factors
     (cos delta, the pixel size) and the x flip `geometry._xy` applies, none of
     which move an atan2, so rot follows from J alone. The residual against the
-    polar angle phi of J = R(phi) S is (g^2/2)|sin 4beta| + O(g^3), beta the
-    angle of the principal axes to the grid. It agrees with the `xy_to_angle`
+    polar angle phi of J = R(phi) S is (g^2/2) sin 4beta + O(g^3), signed, beta
+    the angle of the principal axes of S from sky east toward north. It agrees with the `xy_to_angle`
     reimplementation of `check_flattenpol` to 2e-6 deg over the 5% disk.
     """
     a, b = jac[..., 0, 0], jac[..., 0, 1]

@@ -1,6 +1,6 @@
 """How a map projection becomes a shear, and what the shear does to a spectrum.
 
-Schematic for Sect. 2 of the paper, drawn with real numbers throughout: the
+The paper's first figure, drawn with real numbers throughout: the
 SFL Jacobian at one sky position in SPT's 1500d field, chosen so that its g
 equals the rms shear of SFL on that field, and the unlensed EE spectrum of the
 simulations.
@@ -12,8 +12,8 @@ simulations.
       shows the direction offset delta psi.
   (c) The grid value at l is the direction average of C(l rho(chi)) over the
       band l s2 to l s1, marked for one multipole. Averaged at every l, the
-      spectrum loses its acoustic peaks. Drawn at l^6 C_l, as in the spectra
-      figure, so that the peaks read on a linear axis.
+      spectrum loses its acoustic peaks. Drawn as D_l on logarithmic axes, as
+      in the spectra figure.
 
 One colour rule across the panels: teal is the sky, ink is the grid.
 
@@ -41,7 +41,6 @@ PROJ = "ProjSFL"
 POINT = (26.26, G.DELTA_CENTER_DEG)  # (alpha, delta) in deg; g is the field's rms
 ELL_BAND = 2000.0                    # the multipole whose band panel (c) marks
 ELL_RANGE = (300.0, 4800.0)
-POWER = 6
 LATTICE_N = 6                        # pixels on a side in panel (a)
 LATTICE_PITCH = 1 / 3                # pixel side, in units of the circle's radius
 PIXEL_LW = 0.5
@@ -132,7 +131,7 @@ def panel_sky_to_grid(ax, d):
     ax.text(0, bottom, "sky", ha="center", va="top")
     ax.text(cx, bottom, "grid", ha="center", va="top")
 
-    rows = [rf"$J = R\,\Sigma$: $s_1 = {d['s1']:.2f}$, $s_2 = {d['s2']:.2f}$",
+    rows = [rf"$s_1 = {d['s1']:.2f}$, $s_2 = {d['s2']:.2f}$",
             rf"$g = (s_1 - s_2)/(s_1 + s_2) = {d['g']:.2f}$"]
     for i, row in enumerate(rows):
         ax.text(-1.3, -1.82 - 0.38 * i, row, ha="left", va="center")
@@ -186,14 +185,13 @@ def panel_fourier(ax, d):
             ha="left", va="bottom", linespacing=1.15)
 
 
-def panel_spectrum(ax, d, ell_th, cl):
+def panel_spectrum(plt, ax, d, ell_th, cl):
     """(c): the sky spectrum, one band, and the spectrum averaged over its band."""
     s1, s2 = d["s1"], d["s2"]
     m = (ell_th >= ELL_RANGE[0]) & (ell_th <= ELL_RANGE[1])
     ell = ell_th[m]
     smooth = d["mu"] * np.array([direction_mean(l, s1, s2, ell_th, cl) for l in ell])
-    unit = 1e15
-    weight = ell**POWER / unit
+    weight = ell * (ell + 1) / (2 * np.pi)
 
     lo, hi = ELL_BAND * s2, ELL_BAND * s1
     ax.axvspan(lo, hi, color=BAND, lw=0, zorder=0)
@@ -202,14 +200,17 @@ def panel_spectrum(ax, d, ell_th, cl):
     ax.plot(ELL_BAND, np.interp(ELL_BAND, ell, weight * smooth), "o", mfc="white",
             mec=GRID, ms=4, mew=0.9, zorder=5)
     ax.set_xlim(*ELL_RANGE)
-    ax.set_ylim(0, None)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
     ax.grid(False)
     ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(rf"$\ell^{{{POWER}}}\,C_\ell^{{EE}}$ [$10^{{15}}\ \mu{{\rm K}}^2$]")
-    ax.set_xticks([1000, 2000, 3000, 4000])
-    top = ax.get_ylim()[1]
-    for x, ha, name in ((lo, "right", r"$\ell s_2$"), (hi, "left", r"$\ell s_1$")):
-        ax.text(x + (40 if ha == "left" else -40), 0.97 * top, name, ha=ha, va="top")
+    ax.set_ylabel(r"$D_\ell^{EE}$ [$\mu{\rm K}^2$]")
+    ax.set_xticks([500, 1000, 2000, 4000])
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
+    ax.xaxis.set_minor_formatter(plt.NullFormatter())
+    for x, ha, name, pad in ((lo, "right", r"$\ell s_2$", 0.98), (hi, "left", r"$\ell s_1$", 1.02)):
+        ax.text(pad * x, 0.015, name, ha=ha, va="bottom",
+                transform=ax.get_xaxis_transform())
     ax.legend([sky, grid], [r"$C(\ell)$", r"$\langle C(\ell\rho)\rangle_\chi$"],
               loc="upper right", handlelength=1.4)
 
@@ -239,7 +240,7 @@ def main():
 
     panel_sky_to_grid(axes(0.0, 0.1, 2.3, 2.1), d)
     panel_fourier(axes(2.18, 0.1, 2.0, 2.0), d)
-    panel_spectrum(axes(4.72, 0.34, 2.46, 1.88), d, ell_th, cl)
+    panel_spectrum(plt, axes(4.72, 0.34, 2.46, 1.88), d, ell_th, cl)
 
     for x, s in ((0.0, "(a)"), (2.2, "(b)"), (4.2, "(c)")):
         fig.text(x / W, 0.995, s, ha="left", va="top")

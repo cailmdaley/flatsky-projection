@@ -99,10 +99,21 @@ As analyses have pushed to wider areas, most experiments have switched to SHTs: 
 Flat maps remain in small-field, local and image-based analyses, which carry the distortion through simulations or neglect it.
 
 This paper predicts that distortion in closed form for scalar and spin-two power spectra.
-Near any point a projection rotates, magnifies, and shears the sky.
+Near any point a projection rotates, magnifies, and shears the sky (Fig.~\ref{fig:schematic}).
 Polarization pipelines undo the rotation but not the shear, which acts on a spectrum in two ways: it averages a scalar spectrum over a band of multipoles, an order-unity effect on the damping tail of a wide field, and it turns $E$ into $B$.
 The second matters because the faint signals of polarization live in $B$, from the imprint of primordial gravitational waves \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
 The CMB is our worked example, with no free parameters and a test against simulations; the derivation applies to a field of any spin.
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{shear_schematic.pdf}
+  \caption{
+    One local distortion, drawn for the Sanson--Flamsteed projection at a point of the SPT 1500d field where the shear equals the field's rms.
+    (a) The local Jacobian $J$ takes a circle on the sky to an ellipse on the grid with semi-axes $s_1 \geq s_2$ and shear $g$; the lattice is the grid's square pixels, drawn on both.
+    (b) In Fourier space with the local rotation removed, a grid ring of constant $\abs{\vbell}$ reads the sky on an ellipse of radius $\ell\rho(\chi)$, with $\chi$ the mode's direction from the major axis, and each mode's direction shifts by $\delta\psi$.
+    (c) The input $D_\ell^{EE}$, where $D_\ell = \ell(\ell+1)C_\ell/2\pi$, and its average over mode direction at this Jacobian; the shading marks the band that average covers at $\ell = 2000$.
+  }
+  \label{fig:schematic}
+\end{figure*}
 
 Projection leakage differs from two other sources of $E$/$B$ mixing.
 A mask boundary leaves some modes ambiguous between $E$ and $B$ \citep{bunn03}, which purified estimators remove \citep{smith07, alonso19}, and the flat-sky approximation to the harmonic transform adds an error controlled at the $0.3$--$1\%$ level \citep{bernardeau11, challinor05}.
@@ -162,9 +173,9 @@ Every line comes from the same skies, so the differences between lines come from
   \includegraphics[width=\textwidth]{projection_spectra.pdf}
   \caption{
     Simulated spectra on the SPT 1500d field, one line per projection through all bands of width $\Delta\ell = 50$, each the mean of 20 realizations.
-    Top row: $\ell^6 C_\ell$ for $TT$, $EE$ and $BB$, with the unlensed input as a thin grey line beneath; the input $BB$ is zero, and ZEA's $BB$ is multiplied by 100.
-    Bottom row: measured over input $TT$ and $EE$, and $BB/EE$, with lensed $BB/EE$ dashed for scale.
-    STG's $BB$ lies on zero and is omitted from $BB/EE$.
+    Top row: $D_\ell$ for $TT$, $EE$ and $BB$, with the unlensed input as a thin dark line; the input $BB$ is zero, and lensed $BB$ is dashed for scale.
+    Bottom row: measured over input $TT$ and $EE$, and $BB/EE$, with lensed $BB/EE$ dashed.
+    STG is omitted from $BB/EE$.
   }
   \label{fig:spectra}
 \end{figure*}
@@ -202,7 +213,7 @@ The symmetric factor $\Sigma$ carries a \textbf{magnification} $\mu = s_1 s_2 = 
 \begin{equation} \label{eq:shear}
   g = \frac{s_1 - s_2}{s_1 + s_2},
 \end{equation}
-the anisotropic stretch, which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
+the anisotropic stretch (Fig.~\ref{fig:schematic}a), which rescales $\ell$ by a direction-dependent factor and misaligns mode directions.
 The shear depends only on the ratio of the singular values, since a uniform dilation cannot leak $E$ into $B$.
 In the language of weak lensing, $g$ is the modulus of the reduced shear $\abs{\gamma}/(1+\kappa)$ (Appendix~\ref{app:kernels}).
 A projection is \textit{conformal}, preserving local angles, where $g = 0$, and \textit{equal-area} where $\mu = 1$; STG is conformal everywhere, and SFL and ZEA are equal-area everywhere.
@@ -211,7 +222,7 @@ Each projection's definition \citep{snyder87, calabretta02} gives $g$ in closed 
 The zenithal projections give $g$ as a function of the angular radius $r$ from the tangent point alone: ZEA compresses radially and stretches tangentially by the same factor, with $g \simeq r^2/8$ near the tangent point, while STG has $g = 0$ at every $r$ and scales both directions by $\sec^2(r/2)$.
 The cylindrical pair shear linearly in an offset from the field centre, with a common coefficient but in orthogonal directions: SFL in the east--west offset, $g \simeq \tfrac12\abs{(\lambda-\lambda_0)\sin\delta}$, and BICEP in the north--south, $g \simeq \tfrac12\abs{\tan\delta_0}\abs{\delta-\delta_0}$.
 BICEP's grid spaces pixels equally in longitude and latitude, so it stretches east--west by $\cos\delta_0/\cos\delta$ and leaves north--south unchanged.
-Figure~\ref{fig:invariants} maps $g$ and $\mu$ over our grid, and Fig.~\ref{fig:schematic} shows what one Jacobian does to a pixel lattice and to a spectrum.
+Figure~\ref{fig:invariants} maps $g$ and $\mu$ over our grid.
 
 \begin{table*}
   \caption{The four projections, their families, and their local shear $g$.}
@@ -241,18 +252,6 @@ Figure~\ref{fig:invariants} maps $g$ and $\mu$ over our grid, and Fig.~\ref{fig:
     The $\mu$ scale is logarithmic about $\mu=1$.
   }
   \label{fig:invariants}
-\end{figure*}
-
-\begin{figure*}
-  \includegraphics[width=\textwidth]{shear_schematic.pdf}
-  \caption{
-    One Jacobian, drawn for SFL at the position where $g$ equals the 1500d field's rms.
-    (a) Square grid pixels and one sky circle, on the sky and on the grid.
-    (b) A grid ring $\abs{\vbell} = {\rm const}$ and the sky ellipse of radius $\ell\rho(\chi)$ it reads, drawn with $R$ undone as after flattening, with the direction offset $\delta\psi$ of one mode.
-    (c) The input $\ell^6 C_\ell^{EE}$ and its direction average at this Jacobian, a band average with the band shaded for $\ell = 2000$.
-    One Jacobian lowers the acoustic peaks; the footprint average over many Jacobians removes most of what remains (Fig.~\ref{fig:spectra}).
-  }
-  \label{fig:schematic}
 \end{figure*}
 
 \subsection{Distortion of a scalar power spectrum} \label{subsec:scalar}
@@ -285,7 +284,7 @@ A power law has no preferred scale, so its exact ratio is one constant at every 
 These expressions account for the oscillations of Fig.~\ref{fig:spectra}.
 Each position averages $C$ over a band from $\ell s_2$ to $\ell s_1$.
 For SFL's rms shear of \grmsSFLfield\ on the 1500d field that band reaches one acoustic spacing near $\ell = \lsmearSFL$, and for BICEP's \grmsBICEPfield\ near $\ell = \lsmearBICEP$.
-At one position the average lowers the peaks of $C$ and fills its troughs (Fig.~\ref{fig:schematic}), and the average over a footprint's many Jacobians, each with its own band, washes the peaks out almost entirely under SFL and BICEP.
+At one position the average lowers the peaks of $C$ and fills its troughs (Fig.~\ref{fig:schematic}c), and the average over a footprint's many Jacobians, each with its own band, washes the peaks out almost entirely under SFL and BICEP.
 The ratio to the input is therefore low at the peaks of $C$ and high at its troughs.
 On the damping tail, $C$ is steep and convex, so the same average lifts the power of the sheared projections.
 
@@ -305,7 +304,7 @@ Equation~\eqref{eq:rot_angle} misses that angle by $\Delta = \order{g^2}$, which
 For a conformal projection $\Sigma$ is a multiple of the identity, so flattening is exact and the leakage vanishes.
 
 Flattening leaves the shear, and the shear misaligns modes.
-A plane wave $\vbell$ on the grid originates from the sky mode $\vb*{q} = J^{T}\vbell$, whose direction differs from that of $\vbell$ by
+A plane wave $\vbell$ on the grid originates from the sky mode $\vb*{q} = J^{T}\vbell$, whose direction differs from that of $\vbell$ (Fig.~\ref{fig:schematic}b) by
 \begin{equation}
   \delta\psi(\chi) = \atantwo\qty(s_2 \sin\chi,\, s_1 \cos\chi) - \chi
   \;\simeq\; -g \sin 2\chi,
@@ -350,7 +349,7 @@ It is an integral over the footprint with no free parameters:
 \end{equation}
 with $\rho$ as in Eq.~\eqref{eq:scalar_ratio}, $\Delta$ the flattening residual of Sect.~\ref{subsec:derivation}, every quantity evaluated at the sky position $\vu*{n}$, and $C^{EE}_{\rm sky}$ set to zero above the simulations' band limit.
 The numerator carries two powers of $\abs{\det J}$, one from Eq.~\eqref{eq:scalar_remap} and one because the mask-squared integral runs over plane rather than sky area.
-Setting the kernel to unity gives the scalar forward model, which is Eq.~\eqref{eq:scalar_ratio} written over a footprint; setting $\Delta$ to zero, replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho$ by unity returns Eq.~\eqref{eq:law_footprint}.
+Setting the kernel to unity gives the scalar forward model, which is Eq.~\eqref{eq:scalar_ratio} written over a footprint; for an equal-area projection, setting $\Delta$ to zero, replacing $\sin^2 2\delta\psi$ by its azimuthal average and $\rho$ by unity returns Eq.~\eqref{eq:law_footprint}.
 Every model curve in this paper is Eq.~\eqref{eq:forward} evaluated with the projection's Jacobian and the input spectrum.
 
 Equation~\eqref{eq:forward} is linear in the sky spectrum, so it is a mode-coupling matrix,
@@ -368,11 +367,11 @@ The spin-two kernels obey $\expval{\cos 2\delta\psi}_\chi = 1 - g^2$ and $\expva
 
 Two approximations underlie these relations.
 The first is locality: a shear at multipole $L$ must vary slowly compared with the modes, $L \ll \ell$.
-In the lensing kernels the term linear in $L/\ell$ vanishes by parity, so the leading correction is $\order{(L/\ell)^2}$.
-The projection's shear varies on the scale of the field, tens of degrees, so $L$ is of order a few, while the modes of interest have $\ell \gtrsim 10^3$; the correction is $\lesssim 10^{-4}$.
+In the lensing kernels the term linear in $L/\ell$ vanishes by parity, so the leading correction is of order $n^2 (L/\ell)^2$ for a local slope $n$.
+The projection's shear varies on the scale of the field, tens of degrees, so $L$ is of order a few, while the modes of interest have $\ell \gtrsim 10^3$; the correction is $\lesssim 10^{-3}$.
 The second is the weight of Eq.~\eqref{eq:law_footprint}.
 At leading order the footprint ratio is $2\int W^2\mu^2 g^2\, C^{EE}(\ell\bar s) \big/ \int W^2\mu^2\, C^{EE}(\ell\bar s)$, with $\bar s = (s_1+s_2)/2$: the estimator weights sky area by $W^2\abs{\det J}^2$, and each pixel reads the spectrum at its locally dilated wavenumber.
-For a falling spectrum the two nearly cancel and leave $\gsq$ under $W^2$, and the remainder tilts the measured ratio with $\ell$ (Sect.~\ref{subsec:validation}).
+For $C \propto \ell^{-4}$ the two cancel at first order in $\ln\mu$ and leave $\gsq$ under $W^2$; at any other slope the remainder tilts the measured ratio with $\ell$ (Sect.~\ref{subsec:validation}).
 
 \section{Forward model and simulations on the 1500d field} \label{sec:results}
 
@@ -621,7 +620,8 @@ The simulations were run on the Open Science Pool through services provided by t
 \section{Correspondence with the lensing kernels} \label{app:kernels}
 
 Both relations of Sect.~\ref{sec:law} are constant-shear limits of the standard flat-sky lensing kernels \citep{lewis06}, derived here as an independent check on coefficients the main text obtains from the Jacobian alone.
-The conventions map as follows: the lensing shear modulus is $\abs{\gamma} = (s_1-s_2)/2$ and the arithmetic-mean singular value is one plus the convergence, $(s_1+s_2)/2 = 1+\kappa$, distinct from the magnification $\mu = s_1 s_2$, so
+The conventions map as follows: a deflection acts from the image to the source, so the lensing quantities belong to the map from grid to sky, $J^{-1}$, with singular values $1/s_2 \geq 1/s_1$.
+Its shear modulus is $\abs{\gamma} = (1/s_2-1/s_1)/2$ and its arithmetic-mean singular value is one plus the convergence, $(1/s_1+1/s_2)/2 = 1+\kappa$, distinct from the magnification $\mu = s_1 s_2$, so
 \begin{equation} \label{eq:g_gamma}
   g = \frac{\abs{\gamma}}{1 + \kappa},
 \end{equation}
@@ -631,7 +631,7 @@ The mapping holds because flattening removes the polar rotation: a gravitational
 
 \subsection{The spin-two channel} \label{app:kernels_eb}
 
-Write $\Sigma = (1+\kappa)\mathbb{1} + \gamma$, generated by a lensing potential whose power is confined to $L \ll \ell$.
+Write $\Sigma^{-1} = (1+\kappa)\mathbb{1} + \gamma$, generated by a lensing potential whose power is confined to $L \ll \ell$.
 The first-order kernel
 \begin{equation} \label{eq:lensing_kernel}
   C_\ell^{BB} = \int \frac{\dd[2]{\vbell'}}{(2\pi)^2}
@@ -727,9 +727,9 @@ Table~\ref{table:curl} gives the effective fields over the 1500d field.
 
 \section{Flattening angles} \label{app:flatten}
 
-The equal-weight average of Eq.~\eqref{eq:rot_angle} differs from the polar rotation by $\Delta = (g^2/2)\abs{\sin 4\beta} + \order{g^3}$, with $\beta$ the angle of the shear principal axes to the grid axes.
+The equal-weight average of Eq.~\eqref{eq:rot_angle} differs from the polar rotation by the signed angle $\Delta = (g^2/2)\sin 4\beta + \order{g^3}$, with $\beta$ the angle of the principal axes of $\Sigma$ from sky east toward north.
 This uniform rotation of the polarization adds $4\Delta^2 = g^4\sin^2 4\beta$ to the leakage, the same order as, and opposite in sign to, the $-\tfrac32 g^4$ term of Eq.~\eqref{eq:law}.
-The residual vanishes where the principal axes lie along the grid axes (BICEP everywhere, the zenithal projections on their central meridians) or along the grid diagonals.
+The residual vanishes where the principal axes lie along the sky axes (BICEP everywhere, the zenithal projections on their central meridians) or along the diagonals between them.
 On a round footprint of a zenithal projection $\expval{\sin^2 4\beta} = \tfrac12$, so flattening with Eq.~\eqref{eq:rot_angle} realizes $2g^2(1-\tfrac12 g^2)$ rather than $2g^2(1-\tfrac34 g^2)$, a ${\sim}1\%$ shift at $g = 0.2$.
 SFL's axes lie off the diagonals by $\tfrac12\arcsin g$, which defers its residual to $\Delta \simeq g^3$, but SFL shears far harder than ZEA, so it carries nearly all of the effect: \flattenSFL\ of its leakage on the 5\% disk, against \flattenZEA\ for ZEA and none for BICEP or STG.
 The simulations and the forward model both flatten with Eq.~\eqref{eq:rot_angle}, the model evaluating $\Delta$ pixel by pixel from the Jacobian.

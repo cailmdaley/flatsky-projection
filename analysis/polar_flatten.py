@@ -3,7 +3,7 @@
 FlattenPol rotates Q/U by Eq. (rot_angle), the equal-weight average of the
 north-based and east-based angles. The polar decomposition J = R S of the
 local Jacobian says the rotation to remove is R's, and FlattenPol misses it by
-Delta = (g^2/2)|sin 4beta| + O(g^3) (`shear_leakage.flattening_residual`).
+Delta = (g^2/2) sin 4beta + O(g^3) (`shear_leakage.flattening_residual`).
 This module shows Delta is avoidable and measures what avoiding it buys.
 
 The closed form
@@ -24,7 +24,7 @@ and e = sin(theta) [d(phi)/dy - i d(phi)/dx], the polar angle is
 arg[i (n - e)] and FlattenPol's is arg[i (n/|n| - e/|e|)]: the same
 expression with both gradients normalised. They agree exactly when the two
 gradients have equal length or are orthogonal, i.e. when the principal axes
-lie along the grid diagonals or the grid axes -- the zeros of sin 4beta.
+lie along the sky diagonals or the sky axes -- the zeros of sin 4beta.
 
 What runs here
 --------------
