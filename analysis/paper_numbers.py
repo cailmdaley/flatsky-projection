@@ -1097,14 +1097,17 @@ def masked_template_numbers(M=None):
 
 
 def local_source_numbers(M=None):
-    """Exact spherical compact-source response at the 15 sampled field points.
+    """Spherical source responses and finite-patch S/N forecasts at 15 points.
 
-    These are fixed-location template-mismatch responses, not measured biases
-    of an SPT catalogue or maxima over its whole footprint.
+    Amplitude macros are noiseless spherical template-mismatch responses;
+    SnrLoss macros are local-affine covariance forecasts. Neither measures
+    an SPT catalogue bias or a maximum over its whole footprint.
     """
     import json
     path=ROOT/'results/highell/local_source_geometry/geometry.json'
     rows=json.loads(path.read_text())['rows']
+    from local_source_window_covariance import models
+    finite=models(rows)
     own=M is None
     if own:
         M=Macros()
@@ -1112,8 +1115,7 @@ def local_source_numbers(M=None):
         for kind in ('point','cluster'):
             rs=[r for r in rows if r['projection']=='Proj'+proj and r['profile']==kind and r['noise']=='cmb_white']
             M.add('source'+proj+kind.title()+'Loss',pct(max(1-r['amplitude'] for r in rs),2))
-            central=next(r for r in rs if r['ra']==0 and r['dec']==-56)
-            relative_snr=[r['amplitude']/r['sigma_uK']*central['sigma_uK']/central['amplitude'] for r in rs]
+            relative_snr=[finite[r['projection'],r['ra'],r['dec'],r['profile']]['snr_relative_center_finite_patch'] for r in rs]
             M.add('source'+proj+kind.title()+'SnrLoss',pct(1-min(relative_snr),1))
     rs=[r for r in rows if r['projection']=='ProjBICEP' and r['profile']=='point' and r['noise']=='cmb_white']
     M.add('sourceBICEPPointLow',pct(min(r['amplitude']-1 for r in rs),1))
@@ -1124,7 +1126,8 @@ def local_source_numbers(M=None):
         output=ROOT/'paper/local_source_numbers.tex'
         output.write_text(M.tex())
         print(M.tex())
-        print(f'Wrote {output}')
+        print(f'Wrote {output} (only macros quoted in main.tex)')
+        print(json.dumps(M,indent=2))
 
 
 def choosing_numbers():
