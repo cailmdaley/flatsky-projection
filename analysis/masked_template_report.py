@@ -40,7 +40,7 @@ def main():
     import hashlib
     result={'nseed':n,'delta_P_per_split_uK_arcmin':5,
         'source_sha256':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
-        'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
+        'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0; no source holes or spherical-B response calibration. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
         'bands':{}}
     manifest=json.loads((Path(a.input)/'.lightcone-manifest.json').read_text())
     result['source_manifest']={k:manifest[k] for k in ('data_version','code_version','git_sha','input_versions','recipe')}
@@ -99,7 +99,7 @@ def main():
     axes[0].set(yscale='log',xlabel=r'$\ell$',ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]')
     axes[0].legend(fontsize=6.5)
     if n>1:
-        for key,ls,col in [('oracle','--',PS.SECONDARY[1]),('masked','-',PS.SECONDARY[0])]:
+        for key,ls,col in [('masked','none',PS.SECONDARY[0])]: 
             centers=[1000,1500,2500,3500]
             stats=[band[key] for band in result['bands'].values()]
             gain=np.array([v['cross_standard_deviation_gain_vs_fixed_power_subtraction'] for v in stats])

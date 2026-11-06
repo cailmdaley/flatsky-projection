@@ -476,6 +476,7 @@ def main():
 
     prose_numbers(M, mom)
     local_source_numbers(M)
+    masked_template_numbers(M)
 
     OUT.write_text(M.tex())
     print(M.tex())
@@ -1081,6 +1082,20 @@ def spherical_numbers(M):
           pct(max(abs(r['amplitude'] - r['prediction']) for r in data['car_windows']), 1))
 
 
+def masked_template_numbers(M=None):
+    """Masked/noisy SFL template: isolated autos and split-cross scatter."""
+    from masked_template_numbers import numbers
+    own = M is None
+    if own:
+        M = Macros()
+    for name, value in numbers().items():
+        M.add(name, value)
+    if own:
+        path = ROOT / 'paper' / 'masked_template_numbers.tex'
+        path.write_text(M.tex())
+        print(f'Wrote {path}')
+
+
 def local_source_numbers(M=None):
     """Exact spherical compact-source response at the 15 sampled field points.
 
@@ -1113,7 +1128,9 @@ def local_source_numbers(M=None):
 
 
 if __name__ == "__main__":
-    if "--local-source-only" in sys.argv:
+    if "--masked-template-only" in sys.argv:
+        masked_template_numbers()
+    elif "--local-source-only" in sys.argv:
         local_source_numbers()
     elif "--check-scalar-forward" in sys.argv:
         check_scalar_forward()
