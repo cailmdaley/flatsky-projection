@@ -1,7 +1,9 @@
 """Model and plot the lc beam experiment, retaining its numerical controls."""
 
 from pathlib import Path
+import hashlib
 import json
+import subprocess
 import sys
 
 import numpy as np
@@ -184,6 +186,29 @@ def report(data,model,bdiag):
     return result
 
 
+def write_provenance():
+    """Fingerprint postprocessing inputs separately from lc's map manifest."""
+    paths=[MAPS/'.lightcone-manifest.json', MAPS/'summary.npz', MODEL, BCACHE,
+           ROOT/'src/stages/beam_reprojection.py',
+           ROOT/'analysis/beam_report.py', ROOT/'analysis/section5_geometry.py',
+           ROOT/'analysis/geometry.py', ROOT/'analysis/healpix_sheared_window.py',
+           ROOT/'src/stages/make_masks.py', ROOT/'analysis/paper_numbers.py']
+    for proj in ('ProjZEA','ProjSTG'):
+        for maskdir,workdir,mi in (('flatsky_masks','coupling_matrices',5),
+                                  ('field_flatsky_masks','field_coupling',0)):
+            paths.extend((ROOT/'results/highell'/maskdir/f'mask_{proj}_{mi}.npz',
+                          ROOT/'results/highell'/workdir/f'w22_{proj}_{mi}.fits'))
+    hashes={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in paths}
+    provenance={'git_revision':subprocess.check_output(
+        ['git','-C',str(ROOT),'rev-parse','HEAD'],text=True).strip(),
+        'inputs_sha256':hashes,
+        'note':'Map products have an lc manifest; these analysis products are outside lc. '
+               'The retained B cache is fingerprinted, not assumed to be an lc output.'}
+    (ROOT/'paper/beam_analysis_provenance.json').write_text(
+        json.dumps(provenance,indent=2)+'\n')
+
+
 def run():
     if '--model-only' in sys.argv:
         target_model(np.arange(550.,4000.,100.),(np.arange(12)+.5)*np.pi/12)
@@ -204,6 +229,7 @@ def run():
         bdiag=b_diagnostics()
     plot(data,model)
     report(data,model,bdiag)
+    write_provenance()
 
 
 if __name__=='__main__':
