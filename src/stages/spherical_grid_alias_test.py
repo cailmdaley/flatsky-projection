@@ -1,6 +1,6 @@
 """Paired out-of-band injection into the spherical-grid tests.
 
-The white zero-B input extends to ell=512 while reconstructing ell<=256
+The white zero-B input cutoff is swept while reconstructing ell<=256
 on Nside=128 and 384x768 CAR. The matched reference cuts the same alms to
 256 *before* synthesis. Their difference isolates out-of-band aliasing.
 """
@@ -11,14 +11,15 @@ from spherical_grid_test import hp, np, synth, analyse, hp_inverse, hp_average, 
 
 p = argparse.ArgumentParser()
 p.add_argument('--seed', type=int, required=True)
+p.add_argument('--input-lmax', type=int, required=True)
 p.add_argument('--out', required=True)
 args = p.parse_args()
 np.random.seed(args.seed)
-cl = np.ones(513)
+cl = np.ones(args.input_lmax+1)
 cl[:2] = 0
-sky = np.array([hp.synalm(cl, lmax=512, new=True), np.zeros(hp.Alm.getsize(512), complex)])
+sky = np.array([hp.synalm(cl, lmax=args.input_lmax, new=True), np.zeros(hp.Alm.getsize(args.input_lmax), complex)])
 ell, mm = hp.Alm.getlm(256)
-truth = sky[:, hp.Alm.getidx(512, ell, mm)]
+truth = sky[:, hp.Alm.getidx(args.input_lmax, ell, mm)]
 records = {}
 for label, a in [('inband', truth), ('extended', sky)]:
     lm = hp.Alm.getlmax(a.shape[-1])
@@ -34,7 +35,8 @@ for method in ('healpix_point', 'car_point', 'healpix_average', 'car_average'):
     records[f'{method}_alias'] = records[f'{method}_extended']-records[f'{method}_inband']
 out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
-np.savez(out/f'{args.seed}-alms.npz', sky=sky, truth=truth, **records)
-result = dict(settings=dict(seed=args.seed, input_lmax=512, analysis_lmax=256, nside=128, factor=4),
+prefix = f'{args.input_lmax}-{args.seed}'
+np.savez(out/f'{prefix}-alms.npz', sky=sky, truth=truth, **records)
+result = dict(settings=dict(seed=args.seed, input_lmax=args.input_lmax, analysis_lmax=256, nside=128, factor=4),
               statistics={name: statistics(a, truth, 256) for name, a in records.items()})
-(out/f'{args.seed}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')
+(out/f'{prefix}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')

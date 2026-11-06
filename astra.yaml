@@ -1137,14 +1137,16 @@ outputs:
     type: data
     label: Paired out-of-band spherical grid injection
     description: |
-      Same zero-B alms cut at 256 or extended to 512, reconstructed to 256.
-      Differences isolate aliasing on Nside 128 and 384x768 CAR.
+      Same zero-B alms cut at 256 or extended to 384, 512, 640 or 768,
+      reconstructed to 256. Differences isolate bandwidth-dependent aliasing
+      on Nside 128 and 384x768 CAR; these are not equal-area grids.
     units:
+      input_lmax: [384, 512, 640, 768]
       seed: [0, 1, 2]
     recipe:
       command: >-
         bash env.sh python3 src/stages/spherical_grid_alias_test.py
-        --seed {units.seed} --out {output}
+        --input-lmax {units.input_lmax} --seed {units.seed} --out {output}
       resources:
         cpus: 2
         memory: 8Gi
@@ -1157,7 +1159,8 @@ outputs:
     description: |
       Paired point-sample and explicit pixel-average tests, with global
       spherical E/B reconstruction selected on the 1500d footprint.
-      Dimensionless resolution tests, not production high-ell measurements.
+      Fixed ell<=256 input-bandwidth controls, not scale-invariant or
+      production high-ell measurements; the two grids are not equal-area.
     units:
       nside: [128, 256]
       factor: [4, 8]

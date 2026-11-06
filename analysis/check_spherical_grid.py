@@ -36,13 +36,60 @@ e = hp.synalm(np.r_[0., 0., np.ones(31)], lmax=32)
 a = np.array([e, e*0])
 back = analyse(synth(a, 64), 32)
 np.testing.assert_allclose(back, a, atol=3e-14)
+# Constant chart-longitude averaging has a declination-dependent physical
+# width, yet is exactly an m-filter and cannot mix E/B.
+m = synth(a, 64)
+phi_filter = np.sinc(np.fft.rfftfreq(128))
+m = np.fft.irfft(np.fft.rfft(m, axis=-1)*phi_filter, n=128, axis=-1)
+filtered = analyse(m, 32)
+_, mm = hp.Alm.getlm(32)
+np.testing.assert_allclose(filtered, a*np.sinc(mm/128), atol=3e-14)
 back = hp_inverse(np.asarray(hp.alm2map_spin(a, 32, 2, 32)), 32)
 np.testing.assert_allclose(back, a, atol=1e-12)
-# Constant longitude phase must not be confused with a half-pixel shift.
-# A narrow equatorial row approaches a separable, real top-hat response.
+# Test the transport sign against a spin-2 spherical eigenfunction, not
+# only a second expression for the same geometric angle.
+from ducc0 import sht
+from scipy.special import eval_jacobi
+rng = np.random.default_rng(1)
+single = np.zeros_like(a)
+ids = hp.Alm.getidx(32, 32, np.arange(33))
+single[0, ids] = rng.normal(size=33)+1j*rng.normal(size=33)
+single[0, ids[0]] = single[0, ids[0]].real
+parent_t = np.arccos(rng.uniform(-.98, .98, 128))
+parent_p = rng.uniform(0, 2*np.pi, 128)
+radius = .1
+bearing = (np.arange(64)+.5)*2*np.pi/64
+radial = hp.ang2vec(parent_t, parent_p)
+et = np.column_stack([np.cos(parent_t)*np.cos(parent_p), np.cos(parent_t)*np.sin(parent_p), -np.sin(parent_t)])
+ep = np.column_stack([-np.sin(parent_p), np.cos(parent_p), np.zeros(128)])
+children = np.cos(radius)*radial[:, None]+np.sin(radius)*(np.cos(bearing)[None, :, None]*et[:, None]+np.sin(bearing)[None, :, None]*ep[:, None])
+ct, cp = hp.vec2ang(children.reshape(-1, 3))
+def at(t, p):
+    qu = sht.synthesis_general(alm=single, spin=2, lmax=32,
+        loc=np.column_stack([t, p]), epsilon=1e-12, nthreads=2)
+    return qu[0]+1j*qu[1]
+child_pol = at(ct, cp).reshape(128, 64)
+parent_pol = at(parent_t, parent_p)
+phase = transport(ct.reshape(128, 64), cp.reshape(128, 64), parent_t[:, None], parent_p[:, None])
+d22 = np.cos(radius/2)**4*eval_jacobi(30, 0, 4, np.cos(radius))
+np.testing.assert_allclose(np.mean(child_pol*phase, axis=1), d22*parent_pol, atol=2e-11)
+# Cross-check the actual healpy and ducc spin conventions.
+t, phi = hp.pix2ang(16, np.arange(hp.nside2npix(16)))
+hqu = hp.alm2map_spin(single, 16, 2, 32)
+np.testing.assert_allclose(hqu[0]+1j*hqu[1], at(t, phi), atol=2e-11)
+# A single longitudinal harmonic must retain its phase under centred
+# symmetric subpixel averaging; a half-pixel centring error fails this.
+mode = np.zeros_like(a)
+mode[0, hp.Alm.getidx(32, 12, 7)] = 1
+point = synth(mode, 64)
 for factor in (2, 4):
-    averaged, raw = car_average(a, 64, factor)
-    assert np.isfinite(averaged).all() and np.isfinite(raw).all()
+    averaged, raw = car_average(mode, 64, factor)
+    assert np.isfinite(averaged).all()
+    f0, f1 = np.fft.rfft(point[0], axis=-1)[:, 7], np.fft.rfft(raw[0], axis=-1)[:, 7]
+    row = np.argmax(abs(f0))
+    ratio = f1[row]/f0[row]
+    assert ratio.real > 0
+    assert abs(ratio.imag) < 1e-12
 
 if args.pixell:
     from pixell import enmap, curvedsky

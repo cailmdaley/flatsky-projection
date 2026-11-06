@@ -55,7 +55,7 @@ def prediction(nside, lo, hi, region, factor=0):
 
 def main():
     data = load('spherical_grid_test', 12)
-    alias = load('spherical_grid_alias_test', 3)
+    alias = load('spherical_grid_alias_test', 12)
     report = {'pixel_tests': [], 'alias_tests': [], 'convergence': []}
     for nside in (128, 256):
         for method in ('healpix_point', 'car_point', 'healpix_average', 'car_average',
@@ -78,12 +78,14 @@ def main():
                 report['convergence'].append(dict(nside=nside, method=method, band=band,
                     bb_factor4=float(np.mean(coarse)), bb_factor8=float(np.mean(fine)),
                     bb_extrapolated=float((4*np.mean(fine)-np.mean(coarse))/3)))
-    for method in ('healpix_point', 'car_point', 'healpix_average', 'car_average'):
-        for band in range(4):
-            rows = [selected(d, method+'_alias')[band] for d in alias]
-            report['alias_tests'].append(dict(method=method, lo=rows[0]['lo'], hi=rows[0]['hi'],
-                ee=float(np.mean([r['ee'] for r in rows])),
-                bb=float(np.mean([r['bb'] for r in rows]))))
+    for cutoff in (384, 512, 640, 768):
+        for method in ('healpix_point', 'car_point', 'healpix_average', 'car_average'):
+            ds = [d for d in alias if d['settings']['input_lmax']==cutoff]
+            for band in range(4):
+                rows = [selected(d, method+'_alias')[band] for d in ds]
+                report['alias_tests'].append(dict(input_lmax=cutoff, method=method, lo=rows[0]['lo'], hi=rows[0]['hi'],
+                    ee=float(np.mean([r['ee'] for r in rows])),
+                    bb=float(np.mean([r['bb'] for r in rows]))))
     windows = []
     for region in ('dec0', 'dec-30', 'dec-56', 'dec-75', 'field1500'):
         ds = [d for d in data if d['settings']['nside']==128 and d['settings']['factor']==8]
