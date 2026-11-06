@@ -85,6 +85,22 @@ tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 # INPUTS
 # ---------------------------------------------------------------------------
 inputs:
+  - id: masked_template_operator
+    type: data
+    label: Masked pure-E template estimator
+    source: analysis/masked_template.py
+  - id: masked_template_geometry
+    type: data
+    label: Template geometry and angular harmonic operator
+    source: analysis/template_subtraction.py
+  - id: masked_template_flattening
+    type: data
+    label: Polar flattening and apodized 1500d mask implementation
+    source: analysis/polar_flatten.py
+  - id: masked_template_stage
+    type: data
+    label: Masked template stage entrypoint
+    source: src/stages/masked_template.py
   - id: lensing_qe_theory
     type: data
     label: TT theory for lensing response simulations
@@ -1139,6 +1155,24 @@ outputs:
     inputs: [projected_qu, flatsky_masks]
     units:
       seed: [0]
+      projection: [ProjSFL]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/masked_template.py
+        --maps {inputs.projected_qu} --masks {inputs.flatsky_masks}
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 4
+        memory: 16Gi
+        disk: 24Gi
+        time_limit: 3h
+
+  - id: masked_template_realistic
+    type: data
+    label: Twenty-seed masked noisy SFL E-template comparison
+    inputs: [projected_qu, flatsky_masks, masked_template_operator, masked_template_geometry, masked_template_flattening, masked_template_stage, lensing_qe_theory]
+    units:
+      seed: "0..20"
       projection: [ProjSFL]
     recipe:
       command: >-
