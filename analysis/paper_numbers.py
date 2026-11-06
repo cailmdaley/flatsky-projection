@@ -974,6 +974,47 @@ def window_numbers():
     print(f'Wrote {path}')
 
 
+def residual_numbers():
+    """Generate only the bounded residual claims, never a closure calibration.
+
+    Run summarize_residual_anomalies.py after all canonical controls and gates.
+    The radial response remains an approximate diagnostic; the summary retains
+    covariant per-bin tests alongside band means so those cannot be confused.
+    """
+    import json
+    d = json.loads((ROOT/'analysis/figures/residual_anomalies/summary.json').read_text())
+    M = Macros()
+
+    def find(rows, **keys):
+        matches = [r for r in rows if all(r[k] == v for k, v in keys.items())]
+        assert len(matches) == 1, keys
+        return matches[0]
+
+    def uncertainty(row, mean='mean', se='se', nd=3):
+        return rf"$({100*row[mean]:+.{nd}f}\pm{100*row[se]:.{nd}f})\%$"
+
+    stg = find(d['production_conditioned'], projection='ProjSTG', spectrum='TT', lo=4500, hi=4800)
+    M.add('residSTGTTUpper', uncertainty(stg))
+    for spec in ('TT', 'EE'):
+        row = find(d['paired'], spectrum=spec)
+        M.add('residBICEPZEA'+spec, uncertainty(row))
+    zea = find(d['map_interventions'], projection='ProjZEA', spectrum='BB', lo=4500, hi=4800)
+    assert zea['nseed'] == 4
+    M.add('residZEABBRefineDeltaPP', rf"$({100*zea['delta']:+.2f}\pm{100*zea['delta_se']:.2f})$")
+    M.add('residZEABBRefineRemaining', uncertainty(zea, 'fine', 'fine_se', nd=2))
+    M.add('residMapSeeds', str(zea['nseed']))
+    row = find(d['independent_clean'], projection='ProjSTG', spectrum='EE')
+    M.add('residSTGEEClean', uncertainty(row, 'spherical_residual', 'spherical_se'))
+    tests = find(d['ensemble_tests'], projection='ProjSTG', spectrum='EE',
+                 null='new-model-spherical', lo=1000, hi=4000)
+    M.add('residSTGEEMaxBin', pct(tests['max_bin_residual'], 2))
+    M.add('residSTGEEFitP', '$'+sci(tests['p'], 1)+'$')
+    assert all(name.isalpha() for name in M)
+    path = ROOT/'paper/residual_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 def beam_numbers():
     """Write measured beam macros without rerunning the geometry calculation."""
     data = json.loads((ROOT / 'paper' / 'beam_summary.json').read_text())
@@ -1097,14 +1138,17 @@ def masked_template_numbers(M=None):
 
 
 def local_source_numbers(M=None):
-    """Exact spherical compact-source response at the 15 sampled field points.
+    """Spherical source responses and finite-patch S/N forecasts at 15 points.
 
-    These are fixed-location template-mismatch responses, not measured biases
-    of an SPT catalogue or maxima over its whole footprint.
+    Amplitude macros are noiseless spherical template-mismatch responses;
+    SnrLoss macros are local-affine covariance forecasts. Neither measures
+    an SPT catalogue bias or a maximum over its whole footprint.
     """
     import json
     path=ROOT/'results/highell/local_source_geometry/geometry.json'
     rows=json.loads(path.read_text())['rows']
+    from local_source_window_covariance import models
+    finite=models(rows)
     own=M is None
     if own:
         M=Macros()
@@ -1112,8 +1156,7 @@ def local_source_numbers(M=None):
         for kind in ('point','cluster'):
             rs=[r for r in rows if r['projection']=='Proj'+proj and r['profile']==kind and r['noise']=='cmb_white']
             M.add('source'+proj+kind.title()+'Loss',pct(max(1-r['amplitude'] for r in rs),2))
-            central=next(r for r in rs if r['ra']==0 and r['dec']==-56)
-            relative_snr=[r['amplitude']/r['sigma_uK']*central['sigma_uK']/central['amplitude'] for r in rs]
+            relative_snr=[finite[r['projection'],r['ra'],r['dec'],r['profile']]['snr_relative_center_finite_patch'] for r in rs]
             M.add('source'+proj+kind.title()+'SnrLoss',pct(1-min(relative_snr),1))
     rs=[r for r in rows if r['projection']=='ProjBICEP' and r['profile']=='point' and r['noise']=='cmb_white']
     M.add('sourceBICEPPointLow',pct(min(r['amplitude']-1 for r in rs),1))
@@ -1124,7 +1167,8 @@ def local_source_numbers(M=None):
         output=ROOT/'paper/local_source_numbers.tex'
         output.write_text(M.tex())
         print(M.tex())
-        print(f'Wrote {output}')
+        print(f'Wrote {output} (only macros quoted in main.tex)')
+        print(json.dumps(M,indent=2))
 
 
 def choosing_numbers():
@@ -1199,6 +1243,8 @@ if __name__ == "__main__":
         window_numbers()
     elif "--beam-only" in sys.argv:
         beam_numbers()
+    elif "--residual-only" in sys.argv:
+        residual_numbers()
     else:
         main()
         scalar_numbers()

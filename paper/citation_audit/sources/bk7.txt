@@ -1,0 +1,3148 @@
+D RAFT VERSION J ULY 4, 2016
+Preprint typeset using LATEX style emulateapj v. 01/23/15
+
+B ICEP 2 / Keck Array VII: MATRIX BASED E/B SEPARATION APPLIED TO B ICEP 2 AND THE Keck Array
+
+arXiv:1603.05976v2 [astro-ph.IM] 1 Jul 2016
+
+Keck Array AND B ICEP 2 C OLLABORATIONS : P. A. R. A DE 1 , Z. A HMED 2,3 , R. W. A IKIN 4 , K. D. A LEXANDER 5 , D. BARKATS 5 ,
+S. J. B ENTON 6 , C. A. B ISCHOFF 5 , J. J. B OCK 7,8 , R. B OWENS -RUBIN 5 , J. A. B REVIK 7 , I. B UDER 5 , E. B ULLOCK 9 , V. B UZA 5,10 ,
+J. C ONNORS 5 , B. P. C RILL 8 , L. D UBAND 11 , C. DVORKIN 10 , J. P. F ILIPPINI 7,12 , S. F LIESCHER 9 , J. G RAYSON 2 , M. H ALPERN 13 ,
+S. H ARRISON 5 , S. R. H ILDEBRANDT 7,8 , G. C. H ILTON 14 , H. H UI 7 , K. D. I RWIN 2,3 , J. K ANG 2,3 , K. S. K ARKARE 5 , E. K ARPEL 2 ,
+J. P. K AUFMAN 15 , B. G. K EATING 15 , S. K EFELI 7 , S. A. K ERNASOVSKIY 1 , J. M. KOVAC 5,10 , C. L. K UO 2,3 , E. M. L EITCH 16 ,
+M. L UEKER 7 , K. G. M EGERIAN 8 , T. NAMIKAWA 2,3 , C. B. N ETTERFIELD 6,17 , H. T. N GUYEN 8 , R. O’B RIENT 7,8 , R. W. O GBURN IV 2,3 ,
+A. O RLANDO 7 , C. P RYKE 9,18 , S. R ICHTER 5 , R. S CHWARZ 18 , C. D. S HEEHY 16,18 , Z. K. S TANISZEWSKI 7,8 , B. S TEINBACH 7 ,
+R. V. S UDIWALA 1 , G. P. T EPLY 7,15 , K. L. T HOMPSON 2,3 , J. E. T OLAN 2,21 , C. T UCKER 1 , A. D. T URNER 8 , A. G. V IEREGG 5,16,19 ,
+A. C. W EBER 8 , D. V. W IEBE 13 , J. W ILLMERT 18 , C. L. W ONG 5,10 , W. L. K. W U 2,20 , AND K. W. YOON 2
+Draft version July 4, 2016
+
+ABSTRACT
+A linear polarization field on the sphere can be uniquely decomposed into an E-mode and a B-mode component. These two components are analytically defined in terms of spin-2 spherical harmonics. Maps that contain
+filtered modes on a partial sky can also be decomposed into E-mode and B-mode components. However, the
+lack of full sky information prevents orthogonally separating these components using spherical harmonics. In
+this paper, we present a technique for decomposing an incomplete map into E and B-mode components using
+E and B eigenmodes of the pixel covariance in the observed map. This method is found to orthogonally define
+E and B in the presence of both partial sky coverage and spatial filtering. This method has been applied to
+the B ICEP 2 and the Keck Array maps and results in reducing E to B leakage from ΛCDM E-modes to a level
+corresponding to a tensor-to-scalar ratio of r < 1 × 10−4 .
+Subject headings: cosmic background radiation — cosmology: observations — gravitational waves — inflation — polarization
+1. INTRODUCTION
+1
+
+School of Physics and Astronomy, Cardiff University, Cardiff, CF24
+3AA, United Kingdom
+2 Department of Physics, Stanford University, Stanford, CA 94305, USA
+3 Kavli Institute for Particle Astrophysics and Cosmology, SLAC National
+Accelerator Laboratory, 2575 Sand Hill Rd, Menlo Park, CA 94025, USA
+4 Department of Physics, California Institute of Technology, Pasadena,
+California 91125, USA
+5 Harvard-Smithsonian Center for Astrophysics, 60 Garden Street MS 42,
+Cambridge, Massachusetts 02138, USA
+6 Department of Physics, University of Toronto, Toronto, Ontario, M5S
+1A7, Canada
+7 Department of Physics, California Institute of Technology, Pasadena,
+California 91125, USA
+8 Jet Propulsion Laboratory, Pasadena, California 91109, USA
+9 Minnesota Institute for Astrophysics, University of Minnesota, Minneapolis, Minnesota 55455, USA
+10 Department of Physics, Harvard University, Cambridge, MA 02138,
+USA
+11 Service des Basses Températures, Commissariat à l’Energie Atomique,
+38054 Grenoble, France
+12 Department of Physics, University of Illinois at Urbana-Champaign, Urbana, Illinois 61801, USA
+13 Department of Physics and Astronomy, University of British Columbia,
+Vancouver, British Columbia, V6T 1Z1, Canada
+14 National Institute of Standards and Technology, Boulder, Colorado
+80305, USA
+15 Department of Physics, University of California at San Diego, La Jolla,
+California 92093, USA
+16 Kavli Institute for Cosmological Physics, University of Chicago,
+Chicago, IL 60637, USA
+17 Canadian Institute for Advanced Research, Toronto, Ontario, M5G 1Z8,
+Canada
+18 School of Physics and Astronomy, University of Minnesota, Minneapolis, Minnesota 55455, USA
+19 Department of Physics, Enrico Fermi Institute, University of Chicago,
+Chicago, IL 60637, USA
+20 Department of Physics, University of California, Berkeley, CA 94720,
+USA
+21 Corresponding author: jetolan@stanford.edu
+
+Current experiments are producing low noise maps of the
+polarization of the cosmic microwave background (CMB) radiation able to constrain models of inflation and measure Bmodes from gravitational lensing. These experiments include
+B ICEP 2, the Keck Array, P OLARBEAR, SPT POL, ACTPol,
+and Planck (B ICEP 2 Collaboration I 2014; Keck Array and
+B ICEP 2 Collaborations VI 2016; Hanson et al. 2013; Polarbear Collaboration 2014; van Engelen et al. 2015; Planck Collaboration I 2015). These experiments do not measure the
+CMB over the entire sky for a variety of reasons. Galactic
+foregrounds prevent any experiment from producing a map of
+the CMB over the entire sky. Any ground or balloon based
+experiment has a limited view of the full sky. Some experiments, including B ICEP 2 and the Keck Array, choose to observe a limited field of view to increase map depth over a
+small region of sky or choose to filter their data so that the
+maps incompletely measure the modes within the field.
+The ability to uniquely separate a linear polarization field
+into E and B-modes is critical for measuring gravitational
+waves using the B-mode polarization. This separation allows
+the distinction to be made between E-modes created by scalar
+perturbations and B-modes coming from tensor perturbations
+(Kamionkowski et al. 1997; Zaldarriaga 1998).
+Unfortunately, the unique decomposition into E and B is
+only possible for maps of the full sky. Maps containing a
+limited view of the sky, or an incomplete measurement of the
+true sky modes, are said to suffer from E/B leakage. E to B
+leakage is defined as measured power for a particular B-mode
+estimator whose source is true sky E-mode power. B to E
+leakage is leakage of power in the opposite direction, but in
+practice it is less of a concern for CMB measurements due to
+the much fainter B-mode signal. E/B leakage refers to both
+
+2
+types of leakage.
+There are several ways to mitigate the effect of E/B leakage
+in analysis. Full pixel-space likelihood methods in principle
+can optimally separate E and B contributions for any given
+map. These have been applied mainly to maps of relatively
+modest pixel count, including many early detections of CMB
+polarization (for example, Kovac et al. 2002; Readhead et al.
+2004; Bischoff et al. 2008). Current analyses more commonly
+apply fixed estimators of E and B power spectra to observed
+CMB polarization maps. The simplest way to correct such
+estimators for leakage is to run an ensemble of simulations
+through the analysis and subtract the mean level of leakage
+in the angular power spectrum. However, the sample variance
+from the leaked power remains and contributes to the final uncertainty of measured power in each angular power spectrum
+bin, limiting an experiment’s ability to measure B-modes regardless of its instrumental sensitivity. For many experiments,
+including B ICEP 2 and the Keck Array, the sample variance of
+the leaked E-modes is comparable to the instrumental noise
+and is a significant contribution to the uncertainty in the Bmode power spectrum.
+Solutions to this problem rely on the fact that for most Bmode science it is not necessary to classify all the modes in
+the measured polarization field. Instead, it is sufficient to
+find subspaces that are caused by either E or B and ignore
+the modes whose source cannot be determined. There are a
+number of published methods that attempt this goal.
+Smith (2006) presents an estimator that does not suffer from
+E/B leakage arising from partial sky coverage. This method
+has been incorporated into the Xpure and S2 HAT packages
+(Grain et al. 2009), and the B ICEP 2 and Keck Array analysis
+pipeline contains an option in which this algorithm is implemented.
+However, many experiments, including B ICEP 2 and the
+Keck Array, produce maps in which some modes have also
+been removed by filtering. The estimator presented in Smith
+(2006) does not prevent filtered modes from creating E/B
+leakage. Another method, presented in Smith & Zaldarriaga
+(2007), accounts for incomplete mode measurement in partial
+sky maps. However, we have found this method to be computationally infeasible for the B ICEP 2 and Keck Array observing
+and filtering strategy.
+For B ICEP 2 and the Keck Array, we developed a new
+method for distinguishing true sky B-mode polarization from
+the leaked E-modes in the observed maps. The method extends the work of Bunn et al. (2003) and applies it to a real
+data set. It is a standard component of the B ICEP 2 and Keck
+Array analysis pipeline and effectively eliminates the uncertainty created by E/B leakage. The method reduces the final
+uncertainty in the measured BB power spectrum of the B I CEP 2 results (B ICEP 2 Collaboration I 2014) by more than
+a factor of two, compared to analysis done with the Smith
+(2006) method. The method results in a larger improvement
+for the analysis of the combined B ICEP 2 and Keck Array maps
+(Keck Array and B ICEP 2 Collaborations VI 2016), where the
+noise levels are lower.
+The organization of this paper is as follows: Section 2 provides an abbreviated background of a polarization field on a
+sphere, decomposition into spin-2 spherical harmonics, and
+analytically defines E and B-modes. Section 3 outlines the
+eigenvalue problem used in the matrix based E/B separation.
+Section 4 describes how an observation matrix is created in
+the B ICEP 2 and Keck Array analysis pipeline. Section 5 de-
+
+scribes constructing the signal covariance matrix and Section
+6 uses the covariance matrix to solve the eigenvalue problem
+and find purification matrices. Section 7 prensents results of
+matrix based E/B separation in the B ICEP 2 data set. Concluding remarks are offered in Section 8.
+Unless otherwise stated, we adopt the HEALPix polarization convention2 and work in J2000.0 equatorial coordinates
+throughout this paper. Bold font letters and symbols represent vectors or matrices, even when containing subscripts, in
+which case the subscript is meant to designate a new matrix
+or vector. Normal font letters and symbols represent scalar
+quantities.
+2. E AND B-MODES FROM A POLARIZATION FIELD
+
+This section demonstrates the decomposition of a polarization field on the full sky into E and B-modes. Much of the discussion follows Zaldarriaga & Seljak (1997) and Bunn et al.
+(2003).
+2.1. Full sky
+
+The values of the Stokes parameters Q and U for a particular location on the sky are dependent on the choice of coordinate system. By rotating the local coordinate system, Q is
+rotated into U and vice versa. Under rotation by an angle φ,
+the combinations Q + iU and Q − iU transform as:
+(Q + iU)0 = e−2iφ (Q + iU)
+(Q − iU)0 = e2iφ (Q − iU).
+
+(1)
+
+The T , Q, and U fields can be expressed as sums of
+spin weighted spherical harmonics. While the temperature
+anisotropies can be broken down into spin-0 harmonics, the
+polarization field of Q and U must be expressed in terms of
+spin-2 spherical harmonics (Goldberg et al. 1967):
+T (r) =
+
+X
+
+(Q + iU)(r) =
+
+X
+
+aTlm ( 0Ylm (r))
+
+lm
+
+a+2,lm ( +2Ylm (r))
+
+lm
+
+(Q − iU)(r) =
+
+X
+
+a−2,lm ( −2Ylm (r)) ,
+
+(2)
+
+lm
+
+where ±2Ylm are the spin-2 case of spin weighted spherical
+harmonics, and the spin-0 case are the normal spherical harmonics, 0Ylm . Since Q+iU and Q−iU are affected by rotations
+of the coordinate system, it is convenient to express the coefficients of the spin-2 spherical harmonics using a set of coordinate independent scalar aElm coefficients and pseudo-scalar
+aBlm coefficients:
+aElm ≡ −(a+2,lm + a−2,lm )/2
+aBlm ≡ −i(a+2,lm − a−2,lm )/2.
+
+(3)
+
+We also define two combinations of spin-2 spherical harmonics:
+X1,lm ≡ ( +2Ylm + −2Ylm )/2
+X2,lm ≡ ( +2Ylm − −2Ylm )/2.
+
+(4)
+
+2 http://healpix.jpl.nasa.gov/html/intronode12.
+
+htm
+
+Matrix based E/B Separation
+We can use the coefficients in Equation 3 and the combinations in Equation 4 to construct real space forms of T , Q, and
+U fields, according to Equation 2:
+X
+aTlm ( 0Ylm (r))
+T (r) =
+
+3
+
+3. HOW MATRIX BASED E/B SEPARATION FINDS PURE E AND
+PURE B
+
+A pure B-mode on an observed manifold is defined in Section 2.2 as being orthogonal to observed E-modes:
+PE · b = 0.
+
+lm
+
+Q(r) = −
+
+X
+
+U(r) = −
+
+X
+
+aElm X1,lm (r) + iaBlm X2,lm (r)
+
+
+
+lm
+
+aBlm X1,lm (r) − iaElm X2,lm (r) .
+
+
+(5)
+
+lm
+
+Using these relations, we can write the polarization field as a
+vector:
+
+
+Q(r)
+P(r) ≡ U(r)
+X  aE X (r) + iaB X (r) 
+lm 1,lm
+lm 2,lm
+=−
+aBlm X1,lm (r) − iaElm X2,lm (r)
+lm
+
+
+X   X (r) 
+iX2,lm (r)
+1,lm
+B
+E
+=−
+alm −iX (r) + alm X (r)
+2,lm
+
+lm
+
+1,lm
+
+X
+
+E
+B
+=−
+aElmYlm
+(r) + aBlmYlm
+(r) ,
+
+(6)
+
+lm
+E
+B
+where Ylm
+and Ylm
+have been introduced and defined in the last
+E
+B
+step. On the full sphere, Ylm
+and Ylm
+are orthogonal:
+Z
+E
+Ylm
+(r) ·YlB0 m0 (r)dS = 0,
+(7)
+S2
+
+0
+
+0
+
+for all l, l and m, m .
+2.2. Orthogonality of pure E and pure B
+
+The inner product of two polarization fields is defined as:
+Z
+0
+P·P ≡
+P · P0 dΩ,
+(8)
+Ω
+
+where Ω is the manifold on which the polarization field is defined: for the full sky it is the celestial sphere. In pixelized
+maps, the vector space of a polarization field has a finite dimension: twice the number of pixels in the map.
+As demonstrated in Equation 7, E and B-mode polarization
+fields on the full sky are orthogonal. However, experiments
+produce Q/U maps of portions of the sky, and often filter spatial modes out of these maps. We define the term ‘observed’
+maps or modes to refer to these incomplete measurements of
+the true sky.
+The spaces of observed E-modes and B-modes are nonorthogonal. The overlapping subspace between the two is
+called the ambiguous space. We cannot tell whether signal
+in the ambiguous subspace came from full sky E-modes or
+full sky B-modes.
+The solution is to decompose vector fields on an observed
+manifold into three subspaces: ‘pure’ E-modes, ‘pure’ Bmodes, and ambiguous modes. Pure E and B-modes are subspaces of the polarization vector space of a particular manifold, defined as:
+• A pure B-mode is orthogonal to observed E-modes.
+• A pure E-mode is orthogonal to observed B-modes.
+Therefore, a pure B-mode is one that has no E to B leakage:
+neither pure E-modes nor ambiguous modes contribute to it.
+
+(9)
+
+The vector b is any linear combination of modes in the subspace of the pure B-modes. For pixelized maps, b contains
+Q and U values for each of the pixels in the map, and PE is
+the pixelized version of the E-mode spherical harmonics. It is
+useful to multiply the above equation by its conjugate transpose, and sum over l and m, so that we have a scalar representing the degree of orthogonality:
+!
+X
+E†
+E
+E
+aE∗
+b = 0.
+(10)
+b>
+lm alm Ylm Ylm
+lm
+
+We have freedom to choose the power spectrum, ClEE =
+E
+aE∗
+lm alm , which is included in the covariance matrix, CE :
+X
+CE ≡
+ClEE YElm YE†
+(11)
+lm .
+lm
+
+We note that this product is the 2 × 2 [Q,U] covariance block
+in the signal covariance matrix:
+D
+> E
+CE = PE PE
+ E E
+
+Qi Q j
+QEi U jE
+=
+,
+(12)
+UiE QEj
+UiE U jE
+where the superscript denotes the E-mode component of the
+full sky polarization field and i, j designate pixels in the map.
+We can evaluate the covariance matrix for a particular set of
+pixels and a chosen spectrum.
+By solving a generalized eigenvalue equation of the form:
+CB xi = λi CE xi ,
+
+(13)
+
+and selecting eigenmodes corresponding to the largest eigenvalues, we can find eigenmodes b that are nearly orthogonal
+to E-modes and therefore approximate pure B. Eigenmodes
+corresponding to the smallest eigenvalues approximate pure
+E. This method is a natural extension to the signal to noise
+truncation discussed in Bond et al. (1998) and Bunn & White
+(1997) and applied in Kuo et al. (2004). The specific application to E and B-modes was first discussed in Bunn et al.
+(2003).
+We say the modes approximate pure E and pure B-modes
+because the degree of orthogonality is proportional to the
+magnitude of the eigenvalues. The level of orthogonality is
+discussed further in Section 6. However, for the remainder of
+the paper, we will use the terms pure B and pure E to refer to
+the largest and smallest eigenmodes of Equation 13, despite
+the fact that their inner product is not identically zero.
+Now suppose that the true sky polarization field, P, is transformed into an observed polarization field, P̃, by a real space
+linear operation, R:
+P̃E = RPE
+X
+= −R
+aElm YElm .
+lm
+
+(14)
+
+4
+Throughout this paper, transformations into observed quantities are indicated by the inclusion of a tilde over the variable, in the above equation, P → P̃. The operator R will
+typically represent filtering operations necessary to suppress
+noise and/or systematics plus an apodization of the resulting
+observed maps.
+The condition for pure E and pure B must be the same after
+multiplying by R. We still demand that the vectors of pure B
+be orthogonal to all those in the E space, which includes both
+the pure E-modes and the ambiguous modes:
+!
+X
+E
+E
+alm Ylm · b = 0.
+R
+(15)
+lm
+
+We create a basis of pure E and pure B-modes by solving
+the eigenvalue problem with the covariances of the form:
+!
+X
+E†
+>
+EE E
+Cl Ylm Ylm R
+C̃E = R
+lm
+
+!
+C̃B = R
+
+>
+
+X
+
+ClBB YBlm YB†
+lm
+
+R,
+
+(16)
+
+lm
+
+so that Equation 13 becomes:
+C̃B xi = λi C̃E xi .
+
+(17)
+
+In the simplest case, the matrix R is an apodization window
+and filled only on its diagonal. However, Equation 15 does not
+necessitate that the real space operator be a diagonal matrix.
+Any analysis steps that can be expressed as linear operations
+can be included.
+In B ICEP 2 and Keck Array analysis a number of filtering
+operations are typically performed during the map making
+process. In the next section the matrix R corresponding to
+these operations is derived. The practical implementation of a
+solution to the eigenvalue equation is discussed in Section 6.
+4. OBSERVATION MATRIX
+
+The matrix R transforms an ‘input map,’ m, a vector of
+the true sky polarization field, into a vector of the observed
+map, m̃. If the matrix R represents the apodization and linear
+filtering of an analysis pipeline, it is defined to be the ‘observation’ matrix for a particular experiment. This choice of R
+ensures the eigenspaces of Equation 17 are pure E and B for
+the observed map. This section describes how the observation
+matrix is computed for B ICEP 2 and the Keck Array.
+The steps in constructing the observation matrix mirror
+functions in the data reduction pipeline that was originally
+developed for QUA D (Pryke et al. 2009) and later used in
+the B ICEP 1 (B ICEP 1 Collaboration 2014), B ICEP 2 (B ICEP 2
+Collaboration I 2014), and Keck Array (Keck Array and B I CEP 2 Collaborations V 2015) analyses. This pipeline consists
+of a MATLAB library of procedures which constructs maps,
+including several filtering steps, from real data or simulated
+timestream data for a given input sky map.
+The filtering operations performed sequentially in the standard pipeline include data selection, polynomial filtering,
+scan-synchronous signal subtraction, weighting, binning into
+map pixels, and deprojection of leaked temperature signal. To
+construct the observation matrix, matrices representing each
+of these steps are multiplied together to form a final matrix
+that performs all of the operations at once. Since each of the
+operations is linear, the observation matrix is independent of
+
+the input map. Therefore, the same matrix can be used on
+any input map and will perform the same operations as the
+standard pipeline.
+If the combined matrix of timestream operations is V, then
+transforming a timestream, d, into an observed map, m̃, is
+simply:
+m̃ = Vd.
+(18)
+The signal component of a timestream can be generated
+from an input map, m, using a matrix that contains information about the pointing and orientations of the detectors,
+according to the equation d = Am. The observation matrix,
+R, is given by the product of V and A:
+m̃ = VAm
+= Rm.
+
+(19)
+(20)
+
+It is not necessary for the input maps and observed maps to
+share the same pixelization scheme, since the observation matrix can easily be made to transform between the two.
+4.1. Input HEALPix maps
+
+We choose a HEALPix pixelization scheme (Gorski et al.
+2005) for the input maps, m, because it has equal area pixels
+on the sphere and is widely used in the cosmology community.
+A true sky signal is represented by the map mo =
+o
+[Txyo , Qoxy ,Uxy
+], where (x, y) are the (RA,Dec) coordinates of
+the map. Using synfast3 , the unobserved input map is convolved with the array averaged beam function, B̄, constructed
+from measurements of the beam function of all detectors in
+the array:
+ o
+" #
+Txy
+Txy
+Qxy = B̄ ∗ mo = B̄xy ∗ Qoxy  .
+(21)
+o
+Uxy
+Uxy
+The input map vector is found by reforming the beam convolved two dimensional map into a one dimensional vector,
+m, of length 3 j, where j = 1...n p , for n p pixels in the input
+map:
+" #
+Tj
+m ≡ Qj .
+(22)
+Uj
+4.2. B ICEP2 and Keck Array scan strategy
+The observing strategies for B ICEP 2 and the Keck Array
+are very similar and borrow heavily from B ICEP 1. All three
+experiments target a region of sky centered at a right ascension of 0 degrees and declination of -57.5 degrees. A detailed
+description of the scan strategy is contained in B ICEP 2 Collaboration II (2014).
+
+• Halfscans: During normal observations, the telescope
+scans in azimuth at a constant elevation. The scan speed
+of 2.8 deg s−1 in azimuth places the targeted multipoles
+of 20 < l < 200 at temporal frequencies less than 1 Hz.
+Each scan covers 64.2 degrees in azimuth, at the end
+of which the telescope stops and reverses direction in
+azimuth and scans back across the field center. A scan
+in a single direction is known as a ‘halfscan.’
+3 synfast is a program in the HEALPix suite that renders sky maps
+from sets of input alm ’s.
+
+Matrix based E/B Separation
+• Scansets: Halfscans are grouped into sets of ≈ 100
+halfscans, which are known as ‘scansets.’ The scan pattern deliberately covers a fixed range in azimuth within
+each scanset, rather than a fixed range in right ascension. Over the course of the 50 minute scanset, Earth’s
+rotation results in a relative drift of azimuthal coordinates and right ascension of about 12.5 degrees. At the
+end of each scanset the elevation is offset by 0.25 degrees, and a new scanset commences. The telescope
+steps in 0.25 degree elevation increments between each
+scanset. All observations take place at 20 elevation
+steps, with a boresight pointing ranging in elevation between 55 and 59.75 degrees. The geographic location
+of the telescope, near the South Pole, means that elevation and declination are approximately interchangeable.
+• Phases: Scansets are grouped together into sets known
+as ‘phases.’ For B ICEP 2 and the Keck Array, CMB
+phases consist of ten scansets, comprising 9 hours of
+observations. CMB phases are grouped into seven types
+and each type has a unique combination of elevation
+offset and azimuthal position.
+• Schedules: The third degree of freedom in the B ICEP 2
+and Keck Array telescope mounts is a rotation about the
+boresight, referred to as ‘deck rotation.’ The polarization angles relative to the cryostats are fixed, so rotating
+in deck angle allows detector pairs to observe at multiple polarization angles.
+A ‘schedule’ typically consists of a set of phases at a
+particular deck angle. The deck angle is rotated between schedules. There is typically one schedule per
+fridge cycle, occurring every ∼ 3 days for B ICEP 2 and
+∼ 2 days for the Keck Array.
+4.3. Relationship between timestreams and [T, Q,U]
+
+The B ICEP 2 and Keck Array detectors consist of pairs
+of nominally co-pointed, orthogonal, polarization sensitive
+phased array antennas coupled to TES bolometers (B I CEP 2/Keck and Spider Collaborations 2015). The signal in
+the timestream from detector ‘A’ is:
+
+βt± ≡
+
+
+1
+sin(2ΨtA ) ± sin(2ΨtB ) ,
+2
+
+st = At j Tj
+dt = αt− At j Q j + βt− At jU j ,
+
+(26)
+
+where the terms α+ and β + in the pair sum timestream cancel
+due to the orthogonal orientation of the ‘A’ and ‘B’ detectors.
+The signal-plus-noise timestreams, in vector notation, are:
+1
+s = (nA + nB ) + A[T]
+2
+ 
+
+
+ A 0 Q
+1
+d = (nA − nB ) + α− β − 0 A U .
+2
+
+(27)
+(28)
+
+where nA and nB are the time ordered noise components of
+detector ‘A’ and detector ‘B,’ assuming the noise is uncorrelated with the pointing of the detector pair. For signal only
+simulations, nA and nB can be ignored.
+The matrix α− β − contains the information about the orientation of a pair’s antennas relative to Q and U defined on the
+sky. We call it the detector orientation matrix. The combination:
+
+
+ − − A 0
+α β
+(29)
+0 A
+transforms
+ input Q,U maps into a pair difference timestream.
+α− β − is constructed from two diagonal matrices, α− and
+β − , which are filled with the sine and cosine of the detector
+orientations at each time sample. A graphical representation
+of the detector orientation matrix is shown in Figure 1. (Additional steps accounting for polarization efficiency and pair
+non-orthogonality are absorbed into a normalization correction to the pair difference timestream.)
+
+(23)
+
+where [Tt , Qt ,Ut ] are the Stokes parameters of the beam convolved sky signal for timestream sample t. A timestream consists of nt time ordered measurements of the sky, t = 1...nt .
+ΨA is the angle the ‘A’ antenna makes with the Q,U axis on
+the sky. For the HEALPix polarization convention, this axis
+is a vector pointing towards the north celestial pole.
+The relative gain normalized ‘A’ timestream is summed and
+differenced with the normalized timestream from its orthogonal partner ‘B’:
+1
+st = (τtA + τtB ) = Tt + αt+ Qt + βt+Ut
+2
+1
+dt = (τtA − τtB ) = αt− Qt + βt−Ut .
+2
+The variables α and β are defined by:
+
+1
+αt± ≡ cos(2ΨtA ) ± cos(2ΨtB )
+2
+
+where ΨB is the angle the ‘B’ antenna makes with the Q,U
+axis on the sky. Assuming that ‘A’ and ‘B’ are perfectly copointed and orthogonal, the signal portion of the timestream
+vectors can be described with a transformation, At j , from the
+input map pixel (with index j) to the timestream sample (with
+index t):
+
+(24)
+
+(25)
+
+nt
+
+τtA = Tt + cos(2ΨtA )Qt + sin(2ΨtA )Ut ,
+
+5
+
+nt
+
+nt
+
+
+
+F IG . 1.— Detector orientation matrix, α− β − . The matrix is only filled
+on the diagonals of the two sub-blocks, α and β.
+
+4.4. Timestream forming matrix, A
+The matrix A = At j represents the timestream forming
+matrix for a detector pair. It transforms the input temperature map, Tj , into the signal component of the pair sum
+timestream, st . A graphical representation of the timestream
+forming matrix is shown in Figure 2.
+To create timestreams with smooth transitions at pixel
+boundary crossings, the input maps should have a resolution
+higher than the spatial band limit imposed by the beam function. For this reason, Nside =512 HEALPix maps are used,
+
+6
+
+
+F IG . 2.— Timestream forming matrix, A: filled elements of the matrix that
+takes HEALPix maps to timestreams. This matrix contains the pointing of
+a single detector pair over one scanset within a Nside =512 HEALPix map.
+The pattern of the filled elements is determined by the particular HEALPix
+pixel indexing scheme. There are nt filled entries, consisting of a 1 for each
+timestream sample. Note that although the above image appears to have multiple pointing locations for a single timestream sample, nt , this is merely a
+result of limited resolution in the image. The timestream forming matrix
+contains only one HEALPix pixel location for each time sample.
+
+4.5. Polynomial filtering matrix, F
+To remove low frequency atmospheric noise from the data,
+a third order polynomial is fit and subtracted from each halfscan in the timestreams. Since each halfscan traces an approximately constant elevation trajectory across the target field,
+the polynomial filter removes power only in the right ascension direction of the maps. In multipole, l, the third order
+polynomial filter typically rolls off power below l < 40. This
+can be represented by a ‘filtering matrix,’ F, which is block
+diagonal with the block size being the temporal length of a
+halfscan. Each block is composed of a matrix:
+
+F = I − V(V> V)−1 V> ,
+
+(30)
+
+where I is the identity matrix and V is the same third order
+Vandermonde matrix for each halfscan of equal length. The
+Vandermonde matrix is defined as:
+Vt j = xtj−1 ,
+
+(31)
+
+where j = 4 for a third order filter and xt are the coordinate
+locations.
+
+
+
+For B ICEP 2 and the Keck Array, xt is a vector of the relative azimuthal location of each sample in the halfscan. A
+representation of the polynomial filtering matrix is shown in
+Figure 3.
+
+
+F IG . 3.— Polynomial filtering matrix, F, showing the filled elements of the
+matrix. The matrix is very sparse and is block diagonal with blocks the size
+of a halfscan (≈ 404 samples).
+
+4.6. Scan-synchronous signal removal matrix, G
+Scan-synchronous subtraction removes signal in the
+timestreams that is fixed relative to the ground rather than
+moving with the sky. These azimuthally fixed signals are decoupled from signals rotating with the sky by the scan strategy, which observes over a fixed range in azimuth as the sky
+slides by (as described in Section 4.2). A template of the mean
+azimuthal signal is subtracted from the timestreams for each
+scan direction. This procedure can be represented as a matrix
+operator, referred to as a ‘scan-synchronous signal matrix.’
+The mean azimuthal signal can be found using a matrix
+X=Xtt 0 , for which each row is only filled for entries containing
+the same azimuthal pointing as the diagonal entry. The scansynchronous signal matrix subtracts off the mean azimuthal
+signal:
+G = I − X,
+(32)
+
+where I is the identity matrix. A graphical representation of
+the scan-synchronous signal removal matrix is shown in Figure 4. Note that while the F matrix is block diagonal and
+sparse, and the G matrix is sparse, once the two are combined,
+the resulting filter matrix is neither sparse nor block diagonal,
+making matrix operations more computationally demanding.
+
+
+
+
+
+whose pixels have a Nyquist frequency & 2× the band limit
+of the B ICEP 2 and Keck Array 150 GHz beam function.
+The current B ICEP 2 and Keck Array CMB observations
+fall within the region of sky bounded in right ascension by
+−3h 40m < α < 3h 40m and in declination by −70◦ < δ < −45◦ .
+This region contains n p = 111, 593 pixels in an Nside =512
+HEALPix map. The number of samples in a scanset is typically nt ≈ 43,000.
+The simplest form of A performs nearest neighbor interpolation of the HEALPix maps, in which case A is (nt × n p ) and
+is filled with ones where the detector pair is pointed and zeros
+otherwise.
+A more sophisticated form of A performs Taylor interpolation on the HEALPix map, in which case A is (nt × λ(λ+1)
+2 n p ),
+where λ is the order of the Taylor polynomial used in interpolation. In this case, A is a matrix that performs Taylor interpolation, allowing sub-pixel accuracy to be recovered from
+the input map, and m must also contain derivatives of the true
+sky temperature and polarization field. This matrix is used
+to build the deprojection templates in Section 4.10 but is not
+used for forming timestreams because it increases the dimensions of the observation matrix, making the computation of
+the observation matrix more difficult.
+
+
+F IG . 4.— Scan-synchronous signal removal matrix, G, showing the filled
+elements. The scan-synchronous signal matrix is sparse Toeplitz, with off
+diagonal components that subtract the average scan-synchronous signal for
+one of the two scan directions in a scanset.
+
+4.7. Inverse variance weighting matrices, w±
+
+The timestreams are weighted based on the measured inverse variance of each scanset. Pair sum and pair difference
+are weighted separately from weights calculated from the two
+
+Matrix based E/B Separation
+
+be accounted for. Figure 2 shows A for a single detector over
+a scanset and Figure 7 shows Λ for a single detector over a
+scanset.
+
+
+
+
+timestreams, w+ and w− . The scheme assigns lower weight
+to particularly noisy channels and periods of bad weather.
+This choice of weighting is not a fully “optimal” map maker
+(Tegmark 1997), but instead represents a practical solution
+that avoids calculating and inverting a large noise covariance
+matrix. The weighting is represented by a matrix whose diagonal is filled with the vector w+ =wtt+ for pair sum and w− =wtt−
+for pair difference, shown in Figure 5.
+
+7
+
+nt
+
+
+
+nt
+F IG . 5.— Weighting matrices w± , showing the filled elements. The weighting matrices are zero except on the diagonal, where they contain the weights
+based on the inverse variance of the timestream.
+
+F IG . 7.— Pointing matrix, Λ: filled elements of the pointing matrix that
+transforms timestreams to an observed map in the B ICEP pixelization. This
+matrix contains the mapping between the pointing of a single detector pair
+over one scanset and the output map pixels. There are 23,600 pixels in a
+B ICEP map, denoted as ñ p . There are nt filled entries, consisting of a 1 for
+each timestream sample. Each leg of the zigzag pattern corresponds to a
+halfsan within the scanset, where the telescope is scanning back and forth at
+a fixed elevation.
+
+4.8. Filtered signal timestream generation
+
+The pointing matrix for a single detector pair can be used
+to construct a pair sum ‘pairmap:’
+
+Ignoring noise and combining all the operators of Sections
+4.5, 4.6 and 4.7, the sum and difference timestreams in Equation 26 are tranformed to the filtered timestreams:
+
+mT = Λs = Λw+ GFA[T].
+
+1
+
+s̃ = w+ GFA[T]
+
+ 
+
+ A 0 Q
+d̃ = w− GF α− β − 0 A U ,
+
+(33)
+
+the second of which is graphically represented in Figure 6.
+
+(34)
+
+The pair difference timestream is converted into pairmaps using two copies of the pointing matrix. The two pair difference
+pairmaps correspond to linear combinations of Stokes Q and
+U:
+
+ 
+ 
+
+ 
+ − − A 0 Q
+mα −
+Λ 0 α− −
+α β
+mβ− = 0 Λ β − w GF
+0 A U . (35)
+For later convenience in abbreviating this equation, we define:
+
+ 
+
+
+ − − A 0
+Λ 0 α− −
+P ≡ 0 Λ β − w GF α β
+(36)
+0 A .
+4.10. Deprojection matrix, D
+
+F IG . 6.— Matrix generation of simulated timestreams corresponding to
+Equation 33.
+
+4.9. Pointing matrix, Λ
+
+The timestream quantities s and d are converted to maps by
+the pointing matrix, Λ = Λit . If the pixelization of the input
+maps were identical to the output maps, the pointing matrix
+would be the transpose of the timestream forming matrix:
+Λ = A> .
+As discussed in Section 4.1, the input maps are HEALPix
+Nside =512. However, the B ICEP maps instead use a simple
+rectangular grid of pixels in RA and Dec: the size of the pixels is 0.25 degrees in Dec, with the pixel size in RA set to
+be equivalent to 0.25 degrees of arc at the mid-declination of
+the map, resulting in 236 × 100 = 23, 600 pixels. If the B ICEP
+maps are naively used as “flat maps” then projection distortions are inherent. However, note that the A and Λ matrices
+together fully encode the mapping from the underlying curved
+sky to the observed map pixels, allowing such distortions to
+
+A potential systematic concerning polarization measurements is the leakage of unpolarized signal into polarized signal. In the case of CMB polarization, this takes the form of
+the relatively bright temperature anisotropy leaking into the
+much fainter polarization anisotropy. The leakage is caused
+by imperfect differencing between the orthogonal pairs of detectors. The beam functions can be well approximated by elliptical Gaussians, the difference of which correspond to gain,
+pointing, width and ellipticity (Hu et al. 2003; Shimon et al.
+2008).
+The B ICEP 2 and Keck Array pipeline removes leaked temperature signal from the polarization signal using linear regression to fit leakage templates to the polarization data. This
+method allows the beam mismatch parameters to be fitted directly from the CMB data itself, rather than relying on external calibration data sets, and is robust to temporal variations
+of the beam mismatch.
+The templates used in the regression are constructed from
+Planck 143 GHz temperature maps4 . These maps contain both
+CMB and foreground emission at approximately the B ICEP 2
+band. The noise in Planck 143 GHz is significantly subdominant to the CMB temperature anisotropy. For a full description and derivation of the deprojection technique, see Aikin
+4 For the Keck Array 95 GHz and 220 GHz bands, we use Planck
+100 GHz and 217 GHz maps.
+
+8
+(2013), Sheehy (2013), B ICEP 1 Collaboration (2014), and
+B ICEP 2 Collaboration III (2015). In this section, the entire
+deprojection algorithm is re-cast as a matrix operation.
+For the purposes of generating deprojection templates, we
+use a timestream forming matrix that performs Taylor expansion around the nearest pixel center to the detector pointing
+location. The Taylor interpolating matrix produces higher fidelity timestreams than a nearest neighbor matrix. This is important for the deprojection algorithm since small displacements in beam position are responsible for the systematic
+effect that is removed. Without Taylor interpolation, pixel
+boundary discontinuities introduce noise and limit the effectiveness of deprojection.
+A Taylor polynomial of order λ has λ(λ+1)
+terms, so the
+2
+dimensions of the input map vector for second order interpolation is 1 × 6n p . Using Equation 21, the input maps are convolved with the array averaged beam function. The smoothing
+is done using synfast, which contains the ability to output
+derivatives of the temperature (and polarization) field. Because the beam is applied first, the output derivatives are less
+noisy than they would be in the raw maps.
+The maps are of the form:
+
+
+T
+~ T
+∇
+ θ 
+~
+ ∇φ T 
+,
+(37)
+Θ=
+
+∇
+~
+ θθ T 
+∇
+~ φφ T
+~ θφ T
+∇
+where θ and φ are the HEALPix map’s latitude and longitude.
+Using the temperature map and its derivatives, we can find
+the Taylor interpolated temperature timestream by replacing
+A with a Taylor interpolating matrix, A0 :
+h
+i
+2
+∆φ2
+A0 = A A∆θ A∆φ A ∆θ
+, (38)
+A
+A∆θ∆φ
+2
+2
+where ∆θ and ∆φ are diagonal matrices giving the difference between the detector pair’s pointing and the nearest
+HEALPix pixel center.
+A differential beam generating operator is applied to the
+timestreams to create differential beam timestreams. For example, the differential gain timestream is just the beam convolved temperature field:
+dδg = δg A0 Θ,
+
+(39)
+
+where the fit coefficient for the gain mismatch is δg . The differential pointing components are found from the first derivatives of the temperature field with respect to the focal plane
+coordinates, x and y:
+~ x A0 Θ
+dδx = δx ∇
+~ y A0 Θ,
+dδy = δy ∇
+
+(40)
+(41)
+
+~x
+where δx and δy are the differential beam coefficients and ∇
+~
+and ∇y are partial differential operators with respect to the
+focal plane coordinates. Further details of this calculation
+and derivations for other beam modes are discussed in Appendix C of B ICEP 2 Collaboration III (2015).
+The differential beam timestreams are transformed into
+maps analogously to Equation 35, creating a pairmap template, T̃j , for each differential beam mode, j. The template
+
+pairmaps for each scanset, S, are then coadded over phases.
+For instance, the template pairmap for differential gain, is T˜1 :
+S∈phase
+
+T˜1 =
+
+  
+
+X Λ 0  α− 
+ − −  A0 0 Θ
+−
+α β
+.
+0 Λ β − w GF
+0 A0 Θ S
+S
+
+(42)
+A matrix performing weighted linear least-squares regression
+against real pairmaps produces the fitted coefficients for each
+of the differential beam modes, c ≡ [δg , δx , δy , ...]:
+
+
+ >
+−1 >
+m −
+c = T̃ (W − )−1 T̃
+T̃ (W − )−1 mα− ,
+(43)
+β
+
+
+
+mα −
+where m − is the real data pairmap coadded over a phase,
+β
+T̃ is a vector of pairmap templates, and W − is the pair difference weight map, created from the weight matrix according
+to:
+
+S∈phase 
+X
+Λα− α− w− Λ>
+.
+(44)
+W− =
+Λβ − β − w− Λ> S
+S
+The pairmap templates weighted by c are then subtracted from
+the real data pairmap:
+
+ 
+
+m̃α−
+mα −
+=
+(45)
+m̃ −
+m − −T̃ c.
+β
+
+β
+
+This process takes the form of a matrix operator that includes each of the beam systematics, giving the deprojection
+matrix:
+ >
+−1 >
+D ≡ I − T̃ T̃ (W − )−1 T̃
+T̃ (W − )−1 .
+(46)
+Deprojected pairmaps are then found according to:
+
+
+ 
+S∈phase
+X
+m̃α−
+Q
+=
+D
+P
+S
+m̃ −
+U .
+β
+
+(47)
+
+S
+
+The regression in Equation 43 operates simultaneously over
+all the modes to be deprojected. Because the templates for
+different modes are not in general orthogonal, the coefficient
+for each mode depends on the full set of modes. Therefore,
+the subtraction in Equation 46 must include the same mode
+list used in the regression in Equation 43. If the regression
+included more modes than the subtraction step, the regression
+would have extra degrees of freedom. This could result in incomplete removal of leakage signal. We avoid this possibility
+by deferring the regression step until immediately before the
+subtraction step, and explicitly using the same mode selection
+for both.
+As in the standard pipeline, we deproject for each detector
+pair, after coadding scanset to phases. To reduce the computational demands, the matrix deprojection pairmaps have
+additionally been coadded over scan direction, whereas the
+standard pipeline performs regression separately for left going and right going scans. This is the only difference between
+simulations run with the standard pipeline and those calculated from the observation matrix and leads to a negligible
+difference, see Figure 11 and Figure 12.
+The deprojection matrix made for a phase is less sparse than
+one made for a scanset because over the course of a phase a
+particular pair will observe a larger range of elevation than it
+
+Matrix based E/B Separation
+
+ñp
+
+ñp
+
+would in a scanset. The filled elements of the matrix D, for
+one pair across one phase, is shown in Figure 8.
+
+ñp
+
+9
+
+where the t index has been summed over to find each of the
+elements in the 2 × 2 matrix on the right hand side and At j has
+been replaced by Λti so the equation now determines the Q,U
+values in the observed map, Qi ,Ui . There is one 2 × 2 matrix
+inversion performed for each pixel, i, in the observed map. In
+other words, one value of ei , fi , and gi is computed for each
+pixel in the observed map, and filled into the i-th diagonal
+element of e, f and g.
+The pairmaps m̃α− and m̃β− are transformed into Stokes
+e f
+Q,U by multiplying by f g . Observed Q,U maps are
+found according to:
+
+ 
+ 0 
+Q
+e f X
+Q̃
+P P,S U ,
+= f g
+Ũ0
+
+ñp
+
+(53)
+
+P,S
+
+F IG . 8.— Deprojection matrix, D: filled elements of the deprojection matrix
+for one pair, for one phase of data. The overall dimensions are 2ñ p × 2ñ p ,
+twice the number of pixels in a B ICEP map.
+
+4.11. Coadding over scansets and detector pairs to form the
+
+observation matrix
+An observed temperature map, T̃0 , can be found by summing the pair sum pairmaps temporally over scansets (S) and
+over detector pairs (P):
+X
+T̃0 =
+Λw+ GFA[T].
+(48)
+P,S
+1
+The matrix performing this transformation
+is defined as R0TT ,
+where the prime indicates the apodization comes from the
+inverse variance of the pair sum timestream, w+ . The final
+apodization is applied in Section 4.13.
+The transformation from pair difference pairmaps to Q,U
+maps depends on the detector orientations during the observations. This transformation relies on an inversion of a 2 × 2
+detector orientation matrix. We will now derive the matrix
+that performs this transformation.
+Ignoring filtering, the pair difference timestream is found
+using the timestream forming matrix, At j :
+
+1
+dt = (τtA − τtB ) = αt− At j Q j + βt− At jU j .
+(49)
+2
+Forming linear combinations of the pair difference
+timestream,
+ −   − −
+ 
+αt dt
+αt αt At j αt− βt− At j Q j
+=
+(50)
+β−d
+α− β − A β − β − A
+U ,
+t
+
+t
+
+t
+
+t
+
+tj
+
+t
+
+t
+
+tj
+
+j
+
+and applying the pointing matrix, Λ, the vectors α− d and
+β − d are binned into map pixels, i. At this point we coadd
+over scansets and detector pairs, and apply a weighting, w− ,
+equal to the inverse of the variance of the timestreams during
+a scanset:
+
+where P was defined in Equation 36.
+If the sum of P matrices could be inverted, it would be possible to use this inverse to recover an unbiased estimate of the
+original Q and U. However, P is singular because it includes
+polynomial filtering and scan-synchronous signal subtraction,
+which completely remove some modes that were present in
+the original maps. We therefore use instead the matrix defined by the matrix inversion in Equation 52, which does not
+include these filtering operations. Even the inversion in Equation 52 is singular unless the coadded data contains observations at multiple detector angles, Ψt . Observations at multiple detector orientations are made through deck rotations or
+by coadding over receivers in different orientations. As described in Section 4.2, deck rotations occur between phases,
+so coadding over phases makes the matrix invertible.
+Including deprojection, Equation 53 becomes:
+!  
+ 0 
+
+S∈phase
+X
+e f X
+Q
+Q̃
+= f g
+D
+PS
+(54)
+U .
+Ũ0
+P
+
+S
+
+P
+
+This represents the entire Q,U map making process for signal
+simulations: from input maps to observed maps, including
+filtering operations. It can be summarized as:
+ 0  0
+ 
+RQQ R0QU Q
+Q̃
+= 0
+.
+(55)
+RUQ R0UU U
+Ũ0
+4.12. Non-apodized observation matrix
+
+As constructed, the matrix, R0 , contains an apodization
+based on the inverse variance of the timestreams, w+ and w− .
+We can, however, choose to remove this apodization, producing maps with equal weight across the field in units of µK. We
+construct the quantities:
+W+ =
+
+X
+
+Λw+ Λ>
+
+
+
+,
+
+(56)
+
+P,S
+P,S
+
+X Λ w− α− d 
+it t t t
+Λit wt− βt− dt =
+P,S
+
+!
+X Λ w− α− α− A Λ w− α− β − A  Q 
+it t t t t j
+it t t t t j
+j
+Λit wt− αt− βt− At j Λit wt− βt− βt− At j
+Uj .
+P,S
+
+(51)
+We invert the matrix on the right hand side of Equation 51
+to compute a matrix that generates Q and U maps:
+!−1
+
+
+X Λ w − α− α− Λ Λ w− α− β − Λ 
+ei fi
+it t
+it t t t ti
+t t ti
+, (52)
+f g ≡
+Λ w− α− β − Λ Λ w− β − β − Λ
+i
+
+i
+
+it
+
+P,S
+
+t
+
+t
+
+t
+
+ti
+
+it
+
+t
+
+t
+
+t
+
+ti
+
+
+
+
+
+e f X Λα− α− w− Λ>
+W = f g
+,
+Λβ − β − w− Λ>
+−
+
+(57)
+
+P,S
+
+P,S
+
+and use these to remove the apodization from the observation
+matrix, solving for the non-apodized observation matrix, R:
+RT T = W+
+
+−1
+
+R0 TT
+
+(58)
+
+10
+
+
+ 0
+
+0
+RQQ RQU
+− −1 R QQ R QU
+RU Q RU U = (W ) R0 UQ R0 UU
+
+(59)
+
+4.13. Selecting the observation matrix’s apodization
+Using the non-apodized observation matrix of Section 4.12,
+we can create an observation matix with an arbitrary apodization, Z. The matrix R is constructed as follows:
+
+RTT = ZRT T
+
+(60)
+
+
+
+ 
+
+Z 0 RQQ RQU
+RQQ RQU
+RUQ RUU = 0 Z RU Q RU U
+
+(61)
+
+from the filtering of Q and U. To include systematics that leak
+temperature to polarization, the terms RTQ and RTU would in
+principle need to be non zero. However, so long as the leakage corresponded to modes being removed by the deprojection matrix D the the deprojection elements in the RQQ , RQU ,
+and RUU blocks would ensure that the output Q,U maps were
+identical.
+Although the nominal dimensions of R are large, our constant elevation scan strategy means that R is only filled for
+pixels at roughly the same declination. This means that R is
+largely sparse, as shown in Figure 9.
+
+A sensible choice for the apodization, Z, may be the inverse
+variance mask we removed in Section 4.12, or a smoothed
+version thereof. However, there is freedom to choose any
+apodization at this point, and this may prove useful in joint
+analyses with other experiments, where the analysis combines
+maps with low noise regions in slightly different regions of the
+sky.
+4.14. Summary
+We have constructed a matrix, R, which performs the linear operations of polynomial filtering, scan-synchronous signal subtraction, deprojection, weighting and pointing. R has
+dimensions (3ñ p , 3n p ) where ñ p is the number of pixels in
+the B ICEP map and n p is the number of pixels in the input
+HEALPix map.
+Using the observation matrix, the entire process of generating a signal simulation from an input map is:
+  
+ 
+RTT 0
+0
+T̃
+T
+Q̃ =  0 RQQ RQU  Q .
+(62)
+0 RUQ RUU
+Ũ
+U
+
+Here the off diagonal terms, RQU and RUQ , exist because
+the filtering operations are performed on pair difference
+timestreams, which are a combination of Q and U.
+The deprojection operator contains regression against a
+temperature map that must be chosen before constructing the
+observation matrix. The deprojection operator is a linear filtering operation, and it only removes beam systematics arising from one particular temperature field. One could in principle apply the deprojection operator to Q,U maps corresponding to a different temperature field. The operator would remove the same modes from the polarization field, but these
+modes would not correspond to those which had been mixed
+between T and Q,U by beam systematics (or T E correlation).
+When constructing an ensemble of E-mode realizations for
+use in Monte Carlo power spectrum analysis, the T E correlation and the fixed temperature sky force us to build constrained realizations. The ensemble of simulations all contain
+identical temperature fields, so we cannot use them for analysis of temperature, which is acceptable because the focus of
+our analysis is polarization. The ensemble does contain different realizations of Q,U, constrained for the given temperature
+field, and these can be used in Monte Carlo analysis of polarization. The details of constructing these constrained input
+maps is the subject of Appendix A.
+Because the construction of RQQ , RQU , and RUU depends
+on a fixed temperature field, the deprojection templates can
+be thought of as numerical constants. RTT performs a separate filtering on the temperature field that is largely decoupled
+
+F IG . 9.— Observation matrix, R: filled elements of the observation matrix
+for the B ICEP 2 3-year data set. T Q, TU, UT , and QT are empty because no
+T→P leakage is simulated. The horizontal axis corresponds to the HEALPix
+pixelization and has 3×111,593 elements. The vertical axis corresponds to
+the B ICEP pixelization, and has 3×23,600 elements. The matrix has only
+∼5% of its elements filled.
+
+Some intuition about the operations the observation matrix
+performs can be gained by plotting a column of the matrix reshaped as maps—see Figure 10. The column chosen in this
+case corresponds to a central pixel in the observed field. It
+shows how Q and U values in the observed map are sourced
+from a Q pixel in the HEALPix map. The bright pixel in the
+Q observed map corresponds to the location of the input Q.
+The effects of polynomial and scan-synchronous signal subtraction are visible to the left and right of the bright Q pixel.
+These two types of filtering are performed on scansets and are
+therefore confined to a row of pixels. Deprojection operates
+on phases, creating the effects seen at other declinations. Because all of these filtering operations are performed on pair
+difference data, which contains linear combinations of Q and
+U, signal in the observed U map can be created by signal in
+the input HEALPix Q map. This is why the U map in Figure
+10 is non-zero.
+4.15. Forming maps from real timestreams
+
+We can form observed maps from the real timestreams using the matrices constructed above:
+−1 X
+
+Λw+ GFs P,S
+(63)
+T̃real = Z W+
+P,S
+
+
+ 
+
+
+Z 0
+e
+Q̃real
+=
+(W− )−1
+0 Z
+f
+Ũreal
+S∈phase 
+X
+X
+Λ
+D
+0
+P
+
+S
+
+
+f
+×
+g
+ 
+!
+0 α− −
+w GFd
+. (64)
+Λ β−
+S
+P
+
+It is important to note that the exact same matrices are used to
+process the real data in Equation 64 as are used to construct
+the simulated maps in Equation 35.
+
+Matrix based E/B Separation
+
+11
+Standard Pipeline
+
+Q
+
+3
+
+4
+2
+
+3
+
+0
+
+0
+
+−2
+−3
+Observation Matrix
+
+−54
+
+−1
+
+−56
+
+−2
+
+2
+
+−58
+
+−3
+
+1
+
+3
+
+−60
+
+0
+
+−4
+50
+
+0
+Right ascension [deg]
+
+µK
+
+Declination [deg]
+
+U
+
+−1
+
+asinh(µK)
+
+1
+
+µK
+
+1
+
+2
+
+−1
+
+−50
+
+−2
+
+F IG . 10.— A single column of the observation matrix R, for a HEALPix
+Q pixel near the center of our field. The value of a single input Q pixel affects both Q and U values in the observed map over the range of declinations
+covered in a phase.
+
+−3
+Difference
+0.5
+−50
+
+4.16. Equivalence of observation matrix with standard
+0
+−60
+−65
+−50
+
+5.1. True sky signal covariance matrix
+
+A pixel on the sky at location i, has values of the Stokes
+parameters:
+
+
+Ti
+xi ≡  Qi  .
+(65)
+Ui
+The 3 × 3 pixel-pixel covariance between two locations on the
+sky, i and j, is given by:
+Ci, j ≡ hxi x j i = R(α)M(ri · r j )R(α)> .
+
+(66)
+
+The covariance matrix, M, is defined with the Q,U convention
+referenced to the great circle connecting the two points, i, j.
+For a particular spectrum M depends only on the dot product
+
+0
+
+−0.5
+
+50
+
+F IG . 11.— Comparison of observed Q maps created by the observation
+matrix and the standard pipeline. The input map for both is from the same
+simulation realization. There are small differences due the difference in deprojection timescales, input HEALPix map resolution, and interpolation.
+6
+4
+2
+
+0
+0.1
+0
+−0.1
+0
+
+5. SIGNAL COVARIANCE MATRIX, C
+
+50
+
+100
+
+0.008
+l(l+1)CBB
+/ 2π
+l
+
+The signal covariance matrix contains the pixel-pixel covariances of a map for a given spectrum of Gaussian fluctuations. The diagonal entries contain the variance of each pixel,
+and each row describes the covariance of a given pixel with
+the other pixels in the map. For [T, Q,U] maps, the covariance matrix contains nine sub-matrices for the correlations
+between T ,Q, and U.
+
+µK
+
+−55
+
+l(l+1)CEE
+/ 2π
+l
+
+pipeline
+The matrix formalism described above is self-contained and
+complete in the sense that it contains the tools necessary to
+create real data maps and simulated maps.
+We demand that the map making and filtering operations be
+identical between the standard pipeline and the observation
+matrix. It is straightforward to test this equivalence: simulated maps run through the standard pipeline must be identical
+to the maps found with the observation matrix. Figure 11 and
+Figure 12 show that the two match quite well, within a few
+percent over the multipoles of 50 < l < 350. The lack of a perfect match is due to the difference in deprojection timescale
+and because the standard pipeline uses Nside =2048 HEALPix
+input maps that are Taylor interpolated, whereas the observation matrix uses Nside =512 input HEALPix maps with nearest
+neighbor interpolation.
+
+150
+200
+Multipole , l
+
+250
+
+300
+
+350
+
+Theory
+Standard Pipeline
+Observation Matrix
+Fractional diff
+
+0.006
+0.004
+0.002
+0
+0.1
+0
+−0.1
+0
+
+50
+
+100
+
+150
+200
+Multipole , l
+
+250
+
+300
+
+350
+
+F IG . 12.— Comparison of power spectra of maps created by the observation
+matrix and the standard pipeline. The input map for both is from the same
+simulation realization, which differs from the theory curve for this particular
+realization in the B ICEP field. The two methods are fractionally the same to
+within a few percent over the multipoles of interest, 50 < l < 350.
+
+between the pixels, ri · r j . M contains nine symmetric sub-
+
+12
+matrices:
+
+
+
+
+hTi Tj i hTi Q j i hTiU j i
+M(ri · r j ) =  hQi Tj i hQi Q j i hQiU j i 
+hUi Tj i hUi Q j i hUiU j i
+
+(67)
+
+next steps, since symmetric matrices often allow the use of
+faster algorithms.
+A row of the observed covariance matrix can be reshaped
+into a map, which reveals the structure of the covariance for a
+particular pixel, see Figure 13.
+
+The 3 × 3 matrix, R, is applied to rotate from this local reference frame to a global frame where Q,U are referenced to
+the North-South meridians. The angle between the great circle connecting any two points and the global frame is given
+by the parameter α.
+
+
+1
+0
+0
+(68)
+R(α) =  0 cos 2α sin 2α 
+0 − sin 2α cos 2α
+Changing the sign of α allows us to change the polarization
+convention from IAU to HEALPix (U to −U), see Hamaker &
+Bregman (1996). We have chosen to use the IAU convention
+for B ICEP 2 and Keck Array covariance matrices.
+The true sky pixel-pixel signal covariance matrix for the
+Stokes Q,U parameters is derived in Kamionkowski et al.
+(1997); Zaldarriaga (1998). To calculate the covariances, we
+follow some of the suggestions in Appendix A of Tegmark &
+de Oliveira-Costa (2001).
+We use the HEALPix ring pixelization, which allows the
+covariance to be calculated simultaneously for all pixels at a
+particular latitude that are separated by the same distance.5
+This shortcut is exploited by simultaneously calculating all
+equidistant pixels for rows in the map that have the same latitude to within 1 × 10−4 degrees. This approximation is much
+smaller than the ∼7 arcminute pixels in Nside =512 maps, and
+the rounding error has been found to be insignificant.
+5.2. Observed signal covariance matrix, C̃
+
+The observed signal covariance matrix contains the pixelpixel covariance in the observed B ICEP pixelized maps. Theoretically, modifying the true sky signal covariance matrix is
+simple: take the unobserved signal covariance of C of Section
+5.1 and the observation matrix R from Section 4 and form the
+product:
+C̃ = RCR> .
+(69)
+This equation results in a symmetric positive definite matrix,
+which is rank deficient because of the filtering steps in the
+observing process.
+Unfortunately, performing this multiplication is computationally demanding: The input C is a square matrix, with
+3×111,593 elements on a side, corresponding to the elements
+of T , Q, and U. To reduce the memory requirements of the
+calculation, we divide the covariance matrix, C, into row subsets and calculate in parallel. Once a row subset is calculated,
+the observation matrix is immediately applied to transform the
+HEALPix covariance to the observed map covariance, which
+reduces the dimensions of the covariance to the 23,600 pixels
+of the observed maps.
+The covariance and observed covariance should both be
+symmetric, which provides a good check on our math.
+Usually the output is slightly (fractionally, ∼ 1/107 ) nonsymmetric due to rounding errors in the multiplication, and
+we force the final matrix to be symmetric to numerical precision by averaging across the diagonal before moving to the
+5 This quality of the HEALPix maps is by design, see Gorski et al.
+(2005).
+
+1/l E
+
+2
+
+1/l B
+
+2
+
+ΛCDM
+
+r = 0.2
+
+−50
+−55
+−60
+−65
+50
+
+0
+−50 50
+Right Ascension [deg]
+
+0
+
+−50
+
+F IG . 13.— Maps showing a row of the observed covariance matrix C̃. The
+row selected corresponds to the covariance of an individual Q pixel at the
+center of the map. The top row shows the covariance used to calculate the
+pure E and B-modes described in Section 6. The bottom row shows the covariance for an input spectrum corresponding to ΛCDM [left], and r = 0.2
+tensors [right].
+
+6. E/B SEPARATION USING A PURIFICATION MATRIX
+
+The observed covariance matrix contains expected pixelpixel covariance in our observed maps given an initial spectrum. The observation matrix, R, has made the E and B-mode
+spaces of the observed covariance non-orthogonal. The result
+of Section 3 is that we can find the orthogonal pure E and
+pure B spaces by solving the eigenvalue problem from Equation 17: C̃B xi = λi C̃E xi .
+6.1. Construction of purification matrix
+
+As written, Equation 17 is not solvable: C̃B has a null space
+that is the set of pure E-modes. Similarly, the space of pure
+B-modes is the null space of C̃E . By adding the identity matrix multiplied by a constant, σ 2 I, to the covariance matrices
+we regularize the problem to find approximate solutions and
+eliminate the null spaces:
+(C̃B + σ 2 I)xi = λi (C̃E + σ 2 I)xi .
+
+(70)
+
+The amplitude of σ 2 sets the relative magnitude of the ambiguous mode eigenvalues versus the pure E and pure B-mode
+eigenvalues. The eigenvalues are shown in Figure 14. In our
+analysis, we choose σ 2 to be 1/100th the mean of the diagonal
+elements of the covariance matrices, C̃E and C̃B .
+In Equation 70, C̃E is an observed covariance matrix for
+[Q,U] that is constructed according to Equations 11 and 69.
+The input spectrum is set to a steeply red E-mode spectrum,
+ClEE = 1/l 2 , ClBB = 0. C̃B is the same except for an input spectrum with only B-modes, ClBB = 1/l 2 , ClEE = 0. The eigenmodes in xi with the largest eigenvalues comprise a set of vectors that span a space of pure B-modes, bi . The pure B quality
+of these vectors can be seen in the fact that the product C̃E x
+is much smaller than the product C̃B x. The eigenmodes in xi
+
+Matrix based E/B Separation
+
+This section describes the application of the matrix based
+E/B separation to the B ICEP 2 data set. The technique relies on the existence of the observation matrix and purification
+matrix from the previous sections.
+
+10000
+1000
+
+Emodes
+
+100
+
+Eigenvalue
+
+13
+
+Ambiguous
+
+Bmodes
+
+7.1. Motivation for matrix based E/B separation in B ICEP 2
+10
+
+The B ICEP 2 and Keck Array analysis pipeline contains the
+following attributes that can leak E-modes to B-modes: partial sky coverage, timestream filtering (including deprojection), and choice of map projection+estimator. A simulation
+demonstrating the leaked B-mode maps for each of these effects is shown in Figure 16. These maps are created by applying the standard E and B estimator in Fourier space and then
+an inversion back to map space. The observations and data
+reduction produce three classes of E/B leakage:
+
+1
+0.1
+0.01
+0.001
+0.0001
+0
+
+5000
+
+10000
+
+15000
+
+20000
+
+25000
+
+30000
+
+Eigenmode sorted by eigenvalue
+
+F IG . 14.— The generalized eigenvalues for the B ICEP 2 observed covariance matrix, sorted by magnitude. Eigenvalues near one correspond to ambiguous modes: the modes that are simultaneously E and B in the observed
+space and must be thrown out. By selecting eigenmodes with eigenvalues
+that are the largest and smallest 1/4 of the set of eigenvalues (shown to the
+left and right of the dashed red lines), we can construct subspaces that span
+the spaces of B-modes and E-modes that can be effectively observed using
+our scan strategy and analysis.
+
+with the smallest eigenvalues comprise a set of vectors that
+span a space of pure E-modes, ei .
+Using the reddened input spectrum 1/l 2 causes the magnitude of the eigenvalues to be proportional to the band of
+multipole, l, that each mode contains. The steepness of the
+spectrum ensures each mode contains power from a limited
+range of l. The particular choice of 1/l 2 is arbitrary.
+A basis constructed from a subset of eigenmodes with large
+eigenvalues spans a subspace of pure B-modes. We arbitrarily
+choose the pure B subspace to consist of eigenmodes whose
+corresponding eigenvalues are the largest 1/4 of the set. We
+find modes contained in this subset adequate for preserving
+power up to l ∼700. The pure E subspace is similarly constructed with eigenmodes corresponding to the 1/4 smallest
+eigenvalues. Figure 14 shows the sorted eigenvalues, and Figure 15 shows four eigenmodes of the B ICEP 2 observed covariance.
+Using the set of pure E and pure B-mode basis vectors, two
+projection matrices are constructed from the outer products:
+X
+ΠE =
+ei ei >
+i
+
+ΠB =
+
+X
+
+bi bi > ,
+
+(71)
+
+i
+
+which we call the purification matrices for pure E and pure B.
+Operating the purification matrices on an input map projects
+onto the space of pure E and pure B:
+m̃pureE = ΠE m̃
+m̃pureB = ΠB m̃.
+
+(72)
+
+From the construction of the pure B basis, bi , one can see
+that the vector m̃pureB vanishes
+for arbitrary input containing
+P
+only E-modes: m̃ = R · aE lm YElm , as desired for a purified B
+map.
+7. MATRIX E/B SEPARATION APPLIED TO B ICEP 2
+
+• Apodization: The first obvious deviation from the ideal
+full sky map is the partial sky coverage of B ICEP 2
+and Keck Array maps. Once a boundary is imposed
+E/B leakage is created. Map boundary effects are
+reduced by an apodization window which tapers the
+maps smoothly to zero near the edges. Use of apodization windows is common practice in any Fourier transform analysis of finite regions to prevent ‘ringing’ near
+boundaries. For small regions of sky, effects of the
+map boundary dominate the leakage even after apodization is applied. The apodization window used in B I CEP 2 and the Keck Array are modified inverse variance
+maps. We apply a smoothing Gaussian with a width
+of σ = 0.5◦ to the inverse variance map, and, for the
+combined analyses of B ICEP 2 and the Keck Array, we
+use a geometric mean of the individual experiments’
+apodization maps.
+• Map projection: The total extent of the B ICEP 2 and
+Keck Array maps is about 50 degrees on the sky in the
+direction of RA, over a declination of −70 < δ < 45.
+The chosen projection is a simple rectangular grid of
+pixels in RA and Dec. Taking standard discrete Fourier
+transforms of such maps results in significant E/B leakage. While we note that other map projections will
+have significantly lower distortion, such effects will be
+present for all projections when subjected to Fourier
+transform. However, note that the A and Λ matrices
+together fully encode the mapping from the underlying
+curved sky to the flat sky of the observed map pixels,
+and therefore so does the observing matrix R derived
+from these.
+• Linear filtering effects: There are three main analytic filters applied in the standard pipeline: polynomial
+filter, scan-synchronous subtraction, and deprojection.
+With respect to E to B leakage, all three filters are similar: by removing modes in the Q,U maps, an E-mode
+can be turned into an observed B-mode. Polynomial filtering and scan-synchronous signal subtraction create
+comparable leakage, both in amplitude and morphology. Deprojection creates more power in the leaked B
+maps, and at smaller angular scales, than either polynomial filtering or scan-synchronous signal subtraction.
+If matrix purification is not used, the sample variance of
+E/B leakage in the B ICEP 2 BB power spectrum is comparable to the uncertainty due to instrumental noise. This is clearly
+
+14
+
+B
+
+50th Eigenmodes
+
+Declination [deg]
+
+1st Eigenmodes
+
+E
+
+−50
+−55
+−60
+−65
+50
+
+0
+Right Ascension [deg]
+
+−50
+
+50
+
+0
+
+−50
+
+F IG . 15.— Eigenmodes of the B ICEP 2 observed covariance matrix. Shown are the modes corresponding to the largest and 50th largest eigenvalues of Equation
+70. Colormap shows amplitude of E and B-modes. The eigenvalues are shown graphically in Figure 14.
+
+Projection + Apodization
+
+Third order polynomial filter
+0.5µK
+
+0.3µK
+
+Scan−synchronous subtraction
+
+Deprojection
+
+Declination [deg]
+
+0.3µK
+
+0.4µK
+
+−50
+−55
+−60
+−65
+50
+
+0
+Right Ascension [deg]
+
+−50
+
+50
+
+0
+
+−50
+
+F IG . 16.— E to B leakage maps: examples of leaked B-modes in the B ICEP 2 maps. Top row, left: Leaked B-modes due to map projection and apodization. Top
+row, right: Leaked B-modes due to third order polynomial subtraction. Bottom row, left: Leaked B-modes due to scan-synchronous signal subtraction. Bottom
+row, right: Leaked B-modes due to deprojection of beam systematics.
+
+Matrix based E/B Separation
+highly undesirable, and led to the development of the purification matrix described in this paper. The purification matrix
+‘knows about’ all of the E/B mixing effects and how to deal
+with them.
+
+15
+
+TABLE 1
+D EGREES OF FREEDOM IN BINNED BB POWER SPECTRA
+FOR DIFFERENT ESTIMATORS
+
+Degrees of Freedom
+Bin center, l
+
+7.2. Effectiveness of purification matrix
+
+The effectiveness of the purification matrix given by Equation 72 can be immediately tested by applying the operator to
+a vector of [Q,U] maps simulated with the standard pipeline.
+The upper left map of Figure 17 shows an observed map
+whose input is unlensed-ΛCDM E-modes, and the next two
+rows in that column show the resulting E and B maps after
+projection onto the pure E and B spaces. The right column of
+Figure 17 shows an observed input map with both unlensedΛCDM and r = 0.1 projected onto pure E and B-modes.
+Matrix purification is integrated with the existing B ICEP
+analysis code by applying the purification operator to maps
+before calculating the power spectra. Since the observation
+matrix is only used for this purification step, the purification
+matrix need only work well enough to result in E/B leakage less than the noise level of the experiment. Therefore, it
+is acceptable to use an approximate observation matrix constructed from a subset of the full observation list, as long as
+it is representative of the full scan strategy. This shortcut
+was employed in Keck Array and B ICEP 2 Collaborations V
+(2015), but the results shown in this section from B ICEP 2 are
+from the full set of observations.
+Figure 18 compares the spectra for purified maps to the
+spectra from maps without purification, and to the spectra found using the improved estimator suggested in Smith
+(2006). Both the purified maps and unpurified maps use
+the standard E and B estimator in Fourier space, and we refer to the unpurified maps processed this way as the ‘normal method.’ Figure 18 shows the spectra for 200 noiseless
+unlensed-ΛCDM simulations passed through the three estimators. The leaked power is roughly three orders of magnitudes smaller when using the matrix purification than when
+using the normal method or Smith estimator. While the Smith
+estimator improves over the normal estimator by eliminating
+E/B leakage from apodization, it does not account for spatial
+filtering, which is a significant source of E/B leakage in the
+analysis pipeline. The mean of the leaked power is de-biased
+from the final power spectra, so what matters is the variance
+of the leaked spectra. Computing the 95% confidence limits based on the variance in each of the three methods, we find
+that in the absence of B-mode signal or instrumental noise, the
+matrix estimator achieves a limit on the tensor-to-scalar ratio
+of r < 8.3 × 10−5 , while the normal method and Smith estimator achieve limits of r < 0.17 and r < 0.074 respectively.
+Figure 19 shows the spectra from the three estimators for
+input maps containing only input B-modes at the level of
+r = 0.1. The spectra for all three estimators show beam roll
+off at high l. At the lowest l, the filtering prevents large angular scale modes from being measured. For multipoles around
+l ∼ 100, the matrix estimator recovers slightly less signal than
+the other two methods. However, the extra power measured
+by the other methods near l ∼ 100 largely comes from the
+ambiguous modes. On the left of Figure 18, these ambiguous
+modes are seen as the bump in the normal and Smith method
+near l ∼ 100.
+The total number of degrees of freedom in each band power
+
+37.5
+72.5
+107.5
+142.5
+177.5
+212.5
+247.5
+282.5
+317.5
+
+Normal
+
+Smith
+
+Matrix
+
+12.9
+40.9
+71.4
+83.7
+120.6
+156.1
+172.0
+202.8
+189.0
+
+15.5
+41.4
+69.7
+81.2
+116.4
+153.0
+172.9
+200.8
+185.7
+
+8.6
+34.8
+66.8
+81.7
+116.9
+141.9
+145.8
+177.4
+155.0
+
+can be estimated according to the formula:
+Nl 0 = 2
+
+(ml 0 )2
+,
+σl20
+
+(73)
+
+where ml 0 is the mean of the simulations in band power l 0 and
+σl20 is the variance of the simulations in the band power. Table
+1 shows the number of degrees of freedom for the three estimators for a tensor B-mode. The fewer degrees of freedom at
+low l for the matrix estimator are consistent with the decrease
+in recovered power on the left side of Figure 18. The highest l bins in Table 1 also show fewer degrees of freedom in
+the matrix estimator because the purification matrix includes
+a limited number of pure eigenmodes, as shown in Figure 14.
+Figure 20 shows signal plus noise spectra for a set of 200
+unlensed-ΛCDM+noise spectra. The noise simulations are
+the standard B ICEP 2 sign flip realizations discussed in B I CEP 2 Collaboration I (2014). In Figure 20, the mean noise
+level and leaked BB power are de-biased. The resulting ensemble of simulations is used to construct the errorbars in the
+final spectra. The tighter distribution of the matrix estimator
+simulations is a result of the decrease in E/B leakage. Using
+the matrix estimator results in an improvement in the r limit,
+for B ICEP 2 noise level and filtering in the absence of B-mode
+signal, of about a factor of two over the Smith method. The
+remaining variance in the BB spectrum of the matrix estimator is instrumental noise.
+7.3. Transfer functions
+
+The observation matrix transforms an input HEALPix map
+into an observed map with a simple matrix multiplication.
+The speed of the operation facilitates the calculation of analysis transfer functions, which are a necessary component of
+the pseudo-Cl MASTER algorithm (Hivon et al. 2002).
+We start with input maps, ml , which are delta functions in
+a particular multipole. These maps are then observed using
+the matrix R. The spectra calculated from these maps represent the response in our analysis pipeline to the input delta
+function, in a manner conceptually analogous to Green’s functions.
+Our procedure uses two sets of HEALPix maps, one set
+corresponding to T T = T E = EE = 1 and one set with T T =
+BB = 1. The observation matrix is used to create maps for l=1
+through 700, with 100 random realizations for each l. Processing the 140,000 maps would be infeasible without the observation matrix, but using the observation matrix it can be
+accomplished in a few hours.
+
+16
+µK
+
+Scalars + tensors (r=0.1)
+5.0µK
+
+5
+
+5.0µK
+
+0
+
+Total Polarization
+
+Scalars only
+
+−5
+µK
+5
+
+5.0µK
+
+0
+
+pure E
+
+5.0µK
+
+−5
+µK
+0.3µK
+
+0.3
+
+−55
+0
+−60
+−65
+
+pure B
+
+Declination [deg]
+
+0.3µK
+
+−50
+
+−0.3
+50
+
+0
+Right Ascension [deg]
+
+−50
+
+50
+
+0
+
+−50
+
+F IG . 17.— Polarization maps showing the effectiveness of the B ICEP 2 purification matrix at separating noiseless simulations into pure E and pure B. Left
+column: on a scalar only unlensed-ΛCDM B ICEP 2 simulation. Right Column: on the same simulation with the addition of a small tensor component. Top Row:
+the total polarization of the B ICEP 2 observed map, containing E and ambiguous modes. Center Row: pure E-mode map, constructed by projecting the total
+polarization map onto the E eigenmodes found in Equation 70. Bottom Row: pure B-mode map, constructed by projecting the total polarization map onto the B
+eigenmodes of Equation 70.
+0.01
+
+2
+
+/ 2π [µK ]
+
+normal: r < 0.17
+
+2
+
+0.01
+Smith: r < 0.074
+
+BB
+
+l(l+1)Cl
+
+0.001
+0.0001
+
+BB
+
+0.001
+0.0001
+lens+r=0.1
+normal
+Smith
+matrix
+
+1e−05
+−5
+
+matrix: r < 8.3x10
+1e−06
+50
+
+100
+
+150
+
+200
+250
+300
+Multipole , l
+
+350
+
+400
+
+450
+
+F IG . 18.— BB power spectra of noiseless unlensed-ΛCDM (r = 0) simulations, estimated using various methods, demonstrating the effectiveness of
+the B ICEP 2 purification matrix. The E/B leakage using the matrix estimator
+is 3 orders of magnitude lower than other methods.
+
+7.3.1. Band power window functions
+
+The power spectra of the output maps for a particular l are
+averaged over the N = 100 realizations. The averaged spectra
+are used to form a band power window function, MXX
+ll 0 , for
+a particular band power, l 0 , which is a function of the input
+
+l(l+1)Cl
+
+/ 2π [µK ]
+
+0.1
+
+1e−05
+Input: r=0.1
+normal
+Smith
+matrix
+
+1e−06
+50
+
+100
+
+150
+
+200
+250
+300
+Multipole , l
+
+350
+
+400
+
+450
+
+F IG . 19.— BB power spectra of noiseless unlensed (r = 0.1) tensor only
+simulations, estimated using various methods. All methods suffer from loss
+of power due to filtering and beam effects. The removal of ambiguous modes
+at low l results in a further decrease in power for the matrix method. Note
+that the spectra in this plot have not been corrected for the beam and filter
+suppression factors, but in Figure 18 the correction is applied.
+
+Matrix based E/B Separation
+
+17
+
+0.08
+0.06
+l(l+1)CBB
+/ 2π [µK2]
+l
+
+TABLE 2
+BB BAND P OWER W IDTHS
+
+lens+r=0.1
+normal: r<0.20
+Smith: r<0.11
+matrix: r<0.06
+
+0.04
+
+Bin Number
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+0.02
+0
+−0.02
+
+50
+
+100
+
+150
+200
+Multipole , l
+
+250
+
+300
+
+F IG . 20.— BB power spectra of unlensed-ΛCDM (r = 0) + B ICEP 2 noise
+simulations, estimated using various methods, demonstrating the effectiveness of the B ICEP 2 purification matrix. For B ICEP 2 noise levels the constraint on r (in the absence of signal) is improved by about a factor of two.
+(The mean of the noise and leakage have been de-biased in each case.)
+
+multipole of the delta function, l:
+PN
+0
+r=1 F ll (Rml )
+MXX
+=
+,
+ll 0
+N
+
+(74)
+
+where F ll 0 is the analysis pipeline’s transformation from map
+to power spectra6 and XX = {T T → T T , T E → T E, EE →
+EE, EE → BB, BB → BB, BB → EE}. When the input maps
+contain E-modes, and we measure the BB spectra, the result
+is the EE → BB band power window. The use of the purification matrix prevents leakage and makes these band power
+windows have much lower amplitude than the EE → EE or
+BB → BB ones. In B ICEP 2, it has been standard procedure not
+to use the E-mode purification matrix, hence the BB → EE
+band power window contains (irrelevant) leakage from B into
+E.
+Calculating the band power window functions in this way
+accounts for all aspects of our instrument and analysis: beam
+convolution, sky cut, map projection, polynomial filtering,
+scan-synchronous signal subtraction, deprojection, and power
+spectrum estimation.
+Figure 21 shows the results of the calculation. Although we
+bin in annular rings of the two dimensional power spectra, the
+filtering operations move power from other l into those bins.
+This means the band powers are sensitive to a broader range
+in l than the nominal range of multipoles. The broad shelf in
+the band power window functions at lower l is due to filtering.
+Table 2 shows the ‘nominal’ and ‘measured’ centers and
+edges of the band power bins, where ‘nominal’ refers to the
+defined range of annular rings in the two dimensional power
+spectra and ‘measured’ refers to the center and ±1σ range
+found in the end to end calculation discussed in this section.
+The center is the mean of the bandpower window function and
+the ±1σ interval corresponds to the percentiles of the bandpower window function between 16% and 84%.
+7.3.2. Suppression factor
+
+The integrated area under the curve of each band power
+window function represents the response of that band power
+6 Including the steps: apply matrix purification, two dimensional Fourier
+transform, construction of E and B, and binning to one dimensional spectra.
+
+low
+
+Nominal
+center
+
+high
+
+low
+
+Measured
+center
+
+high
+
+20.0
+55.0
+90.0
+125.0
+160.0
+195.0
+230.0
+265.0
+300.0
+
+37.5
+72.5
+107.5
+142.5
+177.5
+212.5
+247.5
+282.5
+317.5
+
+55.0
+90.0
+125.0
+160.0
+195.0
+230.0
+265.0
+300.0
+335.0
+
+37.0
+59.0
+92.0
+125.0
+158.0
+189.0
+220.0
+253.0
+285.0
+
+46.4
+73.4
+107.2
+140.7
+173.7
+205.4
+237.2
+270.2
+302.9
+
+54.0
+86.0
+121.0
+157.0
+192.0
+227.0
+262.0
+298.0
+333.0
+
+N OTE. — Nominal and measured centers and edges of the band power
+bins. The measured values are extracted from the band power window functions shown in Figure 21. The low/high values for the latter are the ±1σ
+points.
+
+measurement to an input spectrum. We call this set of values
+the suppression factor, Sl 0 , since they approximate how our
+analysis pipeline suppresses power.
+The suppression factor is plotted in Figure 22. At small angular scales, the suppression factor is dominated by the rolloff of B ICEP2’s 31 arcminute beam. The measured array average 150 GHz beam function is shown as the dotted line in
+Figure 22. The ‘map window function,’ which includes the
+finite size of the map and the pixel window function for the
+∼ 0.25 degree pixels, is shown as the dashed line7 . At high l,
+the pixel window function is sub-dominant to the beam window function. At low l the suppression factor is dominated by
+the timestream filtering effects.
+7.4. Computing challenges
+
+Building the observation matrix requires constructing, multiplying, and finally averaging a large number of sparse matrices. Applying the observation matrix to the true sky signal covariance matrix requires a large matrix multiplication to find
+the product, RCR> .
+Matrix multiplication is the dominant contributor to computation time. We use matrix multiplication routines built in to
+MATLAB. These routines incorporate a number of optimized
+algorithms for computing matrix products, including BLAS
+(Lawson et al. 1979). At this time we have not compared the
+run time on GPUs with that on CPUs, but are aware of this as
+a possible avenue for reducing the compute time.
+Solving the eigenvalue problem using the MATLAB function eig() takes about 48 hrs and 80 GB of RAM for the
+full B ICEP2 observed covariance. For B ICEP2, this is small
+fraction of the total computation time. However, for experiments whose maps contain more pixels, the difficulty of the
+eigenvalue problem increases. In these cases, the use of distributed memory parallel code may be necessary.
+For the B ICEP 2 results, we used computing resources provided by the Odyssey cluster at Harvard8 . The Odyssey cluster contains 54K CPUs with 190 terabytes of RAM and 10
+petabytes of storage. High memory nodes have access to
+256GB of RAM, which is useful for large matrix multiplications. Odyssey uses SLURM9 as its queue manager, allowing
+our analysis to utilize the large number of cores available.
+7 Calculated according to http://healpix.jpl.nasa.gov/
+html/intronode14.htm
+8 https://rc.fas.harvard.edu/odyssey/
+9 http://slurm.schedmd.com/
+
+18
+TE → TE
+l(l+1)CTE
+/2π [µK2]
+l
+
+l(l+1)CTT
+/2π [µK2]
+l
+
+TT → TT
+0.1
+0.001
+1e−05
+1e−07
+0
+
+100
+
+200
+
+300
+
+400
+
+500
+
+600
+
+700
+
+0.1
+0.001
+1e−05
+1e−07
+0
+
+100
+
+200
+
+0.001
+1e−05
+1e−07
+0
+
+100
+
+200
+
+300
+
+400
+
+500
+
+600
+
+700
+
+1e−07
+300
+400
+Multipole, l
+
+700
+
+500
+
+600
+
+700
+
+500
+
+600
+
+700
+
+0.001
+1e−05
+1e−07
+0
+
+l(l+1)CEE
+/2π [µK2]
+l
+
+l(l+1)CBB
+/2π [µK2]
+l
+
+0.001
+
+200
+
+600
+
+100
+
+200
+
+300
+
+400
+
+BB → EE
+
+1e−05
+
+100
+
+500
+
+0.1
+
+EE → BB
+0.1
+
+0
+
+400
+
+BB → BB
+
+0.1
+
+l(l+1)CBB
+/2π [µK2]
+l
+
+l(l+1)CEE
+/2π [µK2]
+l
+
+EE → EE
+
+300
+
+500
+
+600
+
+700
+
+0.1
+0.001
+1e−05
+1e−07
+0
+
+100
+
+200
+
+300
+400
+Multipole, l
+
+F IG . 21.— Band power window functions, MXX
+. Filtering causes mixing of power from low multipoles up to higher multipoles. As noted in Section 7.3.1, the
+ll 0
+BB → EE panel in the bottom right shows significantly more power since matrix purification is not applied to E-modes.
+
+0.6
+
+map
+beam 0.04
+filter
+total 0.03
+
+0.4
+
+0.02
+
+0.2
+
+0.01
+
+0.8
+
+0
+0
+
+50
+
+100
+
+150
+200
+Multipole, l
+
+250
+
+300
+
+BPWF
+
+Suppression Factor
+
+1
+
+350
+
+F IG . 22.— The BB suppression factor. At high l the beam function dominates. At low l the effects of filtering dominates. The map window function
+for the B ICEP 0.25 degree square pixels and finite map size is shown as a
+dashed line. The band power window functions are plotted in colors corresponding to individual band powers on a different scale.
+
+Although the raw B ICEP 2 data set comprises roughly 3 TB
+of data, the data products from the steps in the matrix analysis
+chain use 17 TB of storage. Processing during the B ICEP 2
+matrix analysis steps required roughly 1 million CPU hours.
+This represents a significant portion of the total computing
+demand of the entire B ICEP2 analysis effort, which comprised
+roughly 6 million CPU hours.
+8. CONCLUSIONS
+
+We have described a method for decomposing an observed
+polarization field into orthogonal components coming from
+celestial E and B-modes. The method relies on numerically
+calculating an observation matrix. In our case the observation matrix encodes the mathematical steps translating the true
+sky to an observed map including polynomial filtering, scansynchronous subtraction, pointing of individual detectors, and
+linear regression of beam systematics.
+
+Applying the observation matrix to pixel-pixel covariance
+matrices for E and B-modes transforms the true sky covariance into the observed space. We then solve for the E and
+B eigenmodes and select those modes that are orthogonal.
+In this way, the orthogonality relationship of the true sky is
+translated to the observed maps. The method accounts for
+all types of E/B leakage: boundary effects, polynomial filtering, linear regression, etc.—as long as these properties of
+the observing strategy and analysis have been encoded in the
+observation matrix, making the method more general than the
+method presented in Smith (2006), which only accounts for
+boundary effects.
+The observation matrix has many other possibilities and
+in principle allows construction of fully optimal analyses
+through to power spectra or cosmological parameters for a
+single experiment, or a combination of experiments with
+partially overlapping sky coverage. One simple application
+which we have explored is to use the observation matrix to
+directly produce simulated observed maps from input maps
+in a single step. This is dramatically faster than the previous
+standard pipeline. However production of observing matrices is sufficiently costly that we have not generated them for
+the many alternate “jackknife” data split maps and so for the
+present standard simulations are still required.
+We find that the matrix based E/B separation performs
+quite well, limiting the leakage to a level corresponding to
+r < 1 × 10−4 , well below the noise level for any foreseeable
+CMB experiment. The method should prove useful for future
+ground based or balloon based experiments focused on measuring large angular scale B-modes. Experiments measuring
+the lensing potential using CMB polarization rely on cleanly
+separating E and B as well and may find the technique useful.
+Additionally, the ongoing search for the imprint of gravitational waves in CMB polarization will require mitigation of
+
+Matrix based E/B Separation
+lensing signal from intervening structure and foreground removal, both of which are improved by cleanly separating E
+and B.
+B ICEP 2 was supported by the US National Science
+Foundation under grants ANT-0742818 and ANT-1044978
+(Caltech/Harvard) and ANT-0742592 and ANT-1110087
+(Chicago/Minnesota). The computations in this paper were
+run on the Odyssey cluster supported by the FAS Science
+Division Research Computing Group at Harvard University.
+The analysis effort at Stanford/SLAC is partially supported by
+the US Department of Energy Office of Science. Tireless administrative support was provided by Irene Coyle and Kathy
+Deniston.
+We thank the staff of the US Antarctic Program and in
+particular the South Pole Station without whose help this research would not have been possible. We thank all those who
+have contributed efforts to the B ICEP/Keck Array series of experiments, including the B ICEP 1 and B ICEP3 teams.
+APPENDIX
+
+A. GENERATION OF CONSTRAINED REALIZATION HEALPix
+MAPS
+
+An ensemble of signal only simulations is needed for a
+MASTER pseudo-Cl analysis. We use CAMB with input Planck
+parameters to construct power spectra, Cl . The power spectra are used to generate high resolution HEALPix maps that
+serve as the starting point for each realization of the signal
+simulations. Lacking any constraints on the realizations, the
+maps generated from the power spectra will vary for both
+the temperature and polarization fields. However, Planck has
+measured the temperature field of the CMB to high signal to
+noise. Since the goal of B ICEP 2 and the Keck Array is to
+measure the polarization sky and not the temperature sky, our
+ensemble of simulations does not need to contain variation in
+the well measured temperature sky. We therefore use the temperature field of the CMB measured by Planck as the template
+for constrained realizations of the polarization field.
+We have developed a technique for creating realizations of
+the E-mode sky consistent with the known T E correlation and
+the measured temperature field. These constrained realizations have been shown to contain the same T E correlations
+and EE spectra over many realizations of the temperature sky.
+However, any particular set of constrained realizations based
+on one temperature sky has a slightly different distribution of
+T E and EE than the full ensemble average.
+The primary motivation for fixing the temperature field is
+to make the deprojection operation discussed in Section 4.10
+into a linear operator. Recall that deprojection involves a regression against a fixed template of the temperature sky. If
+the temperature sky varies from realization to realization, deprojection becomes non-linear and cannot be expressed as a
+matrix operation.
+A.1. T E correlation
+
+We start by fixing the coefficients of the spherical harmonics of the temperature sky, aTlm . The alm for the constrained
+E-modes is found in Dvorkin et al. (2008) and can be derived
+following the steps of a simple Cholesky decomposition. The
+2 × 2 covariance between T and E for each mode (l, m) is:
+ TT TE
+Cl Cl
+.
+(A1)
+ClT E ClEE
+
+19
+
+The lower triangle Cholesky decomposition of this 2 × 2 matrix determines the variance and covariance in each mode:
+ p TT
+ T   T 
+a
+nlm
+0
+C
+l
+p
+p
+(A2)
+= Elm
+alm ,
+ClT E / ClT T
+ClEE − (ClT E )2 /ClT T nElm
+where nTlm and nElm are unit norm, complex random numbers.
+Since aTlm are known constraints, we can solve the system of
+equations:
+q
+ClT T nTlm = aTlm
+
+q
+q
+ClT E / ClT T nTlm + ClEE − (ClT E )2 /ClT T nElm = aElm ,
+
+(A3)
+
+substituting the first equation into the second to arrive at an
+expression for aElm in terms of aTlm and the power spectra, Cl .
+To ensure the maps are real, the condition a∗lm = (−1m )al−m is
+demanded.
+Naively, we might expect the constrained aElm to have lower
+variance in its power spectrum than the unconstrained aElm
+since there is significant T E correlation and the temperature
+component is fixed. However, this is not necessarily the case.
+When the aTlm fluctuate high, the mean of the constrained ensemble of aElm ’s is also high, resulting in increased variance in
+the ensemble of simulations. For particularly high aTlm , this
+can result in larger variance for the constrained simulations
+than the unconstrained simulations. This happens to be the
+case in the B ICEP field near l = 150, as seen in Figure 23.
+In practice, we take the aTlm from the Planck temperature
+Needlet Internal Linear Combination (NILC) map (Planck
+Collaboration XII 2014). This map uses the multi-frequency
+coverage of Planck to remove the galactic contribution to microwave emission, leaving a high signal to noise map of the
+CMB temperature field. The map has some contamination
+near the galactic plane. However, we have found that the impact of this is very local and does not affect the higher galactic
+latitudes where the B ICEP field is located. The noise level in
+the Planck temperature map is fractionally small compared
+to the temperature signal, and we have found that this noise
+contributes a similarly small fraction to the constrained realization of E-modes.
+A.2. Lensing
+The temperature anisotropies in the Planck NILC map have
+been lensed by the intervening structure between us and the
+surface of last scattering. This means the aTlm calculated
+from the Planck NILC map contain the effects of lensing and
+when used in Equation A3, the lensing distortion propagates
+through to the constrained aElm . Ideally, the aTlm in Equation
+A3 would be from the unlensed sky, however, in the absence
+of an accurate map of the lensing deflection field, we have no
+way of de-lensing the aTlm .
+Because our power spectrum analysis is insensitive to the
+off-diagonal correlations among modes with l = l 0 that are
+produced by lensing, a reasonable workaround for this problem is to use the Planck NILC but also to use the lensed ClT T
+spectrum. The result is an ensemble of aElm for the lensed aTlm ,
+but which have the correct covariance given by ClT E . For the
+multipole range of interest in B ICEP2, lensing has a small impact on aTlm . We use the unlensed power spectra for ClT E and
+ClEE .
+Another subtlety incorporating lensing into constrained realizations is the question of how to simulate lensing of the
+
+l(l+1)CTE
+/ 2π [µK2]
+l
+
+6000
+4000
+
+1.5
+1
+0.5
+
+l(l+1)CEB
+/ 2π [µK2]
+l
+
+l(l+1)CTB
+/ 2π [µK2]
+l
+
+l(l+1)CBB
+/ 2π [µK2]
+l
+
+2000
+
+l(l+1)CEE
+/ 2π [µK2]
+l
+
+l(l+1)CTT
+/ 2π [µK2]
+l
+
+20
+
+4
+2
+0
+−2
+−4
+0
+
+50
+
+100
+
+150
+200
+Multipole , l
+
+250
+
+300
+
+350
+
+150
+100
+
+constrained
+unconstrained
+
+50
+0
+−50
+0.04
+0.03
+0.02
+0.01
+
+0.15
+0.1
+0.05
+0
+−0.05
+−0.1
+0
+
+50
+
+100
+
+150
+
+200
+
+250
+
+300
+
+350
+
+F IG . 23.— Power spectra of unconstrained and constrained simulations. For the constrained simulations the T sky is fixed to the Planck NILC map. By chance,
+the T T power in the B ICEP field is above average near l = 150, and this leads to increased power and variance in T E and EE for these multipoles. The BB
+spectrum is computed with the Smith estimator for both constrained and unconstrained simulations in order to provide an equal comparison between the two as
+we cannot use the matrix estimator on unconstrained simulations. It therefore contains both E/B leakage and lensing signal. The leaked B-mode power creates a
+significant T B signal in the constrained simulations since the leaked B-modes correlate with the temperature template sky.
+
+Matrix based E/B Separation
+polarization sky. This can be accomplished using LensPix
+(Lewis 2011) to numerically lens the primordial E-modes,
+which creates B-modes with the correct statistics. For the
+constrained realizations, this is impossible because the NILC
+map is lensed by the true sky lensing field. The true sky lensing field is not known with high signal to noise, and therefore
+we cannot lens the E-modes by the same field.
+Our solution to this problem is to lens the E-modes with
+
+21
+
+a random realization of the lensing field, but use the Planck
+143 GHz map as the temperature field. This procedure ignores
+lensing correlations in T E and T B because the deflection field
+is different for the polarization and temperature. However,
+the mean of the lensing T E and T B is zero, and the additional
+variance in T E and T B caused by lensing is small enough that
+it can be ignored on degree scales.
+
+REFERENCES
+Aikin, R. W. 2013, PhD thesis, California Institute of Technology
+B ICEP 1 Collaboration. 2014, Astrophys. J., 783, 67
+B ICEP 2/Keck and Spider Collaborations. 2015, Astrophys. J., 812, 176
+B ICEP 2 Collaboration I. 2014, Physical Review Letters, 112, 241101
+B ICEP 2 Collaboration II. 2014, Astrophys. J., 792, 62
+B ICEP 2 Collaboration III. 2015, Astrophys. J., 814, 110
+Bischoff, C., Hyatt, L., McMahon, J. J., et al. 2008, Astrophys. J., 684, 771
+Bond, J., Jaffe, A. H., & Knox, L. 1998, Phys.Rev., D57, 2117
+Bunn, E. F., & White, M. 1997, The Astrophysical Journal, 480, 6
+Bunn, E. F., Zaldarriaga, M., Tegmark, M., & Oliveira-Costa, A. d. 2003,
+Phys.Rev., D67, 023501
+Dvorkin, C., Peiris, H. V., & Hu, W. 2008, Phys.Rev., D77, 063008
+Goldberg, J. N., Macfarlane, A. J., Newman, E. T., Rohrlich, F., &
+Sudarshan, E. C. G. 1967, Journal of Mathematical Physics, 8, 2155
+Gorski, K., Hivon, E., Banday, A., et al. 2005, Astrophys.J., 622, 759
+Grain, J., Tristram, M., & Stompor, R. 2009, Phys. Rev. D, 79, 123515
+Hamaker, J. P., & Bregman, J. D. 1996, aaps, 117, 161
+Hanson, D., Hoover, S., Crites, A., et al. 2013, Physical Review Letters, 111,
+141301
+Hivon, E., Górski, K. M., Netterfield, C. B., et al. 2002, Astrophys. J., 567, 2
+Hu, W., Hedman, M. M., & Zaldarriaga, M. 2003, Phys. Rev. D, 67, 043004
+Kamionkowski, M., Kosowsky, A., & Stebbins, A. 1997, Phys.Rev., D55,
+7368
+Keck Array and B ICEP 2 Collaborations V. 2015, Astrophys. J., 811, 126
+Keck Array and B ICEP 2 Collaborations VI. 2016, Physical Review Letters,
+116, 031302
+Kovac, J. M., Leitch, E. M., Pryke, C., et al. 2002, Nature, 420, 772
+
+Kuo, C., Ade, P., Bock, J., et al. 2004, Astrophys.J., 600, 32
+Lawson, C. L., Hanson, R. J., Kincaid, D. R., & Krogh, F. T. 1979, ACM
+Trans. Math. Softw., 5, 308
+Lewis, A. 2011, LensPix: Fast MPI full sky transforms for HEALPix,
+astrophysics Source Code Library, ascl:1102.025
+Planck Collaboration I. 2015, ArXiv e-prints, arXiv:1502.01582
+Planck Collaboration XII. 2014, Astr. & Astroph., 571, A12
+Polarbear Collaboration. 2014, Astrophys. J., 794, 171
+Pryke, C., Ade, P., Bock, J., et al. 2009, Astrophys. J., 692, 1247
+Readhead, A. C. S., Myers, S. T., Pearson, T. J., et al. 2004, Science, 306,
+836
+Sheehy, C. D. 2013, PhD thesis, University of Chicago, copyright Copyright ProQuest, UMI Dissertations Publishing 2013; Last updated 2014-02-11; First page - n/a; M3: Ph.D.
+Shimon, M., Keating, B., Ponthieu, N., & Hivon, E. 2008, Phys. Rev. D, 77,
+083003
+Smith, K. M. 2006, Phys. Rev. D, 74, 083002
+Smith, K. M., & Zaldarriaga, M. 2007, Phys.Rev., D76, 043001
+Tegmark, M. 1997, Phys. Rev. D, 55, 5895
+Tegmark, M., & de Oliveira-Costa, A. 2001, Phys. Rev. D, 64, 063001
+van Engelen, A., Sherwin, B. D., Sehgal, N., et al. 2015, Astrophys. J., 808,
+7
+Zaldarriaga, M. 1998, The Astrophysical Journal, 503, 1
+Zaldarriaga, M., & Seljak, U. 1997, Phys.Rev., D55, 1830
+
+

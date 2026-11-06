@@ -1,0 +1,5955 @@
+arXiv:2212.05642v3 [astro-ph.CO] 27 Jul 2023
+
+A Measurement of the CMB Temperature Power Spectrum and Constraints on
+Cosmology from the SPT-3G 2018 T T /TE/EE Data Set
+L. Balkenhol ,1, ∗ D. Dutcher ,2 A. Spurio Mancini ,3 A. Doussot,4 K. Benabed,4 S. Galli,4
+P. A. R. Ade,5 A. J. Anderson ,6, 7, 8 B. Ansarinejad,1 M. Archipley ,9, 10 A. N. Bender ,11, 7, 8
+B. A. Benson ,6, 7, 8 F. Bianchini ,12, 13, 14 L. E. Bleem ,11, 7 F. R. Bouchet ,4 L. Bryant,15 E. Camphuis ,4
+J. E. Carlstrom,7, 15, 16, 11, 8 T. W. Cecil ,11 C. L. Chang,11, 7, 8 P. Chaubal,1 P. M. Chichura ,16, 7
+T.-L. Chou,16, 7 A. Coerver,17 T. M. Crawford ,7, 8 A. Cukierman ,12, 14, 13, 18 C. Daley ,9 T. de Haan,19
+K. R. Dibert,8, 7 M. A. Dobbs,20, 21 W. Everett,22 C. Feng,23 K. R. Ferguson ,24 A. Foster ,25 A. E. Gambrel,7
+R. W. Gardner,15 N. Goeckner-Wald,13, 12 R. Gualtieri ,11 F. Guidi ,4 S. Guns,17 N. W. Halverson,26, 27
+E. Hivon ,4 G. P. Holder ,23 W. L. Holzapfel,17 J. C. Hood,7 N. Huang,17 L. Knox,28 M. Korman,25
+C.-L. Kuo,12, 13, 14 A. T. Lee,17, 29 A. E. Lowitz,7, 30 C. Lu,23 M. Millea ,17 J. Montgomery,20 Y. Nakato,13
+T. Natoli,7, 8 G. I. Noble ,31, 32 V. Novosad,33 Y. Omori,8, 7 S. Padin,7, 18 Z. Pan,11, 7, 16 P. Paschos,15
+K. Prabhu,28 W. Quan,16, 7 M. Rahimi,1 A. Rahlin ,6, 7 C. L. Reichardt ,1 M. Rouble,20 J. E. Ruhl,25
+E. Schiappucci,1 G. Smecher,34 J. A. Sobrin ,6, 7 A. A. Stark,35 J. Stephen,15 A. Suzuki,29 C. Tandoi,9
+K. L. Thompson,12, 13, 14 B. Thorne,28 C. Tucker,5 C. Umilta ,23 J. D. Vieira,9, 23, 10 G. Wang,11
+N. Whitehorn ,36 W. L. K. Wu ,12, 14 V. Yefremenko,11 M. R. Young,6, 7 and J. A. Zebrowski7, 8, 6, 17
+(SPT-3G Collaboration)
+1
+
+School of Physics, University of Melbourne, Parkville, VIC 3010, Australia
+2
+Joseph Henry Laboratories of Physics, Jadwin Hall,
+Princeton University, Princeton, NJ 08544, USA
+3
+Mullard Space Science Laboratory, University College London,
+Holmbury St. Mary, Dorking, Surrey, RH5 6NT, UK
+4
+Sorbonne Université, CNRS, UMR 7095, Institut d’Astrophysique de Paris, 98 bis bd Arago, 75014 Paris, France
+5
+School of Physics and Astronomy, Cardiff University, Cardiff CF24 3YB, United Kingdom
+6
+Fermi National Accelerator Laboratory, MS209, P.O. Box 500, Batavia, IL, 60510, USA
+7
+Kavli Institute for Cosmological Physics, University of Chicago,
+5640 South Ellis Avenue, Chicago, IL, 60637, USA
+8
+Department of Astronomy and Astrophysics, University of Chicago,
+5640 South Ellis Avenue, Chicago, IL, 60637, USA
+9
+Department of Astronomy, University of Illinois Urbana-Champaign,
+1002 West Green Street, Urbana, IL, 61801, USA
+10
+Center for AstroPhysical Surveys, National Center for Supercomputing Applications, Urbana, IL, 61801, USA
+11
+High-Energy Physics Division, Argonne National Laboratory,
+9700 South Cass Avenue., Lemont, IL, 60439, USA
+12
+Kavli Institute for Particle Astrophysics and Cosmology,
+Stanford University, 452 Lomita Mall, Stanford, CA, 94305, USA
+13
+Department of Physics, Stanford University, 382 Via Pueblo Mall, Stanford, CA, 94305, USA
+14
+SLAC National Accelerator Laboratory, 2575 Sand Hill Road, Menlo Park, CA, 94025, USA
+15
+Enrico Fermi Institute, University of Chicago, 5640 South Ellis Avenue, Chicago, IL, 60637, USA
+16
+Department of Physics, University of Chicago,
+5640 South Ellis Avenue, Chicago, IL, 60637, USA
+17
+Department of Physics, University of California, Berkeley, CA, 94720, USA
+18
+California Institute of Technology, 1200 East California Boulevard., Pasadena, CA, 91125, USA
+19
+High Energy Accelerator Research Organization (KEK), Tsukuba, Ibaraki 305-0801, Japan
+20
+Department of Physics and McGill Space Institute, McGill University,
+3600 Rue University, Montreal, Quebec H3A 2T8, Canada
+21
+Canadian Institute for Advanced Research, CIFAR Program in
+Gravity and the Extreme Universe, Toronto, ON, M5G 1Z8, Canada
+22
+Department of Astrophysical and Planetary Sciences,
+University of Colorado, Boulder, CO, 80309, USA
+23
+Department of Physics, University of Illinois Urbana-Champaign,
+1110 West Green Street, Urbana, IL, 61801, USA
+24
+Department of Physics and Astronomy, University of California, Los Angeles, CA, 90095, USA
+25
+Department of Physics, Case Western Reserve University, Cleveland, OH, 44106, USA
+26
+CASA, Department of Astrophysical and Planetary Sciences,
+University of Colorado, Boulder, CO, 80309, USA
+27
+Department of Physics, University of Colorado, Boulder, CO, 80309, USA
+28
+Department of Physics & Astronomy, University of California, One Shields Avenue, Davis, CA 95616, USA
+29
+Physics Division, Lawrence Berkeley National Laboratory, Berkeley, CA, 94720, USA
+
+2
+30
+
+Steward Observatory and Department of Astronomy,
+University of Arizona, 933 N. Cherry Ave., Tucson, AZ 85721, USA
+31
+Dunlap Institute for Astronomy & Astrophysics, University of Toronto,
+50 St. George Street, Toronto, ON, M5S 3H4, Canada
+32
+David A. Dunlap Department of Astronomy & Astrophysics,
+University of Toronto, 50 St. George Street, Toronto, ON, M5S 3H4, Canada
+33
+Materials Sciences Division, Argonne National Laboratory,
+9700 South Cass Avenue, Lemont, IL, 60439, USA
+34
+Three-Speed Logic, Inc., Victoria, B.C., V8S 3Z5, Canada
+35
+Harvard-Smithsonian Center for Astrophysics, 60 Garden Street, Cambridge, MA, 02138, USA
+36
+Department of Physics and Astronomy, Michigan State University, East Lansing, MI 48824, USA
+(Dated: July 28, 2023)
+We present a sample-variance-limited measurement of the temperature power spectrum (T T ) of
+the cosmic microwave background (CMB) using observations of a ∼ 1500 deg2 field made by SPT3G in 2018. We report multifrequency power spectrum measurements at 95, 150, and 220 GHz
+covering the angular multipole range 750 ≤ ℓ < 3000. We combine this T T measurement with
+the published polarization power spectrum measurements from the 2018 observing season and
+update their associated covariance matrix to complete the SPT-3G 2018 T T /TE/EE data set.
+This is the first analysis to present cosmological constraints from SPT T T , TE, and EE power
+spectrum measurements jointly. We blind the cosmological results and subject the data set to a
+series of consistency tests at the power spectrum and parameter level. We find excellent agreement
+between frequencies and spectrum types and our results are robust to the modeling of astrophysical
+foregrounds. We report results for ΛCDM and a series of extensions, drawing on the following
+parameters: the amplitude of the gravitational lensing effect on primary power spectra AL , the
+effective number of neutrino species Neff , the primordial helium abundance YP , and the baryon
+clumping factor due to primordial magnetic fields b. We find that the SPT-3G 2018 T T /TE/EE
+data are well fit by ΛCDM with a probability-to-exceed of 15%. For ΛCDM, we constrain the
+expansion rate today to H0 = 68.3±1.5 km s−1 Mpc−1 and the combined structure growth parameter
+to S8 = 0.797 ± 0.042. The SPT-based results are effectively independent of Planck , and the
+cosmological parameter constraints from either data set are within < 1 σ of each other. The addition
+of temperature data to the SPT-3G TE/EE power spectra improves constraints by 8 − 27% for
+each of the ΛCDM cosmological parameters. When additionally fitting AL , Neff , or Neff + YP , the
+posteriors of these parameters tighten by 5−24%. In the case of primordial magnetic fields, complete
+T T /TE/EE power spectrum measurements are necessary to break the degeneracy between b and
+ns , the spectral index of primordial density perturbations. We report a 95% confidence upper limit
+from SPT-3G data of b < 1.0. The cosmological constraints in this work are the tightest from SPT
+primary power spectrum measurements to-date and the analysis forms a new framework for future
+SPT analyses.
+
+I.
+
+INTRODUCTION
+
+The temperature and polarization anisotropies imprinted in the cosmic microwave background (CMB)
+during recombination encode information on the contents
+and dynamics of the early universe. High-precision
+measurements of the CMB power spectra by satellites
+and ground-based telescopes enable us to determine the
+six free parameters of the standard ΛCDM model with
+exceptional precision and place tight limits on possible
+model extensions [1–5]. Improving measurements of the
+CMB anisotropies is a key science goal of ground-based
+CMB experiments such as the South Pole Telescope (SPT
+hereafter) [6], the Atacama Cosmology Telescope (ACT
+hereafter) [7], polarbear [8], and BICEP/Keck [9, 10].
+The Planck satellite has mapped the CMB temperature anisotropies down to scales of approximately
+
+∗
+
+Corresponding author: lbalkenhol@student.unimelb.edu.au
+
+seven arcminutes to the cosmic-variance limit [11] and
+contemporary interest is shifting to polarization data;
+precision measurements of small angular scale modes of
+the TE and EE spectra have significant cosmological
+constraining power [12]. Nevertheless, the T T power
+spectrum is two orders of magnitude larger than the
+polarization spectra and temperature data dominate the
+constraining power of seminal CMB data sets [11, 13–
+16]. Complete T T /TE/EE data sets have significantly
+more constraining power in ΛCDM compared to TE/EE
+data alone, based simply on a mode-counting argument.
+Moreover, certain extensions to the standard model, e.g.
+primordial magnetic fields, can only be effectively constrained by full T T /TE/EE data [17] due to parameter
+degeneracies.
+In this work, we present cosmological constraints from
+T T /TE/EE power spectrum measurements obtained
+from observations of an approximately 1500 deg2 region
+in the southern sky made by SPT-3G [18], the latest
+receiver installed on the SPT, in 2018. The complete
+SPT-3G 2018 T T /TE/EE data set comprises previously
+
+3
+unpublished T T data, which we present here, and the
+polarization power spectra presented by Dutcher et al.
+[2, hereafter D21] with an updated covariance matrix.
+We present cosmological constraints on ΛCDM and a
+series of extensions, drawing on the following parameters:
+the amplitude of the gravitational lensing effect on
+primary power spectra AL , the effective number of
+neutrino species Neff , the primordial helium abundance
+YP , and the baryon clumping factor due to primordial
+magnetic fields b. We describe our blinding procedure
+and present an in-depth assessment of the consistency
+between frequencies and spectrum types.
+This paper is structured as follows.
+In §II we
+summarize important aspects of the data and analysis
+pipeline of D21 and highlight key changes we make. In
+§III we present the updated likelihood code including the
+foreground model used for temperature data, and details
+of the parameter fitting procedure. We demonstrate the
+consistency of the SPT-3G 2018 data in §IV and show the
+T T /TE/EE power spectra in §V. We report cosmological
+constraints in §VI and summarize our findings in §VII.
+
+II.
+
+DATA AND ANALYSIS
+
+Sobrin et al. [19] present the SPT-3G instrument
+and D21 detail the 2018 observations and describe the
+associated data processing pipeline. These aspects of the
+analysis have not changed. We briefly summarize key
+aspects here and refer the reader to D21 and Sobrin et al.
+[19] for complete discussions.
+The data presented here were collected by SPT3G during an observation period of four months in
+2018. The main SPT-3G survey field covers an area
+of ∼ 1500 deg2 in the southern sky divided into four
+subfields. We calibrate the time-ordered data (TOD)
+using a series of calibration observations of galactic HII
+regions. Sources brighter than 50 mJy at 150 GHz are
+masked and we filter the TOD using low- and high-pass
+filters, as well as a common-mode filter. The filtered
+TOD are processed into maps with 2′ square pixels using
+the Lambert azimuthal equal-area projection. We form
+a set of N = 30 temperature and polarization maps
+with approximately uniform noise properties, so-called
+“bundles”. We calculate cross-spectra between these
+bundles and bin them into “band powers”. We debias
+the band powers following the MASTER framework
+[20] using a suite of simulations, thereby accounting
+for the effects of the survey mask, the TOD filtering,
+as well as the instrument beam and the pixel window
+function. Lastly, we derive absolute per-subfield and fullfield calibrations through comparison with Planck data
+[11].
+The analysis in D21 is designed to maximize sensitivity
+to the polarization spectra on intermediate and small
+angular scales. The common-mode filter applied to
+the TOD heavily suppresses temperature anisotropies on
+scales larger than a quarter of a degree. We therefore
+
+set a minimum angular multipole for T T spectra of
+T
+ℓTmin
+= 750.
+We make two updates to the calculation of the band
+power covariance matrix. First, we account for correlated
+noise between frequencies in intensity. For ℓ < 1000, the
+atmospheric noise in the 150 and 220 GHz data are highly
+correlated. Because the noise in the 220 GHz data is an
+order of magnitude larger compared to the 150 GHz data,
+the former data require precision modeling of the noise
+correlation. For this reason, we exclude the 150×220 GHz
+and 220 × 220 GHz spectra at ℓ < 1000. Second, we
+improve the treatment of bin-to-bin correlations induced
+by the flat-sky projection step. We detail changes to
+the covariance matrix and their impact on the results
+reported in D21 in Appendix A.
+
+A.
+
+Blinding
+
+In a key change from D21 and past SPT T T , TE,
+and EE analysis, we blind parameter constraints until
+a series of consistency tests are passed, which we
+detail in §IV. Our blinding procedure entails offsetting
+cosmological results by random vectors prior to plotting
+parameter constraints and removing axes labels where
+appropriate. We blind parameter constraints until the
+following consistency tests are passed: (1) null tests,
+(2) comparison of a minimum-variance combination of
+band powers to the full multifrequency data vector,
+(3) conditional spectrum tests split by frequency, (4)
+conditional spectrum tests split by spectrum type assuming ΛCDM, and (5) comparison of cosmological
+parameter constraints in ΛCDM between subsets and
+the full data set. Note that the last two tests are
+model dependent; in principle, failures of these tests do
+not prevent cosmological inference, but invite further
+analysis within the chosen model. In addition to these
+quantitative preconditions, we test the robustness of our
+cosmological results under variations of the likelihood
+and commit to investigating any significant impact on
+key results.
+
+III.
+
+PARAMETER FITTING, MODELLING,
+AND EXTERNAL DATA
+
+We use the Markov Chain Monte Carlo (MCMC) package CosmoMC [21]1 to obtain cosmological parameter
+constraints. We compute theoretical CMB spectra using
+camb [22]2 and CosmoPower [23].3 We parametrize
+the ΛCDM model using: the physical density of cold
+dark matter, Ωc h2 , and baryons, Ωb h2 , the optical depth
+
+1
+2
+3
+
+https://cosmologist.info/cosmomc/
+https://camb.info/
+https://github.com/alessiospuriomancini/cosmopower/
+
+4
+to reionization τ , the amplitude As and spectral index
+ns of primordial density perturbations (with As defined
+at a pivot scale of 0.05 Mpc−1 ), and a parameter that
+approximates the sound horizon at recombination, θMC
+[24].
+When not combining with Planck data, we include
+a Planck -based Gaussian prior on the optical depth to
+reionization of τ = 0.0540 ± 0.0074. This parameter is
+primarily constrained by a bump at ℓ < 10 in TE/EE.
+Omitting this prior leads to a degeneracy between As and
+τ as the amplitude of the power spectra over the angular
+multipole range probed by our data depends on As and
+τ mostly through the combination As e−2τ .
+Similar to D21, we verify that the likelihood is unbiased
+using 100 sets of simulated band powers generated using
+the data covariance matrix. We obtain the best-fit model
+for each realization using the likelihood code. We find
+that the average value for each cosmological parameter
+across the set of simulations lies within < 1.5 standard
+errors (i.e.√ the standard deviation of the ensemble
+divided by 100) of the input value. The likelihood code
+is made publicly available on the SPT website.4
+
+A.
+
+CosmoPower
+
+Spurio Mancini et al. [23] present CosmoPower , a
+neural-network-based CMB power spectrum emulator.
+Akin to other emulators [e.g. 25], once trained, CosmoPower provides CMB power spectra in a fraction of
+the time it takes to evaluate Boltzmann solvers such as
+CAMB [22] or CLASS [26]. We train CosmoPower
+on a set of power spectra obtained using CAMB at
+high accuracy settings5 for the ΛCDM, ΛCDM + Neff ,
+and ΛCDM + AL models. The constraints obtained
+by CosmoPower and CAMB (run at default accuracy)
+are within < 0.1 σ of each other for all models. This
+also highlights that for the analysis of SPT-3G 2018
+data, the default accuracy settings used in CAMB are
+sufficient. The trained CosmoPower models are made
+publicly available on the SPT website.6
+
+B.
+
+Foreground Model and Nuisance Parameters
+
+We introduce several foreground and nuisance parameters into our likelihood. We account for the instrumental
+beam and calibration, aberration due to the relative
+motion with respect to the CMB rest frame [28], and
+super-sample lensing [29] in the same way as D21. The
+polarized foreground model is minorly updated from D21,
+and we describe it briefly below. Because we include
+the T T spectrum in this work, we must model the much
+more complex temperature foregrounds, and we describe
+this modeling in detail below. The baseline priors are
+summarized in Table VIII in Appendix B.
+
+1.
+
+Temperature Foregrounds
+
+For the SPT-3G 2018 data with a flux cut for point
+sources of 50 mJy at 150 GHz, extragalactic foregrounds
+dominate over the CMB at ℓ ≥ 2650, ℓ ≥ 3000,
+and ℓ ≥ 2450 at 95, 150, and 220 GHz, respectively.
+We construct a foreground model largely based on the
+existing likelihoods of Reichardt et al. [30], George
+et al. [31], and Dunkley et al. [32]. We perform a reanalysis of Reichardt et al. [30] data using the foreground
+model described below to derive constraints on nuisance
+parameters. Where appropriate, we account for the
+different effective band centers of the data and the lower
+flux cut of Reichardt et al. [30] using the population
+model of De Zotti et al. [33]. We conservatively widen the
+constraints from Reichardt et al. [30] data on amplitude
+parameters and spectral indices by factors of four and
+two, respectively, before adopting them as priors in the
+cosmological analysis of SPT-3G data. We perform an
+analysis of Planck data on the SPT-3G survey patch to
+set priors on the galactic cirrus contribution.
+We model the contribution of the galactic cirrus as
+a modified black-body with temperature Td = 19.6 K
+and spectral index β cirrus with a cross-frequency power
+spectrum of
+
+β cirrus
+g(ν)g(µ)
+νµ
+g(ν0cirrus )2 ν0cirrus ν0cirrus
+ αcirrus +2
+ℓ
+×
+,
+80
+
+cirrus
+Dℓ,ν×µ
+=Acirrus
+80
+
+4
+5
+
+https://pole.uchicago.edu/public/data/balkenhol22/
+We chose settings similar to the high accuracy settings Hill et al.
+[27] use to update ACT DR4 results (c.f. Appendix A therein);
+we generate CAMB training spectra with
+• k eta max = 144000,
+• AccuracyBoost = 2.0,
+• lSampleBoost = 2.0,
+• lAccuracyBoost = 2.0.
+
+6
+
+https://pole.uchicago.edu/public/data/balkenhol22/
+
+(1)
+
+where ν0cirrus = 150 GHz is the reference frequency, Acirrus
+80
+is the amplitude parameter, αcirrus the power law index,
+and g = Bν (Td )(∂Bν (T )/∂T )−1 |TCMB with the Planck
+function Bν (T ) and CMB temperature taken from Fixsen
+[34]. The spectral index, amplitude parameter, and
+power law index are free parameters in this model.
+We account for Poisson-distributed unresolved radio
+galaxies and dusty star-forming galaxies (DSFG) with a
+combined contribution to each cross-frequency spectrum
+
+5
+of
+T T ,Poisson
+T T ,Poisson
+Dℓ,ν×µ
+= D3000,ν×µ
+
+
+
+ℓ
+3000
+
+2
+
+2.
+
+,
+
+(2)
+
+T T ,Poisson
+where we vary the six amplitude parameters D3000,ν×µ
+in the likelihood.
+Following George et al. [31] and Dunkley et al. [32],
+we model the clustering term of the cosmic infrared
+background (CIB) using a modified black-body spectrum
+at 25 K with spectral index β CIB−cl. .7 Like George et al.
+[31] and Dunkley et al. [32] we use a power law for the
+angular dependence of this foreground contaminant:
+CIB−cl.
+Dℓ,ν×µ
+
+CIB−cl.
+=A80
+
+×
+
+
+
+g(ν)g(µ)
+g(ν0CIB−cl. )2
+
+νµ
+ν0CIB−cl. ν0CIB−cl.
+
+β CIB−cl. 
+
+ℓ
+80
+
+0.8
+
+(3)
+,
+
+where the amplitude ACIB−cl.
+and spectral index β CIB−cl.
+80
+CIB−cl.
+are free parameters, ν0
+= 150 GHz is the reference
+frequency, and the value of the power-law index is
+motivated by Addison et al. [35].
+Following Reichardt et al. [30], we account for the
+thermal Sunyaev–Zel’dovich (tSZ) effect by rescaling the
+power spectrum of Shaw et al. [36] normalized at ℓ =
+3000, DℓtSZ,template , at a reference frequency of ν0tSZ =
+143 GHz via
+f (ν)f (µ) tSZ,template
+tSZ
+Dℓ,ν×µ
+= AtSZ
+D
+,
+(4)
+f (ν0tSZ )2 ℓ
+where f (x) = x coth (x/2) − 4 with x = hν/kB TCMB and
+we vary the amplitude parameter AtSZ in the likelihood.
+We model the correlation between the tSZ and CIB
+signals following George et al. [31] as
+q
+tSZ−CIB
+tSZ D CIB−cl.
+Dℓ,ν×µ
+=−ξ
+Dℓ,ν×ν
+ℓ,ν×ν
+
+(5)
+q
+CIB−cl.
+tSZ
++ Dℓ,µ×µ Dℓ,µ×µ
+,
+
+where ξ is the correlation parameter, which we vary in
+the likelihood. We define the sign here, such that ξ > 0
+corresponds to a reduction in power at 150 GHz.
+Finally,
+we
+account
+for
+the
+kinematic
+Sunyaev–Zel’dovich (kSZ) effect similar to Reichardt
+et al. [30] by rescaling a combined template for the
+homogeneous [37] and patchy [38] kSZ effects normalized
+at ℓ = 3000, DℓkSZ,template , via
+DℓkSZ = AkSZ DℓkSZ,template ,
+where we vary the amplitude parameter A
+likelihood.
+
+7
+
+(6)
+kSZ
+
+in the
+
+Note that while the choice of CIB temperature is different from
+Addison et al. [35], this has a negligible effect given that the
+SPT band passes are located in the Rayleigh-Jeans region of the
+spectrum [30, 31].
+
+Polarization Foregrounds
+
+We adopt the polarization foreground model of D21.
+We account for Poisson sources in the EE power
+spectrum and polarized galactic dust in the EE and
+TE data. The priors for the former contaminant are
+unaltered from D21, while we amend priors on polarized
+galactic dust using the updated analysis of Planck data
+within our survey region (see Appendix A for details).
+
+C.
+
+External Data Sets
+
+We use Planck data in combination with SPT-3G 2018
+data to derive cosmological constraints. Planck and
+SPT-3G data complement one another by providing highprecision measurements of the CMB power spectra on
+large and small angular scales, respectively. Specifically,
+the SPT-3G data are more precise than Planck for T T at
+ℓ > 2000, for TE at ℓ > 1400, and for EE at ℓ > 1000. We
+use the base plikHM TTTEEE lowl lowE Planck
+data set [11].
+We also report joint results for SPT-3G 2018 and
+WMAP data for key scenarios, to be as independent of
+Planck data as possible. We use the year nine data set
+[15] with T T data at 2 < ℓ < 1200, and TE and EE
+data at 24 < ℓ < 800. We exclude polarization data
+at ℓ < 24, due to the possibility of dust contamination
+[39], and include our baseline prior on τ to constrain the
+optical depth to reionization instead. This setup is the
+same that Aiola et al. [5] used for joint ACT DR4 and
+WMAP constraints.
+We ignore correlations between SPT-3G and satellite
+data. Planck and WMAP data cover a large amount of
+sky not observed by SPT. Moreover, the SPT-3G data
+are weighted towards higher ℓ.
+
+IV.
+
+INTERNAL CONSISTENCY AND
+ROBUSTNESS OF RESULTS
+
+In this section, we perform null tests, consistency tests
+on the final band powers, parameter-level consistency
+tests, and an assessment of the robustness of cosmological
+constraints. For each test category, we compute a set of
+probability-to-exceed (PTE) values, which we require to
+lie within some predetermined limits. We require the
+PTE values to lie above the threshold 5%/N for null
+tests and within the symmetric interval [(2.5/N )%, (100−
+2.5/N )%] for all other tests, where N is the number of
+independent tests, i.e. using the Bonferroni correction for
+the look-elsewhere effect [40]. We determine N for each
+test category individually within the relevant section and
+conservatively do not correct for the look-elsewhere effect
+across different test categories. As noted in §II A, this
+work was done prior to unblinding parameter constraints.
+
+6
+A.
+
+Null Tests
+
+We test that the data are free of significant systematic
+effects through six types of null tests. Following D21,
+we analyze the following data splits (to test for the
+corresponding category of systematic errors): azimuth
+(ground pick-up), first-second (chronological effects),
+left-right (scan-direction dependent effects), moon up
+- moon down (beam sidelobe pickup), saturation (decreased array responsivity), and detector module or
+“wafer” (non-uniform detector properties). The data are
+ranked or divided into groups based on a given possible
+systematic and we take the difference of these map
+bundles to form null maps. We then calculate the null
+spectra as the average of null map cross-spectra for each
+test and use their distribution to compute uncertainties.
+We verify that the average of these spectra is consistent
+with the expectation for a given test using a χ2 statistic.
+We update the null test framework employed by D21
+as follows. First, we scale null spectra by ℓ(ℓ + 1)/2π and
+apply the debiasing kernel of the corresponding autofrequency spectrum to the null spectra. This change
+corresponds to a linear transformation and does not
+change the pass state of tests while making it easier to
+interpret the amplitude of null spectra.
+Second, we cast the TE and EE null spectra in nine
+bins of width ∆ℓ = 300 spanning the angular multipole
+range 300 < ℓ < 3000, whereas for T T we use ten
+bins of width ∆ℓ = 250 across 750 < ℓ < 3000. This
+change makes the tests more sensitive to plateaus in
+power. Furthermore, this allows us to ignore bin-tobin correlations induced by the flat-sky projection step,
+which only drop to ≤ 20% for bins separated by ∆ℓ ≥
+100.
+Third, we add 1% of uncorrelated sample variance to
+the covariance of the T T null spectra. SPT-3G produces
+a high signal-to-noise measurement of the T T power
+spectrum. Minor low-level systematic effects may appear
+above the noise level, while having a negligible effect
+on cosmological results due to the high sample variance
+of the T T spectrum across the ∼ 1500 deg2 field. We
+verify this by artificially displacing the final T T data
+band powers by vectors mimicking systematic effects
+and rerunning the temperature likelihood. We asses the
+potential impact of two potential systematic effects:
+
+maps presented in D21 are not corrected for timeconstants, which we see in the scan-direction test. We
+model this null spectrum as a constant offset between
+left- and right-going scans of 2vt, where we assume a
+uniform on-sky scan speed of v = 0.7 deg s−1 across
+the survey field and τ = 4.6 ms is the median time
+constant. This effect does not appear above the noise
+level in the TE and EE data. Detector time-constants
+act as an effective beam. The maps used for the beam
+measurement in §IV E of D21 include this effect and
+therefore when we remove the instrumental beam during
+the debiasing procedure, we also remove the signature
+of detector time-constants from the data band powers.
+The expectation spectrum for all other T T null tests is
+approximated as zero.
+In addition to the individual T T , TE, and EE
+null tests, we also report results for all three spectra (T T /TE/EE) at a single frequency. We forego
+quantifying the correlation between the combined and
+individual tests and exclude this combined test in setting
+the PTE threshold. We assume that the remaining
+tests are independent from one another, such that across
+three frequencies and three spectrum types and six test
+categories, there are N = 3×3×6 = 54 independent tests.
+We require all PTE values to lie above 0.05/54 ≈ 0.001.
+We do not repeat the meta-analyses (i.e. the per-row and
+full-table tests) carried out by D21 since the addition of
+sample-variance to the T T null spectra means the PTE
+values are not expected to be uniformly distributed. For
+this reason, we do not flag and investigate high PTE
+values in the T T and T T /TE/EE tests. Due to the
+updates detailed above we expect the PTE values of the
+TE and EE null tests to change from D21.
+We report the null test PTE values in Table I. All of
+the PTE values lie above the set threshold. Across the 72
+tests the lowest PTE value is 0.002 (EE 150 GHz Azimuth
+test). There is no significant mean change to the PTE
+values of the EE and TE reported in D21. The largest
+individual change is an increase to the PTE value of the
+TE 150 GHz Azimuth test by 0.683. We have confirmed
+that all PTE values also lie above the required threshold
+when adopting a finer bin width of ∆ℓ = 125 for T T and
+∆ℓ = 100 for TE/EE null spectra.8 We conclude that the
+data are free of significant systematic errors and proceed
+with the analysis.
+
+• We asses the impact of unmodeled time constants
+by injecting a left-right expectation spectrum large
+enough to produce a null test failure.
+• We asses the impact of an overall miscalibration by
+increasing the amplitude of T T band powers by the
+square root of 1% of their total covariance.
+In both cases, we find that the best-fit parameters in
+ΛCDM shift by < 0.2 σ T T , where σ T T represents the size
+of parameter errors when using only T T data.
+Fourth, we model the effect of detector time-constants
+in the T T scan-direction expectation spectrum. The
+
+B.
+
+Power Spectrum Tests
+
+In this section, we perform a series of power-spectrum
+level tests to assess the internal consistency of the SPT3G 2018 T T /TE/EE data set. We begin by combining
+the six cross-frequency band powers, D̂, for each spectrum type into a minimum-variance combination, D̂M V ,
+
+8
+
+The different bin widths are due to the different ℓ ranges covered
+by temperature and polarization data.
+
+7
+
+95 GHz
+TT
+TE
+EE
+T T /TE/EE
+150 GHz
+TT
+TE
+EE
+T T /TE/EE
+220 GHz
+TT
+TE
+EE
+T T /TE/EE
+
+Azimuth
+
+First/Second
+
+Left/Right
+
+Moon
+
+Saturation
+
+Wafer
+
+0.116
+0.294
+0.765
+0.284
+
+0.614
+0.067
+0.398
+0.210
+
+0.630
+0.028
+0.015
+0.012
+
+0.991
+0.938
+0.866
+0.999
+
+0.882
+0.234
+0.340
+0.508
+
+0.492
+0.620
+0.037
+0.184
+
+0.075
+0.879
+0.002
+0.012
+
+0.549
+0.539
+0.970
+0.882
+
+0.861
+0.859
+0.432
+0.889
+
+0.305
+0.894
+0.486
+0.667
+
+0.884
+0.238
+0.268
+0.460
+
+0.485
+0.465
+0.005
+0.045
+
+0.310
+0.420
+0.991
+0.751
+
+0.548
+0.929
+0.735
+0.914
+
+0.635
+0.169
+0.222
+0.243
+
+0.635
+0.834
+0.835
+0.931
+
+0.128
+0.784
+0.875
+0.635
+
+0.077
+0.510
+0.501
+0.227
+
+TABLE I. Individual null test PTE values for 95, 150, and 220 GHz and T T , TE, and EE spectra. Additionally, we show the
+combined T T /TE/EE null test PTE values. All PTE values lie above the required threshold of 0.05/(9 × 6) ≈ 0.001.
+
+that represents our best, foreground-free measurement of
+the CMB anisotropies. Following Planck Collaboration
+et al. [41] and Mocanu et al. [42]
+D̂M V = X T C −1 X
+
+−1
+
+X T C −1 D̂,
+
+(7)
+
+where C is the band power covariance matrix and X is
+the design matrix, which is populated with ones and
+zeros and connects the six cross-frequency estimates
+of the same CMB signal per multipole bin in D̂ to
+the corresponding single element in D̂M V [41]. We
+subtract the best-fit foreground model from the data
+prior to the above procedure, though this only matters
+for the T T spectra since the foreground contamination
+in polarization is negligible.
+For our first test, we compare the minimum-variance
+spectrum to the full set of multifrequency band powers
+and require that the PTE values lie within [2.5%, 97.5%]
+for each spectrum-type and the full combination of
+T T /TE/EE spectra. This test ensures that the data
+are consistent with measuring the same underlying signal
+and free from any significant unmodelled foreground
+contamination. We use the test-statistic
+
+T
+
+
+χ2 = X D̂M V − D̂ C −1 X D̂M V − D̂ .
+(8)
+
+We obtain χ2 = 668 for 605 degrees of freedom.9 This
+corresponds to a PTE value of 4% for T T /TE/EE. For
+T T , TE, and EE spectra individually, we find PTE values
+of 22%, 12%, and 16%, respectively. The PTE value of
+the combined test is driven low by the 220 GHz data in
+temperature and polarization. However, all PTE values
+
+9
+
+We follow D21 and use the number of multifrequency band
+powers minus the number of minimum-variance band powers as
+the number of degrees of freedom.
+
+lie within the 95th percentile and we report no sign of
+significant internal inconsistency.
+Second, we perform a conditional spectrum test to
+probe the interfrequency agreement within each spectrum type. This test is largely agnostic to the cosmological model, though it assumes that the foreground
+model describes the data well. We compare each set of
+multifrequency band powers, D̂νµ , where ν, µ denote the
+frequency combination, to the ensemble of other band
+powers of the same spectrum type. Following Planck
+Collaboration
+h et al. [11],i we split the data band powers
+
+into D̂ = D̂νµ , D̂others , where “others” indicates the
+part of the data we use for the prediction of the
+remainder. We decompose the best-fit spectrum, D, and
+the covariance, C, in the same way. The conditional
+prediction and the associated covariance are
+−1
+Dνµ,cond = Dνµ + C νµ×others C others×others
+
+
+D̂others − Dothers ,
+C νµ×νµ,cond = C νµ×νµ − C νµ×others
+
+C others×others
+
+−1
+
+C others×νµ .
+(9)
+
+We compare this prediction to the measured data band
+powers using a χ2 statistic and require all PTE values to
+lie within the interval [(2.5/N )%, (100−2.5/N )%], where
+N is the number of independent tests. Given that there
+are six cross-frequency combinations and three spectrum
+types, there are 18 tests in total. However, the number of
+independent tests is lower. We conservatively set N = 5;
+due to the absence of correlated noise in the polarization
+data, the auto-frequency EE tests are independent and
+we discount the remaining EE tests and assume that
+the TE and T T tests only add one independent test
+each. We list the PTE values and plot the results for the
+conditional residuals in Figure 1. We find that all PTE
+
+8
+
+TT
+95×95
+
+3
+
+TE
+
+EE
+
+0.46
+
+0.10
+
+0.06
+
+0.38
+
+0.68
+
+0.05
+
+0.91
+
+0.30
+
+0.30
+
+0.84
+
+0.74
+
+0.52
+
+0.65
+
+0.36
+
+0.08
+
+0.31
+
+0.36
+
+0.75
+
+0
+−3
+
+0
+−3
+
+95×220
+
+3
+0
+
+150×150
+
+−3
+3
+0
+−3
+
+150×220
+
+(Dbνµ,cond − D̂bνµ )/σbνµ,cond
+
+95×150
+
+3
+
+3
+0
+
+220×220
+
+−3
+3
+0
+−3
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+Angular Multipole `
+
+FIG. 1. Relative conditional residuals, (Dbνµ,cond − D̂bνµ )/σbνµ,cond , i.e. the difference between conditional predictions for a
+given set of multifrequency band powers and the measured data, divided by the square-root of the diagonal of the conditional
+covariance. The blue shaded region corresponds to the 3 σ range and the grey shaded area in the first column indicates the T T
+angular multipole lower limit. The conditional residuals are consistent with zero, as evidenced by the PTE values indicated in
+the upper right corner of each panel. This speaks to the inter-frequency consistency of the SPT-3G 2018 T T /TE/EE data set.
+
+values lie within the required interval; the conditional
+spectra are in good agreement with the measured data.
+This agreement is noteworthy, as across the different
+spectra we have data that are highly correlated (T T
+on intermediate scales) and uncorrelated beyond the
+common CMB sample variance (EE spectra).
+
+Next, we apply the conditional test framework across
+the different spectrum types and probe the consistency
+between the T T , TE, and EE data. In contrast to the
+per-frequency conditional test, this test is dependent on
+the cosmological model and we carry it out assuming
+ΛCDM. As in Planck Collaboration et al. [11], this test is
+
+9
+
+TT
+
+TE
+
+EE
+
+0.39
+
+0.81
+
+0.07
+
+−3
+
+TT | TE
+
+TE | TT
+
+EE | TT
+
+3
+
+0.20
+
+0.48
+
+0.04
+
+−3
+
+TT | EE
+
+TE | EE
+
+EE | TE
+
+3
+
+0.19
+
+0.61
+
+0.07
+
+TT | TExEE
+
+TE | TTxEE
+
+EE | TTxTE
+
+(DbXY,cond − D̂bM V,XY )/σbXY,cond
+
+3
+0
+
+0
+
+0
+
+−3
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+Angular Multipole `
+
+FIG. 2. Relative conditional residuals, (DbXY,cond − D̂bM V,XY )/σbXY,cond with XY ∈ {T T, TE, EE}, i.e. the difference between
+conditional predictions for a given set of minimum-variance band powers and the measured data, divided by the square-root
+of the diagonal of the conditional covariance. The blue shaded region corresponds to the 3 σ range and the grey shaded area
+in the first column indicates the T T angular multipole range. The spectra used in the conditional prediction are specified in
+the bottom right corner of each panel and the PTE values are indicated in the top right corner of each panel. We find good
+agreement between the different spectra of the SPT-3G 2018 T T /TE/EE data set.
+
+performed using the minimum-variance band powers. For
+each spectrum, we compare the data minimum-variance
+combination to the conditional prediction given each
+other spectrum individually and jointly. We require all
+PTE values to lie within the interval [(2.5/N )%, (100 −
+2.5/N )%], where N is the number of independent tests.
+Given the mild correlation between the temperature and
+polarization anisotropies, we conservatively set N = 2.
+We show the conditional residuals in Figure 2 and list the
+PTE values therein. We find no statistically significant
+outliers when comparing the conditional predictions and
+the measured data; all PTE values are in the required
+interval. The series of tests we have carried out provide
+a stringent assessment of the consistency of the SPT3G 2018 T T /TE/EE band powers across frequencies
+and spectra; we conclude that the data are free of any
+significant internal tension at the power-spectrum level.
+
+We now turn to the internal consistency of the SPT3G 2018 T T /TE/EE data set at the parameter level.
+This test is explicitly model dependent and is performed
+in ΛCDM using the following parameters: Ωb h2 , Ωc h2 ,
+θMC , ns , and 109 As (k = 0.1 Mpc−1 )e−2τ .
+Here,
+As (k = 0.1 Mpc−1 ) is the amplitude of the primordial
+power spectrum at k = 0.1 Mpc−1 . This definition
+provides a better match to the scales constrained by
+the SPT data compared to the conventional reference
+point of k = 0.05 Mpc−1 and improves the numerical
+stability of the test by reducing the correlation between
+the combined amplitude parameter and ns . We use
+the conventional reference point for As when reporting
+cosmological results in §VI.
+
+Though the tests above already complete our passing
+criteria to proceed with the analysis, we additionally
+investigate the difference spectra in Appendix D. This
+allows us to build further expertise with the data. We
+observe no significant features, such as slopes, constant
+offsets, or signal leakage.
+
+We investigate parameter constraints from the following subsets of the data: T T , TE, and EE spectra
+individually, the three sets of auto-frequency spectra
+(95 × 95 GHz, 150 × 150 GHz, and 220 × 220 GHz), large
+angular scales (ℓ < 1000), and small angular scales
+(ℓ ≥ 1000). We follow Gratton & Challinor [43] and
+quantify the significance of the shift of mean parameter
+values from the full data set to a given subset, ∆p, using
+
+C.
+
+Parameter-Level Tests
+
+109 As e−2τ
+
+H0
+
+10
+
+70
+
+2.0
+
+1.8
+
+ns
+
+Ω b h2
+
+60
+0.024
+
+0.022
+
+1.0
+
+0.9
+0.14
+
+100θMC
+
+0.12
+0.10
+
+1.040
+
+`<
+
+95 G
+Hz
+150
+GH
+z
+220
+GH
+z
+
+EE
+
+TE
+
+0
+TT
+
+e
+
+0
+
+100
+
+100
+
+elin
+
+`≥
+
+EE
+95 G
+Hz
+150
+GH
+z
+220
+GH
+z
+
+`<
+
+TE
+
+0
+TT
+
+0
+
+100
+
+100
+
+`≥
+
+Bas
+
+elin
+
+e
+
+1.038
+
+Bas
+
+Ω c h2
+
+1.042
+
+FIG. 3. Parameter constraints from the full SPT-3G 2018 T T /TE/EE data set (black points) and select subsets (coloured
+points as indicated) in ΛCDM. The grey boxes indicate the expected 1 σ fluctuations between each subset and the full data
+set, taking the shared data into account. The observed shifts between subsets and the full data are consistent with statistical
+fluctuations. During the blind stage of this analysis, the parameter values along the vertical axes were not shown.
+
+the parameter-level χ2 :
+
+χ2 = ∆pT Cp−1 ∆p,
+
+(10)
+
+where Cp is the difference of the parameter covariances
+of the full data set and a given subset. This formalism
+takes the correlation between parameter constraints from
+the full data set and any given subset into account.
+As with the other tests, we require all PTE values
+to lie within [(2.5/N )%, (100 − 2.5/N )%], where N is
+the number of independent tests. The large and small
+angular scale tests are independent from one another and
+we conservatively assume that the remaining six subsets
+only count as one independent test setting N = 3.
+We plot parameter fluctuations for the standard
+ΛCDM parameters in Figure 3 and list the subset χ2
+and associated PTE values in Table II. We note that
+the EE parameter constraints deviate the most from the
+full data set and have the lowest PTE value of any of the
+subsets. However, this PTE value is still above our preset
+criterion and we therefore consider the parameter shifts
+compatible with statistical fluctuations. We conclude
+that the data are internally consistent at the parameter
+level and proceed to unblind parameter constraints.
+
+Subset
+
+χ2
+
+PTE
+
+ℓ ≤ 1000
+
+4.8
+
+44.7%
+
+ℓ > 1000
+
+4.9
+
+43.4%
+
+TT
+
+10.3
+
+6.7%
+
+TE
+
+4.9
+
+43.1%
+
+EE
+
+14.8
+
+1.1%
+
+95 GHz
+
+9.8
+
+8.0%
+
+150 GHz
+
+3.5
+
+61.7%
+
+220 GHz
+
+1.9
+
+86.5%
+
+TABLE II. Parameter-level χ2 and PTE values between
+subsets of the data and the full data set. Note that there are
+five degrees of freedom as we perform the comparison across
+[Ωb h2 , Ωc h2 , θM C , 109 As (k = 0.1 Mpc−1 )e−2τ , ns ], due to the
+common τ prior. Here, we use As (k = 0.1 Mpc−1 ), the amplitude of the primordial power spectrum at k = 0.1 Mpc−1 , to
+improve the numerical stability of the test. All PTE values lie
+within the required interval of [(2.5/3)%, (100 − 2.5/3)%] and
+we conclude that the parameter shifts are compatible with
+statistical fluctuations.
+
+11
+
+D`T T [µK2 ]
+
+95 × 95
+
+95 × 150
+
+95 × 220
+
+150 × 150
+
+150 × 220
+
+220 × 220
+
+103
+
+102
+
+D`T E [µK2 ]
+
+100
+
+0
+
+−100
+
+D`EE [µK2 ]
+
+40
+
+20
+
+0
+
+0
+
+500
+
+1000
+
+1500
+
+2000
+
+2500
+
+3000
+
+Angular Multipole `
+
+FIG. 4. SPT-3G 2018 multifrequency T T /TE/EE band powers in colors as indicated in the legend, along with the best-fit
+ΛCDM model to the SPT data including foregrounds (solid lines of matching color). The SPT-3G data provide a precision
+measurement of the CMB temperature and polarization anisotropies on intermediate and small angular scales.
+
+D.
+
+Robustness of Cosmological Constraints
+
+We verify the robustness of our cosmological results
+with respect to variations of the likelihood presented in
+§III. We test the following cases in ΛCDM: removing
+the priors on each set of amplitude parameters for
+a given foreground source; removing the priors on
+all temperature amplitude parameters simultaneously;
+
+widening the CIB spectral index prior by a factor of
+two; introducing the CIB power law index as a free
+parameter either with a wide uniform prior or adopting
+the result of Addison et al. [35] as a prior; introducing
+CIB decorrelation parameters ζ ν for each frequency band
+with uniform priors
+√ between zero and unity that multiply
+Equation 3 by ζ ν ζ µ ; ignoring the tSZ-CIB correlation;
+ignoring galactic cirrus; ignoring or quadrupling the
+
+12
+
+D`T T [µK2 ]
+
+SPT-3G 2018
+
+SPT-SZ/SPTpol
+
+Planck
+
+ACT DR4
+
+POLARBEAR
+
+103
+
+102
+
+D`T E [µK2 ]
+
+100
+
+0
+
+−100
+
+D`EE [µK2 ]
+
+40
+
+20
+
+0
+
+0
+
+500
+
+1000
+
+1500
+
+2000
+
+2500
+
+3000
+
+Angular Multipole `
+
+FIG. 5. SPT-3G 2018 minimum-variance T T /TE/EE band powers (black) along with a selection of contemporary power
+spectrum measurements: Planck (blue) [11], SPT-SZ (green, top panel only) [42], SPTpol (green, bottom two panels only,
+horizontally offset for clarity) [44], ACT DR4 (orange) [4], POLARBEAR (pink, bottom panel only) [45]. The SPT-3G 2018
+best-fit CMB power spectrum is indicated in gray. The ensemble of CMB data is visually consistent and yields a high signalto-noise measurement of the power spectrum.
+
+beam covariance; adopting the τ constraint found by
+Natale et al. [46] as a prior. In addition to these tests
+for constraints from the full T T /TE/EE data set, we
+also investigate the effect of foreground model variations
+on constraints from T T alone. We find no significant
+change to cosmological constraints for any of the cases
+
+tested; all parameter shifts are < 0.3 σ, where σ indicates
+the width of the respective T T /TE/EE or T T constraint
+
+13
+
+σT T
+−
+−
+−
+−
+−
+−
+−
+−
+−
+82.90
+78.11
+72.87
+52.45
+38.99
+33.71
+35.13
+36.35
+36.99
+28.30
+22.69
+21.05
+24.02
+23.88
+21.56
+18.81
+13.93
+12.95
+11.13
+12.46
+11.31
+10.17
+9.01
+7.76
+7.47
+3.97
+3.53
+2.64
+2.44
+2.16
+1.92
+1.78
+1.69
+1.55
+1.51
+
+DbTE
+92.96
+44.06
+−45.80
+−69.45
+−35.48
+11.07
+24.52
+−63.28
+−121.54
+−121.56
+−50.31
+37.67
+56.22
+13.95
+−51.61
+−74.30
+−54.77
+−10.53
+4.39
+−15.57
+−47.79
+−62.26
+−42.49
+−12.44
+8.95
+−0.16
+−14.62
+−32.37
+−25.07
+−15.43
+−9.56
+−3.44
+−11.16
+−16.46
+−14.31
+−4.86
+−5.61
+−9.24
+−3.60
+−3.78
+−3.49
+−2.32
+−0.52
+−2.48
+
+σ TE
+10.32
+8.46
+7.15
+5.99
+4.67
+5.70
+6.71
+7.39
+6.85
+6.65
+4.71
+5.07
+4.89
+4.83
+5.19
+4.69
+3.82
+3.28
+3.30
+3.36
+3.42
+3.43
+3.04
+2.70
+2.49
+2.53
+2.46
+2.25
+2.20
+2.05
+1.93
+1.89
+1.86
+1.83
+0.93
+0.87
+0.82
+0.80
+0.77
+0.75
+0.76
+0.78
+0.79
+0.82
+
+DbEE
+12.87
+20.46
+18.85
+11.99
+7.19
+11.42
+29.50
+38.95
+34.48
+20.80
+13.47
+17.01
+31.37
+40.44
+38.49
+26.27
+15.05
+12.34
+21.73
+29.12
+31.14
+22.76
+12.82
+10.57
+14.31
+21.27
+20.19
+18.27
+10.40
+8.78
+8.78
+9.95
+12.21
+11.11
+6.37
+5.28
+6.79
+3.49
+3.65
+2.54
+1.85
+1.63
+1.23
+−0.29
+
+σ EE
+1.02
+1.23
+1.08
+0.64
+0.39
+0.61
+1.14
+1.33
+1.24
+0.88
+0.55
+0.70
+1.05
+1.33
+1.30
+0.96
+0.64
+0.59
+0.85
+1.07
+1.08
+0.87
+0.65
+0.62
+0.71
+0.86
+0.91
+0.81
+0.71
+0.65
+0.70
+0.77
+0.83
+0.82
+0.42
+0.44
+0.49
+0.51
+0.54
+0.59
+0.64
+0.71
+0.80
+0.90
+
+TABLE III. The SPT-3G 2018 T T /TE/EE minimumvariance band powers Db and their associated uncertainties
+σB for each angular multipole bin. The band powers and
+errors are quoted in units of µK2 .
+
+10
+
+We also test the case of removing all priors on foreground
+amplitude parameters when analyzing T T data alone in
+ΛCDM+AL and ΛCDM+Neff and report no significant change
+to cosmological constraints.
+
+95 × 95
+95 × 150
+95 × 220
+
+150 × 150
+150 × 220
+220 × 220
+
+1.4
+1.0
+
+TT
+
+DbT T
+−
+−
+−
+−
+−
+−
+−
+−
+−
+2531.89
+2674.59
+2179.55
+1578.46
+1201.33
+1003.98
+1219.01
+1231.40
+1202.46
+907.07
+771.75
+727.84
+771.56
+800.59
+748.60
+623.76
+485.77
+404.60
+392.84
+393.10
+374.26
+353.00
+267.74
+227.93
+234.80
+222.41
+168.32
+120.67
+111.78
+88.87
+68.44
+60.31
+50.13
+38.42
+31.51
+
+THE SPT-3G 2018 POWER SPECTRA
+
+We report the SPT-3G 2018 T T /TE/EE multifrequency band powers in Appendix C and plot the power
+spectrum measurement in Figure 4. The SPT-3G 2018
+T T power spectra are sample-variance-dominated across
+the entire multipole range. The EE and TE band powers
+are sample-variance-dominated for ℓ < 1275 and ℓ <
+1425, respectively.
+
+0.6
+0.2
+−0.2
+
+0.4
+
+TE
+
+ℓ Range
+300 – 350
+350 – 400
+400 – 450
+450 – 500
+500 – 550
+550 – 600
+600 – 650
+650 – 700
+700 – 750
+750 – 800
+800 – 850
+850 – 900
+900 – 950
+950 – 1000
+1000 – 1050
+1050 – 1100
+1100 – 1150
+1150 – 1200
+1200 – 1250
+1250 – 1300
+1300 – 1350
+1350 – 1400
+1400 – 1450
+1450 – 1500
+1500 – 1550
+1550 – 1600
+1600 – 1650
+1650 – 1700
+1700 – 1750
+1750 – 1800
+1800 – 1850
+1850 – 1900
+1900 – 1950
+1950 – 2000
+2000 – 2100
+2100 – 2200
+2200 – 2300
+2300 – 2400
+2400 – 2500
+2500 – 2600
+2600 – 2700
+2700 – 2800
+2800 – 2900
+2900 – 3000
+
+V.
+
+0.2
+0.0
+
+0.4
+
+EE
+
+using baseline priors.10 We conclude that none of the
+likelihood variations above have a significant impact on
+cosmological constraints. Together with the consistency
+tests at the band power level in §IV B, this indicates that
+our results are robust with respect to a mismodelling of
+the foreground contamination.
+
+0.2
+
+0.0
+500
+
+1000
+
+1500
+
+2000
+
+2500
+
+Angular Multipole `
+FIG. 6.
+Relative weight of each multifrequency spectrum entering the minimum-variance combination (diagonal
+elements of the mixing matrix). The gray shaded areas
+indicate the different ℓmin cuts of the T T spectra. Overall,
+the 95 × 150 GHz and 150 × 150 GHz spectra contribute the
+most weight. For T T data, all spectra bar the 220 × 220 GHz
+band powers are non-negligible at intermediate ℓ and the
+95 × 95 GHz TE data are important on large angular scales.
+
+We report the minimum-variance band powers formed
+in §IV B in Table III and plot them together with
+other select power spectrum measurements in Figure 5.
+Note that the minimum-variance band powers are only
+intended for plotting purposes and the likelihood uses
+
+14
+
+SPT-3G 2018 TT/TE/EE
+Planck
+ACT DR4
+
+Ω b h2
+
+0.023
+0.022
+0.021
+
+Ω c h2
+
+0.13
+0.12
+
+109 As e−2τ
+
+0.11
+
+1.95
+1.90
+1.85
+1.80
+
+ns
+
+1.05
+1.00
+0.95
+
+100θMC
+
+1.044
+1.042
+1.040
+1.038
+65
+
+70
+
+H0
+
+0.0211
+
+0.0227
+
+Ω b h2
+
+0.11 0.12 0.13
+
+Ω c h2
+
+1.8
+
+1.9
+
+109 As e−2τ
+
+0.95
+
+1.00
+
+ns
+
+1.040
+
+1.043
+
+100θMC
+
+FIG. 7.
+Marginalized one- and two- dimensional posterior distributions for the SPT-3G 2018 T T /TE/EE data set (blue
+contours), Planck (black line contours), and ACT DR4 (gray contours) in ΛCDM. The constraints derived from SPT-3G data
+are in excellent agreement with the Planck constraints, including for H0 . The SPT-3G and ACT data have similar constraining
+power and the differences in their constraints are compatible with statistical fluctuations.
+
+the full set of multifrequency spectra. The uncertainty
+of the minimum-variance combination is reduced by 3%,
+2 − 19%, and 4 − 31% compared to the 150 × 150 GHz
+T T , TE, and EE band powers, respectively. This
+improvement is constant across scales for the samplevariance-limited T T spectra and increases at higher ℓ for
+the noise-limited polarization spectra.
+
+We can assess the relative weight of each multifrequency spectrum entering the minimum-variance
+contribution using the diagonals of the mixing matrix,
+−1 T −1
+X T C −1 X
+X C , which are shown in Figure 6.
+Note that the absolute amplitudes of these elements
+correspond to the relative weights; the signs depend on
+the correlation structure and ensure that the sum of all
+
+∆DbEE /σbEE ∆DbEE [µK2 ] ∆DbT E /σbT E ∆DbT E [µK2 ]
+
+∆DbT T /σbT T
+
+∆DbT T [µK2 ]
+
+15
+
+100
+
+0
+−100
+2
+0
+−2
+10
+0
+−10
+2
+0
+−2
+2
+
+0
+−2
+2
+0
+−2
+500
+
+1000
+
+1500
+
+2000
+
+2500
+
+3000
+
+Angular Multipole `
+FIG. 8. Residuals of the SPT-3G 2018 T T /TE/EE minimum-variance data band powers to the best-fit ΛCDM model. Note
+that the SPT-3G band powers are correlated by up to 40% for neighboring bins. The standard model fits the data well and we
+report χ2 = 763 for 723 degrees of freedom. Residuals for the full array of multifrequency band powers are shown in Appendix
+E.
+
+elements is unity. We find that the 95 × 150 GHz and
+150 × 150 GHz spectra generally dominate the minimumvariance combination. For T T , these spectra combine
+to contribute 60% of the total weight at ℓ = 1000,
+which increases to 91% at ℓ = 3000. There is an
+abrupt change at ℓ = 1000, i.e. when all multifrequency
+spectra are considered, while at larger angular scales the
+95 × 150 GHz frequency combination alone dominates
+the minimum-variance contribution. This is because (1)
+the 95 × 150 GHz and 150 × 150 GHz spectra are highly
+correlated on large angular scales while the former has a
+
+lower noise level and (2) the high degree of correlation
+between 150 GHz and 220 GHz noise leads to a more
+complex interplay between data from all three frequency
+channels in the minimum-variance combination when the
+150 × 220 GHz and 220 × 220 GHz spectra are available.
+For EE and TE, the 95×150 GHz and 150×150 GHz data
+contribute 65% and 79% at ℓ = 300 and 85% and 82%
+at ℓ = 3000, respectively. Though the 95 × 150 GHz and
+150 × 150 GHz data have a high combined weight, a wide
+frequency coverage is essential to control the foreground
+contamination and provides sensitivity to systematics.
+
+16
+VI.
+
+COSMOLOGICAL CONSTRAINTS
+A.
+
+ΛCDM
+
+We report constraints on cosmological parameters in
+ΛCDM from SPT-3G 2018 T T /TE/EE in Table IV and
+show one- and two-dimensional marginalized posterior
+distributions in Figure 7. The best-fit values for nuisance
+parameters all lie within 1.2 σ of the central value of
+their respective prior and are given in Appendix B. We
+show residuals between the minimum-variance data band
+powers and the best-fit model in Figure 8 and plot the
+residuals for all multifrequency spectra in Appendix E.
+
+central 95th percentile, indicating the data are well fit by
+the standard model of cosmology.
+The addition of temperature data to the TE/EE spectra noticeably improves constraints on all cosmological
+parameters as shown in Figure 9. The posteriors of Ωb h2 ,
+Ωc h2 , θMC , 109 As e−2τ , and ns tighten by 8%, 12%, 8%,
+27%, and 21%, respectively. The uncertainty on the H0
+constraint shrinks by 12%. We use the determinant of
+the parameter covariance as a metric for the allowed
+multi-dimensional volume, finding a reduction of the fivedimensional allowed parameter volume by a factor of 2.7.
+
+ΛCDM+
+
+σ T T /TE/EE
+σ TE/EE
+
+ΛCDM
+
+Riess et al. 2022
+
+SPT-3G 2018
+SPT-3G 2018 + Planck
+
+1.0
+
+SPT-3G 2018 + WMAP
+
+0.9
+
+Planck
+
+0.8
+
+ACT DR4
+
+0.7
+
+65
+
+70
+
+75
+
+H0 [km s−1 Mpc−1 ]
+b
+
+YP (Neff + YP )
+
+Neff (Neff + YP )
+
+AL
+
+Neff
+
+σ8
+
+H0
+
+ns
+
+−2τ
+se
+
+100θMC
+
+109 A
+
+Ω c h2
+
+Ω b h2
+
+0
+
+FIG. 9.
+Ratio of the widths of marginalized posteriors
+from SPT-3G 2018 T T /TE/EE and TE/EE for select ΛCDM
+parameters (left half) and extension parameters (right half).
+The addition of T T data leads to improvements on core
+ΛCDM parameters between 8 − 27% and the H0 and σ8
+posteriors tighten by 12% and 15%, respectively.
+For
+ΛCDM+AL , ΛCDM+Neff , and ΛCDM+Neff + YP we report
+improvements for extension parameters between 5 − 24%. In
+the case of primordial magnetic fields, ΛCDM+b, TE/EE
+data alone suffers from a degeneracy between ns and b
+and only the addition of T T data allows for a meaningful
+constraint. The vertical axis is split and the improvement on
+b shown only for visualization purposes.
+
+We find that the ΛCDM model provides a good fit to
+the data. We report χ2 = 763.0 across the 728 band
+powers of the full data set. We ignore the effect of
+nuisance parameters and translate this χ2 value to a PTE
+value of 15%. This agreement also applies to the three
+spectrum types individually. For T T , TE, and EE data
+we report χ2 (PTE) values of 194.4 (60%), 273.4 (33%),
+and 285.5 (17%), respectively.11 All PTE values lie in the
+
+11
+
+While the foreground model helps improve the fit to the
+
+FIG. 10. Compilation of H0 constraints from combinations
+of different CMB data sets assuming ΛCDM: SPT-3G 2018,
+Planck [1], WMAP [15], ACT DR4 [5]. The vertical gray band
+indicates the 2 σ constraint from the most precise supernovae
+and distance ladder analysis [47]. SPT-3G 2018 data allow
+for a precision constraint on H0 effectively independent from
+Planck data that deepens the Hubble tension.
+
+Constraints on the expansion rate today based on
+CMB data and supernovae and distance-ladder analyses
+are discrepant at the 4 − 5 σ level [1–3, 5, 47]. With
+SPT-3G 2018 T T /TE/EE data we constrain the Hubble
+constant to
+H0 = 68.3 ± 1.5 km s−1 Mpc−1 .
+
+(11)
+
+This value is in excellent agreement with the most recent
+results from Planck [1] and ACT [5]. Conversely, our
+result lies 2.6 σ below the most precise local determination of the Hubble constant, the Cepheid-calibrated
+supernovae distance-ladder analysis of Riess et al. [47].
+The SPT-3G 2018 T T /TE/EE data set is effectively
+independent of Planck and ACT data so this result
+deepens the Hubble tension. Our H0 constraint lies
+
+temperature data substantially, determining the effective number
+of degrees of freedom is not straightforward. If we conservatively
+account for 15 additional parameters, covering all baseline nuisance parameters, bar κ̄, the polarization foreground parameters,
+and the calibration parameters (following D21), we find a PTE
+value of 8% for the full data set and 30% for T T . These values
+still indicate that ΛCDM provides a good fit to the data.
+
+17
+
+σ8 = 0.797 ± 0.015,
+S8 = 0.797 ± 0.042.
+
+0.9
+
+SPT-3G 2018
+Planck
+
+0.8
+
+0.7
+
+0.6
+0.25
+
+0.30
+
+0.35
+
+0.40
+
+0.45
+
+Ωm
+
+(12)
+
+This result lies between S8 constraints from Planck data
+and low redshift data as shown in the top panel of Figure
+11; our central value is 0.8 σ below the Planck constraint
+[1] and 0.5 σ and 0.7 σ higher than the DES-Y3 [52]
+and KiDS-1000 [51] results, respectively. Adjusting our
+definition of S8 appropriately, we find agreement at 0.9 σ
+with the SZ-cluster analysis of Bocquet et al. [53].
+We find the scalar spectral index of primordial
+fluctuations to be ns = 0.970 ± 0.016, which corresponds
+to a 1.8 σ preference for ns < 1. We note that
+when excising our measurement of the third acoustic
+peak of the temperature power spectrum, i.e. T T
+data at ℓ < 1000, we find ns = 0.994 ± 0.018.
+The corresponding five-dimensional parameter shift from
+the baseline result is a 2.2 σ event, where σ denotes
+the number of standard deviations equivalent to the
+associated PTE for a Gaussian distribution. This is
+compatible with a statistical fluctuation and we therefore
+expect that the addition of more data to the subset, i.e.
+our baseline configuration with T T data at ℓ < 1000,
+yields constraints closer to the underlying mean. This
+matches what we observe when comparing to the tight
+constraints of Planck and WMAP [1, 55], which are
+enabled by the broad coverage of scales in log ℓ space
+of satellite data; adding T T data at ℓ < 1000 to the
+T T ℓ > 1000/TE/EE subset shifts our ns result towards
+these tight constraints.
+For a less model-dependent check on our T T measurement at 750 < ℓ < 1000 we compare our minimumvariance band powers to the Planck full-sky power
+spectrum.
+Given that both data sets are samplevariance-dominated on these angular scales, we assume
+that the SPT data are a subset of the Planck data; we
+use the difference of the SPT and Planck band power
+covariance matrices as the covariance of the difference
+between the two T T data sets. We report a PTE value
+of 9%. This indicates that the two power spectrum
+measurements are in good agreement and we conclude
+that the effect the SPT-3G T T data at ℓ < 1000 has on
+ns is not statistically anomalous.
+
+DES Y3 + SPT 6×2
+DES Y3 3×2
+
+σ8
+
+0.6 σ below the distance-ladder analysis using the tip-ofthe-red-giant-branch approach by Freedman et al. [48].
+Moreover, it is 2.1 σ and 1.0 σ below the result of Wong
+et al. [49] and Birrer et al. [50] using strong-lensing time
+delays.
+Next, we look at structure growth as parametrized
+by the amplitude of matter fluctuations within a sphere
+with comoving volume of 8 Mpc−1 , σ8 , and
+p the combined
+structure growth parameter S8 ≡ σ8 Ωm /0.3. The
+Planck constraint on S8 using primary CMB data lies
+approximately 3 σ above the results of joint galaxy
+clustering and weak lensing analyses [1, 51, 52] as shown
+in the bottom panel of Figure 11. For SPT-3G 2018
+T T /TE/EE we report:
+
+SPT-3G 2018
+Planck
+SPT-3G 2018 + Planck
+SPT-3G 2018 + WMAP
+ACT DR4
+DES Y3 3×2
+DES Y3 + SPT 6×2
+KiDS-1000
+0.75
+
+0.80
+
+S8 ≡ σ 8
+
+p
+
+0.85
+
+Ωm /0.3
+
+FIG. 11. Top panel: Constraints in the σ8 vs. Ωm plane
+from SPT-3G 2018 (red), Planck (black line), a joint analysis
+of DES Y3 galaxy position and lensing data and SPT and
+Planck CMB lensing data (6×2, blue) [54], and DES Y3 joint
+galaxy density and weak lensing data (3×2, gray)p
+[52]. The
+combined structure growth parameter, S8 ≡ σ8 Ωm /0.3,
+varies perpendicular to the degeneracy direction of the DES
+data.
+Bottom panel: A compilation of S8 constraints using different
+cosmological data sets: SPT-3G 2018, Planck [1], WMAP
+[15], ACT DR4 [5], DES Y3 [52], DES Y3 + SPT [54],
+and KiDS-1000 [51]. Note that all constraints are produced
+assuming ΛCDM. The central value of the SPT-3G constraint
+lies between those of low-redshift analyses and Planck .
+
+We find excellent agreement between cosmological
+constraints from SPT-3G 2018 T T /TE/EE and Planck
+data. For individual ΛCDM parameters, all differences
+are < 1 σ. Comparing all five parameters constrained
+by the SPT data, we find χ2 = 2.6, corresponding to
+a PTE value of 76%. This indicates a high level of
+
+18
+
+SPT-3G 2018
+Ωb h2
+Ωc h2
+100θMC
+109 As e−2τ
+ns
+H0 [km s−1 Mpc−1 ]
+σ8
+p
+S8 ≡ σ8 Ωm /0.3
+ΩΛ
+Age/Gyr
+
+0.02224 ± 0.00032
+0.1166 ± 0.0038
+1.04025 ± 0.00074
+1.871 ± 0.030
+0.970 ± 0.016
+68.3 ± 1.5
+0.797 ± 0.015
+0.797 ± 0.042
+0.700 ± 0.021
+13.815 ± 0.047
+
+SPT-3G 2018
++ Planck
+
+SPT-3G 2018
++ WMAP
+
+Planck
+
+0.02233 ± 0.00013
+0.1201 ± 0.0012
+1.04075 ± 0.00028
+1.884 ± 0.010
+0.9649 ± 0.0041
+67.24 ± 0.54
+0.8099 ± 0.0067
+0.832 ± 0.014
+0.6835 ± 0.0075
+13.807 ± 0.021
+
+0.02240 ± 0.00020
+0.1171 ± 0.0027
+1.04016 ± 0.00067
+1.867 ± 0.016
+0.9671 ± 0.0063
+68.2 ± 1.1
+0.796 ± 0.012
+0.799 ± 0.031
+0.698 ± 0.015
+13.804 ± 0.037
+
+0.02236 ± 0.00015
+0.1202 ± 0.0014
+1.04090 ± 0.00031
+1.884 ± 0.012
+0.9649 ± 0.0044
+67.27 ± 0.60
+0.8120 ± 0.0073
+0.834 ± 0.016
+0.6834 ± 0.0084
+13.800 ± 0.024
+
+TABLE IV. Marginalized constraints and 68% uncertainties on ΛCDM parameters from SPT-3G 2018 T T /TE/EE, along with
+joint constraints from SPT-3G 2018 T T /TE/EE + Planck , SPT-3G 2018 T T /TE/EE + WMAP , and results from Planck
+alone [1, 15]. We show constraints on the baseline ΛCDM parameters in the top half of the table, combining the optical depth
+to reionization and amplitude of primordial fluctuations into 109 As e−2τ . The bottom half shows select derived parameters.
+Note that we do not use WMAP polarization data at ℓ < 24 and SPT-3G data alone do not constrain the optical depth to
+reionization τ ; instead, we use a Planck -based Gaussian prior of τ = 0.0540 ± 0.0074.
+
+agreement between the two data sets. This is particularly
+striking given that SPT-3G and Planck constraints are
+effectively independent of one another, given the large
+amount of sky observed by Planck that is not observed
+by SPT and the different ℓ weighting of the data as
+well as the different weightings of the T T , TE, and
+EE spectra. Though we use Planck data to calibrate
+our power spectrum measurement, we marginalize over
+the temperature calibration and polarization efficiency
+in the likelihood analysis. Furthermore, as per §IV D
+we find that our cosmological results are robust when
+replacing the Planck -based prior on the optical depth to
+reionization with the result of Natale et al. [46]. The
+agreement between SPT-3G and Planck data is not only
+a strong argument for the consistency and robustness
+of both experiments’ cosmological results, but implies
+consistency of the ΛCDM model across angular scales
+and temperature and polarization spectra.
+We find acceptable agreement between constraints
+from SPT-3G 2018 T T /TE/EE and ACT DR4. Across
+the five ΛCDM parameters constrained by the groundbased experiments, we find χ2 = 10.4, which translates
+to a PTE value of 6%. Interestingly, the largest difference
+is in θMC , which controls the positions of acoustic
+peaks; CMB data constrain this parameter with great
+precision and SPT-3G 2018 T T /TE/EE yields a 0.07%
+measurement. ACT data yield a value 2.0 σ and 1.7 σ
+larger than SPT-3G and Planck data, respectively. Aiola
+et al. [5] note an offset in the cosmological parameter
+constraints on ns and Ωb h2 when comparing Planck
+and ACT results (also visible in Fig. 7). Due to the
+degeneracy of these parameters with θMC , the observed
+offset between ACT and SPT-3G constraints is likely
+related and from a similar origin. Regardless, the multidimensional test indicates that the observed parameter
+shifts are compatible with statistical fluctuations.
+We report joint constraints from SPT-3G 2018
+
+T T /TE/EE and Planck data in Table IV and find
+H0 = 67.24 ± 0.54 km s−1 Mpc−1 . This is a refinement
+of the Planck constraint on H0 by 11%. The precision
+measurement of the CMB anisotropies at small angular
+scales in temperature and polarization provided by SPT3G shrinks the Planck posteriors by approximately 10%
+for each ΛCDM parameter. Across the six-dimensional
+parameter space we report a reduction of the allowed
+volume by a factor of 1.7; for comparison, only adding
+the SPT TE/EE data to Planck leads to a reduction of
+the allowed parameter volume by a factor of 1.4. Due
+to the excellent agreement of SPT and Planck data, the
+shift to central values of parameter constraints compared
+to Planck alone is small.
+
+The SPT-3G 2018 data are in good agreement with
+WMAP and we report a PTE value for a five-dimensional
+parameter-space comparison of 95%. Combining the
+SPT-3G and WMAP data yields constraints largely
+independent of Planck , which we list in Table IV. We
+report H0 = 68.2 ± 1.1 km s−1 Mpc−1 , which lies 3.2 σ
+below the distance-ladder analysis of Riess et al. [47]
+and deepens the Hubble tension. We report a constraint
+on the combined structure growth parameter of S8 =
+0.799±0.031, which is compatible with Planck , as well as
+DES Y3 and KiDS-1000 data and the SZ-cluster analysis
+of Bocquet et al. [53] within 1 σ. [1, 51, 52]. The addition
+of the low ℓ power spectrum measurement of WMAP to
+SPT-3G data refines our ns constraint by 62%. We report
+ns = 0.9671 ± 0.0063, which disfavors a scale-invariant
+Harrison-Zel’dovich spectrum at 5.2 σ. For comparison,
+from WMAP data alone we infer ns = 0.967 ± 0.012,
+which is 2.8 σ from unity; the addition of SPT data
+tightens the ns constraint derived from WMAP data
+alone by 46%.
+
+19
+B.
+
+Gravitational Lensing, AL
+
+The lensing of CMB photons emitted at the surface
+of last scattering by intervening large scale structure
+causes a characteristic distortion of the CMB anisotropies
+leading to changes in the power spectrum: a smoothing
+of acoustic peaks and a transfer of power to the damping
+tail. Though the magnitude of this effect is derived
+from the values of cosmological parameters in the ΛCDM
+model, marginalizing over the effect of lensing on the
+primary CMB power spectra assesses the compatibility
+of the data with the standard model [56–58]. Planck
+Collaboration et al. [1] find a preference for increased
+lensing at 2.8 σ.
+We marginalize over an artificial scaling of the lensing
+power spectrum that smears the primary CMB, AL , and
+report parameter constraints in Table V. We find
+AL = 0.87 ± 0.11.
+
+(13)
+
+which is compatible with the standard model prediction
+of unity at 1.3 σ. Adding AL does not lead to a
+statistically significant improvement to the goodness-offit compared to ΛCDM (∆χ2 = −1.3).
+The SPT-3G 2018 T T band powers provide a samplevariance-limited measurement of the third and higher
+order acoustic peaks, which helps constrain cosmological
+parameters in this model. The AL constraint improves
+by 24% for T T /TE/EE compared to TE/EE as shown
+in Figure 9. Across all six dimensions, the allowed
+parameter volume shrinks by a factor of 3.1.
+In this model the SPT-3G and Planck constraints
+slightly diverge. Planck data yield AL = 1.180 ± 0.065,
+which is 2.5 σ away from our result. Nevertheless, comparing the two data sets across the full six-dimensional
+parameter space gives χ2 = 10.2, which translates to a
+PTE value of 12% and indicates that the parameter shifts
+are consistent with statistical fluctuations.
+We report joint constraints from SPT-3G 2018 and
+Planck data in Table V. We find AL = 1.078 ± 0.054,
+which is within 1.5 σ of the standard model prediction.
+Adding SPT-3G to Planck data lowers the significance
+of the AL deviation from unity and constraints on other
+cosmological parameters shift closer to the Planck only
+ΛCDM results. The width of the AL posterior shrinks
+by 18% when adding SPT-3G to Planck data and the
+seven-dimensional allowed parameter volume decreases
+by a factor of 2.0.
+We revisit the investigation of lensing convergence on
+the SPT-3G survey patch from Balkenhol et al. [3] using
+the complete SPT-3G 2018 T T /TE/EE data set. We
+analyze joint constraints from SPT-3G 2018 and Planck
+data in ΛCDM foregoing the baseline Gaussian prior on
+κ. We adjust the sign of the κ definition in §III to match
+Motloch & Hu [59] and the appendix of Balkenhol et al.
+[3]. We find
+103 κSPT−3G = −0.93 ± 0.59,
+
+(14)
+
+While the sign matches the result of Balkenhol et al. [3],
+our central value is compatible with zero at 1.6 σ. We
+conclude that this test provides no significant evidence
+that the SPT-3G survey field aligns with a local density
+anomaly.
+
+C.
+
+Effective Number of Neutrino Species, Neff
+
+Additional relativistic particles in the early universe,
+e.g., axion-like particles, hidden photons, gravitinos,
+massless Goldstone bosons, additional neutrino species,
+as well as other forms of energy injection imprint on
+the CMB power spectra. At the parameter level, this
+modifies the effective number of neutrino species, Neff ,
+which is 3.044 in the standard model [60–64].
+We report constraints on the ΛCDM+Neff model in
+Table V, finding
+Neff = 3.55 ± 0.58.
+
+(15)
+
+This result is compatible with the standard model
+prediction at 0.9 σ. The best-fit ΛCDM+Neff model does
+not improve on the good fit to the SPT-3G data achieved
+by ΛCDM significantly (∆χ2 = −0.2).
+The addition of sample-variance-limited measurements
+of the damping tail of the T T power spectrum improves
+on the cosmological constraints achieved by SPT-3G 2018
+TE/EE in this model. As shown Figure 9, the posterior
+of Neff tightens by 14% when adding the SPT-3G 2018
+T T band powers. The allowed volume across the full six
+dimensional parameter space shrinks by a factor of 2.8.
+We find good agreement on Neff between the SPT-3G
+and Planck data with the central values separated by
+1.0 σ. Comparing all six parameters simultaneously, we
+find χ2 = 3.3, which translates to a PTE value of 77%.
+The parameter constraints are compatible with statistical
+fluctuations.
+We list joint constraints from SPT-3G 2018 and Planck
+in Table V and report Neff = 3.00 ± 0.18. This constraint
+on the effective number of neutrino species is in excellent
+agreement with the standard model prediction of 3.044
+(0.2 σ). While the addition of the SPT-3G to the
+Planck data set only leads to a marginal improvement of
+the Neff constraint (4%), the allowed seven-dimensional
+parameter volume is reduced by a factor of 1.5.
+
+D.
+
+Effective Number of Neutrino Species and
+Primordial Helium Abundance, Neff + YP
+
+Varying Neff alone assumes that any additional relativistic species present at recombination were also
+present at big-bang nucleosynthesis. By simultaneously
+marginalizing over the primordial helium abundance,
+YP , we remove this assumption and flexibly probe the
+relativistic energy density in the early universe [63, 65].
+
+20
+AL
+
+Neff
+
+Neff + YP
+
+SPT-3G 2018
+SPT-3G 2018
+SPT-3G 2018
+SPT-3G 2018
+SPT-3G 2018
++ Planck
++ Planck
++ Planck
+Ωb h2
+0.02213 ± 0.00033 0.02243 ± 0.00015 0.02254 ± 0.00046 0.02229 ± 0.00020 0.02235 ± 0.00050 0.02228 ± 0.00020
+Ωc h2
+0.1222 ± 0.0060
+0.1190 ± 0.0014
+0.1235 ± 0.0089
+0.1194 ± 0.0028
+0.139 ± 0.018
+0.1208 ± 0.0042
+100θMC
+1.03982 ± 0.00081 1.04087 ± 0.00029 1.03980 ± 0.00092 1.04083 ± 0.00039 1.0359 ± 0.0030
+1.0404 ± 0.0011
+109 As e−2τ
+1.905 ± 0.041
+1.879 ± 0.011
+1.886 ± 0.037
+1.881 ± 0.016
+1.918 ± 0.046
+1.884 ± 0.017
+ns
+0.956 ± 0.020
+0.9677 ± 0.0043
+1.001 ± 0.040
+0.9628 ± 0.0084
+0.985 ± 0.043
+0.9630 ± 0.0080
+AL
+0.87 ± 0.11
+1.078 ± 0.054
+−
+−
+−
+−
+Neff
+−
+−
+3.55 ± 0.58
+3.00 ± 0.18
+4.7 ± 1.3
+3.09 ± 0.28
+YP
+−
+−
+−
+−
+0.165 ± 0.058
+0.238 ± 0.016
+H0 [km s−1 Mpc−1 ]
+66.1 ± 2.3
+67.73 ± 0.64
+71.7 ± 4.3
+66.9 ± 1.4
+77.5 ± 7.2
+67.4 ± 1.7
+σ8
+0.819 ± 0.023
+0.8031 ± 0.0085
+0.817 ± 0.029
+0.807 ± 0.010
+0.831 ± 0.035
+0.810 ± 0.012
+p
+S8 ≡ σ8 Ωm /0.3
+0.864 ± 0.071
+0.816 ± 0.018
+0.799 ± 0.043
+0.831 ± 0.015
+0.791 ± 0.043
+0.832 ± 0.015
+ΩΛ
+0.666 ± 0.037
+0.6901 ± 0.0087
+0.713 ± 0.026
+0.6821 ± 0.0098
+0.727 ± 0.029
+0.6832 ± 0.0098
+Age/Gyr
+13.861 ± 0.058
+13.789 ± 0.024
+13.36 ± 0.54
+13.86 ± 0.19
+12.59 ± 0.89
+13.78 ± 0.25
+SPT-3G 2018
+
+TABLE V. Constraints on ΛCDM model extensions AL , Neff , and Neff + YP from SPT-3G 2018 T T /TE/EE alone and in
+combination with Planck data.
+
+We present constraints from SPT-3G 2018 T T /TE/EE
+in Table V. We report
+
+The central values of the Neff and YP constraints are
+compatible with the standard model predictions at
+1.3 σ and 1.4 σ, respectively. We report no significant
+improvement to the goodness-of-fit for this model over
+ΛCDM (∆χ2 = −2.1 for two additional parameters).
+
+Comparing the determinants of the parameter covariances when using T T /TE/EE vs. TE/EE data, we find
+that the allowed parameter volume is reduced by a factor
+of 2.4 through the inclusion of temperature band powers.
+The Neff and YP uncertainties shrink by 5% and 15%,
+respectively, which we show in Figure 9.
+
+Again, we find good agreement between SPT-3G
+and Planck data in this model: across the full sevendimensional parameter space we report χ2 = 4.5, which
+translates to a PTE value of 72%. The Neff and YP
+constraints of the two data sets are compatible at 1.4 σ
+and 1.3 σ, respectively. We conclude that the differences
+in parameter constraints are compatible with statistical
+fluctuations.
+Joint constraints from SPT-3G 2018 and Planck are
+given in Table V. We report Neff = 3.09 ± 0.28 and YP =
+0.238 ± 0.016. The central values of the joint SPT-3G
+and Planck Neff and YP constraints lie within 0.2 σ and
+0.5 σ of their standard model predictions, respectively,
+and improve on the Planck only results by 9% and 8%,
+respectively. Across the full eight-dimensional parameter
+space, the addition of SPT-3G to Planck data leads to a
+reduction of the allowed parameter volume by a factor of
+1.8.
+
+Primordial Magnetic Fields
+
+SPT-3G 2018 TT/TE/EE
+
+(16)
+
+Planck
+ACT DR4
+
+SPT-3G 2018 TT
+SPT-3G 2018 TE/EE
+1
+
+P/Pmax
+
+Neff = 4.7 ± 1.3,
+YP = 0.165 ± 0.058.
+
+E.
+
+0.5
+
+0
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+baryon clumping factor b
+
+FIG. 12. Marginalized one-dimensional posterior distributions for the SPT-3G 2018 T T /TE/EE (black solid line),
+T T (light blue dash-dotted line), and TE/EE (orange long
+dashed line) on the clumping factor b induced by primordial
+magnetic fields. We also show the constraints from Planck
+primary CMB and lensing data (dark blue short dashed line)
+and ACT DR4 (gray dotted line). The combination of T T
+and TE/EE spectra allows us to break degeneracies and set
+a tight constraint on b. The SPT-3G and ACT data have
+similar constraining power.
+
+The presence of primordial magnetic fields (PMFs),
+i.e. magnetic fields prior to recombination, increases the
+inhomogeneity of the baryon density, ρb . This so-called
+baryon clumping effect is parametrized by b ≡ (⟨ρ2b ⟩ −
+
+21
+⟨ρb ⟩2 )/⟨ρb ⟩2 , such that b = 0 corresponds to no PMFs.
+With other cosmological parameters fixed, increasing b >
+0 changes the width of the visibility function and shifts
+it to higher redshifts, i.e. recombination occurs sooner,
+which leads one to infer higher values of H0 from CMB
+data [17, 66–68]. Because the distribution of baryons
+in the early universe is not known precisely, we use the
+three-zone toy model put forward by Jedamzik & Abel
+[66] and Jedamzik & Pogosian [68].
+We list constraints on ΛCDM+b from the SPT3G 2018 T T /TE/EE data in Table VI and show the
+marginalized one-dimensional posterior for b in Figure
+12. We find a 95% confidence upper limit of
+b < 1.0.
+
+(17)
+
+The tight limit on the PMF-induced baryon clumping
+limits the possibility of resolving the Hubble tension through this model; we find H0 = 70.0 ±
+1.9 km s−1 Mpc−1 , which remains 1.3 σ below the
+distance-ladder analysis of Riess et al. [47]. We find
+no improvement to the goodness-of-fit for this model
+compared to ΛCDM (∆χ2 = 0).
+
+Ωb h2
+Ωc h2
+100θMC
+109 As e−2τ
+ns
+b
+H0 [km s−1 Mpc−1 ]
+σ8
+S8
+ΩΛ
+Age/Gyr
+100θ∗
+
+SPT-3G 2018
+
+SPT-3G 2018
++ Planck
+
+0.02216 ± 0.00032
+0.1185 ± 0.0039
+1.0475 ± 0.0049
+1.87 ± 0.03
+0.964 ± 0.017
+< 1.0
+70.0 ± 1.9
+0.809 ± 0.017
+0.794 ± 0.041
+0.710 ± 0.021
+13.62 ± 0.14
+1.04040 ± 0.00075
+
+0.02234 ± 0.00013
+0.1210 ± 0.0013
+1.0442 ± 0.0024
+1.8830 ± 0.0097
+0.9610 ± 0.0043
+< 0.37
+68.10 ± 0.74
+0.8137 ± 0.0065
+0.828 ± 0.012
+0.6894 ± 0.0076
+13.706 ± 0.071
+1.04086 ± 0.00029
+
+TABLE VI. Constraints on primordial magnetic fields from
+SPT-3G 2018 T T /TE/EE alone and in combination with
+Planck data. For consistency, we report results for 100θMC .
+However, the assumptions around recombination used in this
+approximation to the sound horizon fail in this model [24].
+Hence, we also report results for the accurate angular scale of
+the sound horizon at recombination, 100θ∗ .
+
+Measurements of the full T T /TE/EE power spectra
+are crucial in this model. Galli et al. [17] point out a
+degeneracy between b and ns , 109 As e−2τ that prohibits
+meaningful constraints on b if only T T or only TE/EE
+power spectrum measurements are available (see Figure
+6 therein). Therefore, while Galli et al. [17] report an
+effective non-constraint on b using the SPT-3G 2018
+TE/EE data set of D21, the addition of T T data in
+this work allows for a meaningful constraint, which we
+visualize in Figure 9.
+Due to the sensitivity of the b constraint to the ns
+values inferred from temperature and polarization data
+
+we confirm that our result is consistent with expectations
+based on simulations. The upper limit we report for the
+data is within 20% of what we infer from simulated band
+powers centered on b = 0.
+We find good agreement between SPT-3G and Planck
+constraints in this model.
+Across the full sevendimensional parameter space we report χ2 = 2.3, which
+translates to a PTE value of 88%. We report joint
+constraints from SPT-3G 2018 and Planck data on
+ΛCDM+b in Table VI. We find a 95% confidence upper
+limit of b < 0.37. The addition of the SPT-3G data to
+Planck tightens the b upper limit by 40% and reduces
+the volume of the allowed parameter space by a factor of
+2.5.
+
+VII.
+
+CONCLUSION
+
+In this work, we present a measurement of the
+CMB temperature power spectrum using SPT-3G data
+recorded in 2018. The T T band powers are samplevariance-limited across the reported angular multipole
+range of 750 < ℓ < 3000. Together with the already
+published polarization data [D21] from the same observing season, this completes the SPT-3G 2018 T T /TE/EE
+data set. We analyze the internal consistency of the
+data using a variety of tools: null tests, difference
+spectra, complement spectra (across frequencies and
+spectrum types), MV comparisons, and parameter-level
+subset tests. We find good agreement across frequencies,
+spectrum types, and angular multipoles.
+We present cosmological parameter constraints from
+the SPT-3G 2018 T T /TE/EE band powers. This is
+the first analysis using SPT-only measurements of all
+three primary CMB power spectra and the complete
+data set provides the strongest constraining power to
+date from SPT. The data are well fit by ΛCDM with
+a PTE value of 15%. We constrain the expansion rate
+today to H0 = 68.3 ± 1.5 km s−1 Mpc−1 , the combined
+structure growth parameter to S8 = 0.797 ± 0.042, and
+find a preference for ns < 1 at 1.8 σ. The addition of
+the SPT-3G temperature power spectrum measurement
+to the TE/EE data improves cosmological parameter
+constraints by 8 − 27% and reduces the allowed fivedimensional parameter volume by a factor of 2.7. We
+report excellent agreement between the SPT-3G and
+Planck data with deviations of < 1σ for all cosmological
+parameters. Adding the SPT-3G band powers to the
+Planck primary power spectrum measurement leads to
+a reduction of the allowed six-dimensional parameter
+volume by a factor of 1.7.
+We consider a series of extensions to the standard
+model, drawing on the following parameters: the
+strength of gravitational lensing affecting the primary
+CMB power spectra, AL , the effective number of
+neutrino species, Neff , the primordial helium abundance,
+YP , and the baryon-clumping induced by primordial
+magnetic fields, b.
+We do not find a preference
+
+22
+for any of these extensions over the standard model.
+The addition of temperature data to TE/EE power
+spectrum measurements leads to significant improvements on cosmological constraints. For ΛCDM+AL ,
+ΛCDM+Neff , and ΛCDM+Neff + YP , the posterior
+widths of extension parameters shrink by 5−24% and the
+multidimensional allowed parameter volume decreases by
+factors of 2.4 − 3.1. In the case of primordial magnetic
+fields, the combination of temperature and polarization
+data is essential to break degeneracies between b and
+ns , 109 As e−2τ [17]. We find a 95% confidence upper limit
+on the PMF-induced baryon clumping of b < 1.0. Our
+findings reflect that joint analyses of T T /TE/EE power
+spectrum measurements yield a substantial increase in
+constraining power over TE/EE alone; this approach
+is key to distinguishing between significant deviations
+from the standard model and statistical fluctuations and
+provides further ways to test the data for systematic
+effects.
+The framework presented here will be used for ongoing analyses of SPT-3G data recorded in the 2019
+and 2020 observing seasons. These observations include
+measurements of the same ∼ 1500 deg2 survey field
+used here, but achieve a map noise ∼ 3.5× smaller.
+Moreover, extended survey data from these seasons cover
+an additional ∼ 2800 deg2 , reducing sample variance
+and improving measurements of the power spectrum
+on large angular scales. The combined SPT-3G measurements presented in this work represent a significant
+improvement for cosmological constraints from groundbased CMB data, and are an important demonstration
+for future experiments, such as CMB-S4 [69].
+ACKNOWLEDGMENTS
+
+We thank Karsten Jedamzik and Levon Pogosian
+for their help with models featuring baryon clumping
+due to primordial magnetic fields. The South Pole
+Telescope program is supported by the National Science
+Foundation (NSF) through the awards OPP-1852617
+
+[1] Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 results. VI. Cosmological parameters. 2020,
+A&A, 641, A6, doi: 10.1051/0004-6361/201833910
+[2] Dutcher, D., Balkenhol, L., Ade, P. A. R., et al. Measurements of the E -mode polarization and temperatureE -mode correlation of the CMB from SPT-3G 2018
+data. 2021, Phys. Rev. D, 104, 022003, doi: 10.1103/
+PhysRevD.104.022003
+[3] Balkenhol, L., Dutcher, D., Ade, P. A. R., et al.
+Constraints on Λ CDM extensions from the SPT-3G 2018
+
+and OPP-2147371. Partial support is also provided
+by the Kavli Institute of Cosmological Physics at the
+University of Chicago. Argonne National Laboratory’s
+work was supported by the U.S. Department of Energy,
+Office of High Energy Physics, under Contract No. DEAC02-06CH11357. Work at Fermi National Accelerator
+Laboratory, a DOE-OS, HEP User Facility managed
+by the Fermi Research Alliance, LLC, was supported
+under Contract No. DE-AC02-07CH11359. The Cardiff
+authors acknowledge support from the UK Science
+and Technologies Facilities Council (STFC). The IAP
+authors acknowledge support from the Centre National
+d’Études Spatiales (CNES). This project has received
+funding from the European Research Council (ERC)
+under the European Union’s Horizon 2020 research and
+innovation programme (grant agreement No 101001897).
+This research used resources of the IN2P3 Computer
+Center (http://cc.in2p3.fr). M.A. and J.V. acknowledge
+support from the Center for AstroPhysical Surveys at
+the National Center for Supercomputing Applications in
+Urbana, IL. J.V. acknowledges support from the Sloan
+Foundation. K.F. acknowledges support from the Department of Energy Office of Science Graduate Student
+Research (SCGSR) Program. The Melbourne authors
+acknowledge support from the Australian Research
+Council’s Discovery Project scheme (No. DP210102386).
+L.B. acknowledges support from the Albert Shimmins
+Fund. The McGill authors acknowledge funding from the
+Natural Sciences and Engineering Research Council of
+Canada, Canadian Institute for Advanced Research, and
+the Fonds de recherche du Québec Nature et technologies.
+The UCLA and MSU authors acknowledge support
+from NSF AST-1716965 and CSSI-1835865. A.S.M.
+is supported by the MSSL STFC Consolidated Grant.
+This research was done using resources provided by the
+Open Science Grid [70, 71], which is supported by the
+NSF Award No. 1148698, and the U.S. Department
+of Energy’s Office of Science. Some of the results
+in this paper have been derived using the healpy and
+HEALPix12 packages [72, 73]. The data analysis pipeline
+also uses the scientific python stack [74–76].
+
+[4]
+
+[5]
+
+[6]
+12
+
+http://healpix.sf.net/
+
+[7]
+
+E E and T E power spectra. 2021, Phys. Rev. D, 104,
+083509, doi: 10.1103/PhysRevD.104.083509
+Choi, S. K., Hasselfield, M., Ho, S.-P. P., et al. The
+Atacama Cosmology Telescope: A Measurement of the
+Cosmic Microwave Background Power Spectra at 98 and
+150 GHz. 2020, arXiv e-prints, arXiv:2007.07289. https:
+//arxiv.org/abs/2007.07289
+Aiola, S., Calabrese, E., Maurin, L., et al. The Atacama
+Cosmology Telescope: DR4 Maps and Cosmological
+Parameters. 2020, arXiv e-prints, arXiv:2007.07288.
+https://arxiv.org/abs/2007.07288
+Carlstrom, J. E., Ade, P. A. R., Aird, K. A., et al. The
+10 Meter South Pole Telescope. 2011, PASP, 123, 568,
+doi: 10.1086/659879
+Kosowsky, A. The Atacama Cosmology Telescope.
+
+23
+
+[8]
+
+[9]
+
+[10]
+
+[11]
+
+[12]
+
+[13]
+
+[14]
+
+[15]
+
+[16]
+
+[17]
+
+[18]
+
+[19]
+
+2003, in the proceedings of the workshop on “The
+Cosmic Microwave Background and its Polarization,”
+New Astronomy Reviews, ed. S. Hanany & K. A. Olive
+(Elsevier)
+Kermish, Z. D., Ade, P., Anthony, A., et al. The
+POLARBEAR experiment. 2012, in Society of PhotoOptical Instrumentation Engineers (SPIE) Conference
+Series, Vol. 8452, Millimeter, Submillimeter, and FarInfrared Detectors and Instrumentation for Astronomy
+VI, ed. W. S. Holland & J. Zmuidzinas, 84521C, doi: 10.
+1117/12.926354
+Keating, B. G., Ade, P. A. R., Bock, J. J., Hivon, E.,
+Holzapfel, W. L., Lange, A. E., Nguyen, H., & Yoon, K.
+BICEP: a large angular scale CMB polarimeter. 2003, in
+Polarimetry in Astronomy. Edited by Silvano Fineschi.
+Proceedings of the SPIE, Volume 4843., 284–295
+Staniszewski, Z., Aikin, R. W., Amiri, M., et al. The
+Keck Array: A Multi Camera CMB Polarimeter at the
+South Pole. 2012, Journal of Low Temperature Physics,
+167, 827, doi: 10.1007/s10909-012-0510-1
+Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 results. V. CMB power spectra and likelihoods. 2020, A&A, 641, A5, doi: 10.1051/0004-6361/
+201936386
+Galli, S., Benabed, K., Bouchet, F., Cardoso, J.-F.,
+Elsner, F., Hivon, E., Mangilli, A., Prunet, S., &
+Wandelt, B. CMB polarization can constrain cosmology
+better than CMB temperature. 2014, Phys. Rev. D, 90,
+063504, doi: 10.1103/PhysRevD.90.063504
+Reichardt, C. L., Ade, P. A. R., Bock, J. J., et al. HighResolution CMB Power Spectrum from the Complete
+ACBAR Data Set. 2009, Astrophys. J., 694, 1200,
+doi: 10.1088/0004-637X/694/2/1200
+Das, S., Marriage, T. A., Ade, P. A. R., et al. The
+Atacama Cosmology Telescope: A Measurement of the
+Cosmic Microwave Background Power Spectrum at 148
+and 218 GHz from the 2008 Southern Survey. 2011,
+Astrophys. J., 729, 62, doi: 10.1088/0004-637X/729/1/
+62
+Bennett, C. L., Larson, D., Weiland, J. L., et al. Nineyear Wilkinson Microwave Anisotropy Probe (WMAP)
+Observations: Final Maps and Results. 2013, Ap. J.
+Suppl. , 208, 20, doi: 10.1088/0067-0049/208/2/20
+Story, K. T., Reichardt, C. L., Hou, Z., et al. A
+Measurement of the Cosmic Microwave Background
+Damping Tail from the 2500-Square-Degree SPT-SZ
+Survey. 2013, Astrophys. J., 779, 86, doi: 10.1088/
+0004-637X/779/1/86
+Galli, S., Pogosian, L., Jedamzik, K., & Balkenhol, L.
+Consistency of Planck, ACT, and SPT constraints on
+magnetically assisted recombination and forecasts for
+future experiments. 2022, Phys. Rev. D, 105, 023513,
+doi: 10.1103/PhysRevD.105.023513
+Benson, B. A., Ade, P. A. R., Ahmed, Z., et al. SPT3G: A Next-Generation Cosmic Microwave Background
+Polarization Experiment on the South Pole Telescope.
+2014, in Proc. SPIE, Vol. 9153, Millimeter, Submillimeter, and Far-Infrared Detectors and Instrumentation for
+Astronomy VII, 91531P, doi: 10.1117/12.2057305
+Sobrin, J. A., Anderson, A. J., Bender, A. N., et al. The
+Design and Integrated Performance of SPT-3G. 2022,
+The Astrophysical Journal Supplement Series, 258, 42,
+doi: 10.3847/1538-4365/ac374f
+
+[20] Hivon, E., Górski, K. M., Netterfield, C. B., Crill, B. P.,
+Prunet, S., & Hansen, F. MASTER of the Cosmic
+Microwave Background Anisotropy Power Spectrum:
+A Fast Method for Statistical Analysis of Large and
+Complex Cosmic Microwave Background Data Sets.
+2002, Astrophys. J., 567, 2, doi: 10.1086/338126
+[21] Lewis, A., & Bridle, S. Cosmological parameters from
+CMB and other data: A Monte Carlo approach. 2002,
+Phys. Rev. D, 66, 103511
+[22] Lewis, A., Challinor, A., & Lasenby, A. Efficient Computation of Cosmic Microwave Background Anisotropies
+in Closed Friedmann-Robertson-Walker Models. 2000,
+Astrophys. J., 538, 473, doi: 10.1086/309179
+[23] Spurio Mancini, A., Piras, D., Alsing, J., Joachimi,
+B., & Hobson, M. P. COSMOPOWER: emulating
+cosmological power spectra for accelerated Bayesian
+inference from next-generation surveys. 2022, MNRAS,
+511, 1771, doi: 10.1093/mnras/stac064
+[24] Hu, W., & Sugiyama, N. Small-Scale Cosmological
+Perturbations: an Analytic Approach. 1996, Astrophys.
+J., 471, 542, doi: 10.1086/177989
+[25] Fendt, W. A., & Wandelt, B. D. Pico: Parameters for
+the Impatient Cosmologist. 2007, Astrophys. J., 654, 2,
+doi: 10.1086/508342
+[26] Blas, D., Lesgourgues, J., & Tram, T. The Cosmic
+Linear Anisotropy Solving System (CLASS). Part II:
+Approximation schemes. 2011, J. of Cosm. & Astropart.
+Phys., 2011, 034, doi: 10.1088/1475-7516/2011/07/034
+[27] Hill, J. C., Calabrese, E., Aiola, S., et al. Atacama
+Cosmology Telescope: Constraints on prerecombination
+early dark energy. 2022, Phys. Rev. D, 105, 123536,
+doi: 10.1103/PhysRevD.105.123536
+[28] Jeong, D., Chluba, J., Dai, L., Kamionkowski, M., &
+Wang, X. Effect of aberration on partial-sky measurements of the cosmic microwave background temperature
+power spectrum. 2014, Phys. Rev. D, 89, 023003, doi: 10.
+1103/PhysRevD.89.023003
+[29] Manzotti, A., Hu, W., & Benoit-Lévy, A. Super-sample
+CMB lensing. 2014, Phys. Rev. D, 90, 023003, doi: 10.
+1103/PhysRevD.90.023003
+[30] Reichardt, C. L., Patil, S., Ade, P. A. R., et al.
+An Improved Measurement of the Secondary Cosmic
+Microwave Background Anisotropies from the SPT-SZ +
+SPTpol Surveys. 2020, arXiv e-prints, arXiv:2002.06197.
+https://arxiv.org/abs/2002.06197
+[31] George, E. M., Reichardt, C. L., Aird, K. A., et al.
+A Measurement of Secondary Cosmic Microwave Background Anisotropies from the 2500-Square-degree SPTSZ Survey. 2015, Astrophys. J., 799, 177, doi: 10.1088/
+0004-637X/799/2/177
+[32] Dunkley, J., Calabrese, E., Sievers, J., et al. The
+Atacama Cosmology Telescope: likelihood for small-scale
+CMB data. 2013, J. of Cosm. & Astropart. Phys., 7, 25,
+doi: 10.1088/1475-7516/2013/07/025
+[33] De Zotti, G., Ricci, R., Mesa, D., Silva, L., Mazzotta, P.,
+Toffolatti, L., & González-Nuevo, J. Predictions for highfrequency radio surveys of extragalactic sources. 2005,
+A&A, 431, 893, doi: 10.1051/0004-6361:20042108
+[34] Fixsen, D. J. The Temperature of the Cosmic Microwave
+Background. 2009, Astrophys. J., 707, 916, doi: 10.1088/
+0004-637X/707/2/916
+[35] Addison, G. E., Dunkley, J., Hajian, A., et al. Powerlaw Template for Infrared Point-source Clustering. 2012,
+Astrophys. J., 752, 120, doi: 10.1088/0004-637X/752/2/
+
+24
+120
+[36] Shaw, L. D., Nagai, D., Bhattacharya, S., & Lau, E. T.
+Impact of Cluster Physics on the Sunyaev-Zel’dovich
+Power Spectrum. 2010, Astrophys. J., 725, 1452, doi: 10.
+1088/0004-637X/725/2/1452
+[37] Shaw, L. D., Rudd, D. H., & Nagai, D. Deconstructing
+the Kinetic SZ Power Spectrum. 2012, Astrophys. J., 756,
+15, doi: 10.1088/0004-637X/756/1/15
+[38] Zahn, O., Reichardt, C. L., Shaw, L., et al. Cosmic
+Microwave Background Constraints on the Duration and
+Timing of Reionization from the South Pole Telescope.
+2012, Astrophys. J., 756, 65, doi: 10.1088/0004-637X/
+756/1/65
+[39] Planck Collaboration, Ade, P. A. R., Aghanim, N.,
+Armitage-Caplan, C., Arnaud, M., Ashdown, M., AtrioBarandela, F., Aumont, J., Baccigalupi, C., Banday,
+A. J., & et al. Planck 2013 results. XV. CMB power
+spectra and likelihood. 2014, A&A, 571, A15, doi: 10.
+1051/0004-6361/201321573
+[40] Dunn, O. J. Multiple Comparisons Among Means. 1961,
+American Statistical Association, 52
+[41] Planck Collaboration, Aghanim, N., Arnaud, M., Ashdown, M., Aumont, J., Baccigalupi, C., Banday, A. J.,
+Barreiro, R. B., Bartlett, J. G., Bartolo, N., & et al.
+Planck 2015 results. XI. CMB power spectra, likelihoods,
+and robustness of parameters. 2016, A&A, 594, A11,
+doi: 10.1051/0004-6361/201526926
+[42] Mocanu, L. M., Crawford, T. M., Aylor, K., et al.
+Consistency of cosmic microwave background temperature measurements in three frequency bands in the
+2500-square-degree SPT-SZ survey. 2019, J. of Cosm. &
+Astropart. Phys., 2019, 038, doi: 10.1088/1475-7516/
+2019/07/038
+[43] Gratton, S., & Challinor, A. Understanding parameter
+differences between analyses employing nested data
+subsets. 2019, arXiv e-prints, arXiv:1911.07754. https:
+//arxiv.org/abs/1911.07754
+[44] Henning, J. W., Sayre, J. T., Reichardt, C. L., et al. Measurements of the Temperature and E-mode Polarization
+of the CMB from 500 Square Degrees of SPTpol Data.
+2018, Astrophys. J., 852, 97, doi: 10.3847/1538-4357/
+aa9ff4
+[45] Adachi, S., Aguilar Faúndez, M. A. O., Arnold, K.,
+et al. A measurement of the CMB E-mode angular
+power spectrum at subdegree scales from 670 square
+degrees of POLARBEAR data. 2020, arXiv e-prints,
+arXiv:2005.06168. https://arxiv.org/abs/2005.06168
+[46] Natale, U., Pagano, L., Lattanzi, M., Migliaccio, M.,
+Colombo, L. P., Gruppuso, A., Natoli, P., & Polenta, G.
+A novel CMB polarization likelihood package for large
+angular scales built from combined WMAP and Planck
+LFI legacy maps. 2020, arXiv e-prints, arXiv:2005.05600.
+https://arxiv.org/abs/2005.05600
+[47] Riess, A. G., Yuan, W., Macri, L. M., et al. A
+Comprehensive Measurement of the Local Value of the
+Hubble Constant with 1 km s−1 Mpc−1 Uncertainty from
+the Hubble Space Telescope and the SH0ES Team. 2022,
+Ap. J. Lett. , 934, L7, doi: 10.3847/2041-8213/ac5c5b
+[48] Freedman, W. L., Madore, B. F., Hatt, D., Hoyt, T. J.,
+Jang, I.-S., Beaton, R. L., Burns, C. R., Lee, M. G.,
+Monson, A. J., Neeley, J. R., Phillips, M. M., Rich,
+J. A., & Seibert, M. The Carnegie-Chicago Hubble
+Program. VIII. An Independent Determination of the
+Hubble Constant Based on the Tip of the Red Giant
+
+[49]
+
+[50]
+
+[51]
+
+[52]
+
+[53]
+
+[54]
+
+[55]
+
+[56]
+
+[57]
+
+[58]
+
+[59]
+
+[60]
+
+[61]
+
+[62]
+
+Branch. 2019, arXiv e-prints, arXiv:1907.05922. https:
+//arxiv.org/abs/1907.05922
+Wong, K. C., Suyu, S. H., Chen, G. C. F., et al.
+H0LiCOW XIII. A 2.4% measurement of H0 from lensed
+quasars: 5.3σ tension between early and late-Universe
+probes. 2020, MNRAS, doi: 10.1093/mnras/stz3094
+Birrer, S., Shajib, A. J., Galan, A., et al. TDCOSMO IV:
+Hierarchical time-delay cosmography – joint inference of
+the Hubble constant and galaxy density profiles. 2020,
+arXiv e-prints, arXiv:2007.02941. https://arxiv.org/
+abs/2007.02941
+Heymans, C., Tröster, T., Asgari, M., et al. KiDS1000 Cosmology: Multi-probe weak gravitational lensing
+and spectroscopic galaxy clustering constraints. 2020,
+arXiv e-prints, arXiv:2007.15632. https://arxiv.org/
+abs/2007.15632
+Abbott, T. M. C., Aguena, M., Alarcon, A., et al.
+Dark Energy Survey Year 3 results: Cosmological constraints from galaxy clustering and weak lensing. 2022,
+Phys. Rev. D, 105, 023520, doi: 10.1103/PhysRevD.105.
+023520
+Bocquet, S., Dietrich, J. P., Schrabback, T., et al. Cluster
+Cosmology Constraints from the 2500 deg2 SPT-SZ
+Survey: Inclusion of Weak Gravitational Lensing Data
+from Magellan and the Hubble Space Telescope. 2019,
+Astrophys. J., 878, 55, doi: 10.3847/1538-4357/ab1f10
+Abbott, T. M. C., Aguena, M., Alarcon, A., et al. Joint
+analysis of DES Year 3 data and CMB lensing from SPT
+and Planck III: Combined cosmological constraints. 2022,
+arXiv e-prints, arXiv:2206.10824. https://arxiv.org/
+abs/2206.10824
+Hinshaw, G., Larson, D., Komatsu, E., et al. Nineyear Wilkinson Microwave Anisotropy Probe (WMAP)
+Observations: Cosmological Parameter Results. 2013,
+Ap. J. Suppl. , 208, 19, doi: 10.1088/0067-0049/208/
+2/19
+Seljak, U. Gravitational Lensing Effect on Cosmic
+Microwave Background Anisotropies: A Power Spectrum
+Approach. 1996, Astrophys. J., 463, 1, doi: 10.1086/
+177218
+Lewis, A., & Challinor, A. Weak gravitational lensing
+of the CMB. 2006, Phys. Rep., 429, 1, doi: 10.1016/j.
+physrep.2006.03.002
+Calabrese, E., Slosar, A., Melchiorri, A., Smoot, G. F., &
+Zahn, O. Cosmic microwave weak lensing data as a test
+for the dark universe. 2008, Phys. Rev. D, 77, 123531,
+doi: 10.1103/PhysRevD.77.123531
+Motloch, P., & Hu, W. Lensing covariance on cut sky
+and SPT-Planck lensing tensions. 2019, Phys. Rev. D,
+99, 023506, doi: 10.1103/PhysRevD.99.023506
+Froustey, J., Pitrou, C., & Volpe, M. C. Neutrino
+decoupling including flavour oscillations and primordial
+nucleosynthesis. 2020, J. of Cosm. & Astropart. Phys.,
+2020, 015, doi: 10.1088/1475-7516/2020/12/015
+Bennett, J. J., Buldgen, G., de Salas, P. F., Drewes,
+M., Gariazzo, S., Pastor, S., & Wong, Y. Y. Y.
+Towards a precision calculation of Neff in the Standard
+Model II: Neutrino decoupling in the presence of flavour
+oscillations and finite-temperature QED. 2020, arXiv
+e-prints, arXiv:2012.02726. https://arxiv.org/abs/
+2012.02726
+Brust, C., Kaplan, D. E., & Walters, M. T. New light
+species and the CMB. 2013, Journal of High Energy
+Physics, 2013, 58, doi: 10.1007/JHEP12(2013)058
+
+25
+[63] Group, P. D., Zyla, P. A., Barnett, R. M., et al. Review
+of Particle Physics. 2020, Progress of Theoretical and
+Experimental Physics, 2020, doi: 10.1093/ptep/ptaa104
+[64] Abazajian, K. N., Adshead, P., Ahmed, Z., et al. CMBS4 Science Book, First Edition. 2016, ArXiv e-prints.
+https://arxiv.org/abs/1610.02743
+[65] Cyburt, R. H., Fields, B. D., Olive, K. A., & Yeh,
+T.-H. Big bang nucleosynthesis: Present status. 2016,
+Reviews of Modern Physics, 88, 015004, doi: 10.1103/
+RevModPhys.88.015004
+[66] Jedamzik, K., & Abel, T.
+Small-scale primordial
+magnetic fields and anisotropies in the cosmic microwave
+background radiation. 2013, Journal of Cosmology
+and Astroparticle Physics, 2013, 050, doi: 10.1088/
+1475-7516/2013/10/050
+[67] Jedamzik, K., & Saveliev, A.
+Stringent Limit on
+Primordial Magnetic Fields from the Cosmic Microwave
+Background Radiation. 2019, Phys. Rev. Lett., 123,
+021301, doi: 10.1103/PhysRevLett.123.021301
+[68] Jedamzik, K., & Pogosian, L. Relieving the Hubble
+Tension with Primordial Magnetic Fields. 2020, Phys.
+Rev. Lett., 125, 181302, doi: 10.1103/PhysRevLett.125.
+181302
+[69] CMB-S4 Collaboration, Abazajian, K., Addison, G.,
+Adshead, P., Ahmed, Z., Allen, S. W., Alonso, D.,
+Alvarez, M., Anderson, A., Arnold, K. S., Baccigalupi,
+C., & et al. CMB-S4 Science Case, Reference Design,
+and Project Plan. 2019, arXiv e-prints, arXiv:1907.04473.
+https://arxiv.org/abs/1907.04473
+[70] Pordes, R., et al. The Open Science Grid. 2007, J. Phys.
+Conf. Ser., 78, 012057, doi: 10.1088/1742-6596/78/1/
+012057
+[71] Sfiligoi, I., Bradley, D. C., Holzman, B., Mhashilkar,
+P., Padhi, S., & Wurthwein, F. The Pilot Way to
+Grid Resources Using glideinWMS. 2009, in 2, Vol. 2,
+2009 WRI World Congress on Computer Science and
+Information Engineering, 428–432, doi: 10.1109/CSIE.
+2009.950
+[72] Górski, K. M., Hivon, E., Banday, A. J., Wandelt,
+B. D., Hansen, F. K., Reinecke, M., & Bartelmann,
+M.
+HEALPix: A Framework for High-Resolution
+Discretization and Fast Analysis of Data Distributed on
+the Sphere. 2005, Astrophys. J., 622, 759, doi: 10.1086/
+427976
+[73] Zonca, A., Singer, L., Lenz, D., Reinecke, M., Rosset, C.,
+Hivon, E., & Gorski, K. healpy: equal area pixelization
+and spherical harmonics transforms for data on the
+sphere in Python. 2019, Journal of Open Source Software,
+4, 1298, doi: 10.21105/joss.01298
+[74] Hunter, J. D. Matplotlib: A 2D graphics environment.
+2007, Computing In Science & Engineering, 9, 90,
+doi: 10.1109/MCSE.2007.55
+[75] Jones, E., Oliphant, T., Peterson, P., et al. 2001, SciPy:
+Open source scientific tools for Python. http://www.
+scipy.org/
+[76] van der Walt, S., Colbert, S., & Varoquaux, G. The
+NumPy Array: A Structure for Efficient Numerical
+Computation. 2011, Computing in Science Engineering,
+13, 22, doi: 10.1109/MCSE.2011.37
+[77] Lane, A. P. Submillimeter Transmission at South Pole.
+1998, in ASP Conf. Ser. 141, Vol. 141, Astrophysics
+from Antarctica, ed. G. Novak & R. H. Landsberg (San
+Francisco: ASP), 289
+
+[78] Pardo, J. R., Cernicharo, J., & Serabyn, E. Atmospheric
+transmission at microwaves (ATM): an improved model
+for millimeter/submillimeter applications. 2001, IEEE
+Transactions on Antennas and Propagation, 49, 1683,
+doi: 10.1109/8.982447
+[79] Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 results. III. High Frequency Instrument data
+processing and frequency maps. 2020, A&A, 641, A3,
+doi: 10.1051/0004-6361/201832909
+
+26
+APPENDIX
+A.
+
+allows for as good as or better parameter constraints than
+reported in D21.
+
+Updates to the Polarization Analysis Pipeline
+
+We make two key updates to the analysis of the
+TE/EE spectra from D21, which primarily update the
+covariance matrix. First, we account for correlated noise
+across frequencies. Extending the work in D21, we take
+the difference between two half-depth coadded maps at
+different frequencies. We divide the power spectrum of
+this difference map by the square root of the product of
+the power spectra of the corresponding auto-frequency
+noise spectra. This yields an estimate of the correlation
+coefficient of the noise between two frequency channels.
+We find that for intensity the 95 GHz and 150 GHz
+channels, as well as the 95 GHz and 220 GHz channels,
+are moderately correlated with ρ ≈ 0.6 at ℓ = 750 and
+ρ ≤ 0.2 at ℓ ≥ 2000. The 150 GHz and 220 GHz channels
+are highly correlated with ρ ≈ 0.9 at ℓ = 750 and ρ ≤ 0.4
+at ℓ ≥ 2000. This correlation is high compared to past
+and contemporary ground-based CMB experiments, due
+to the novel trichoic architecture of SPT-3G pixels [19].
+The behaviour with ℓ matches the expectation that only
+atmospheric noise is correlated across frequencies, not
+instrumental noise. The different degrees of correlation
+are a consequence of a water emission line at 183 GHz
+and an oxygen line at 119 GHz [77, 78]. We use the
+correlation coefficients derived in this way to update the
+noise model in the covariance calculation (see §IVH in
+D21 for details). We detect no correlated noise across
+frequencies in polarization or correlated noise between
+temperature and polarization.
+Second, we use a series of 1, 000 simulations to update
+the mode-coupling model in the covariance calculation.
+The Lambert azimuthal equal-area projection does not
+preserve angles and leads to increasing bin-to-bin correlations at high ℓ. For each simulation, we generate
+a CMB-only HEALPix sky, mask the map using the
+data apodization mask, and project the curved-sky map
+into a flat-sky map. We estimate the correlation matrix
+using the scatter of the power spectra of the 1, 000 flatsky maps. The recovered correlation structure matches
+the data well and is less noisy than the data estimate
+due to the increased number of independent realizations.
+Following D21, we fit second-order polynomials to
+band-diagonal elements of the correlation estimate from
+simulations and use these fits in the data correlation
+matrix. While in principle filtering effects not captured
+by these simulations lead to off-diagonal elements in the
+covariance matrix, the correlation structure of the data
+is completely dominated by the flat-sky projection.
+We compare parameter constraints from the original
+TE/EE likelihood to the updated version in Table VII
+and Figure 13. The central values of cosmological
+parameter constraints shift by less than the size of the
+new error bars. The parameter uncertainties generally
+widen with the updated covariance, by at most 15% for
+Ωc h2 . The addition of T T data to the updated covariance
+
+B.
+
+Baseline Priors
+
+We present the baseline priors used in the likelihood
+analysis and the best-fit values of nuisance parameters in
+ΛCDM in Table VIII.
+We briefly present updates made to the galactic dust
+prior calculation of D21 here. We model the spectral
+dependence of galactic dust using a modified black-body
+spectrum and retain the angular dependence of D21,
+i.e. using a power law. The spectra are normalized
+at 150 GHz and ℓ = 80. We fit combinations of the
+cross-spectra of the 143 GHz, 217 GHz, 353 GHz, and
+545 GHz Planck PR3 half-mission maps [79] calculated
+on the SPT-3G survey field to the best-fit Planck
+CMB spectrum plus galactic dust and extragalactic
+foregrounds. We ensure the resulting constraints on the
+galactic dust parameters are robust with respect to the
+modelling of extragalactic foregrounds and the bin width
+of the cross-spectrum band powers. We conservatively
+widen the constraints the data provide on the galactic
+dust amplitudes by a factor of three before adopting them
+as priors in our cosmological analysis. The baseline priors
+on galactic dust are listed in Table VIII.
+C.
+
+Multifrequency Band Powers
+
+We present the full multifrequency power spectrum
+measurements in tables IX, X, and XI below.
+D.
+
+Difference Spectra
+
+We follow Planck Collaboration et al. [41] and form
+difference spectra, ∆D̂νµ;κτ = D̂νµ − D̂κτ , where D̂νµ
+are foreground-subtracted multifrequency band powers.
+The covariance of a difference spectrum is C ∆νµ;κτ =
+AC νµ;κτ AT , where C νµ;κτ is the 2 × 2 matrix of the
+relevant covariance blocks and A = (I, −I).
+We show the T T , TE, and EE difference spectra in
+figures 14, 15, and 16, respectively. While we observe
+no significant features, such as slopes, constant offsets,
+or signal leakage, the T T difference spectra show a dip
+at ℓ ≈ 2350. This is caused by a bifurcation of the
+multifrequency spectra over a region of ∆ℓ ≈ 300 width,
+with higher frequencies seeing a stronger signal. This
+feature is not present in the polarization spectra. It is
+not clear what is causing this bifurcation; for unmodelled
+foreground contamination, we expect to see a slope in the
+difference spectra, rather than a well-localized feature.
+Ultimately, this feature is not statistically significant:
+comparing the 45 difference spectra to zero using a χ2
+statistic, the lowest PTE value is 5% (150 × 220 GHz −
+95×95 GHz T T ). We conclude that the difference spectra
+
+27
+
+Original TE/EE Likelihood
+
+66
+
+70
+
+H0
+
+74
+
+0.022
+
+Ωb h
+
+0.023
+
+0.11
+
+2
+
+0.12
+
+Ωc h
+
+2
+
+Updated TE/EE Likelihood
+
+1.7
+
+1.8
+9
+
+10 As e
+
+1.9
+−2τ
+
+0.95
+
+1.00
+
+1.05
+
+1.038
+
+ns
+
+1.042
+
+100θM C
+
+FIG. 13. Marginalized posterior distributions for core ΛCDM and H0 from the original (black) and updated (blue) SPT-3G
+2018 TE/EE likelihood. The posteriors widen slightly; the largest change is a 15% correction to the Ωc h2 uncertainty. The
+shift to the central values of parameter constraints are less than the size of the new error bars.
+
+Ωb h2
+Ωc h2
+100θMC
+109 As e−2τ
+ns
+H0 [km s−1 Mpc−1 ]
+σ8
+p
+S8 ≡ σ8 Ωm /0.3
+ΩΛ
+Age/Gyr
+
+SPT-3G 2018 TE/EE (Original)
+0.02241 ± 0.00032
+0.1152 ± 0.0037
+1.03963 ± 0.00073
+1.811 ± 0.040
+1.000 ± 0.019
+68.7 ± 1.5
+0.788 ± 0.016
+0.779 ± 0.042
+0.706 ± 0.021
+13.809 ± 0.049
+
+SPT-3G 2018 TE/EE (Updated)
+0.02218 ± 0.00035
+0.1145 ± 0.0043
+1.04013 ± 0.00081
+1.800 ± 0.041
+1.008 ± 0.021
+69.0 ± 1.7
+0.786 ± 0.018
+0.772 ± 0.047
+0.710 ± 0.023
+13.813 ± 0.052
+
+TABLE VII. Comparison of marginalized constraints and 68% errors of ΛCDM free and derived parameters from SPT-3G
+2018 TE/EE data using the original and updated likelihood.
+
+are consistent with zero and take this as further evidence
+that the multifrequency band powers are consistent with
+measuring the same underlying signal.
+E.
+
+Multifrequency Residuals
+
+We show the residuals of the SPT-3G 2018 T T /TE/EE
+multifrequency band powers to the best-fit ΛCDM model
+
+in Figure 17.
+
+28
+Parameter
+
+Prior
+
+Description
+
+N (0.0540, 0.0074)
+
+Optical depth to reionization
+
+General
+τ
+100κ
+
+N (0, 0.045) [0.0]
+
+Super-sample lensing convergence
+
+N (1.88, 0.48) [1.93]
+
+Galactic cirrus amplitude
+
+Temperature
+Acirrus
+80
+αcirrus
+β cirrus
+Poisson,TT
+D3000,95×95
+Poisson,TT
+D3000,95×150
+Poisson,TT
+D3000,95×220
+Poisson,TT
+D3000,150×150
+Poisson,TT
+D3000,150×220
+Poisson,TT
+D3000,220×220
+CIB−cl.
+A80
+β CIB−cl.
+
+AtSZ
+ξ
+AkSZ
+
+N (−2.53, 0.05) [−2.53]
+
+Galactic cirrus power law index
+
+N (51.3, 9.4) [62.61]
+
+T T Poisson power for 95 × 95 GHz
+
+N (20.7, 5.9) [24.3]
+
+T T Poisson power for 95 × 220 GHz
+
+N (1.48, 0.02) [1.48]
+N (22.4, 7.1) [27.9]
+
+N (15.3, 4.1) [16.7]
+
+N (28.4, 4.2) [28.6]
+
+N (76.0, 14.9) [78.5]
+
+Galactic cirrus spectral index
+T T Poisson power for 95 × 150 GHz
+
+T T Poisson power for 150 × 150 GHz
+
+T T Poisson power for 150 × 220 GHz
+
+T T Poisson power for 220 × 220 GHz
+
+N (3.2, 1.8) [5.2]
+
+CIB clustering amplitude
+
+N (3.2, 2.4) [4.7]
+
+tSZ amplitude
+
+N (3.7, 4.6) [3.7]
+
+kSZ amplitude
+
+N (0.041, 0.012) [0.041]
+
+EE Poisson power for 95 × 95 GHz
+
+N (0.0157, 0.0047) [0.0157]
+
+EE Poisson power for 95 × 220 GHz
+
+N (2.26, 0.38) [1.85]
+N (0.18, 0.33) [0.09]
+
+CIB clustering spectral index
+tSZ-CIB correlation
+
+Polarization
+Poisson,EE
+D3000,95×95
+Poisson,EE
+D3000,95×150
+Poisson,EE
+D3000,95×220
+Poisson,EE
+D3000,150×150
+Poisson,EE
+D3000,150×220
+Poisson,EE
+D3000,220×220
+TE
+A80
+
+αTE
+βTE
+AEE
+80
+αEE
+βEE
+
+N (0.0180, 0.0054) [0.0177]
+
+N (0.0115, 0.0034) [0.0115]
+
+N (0.0190, 0.0057) [0.0188]
+N (0.048, 0.014) [0.048]
+
+N (0.120, 0.051) [0.138]
+
+EE Poisson power for 95 × 150 GHz
+
+EE Poisson power for 150 × 150 GHz
+
+EE Poisson power for 150 × 220 GHz
+
+EE Poisson power for 220 × 220 GHz
+
+TE amplitude of polarized galactic dust
+
+N (−2.42, 0.04) [−2.42]
+
+TE power law index of polarized galactic dust
+
+N (0.05, 0.022) [0.052]
+
+EE amplitude of polarized galactic dust
+
+N (1.51, 0.04) [1.51]
+
+TE spectral index of polarized galactic dust
+
+N (−2.42, 0.04) [−2.42]
+
+EE power law index of polarized galactic dust
+
+N (1.51, 0.04) [1.51]
+
+EE spectral index of polarized galactic dust
+
+N (1.0, 0.0056) [1.0]
+
+Temperature calibration at 95 GHz
+
+Calibration
+95 GHz
+Tcal
+150 GHz
+Tcal
+220 GHz
+Tcal
+95 GHz
+Ecal
+150 GHz
+Ecal
+220 GHz
+Ecal
+
+N (1.0, 0.0056) [0.9975]
+
+Temperature calibration at 150 GHz
+
+N (1.0, 0.0087) [1.0009]
+
+Polarization calibration at 95 GHz
+
+N (1.0, 0.016) [1.019]
+
+Polarization calibration at 220 GHz
+
+N (1.0, 0.0075) [0.9930]
+
+Temperature calibration at 220 GHz
+
+N (1.0, 0.0082) [1.0020]
+
+Polarization calibration at 150 GHz
+
+TABLE VIII. Overview of nuisance parameters in the SPT-3G 2018 likelihood and baseline priors. Gaussian priors are listed
+as N (µ, σ), where µ is the mean and σ the standard deviation. Best-fit values for nuisance parameters are given in brackets.
+All amplitude parameters are in units of µK2 . The best-fit values of all nuisance parameters lie within 1.2 σ of the central
+values of their priors. The prior on the optical depth to reionization is not used when including Planck data in the analysis.
+
+29
+ℓ Range
+
+ℓeff
+
+750 – 800
+800 – 850
+850 – 900
+900 – 950
+950 – 1000
+1000 – 1050
+1050 – 1100
+1100 – 1150
+1150 – 1200
+1200 – 1250
+1250 – 1300
+1300 – 1350
+1350 – 1400
+1400 – 1450
+1450 – 1500
+1500 – 1550
+1550 – 1600
+1600 – 1650
+1650 – 1700
+1700 – 1750
+1750 – 1800
+1800 – 1850
+1850 – 1900
+1900 – 1950
+1950 – 2000
+2000 – 2100
+2100 – 2200
+2200 – 2300
+2300 – 2400
+2400 – 2500
+2500 – 2600
+2600 – 2700
+2700 – 2800
+2800 – 2900
+2900 – 3000
+
+775
+825
+874
+925
+974
+1024
+1074
+1124
+1174
+1224
+1274
+1324
+1374
+1424
+1474
+1524
+1574
+1624
+1674
+1724
+1775
+1824
+1874
+1925
+1974
+2051
+2152
+2250
+2350
+2451
+2550
+2649
+2750
+2850
+2947
+
+95 × 95 GHz 95 × 150 GHz 95 × 220 GHz 150 × 150 GHz 150 × 220 GHz 220 × 220 GHz
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+2549.3
+2673.5
+2191.5
+1594.4
+1215.8
+1024.5
+1244.8
+1243.4
+1223.5
+940.3
+792.3
+753.0
+797.3
+828.7
+774.5
+653.0
+517.8
+436.4
+426.5
+424.4
+408.9
+390.5
+309.6
+264.0
+279.4
+264.0
+215.1
+170.0
+158.6
+142.6
+128.0
+122.7
+118.5
+107.3
+109.5
+
+83.9
+79.2
+73.7
+53.1
+39.5
+34.4
+35.8
+37.1
+37.7
+29.0
+23.5
+21.8
+24.8
+24.7
+22.4
+19.6
+14.8
+13.7
+11.9
+13.2
+12.0
+11.0
+9.9
+8.7
+8.5
+4.5
+4.1
+3.4
+3.2
+3.0
+2.9
+2.9
+2.9
+2.9
+3.1
+
+2556.1
+2682.0
+2185.9
+1602.2
+1211.3
+1014.3
+1237.7
+1238.0
+1214.2
+926.8
+780.9
+744.8
+786.4
+818.0
+766.8
+643.3
+501.6
+421.1
+412.9
+413.2
+395.3
+372.1
+288.4
+250.3
+256.6
+245.8
+192.8
+146.2
+138.8
+117.9
+98.7
+91.6
+85.1
+74.8
+70.5
+
+84.1
+79.3
+73.9
+53.2
+39.6
+34.2
+35.5
+36.7
+37.3
+28.6
+22.9
+21.3
+24.2
+24.1
+21.7
+19.0
+14.1
+13.1
+11.3
+12.6
+11.4
+10.3
+9.1
+7.9
+7.6
+4.0
+3.6
+2.7
+2.5
+2.3
+2.1
+1.9
+1.9
+1.8
+1.8
+
+2583.5
+2682.8
+2185.8
+1641.3
+1213.4
+1009.6
+1247.4
+1223.3
+1212.3
+943.7
+766.8
+746.0
+775.9
+819.6
+772.6
+656.6
+497.6
+412.1
+411.4
+412.0
+404.6
+362.0
+283.1
+253.7
+241.7
+242.7
+189.5
+145.3
+132.4
+120.5
+93.8
+84.8
+75.1
+71.8
+59.8
+
+92.3
+87.4
+80.9
+59.4
+44.6
+38.7
+39.6
+40.7
+40.8
+32.2
+26.1
+24.6
+26.9
+26.8
+24.5
+21.5
+16.7
+15.5
+14.2
+15.3
+14.2
+12.9
+11.7
+10.4
+10.1
+5.4
+5.0
+4.3
+4.2
+3.9
+3.8
+3.8
+3.9
+3.9
+4.1
+
+2567.7
+2694.6
+2187.5
+1618.7
+1211.0
+1009.8
+1236.6
+1240.4
+1211.2
+921.5
+778.6
+744.1
+782.8
+818.0
+766.1
+642.3
+495.4
+416.6
+407.7
+411.3
+394.3
+365.4
+280.1
+247.9
+248.9
+241.3
+186.1
+141.5
+135.5
+111.4
+91.8
+85.7
+74.6
+64.9
+58.4
+
+85.3
+80.5
+75.1
+54.2
+40.4
+34.8
+36.0
+37.2
+37.7
+29.1
+23.2
+21.7
+24.4
+24.4
+22.1
+19.2
+14.2
+13.3
+11.6
+12.9
+11.7
+10.5
+9.3
+8.0
+7.7
+4.1
+3.7
+2.8
+2.5
+2.2
+2.0
+1.9
+1.7
+1.6
+1.6
+
+−
+−
+−
+−
+−
+1014.1
+1254.6
+1236.7
+1216.1
+950.9
+776.3
+757.8
+783.7
+833.5
+783.2
+666.9
+503.3
+421.8
+420.2
+422.7
+417.0
+370.0
+291.1
+265.5
+253.0
+253.9
+198.8
+157.5
+155.4
+132.1
+107.7
+106.1
+87.9
+89.7
+75.6
+
+−
+−
+−
+−
+−
+40.4
+41.1
+42.0
+41.9
+33.3
+26.9
+25.4
+27.6
+27.6
+25.2
+22.0
+17.2
+16.0
+14.7
+15.8
+14.7
+13.3
+11.9
+10.5
+10.2
+5.5
+5.0
+4.2
+3.9
+3.6
+3.4
+3.2
+3.2
+3.1
+3.1
+
+−
+−
+−
+−
+−
+1050.0
+1291.8
+1266.1
+1239.0
+1011.0
+798.8
+809.8
+811.3
+881.0
+825.6
+724.2
+550.5
+467.8
+473.6
+484.8
+477.5
+415.1
+356.4
+317.3
+319.1
+317.3
+251.4
+240.8
+230.5
+216.0
+178.6
+191.6
+183.0
+207.5
+154.3
+
+−
+−
+−
+−
+−
+52.3
+51.9
+52.1
+50.9
+42.4
+35.9
+33.9
+35.1
+34.9
+32.6
+29.2
+24.9
+23.6
+22.8
+23.6
+22.5
+21.0
+19.6
+18.4
+18.2
+10.0
+9.8
+9.3
+9.3
+9.2
+9.3
+9.4
+9.7
+10.1
+10.5
+
+TABLE IX. T T multifrequency band power measurements, Db , and associated uncertainties, σb , (both in units of µK2 ) for a
+given angular multipole range and the window function-weighted multipole ℓeff .
+
+30
+ℓ Range
+300 – 350
+350 – 400
+400 – 450
+450 – 500
+500 – 550
+550 – 600
+600 – 650
+650 – 700
+700 – 750
+750 – 800
+800 – 850
+850 – 900
+900 – 950
+950 – 1000
+1000 – 1050
+1050 – 1100
+1100 – 1150
+1150 – 1200
+1200 – 1250
+1250 – 1300
+1300 – 1350
+1350 – 1400
+1400 – 1450
+1450 – 1500
+1500 – 1550
+1550 – 1600
+1600 – 1650
+1650 – 1700
+1700 – 1750
+1750 – 1800
+1800 – 1850
+1850 – 1900
+1900 – 1950
+1950 – 2000
+2000 – 2100
+2100 – 2200
+2200 – 2300
+2300 – 2400
+2400 – 2500
+2500 – 2600
+2600 – 2700
+2700 – 2800
+2800 – 2900
+2900 – 3000
+
+ℓeff
+
+95 × 95 GHz 95 × 150 GHz 95 × 220 GHz 150 × 150 GHz 150 × 220 GHz 220 × 220 GHz
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+
+326
+88.7 12.0
+93.3 12.2
+375
+43.8 8.8
+42.5 8.7
+425 −44.9 7.6 −45.6 7.3
+475 −69.1 6.7 −69.0 6.3
+525 −34.1 5.5 −34.7 5.0
+575
+11.9 6.2
+11.3 5.9
+625
+24.2 7.0
+23.9 6.7
+674 −63.6 7.7 −63.4 7.4
+725 −119.9 7.3 −121.2 6.9
+774 −121.7 7.3 −120.7 6.7
+824 −52.8 5.6 −50.6 4.8
+874
+41.2 5.8
+38.5 5.1
+924
+54.7 5.5
+56.1 4.9
+974
+12.5 5.3
+13.1 4.9
+1024 −52.2 5.6 −51.9 5.2
+1074 −75.8 5.3 −74.7 4.7
+1124 −48.4 4.6 −52.8 3.9
+1174
+−9.7 4.2 −10.1 3.4
+1224
+4.9 4.1
+4.3 3.4
+1274 −15.4 4.1 −15.8 3.4
+1324 −47.3 4.2 −48.2 3.5
+1374 −62.0 4.3 −62.0 3.5
+1424 −41.2 4.1 −41.9 3.1
+1474 −10.9 3.9 −11.8 2.8
+1524
+8.5 3.6
+9.1 2.6
+1574
+−3.8 3.5
+−0.8 2.6
+1624 −13.9 3.4 −15.4 2.6
+1674 −31.1 3.3 −32.0 2.4
+1724 −22.0 3.4 −24.0 2.3
+1775 −15.8 3.3 −15.2 2.2
+1824 −14.2 3.2 −10.0 2.1
+1874
+−3.9 3.1
+−3.3 2.0
+1924 −11.9 3.0 −11.2 2.0
+1975 −15.1 3.1 −16.4 2.0
+2050 −16.1 1.7 −14.2 1.0
+2150
+−5.4 1.6
+−4.8 1.0
+2250
+−7.7 1.6
+−6.4 0.9
+2350
+−8.9 1.7
+−8.8 0.9
+2450
+−7.5 1.7
+−4.7 0.9
+2550
+−0.9 1.7
+−4.2 0.9
+2649
+−4.9 1.8
+−3.3 0.9
+2749
+1.5 1.9
+−2.1 1.0
+2849
+2.5 2.1
+0.2 1.0
+2946
+−7.8 2.3
+−2.3 1.1
+
+99.7 13.9
+36.6 10.7
+−43.0 9.2
+−64.9 7.9
+−48.2 6.7
+15.2 7.4
+21.5 8.2
+−58.0 8.7
+−114.0 8.3
+−124.1 8.3
+−43.2 6.8
+38.5 6.9
+58.9 6.6
+14.4 6.3
+−55.4 6.5
+−71.9 6.2
+−58.4 5.6
+−6.9 5.2
+4.2 5.1
+−17.2 5.1
+−43.6 5.1
+−55.3 5.3
+−41.2 5.2
+−8.6 5.0
+4.8 4.7
+−4.2 4.5
+−15.7 4.4
+−32.4 4.3
+−25.9 4.4
+−17.6 4.4
+−7.1 4.3
+−5.1 4.1
+−10.8 4.1
+−17.8 4.1
+−14.6 2.3
+−9.1 2.3
+−3.9 2.3
+−10.5 2.4
+−5.7 2.4
+−4.0 2.5
+−6.6 2.6
+5.2 2.8
+−0.2 3.0
+−5.5 3.2
+
+101.1
+42.7
+−47.8
+−70.0
+−34.8
+10.5
+24.5
+−63.1
+−122.8
+−121.4
+−48.6
+36.7
+56.9
+13.9
+−51.8
+−73.7
+−55.9
+−10.8
+4.3
+−16.1
+−49.1
+−63.0
+−42.9
+−13.0
+10.2
+1.1
+−14.5
+−33.1
+−26.0
+−14.7
+−8.4
+−3.4
+−11.3
+−16.4
+−13.7
+−4.3
+−5.0
+−9.3
+−2.3
+−3.6
+−3.2
+−3.8
+−0.7
+−2.2
+
+12.7
+9.2
+7.5
+6.4
+5.2
+6.1
+7.0
+7.5
+7.0
+6.8
+5.0
+5.3
+5.1
+5.0
+5.4
+4.9
+4.1
+3.6
+3.6
+3.6
+3.6
+3.7
+3.3
+3.0
+2.8
+2.8
+2.7
+2.5
+2.5
+2.4
+2.2
+2.2
+2.1
+2.1
+1.1
+1.1
+1.0
+1.0
+0.9
+0.9
+0.9
+0.9
+1.0
+1.0
+
+110.2
+40.7
+−47.0
+−64.4
+−46.6
+15.5
+23.0
+−59.1
+−115.7
+−126.0
+−39.9
+37.2
+61.3
+13.7
+−55.7
+−72.0
+−60.2
+−7.1
+4.3
+−16.7
+−42.8
+−56.7
+−41.0
+−9.9
+5.9
+0.3
+−13.3
+−31.7
+−26.7
+−17.4
+−7.3
+−3.3
+−10.9
+−17.2
+−13.9
+−5.8
+−3.6
+−10.5
+−0.4
+−5.1
+−3.7
+1.9
+−5.4
+0.8
+
+14.4
+11.3
+9.5
+8.0
+6.7
+7.5
+8.3
+8.8
+8.3
+8.2
+6.7
+6.9
+6.6
+6.3
+6.5
+6.1
+5.5
+5.1
+5.0
+4.9
+5.0
+5.1
+5.0
+4.7
+4.5
+4.3
+4.1
+4.0
+4.1
+4.0
+3.9
+3.8
+3.7
+3.7
+2.0
+2.0
+1.9
+1.9
+1.9
+1.9
+1.9
+2.0
+2.1
+2.2
+
+113.2
+39.9
+−43.2
+−53.0
+−57.9
+20.7
+21.3
+−59.7
+−104.7
+−124.1
+−25.5
+36.6
+70.1
+17.9
+−56.4
+−69.8
+−65.8
+−1.9
+8.3
+−16.3
+−39.5
+−47.3
+−30.7
+−4.2
+−7.3
+−5.1
+−8.0
+−32.9
+−25.0
+−21.4
+3.4
+−12.6
+−13.9
+−18.6
+−17.7
+3.5
+−8.8
+−19.6
+0.3
+−14.1
+−2.4
+16.4
+−3.9
+16.9
+
+20.3
+17.2
+15.0
+13.2
+12.1
+12.3
+12.7
+12.9
+12.6
+12.8
+12.0
+11.8
+11.2
+10.6
+10.5
+10.4
+10.1
+9.9
+9.7
+9.5
+9.5
+9.9
+10.1
+10.0
+9.7
+9.4
+9.3
+9.4
+9.7
+9.9
+9.8
+9.7
+9.7
+10.0
+5.6
+5.9
+6.1
+6.4
+6.7
+7.0
+7.4
+7.9
+8.4
+9.0
+
+TABLE X. TE multifrequency band power measurements, Db , and associated uncertainties, σb , (both in units of µK2 ) for a
+given angular multipole range and the window function-weighted multipole ℓeff . The data have been minorly updated from
+D21.
+
+31
+ℓ Range
+
+ℓeff
+
+300 – 350
+350 – 400
+400 – 450
+450 – 500
+500 – 550
+550 – 600
+600 – 650
+650 – 700
+700 – 750
+750 – 800
+800 – 850
+850 – 900
+900 – 950
+950 – 1000
+1000 – 1050
+1050 – 1100
+1100 – 1150
+1150 – 1200
+1200 – 1250
+1250 – 1300
+1300 – 1350
+1350 – 1400
+1400 – 1450
+1450 – 1500
+1500 – 1550
+1550 – 1600
+1600 – 1650
+1650 – 1700
+1700 – 1750
+1750 – 1800
+1800 – 1850
+1850 – 1900
+1900 – 1950
+1950 – 2000
+2000 – 2100
+2100 – 2200
+2200 – 2300
+2300 – 2400
+2400 – 2500
+2500 – 2600
+2600 – 2700
+2700 – 2800
+2800 – 2900
+2900 – 3000
+
+325
+375
+425
+475
+524
+575
+624
+674
+725
+774
+824
+874
+924
+974
+1024
+1075
+1124
+1174
+1224
+1275
+1325
+1374
+1424
+1474
+1524
+1574
+1624
+1674
+1724
+1775
+1825
+1874
+1924
+1975
+2049
+2148
+2249
+2349
+2449
+2549
+2649
+2749
+2849
+2946
+
+95 × 95 GHz 95 × 150 GHz 95 × 220 GHz 150 × 150 GHz 150 × 220 GHz 220 × 220 GHz
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+Db
+σb
+13.1
+19.7
+19.0
+11.2
+7.1
+11.1
+29.1
+39.0
+33.7
+21.2
+13.2
+16.9
+31.8
+41.3
+39.4
+26.1
+15.5
+13.1
+20.6
+29.9
+31.2
+24.1
+14.2
+10.9
+15.0
+22.1
+17.6
+19.2
+7.4
+10.1
+8.3
+9.7
+12.7
+12.4
+6.7
+5.3
+7.4
+1.2
+6.6
+2.7
+5.8
+−0.8
+0.9
+−2.0
+
+1.1
+1.3
+1.2
+0.7
+0.5
+0.7
+1.3
+1.5
+1.4
+1.1
+0.8
+0.9
+1.3
+1.6
+1.6
+1.3
+1.0
+1.0
+1.3
+1.5
+1.6
+1.4
+1.3
+1.3
+1.4
+1.6
+1.7
+1.7
+1.7
+1.7
+1.8
+2.0
+2.1
+2.2
+1.2
+1.3
+1.5
+1.7
+1.9
+2.1
+2.3
+2.6
+3.0
+3.4
+
+12.7
+20.4
+18.7
+11.9
+7.2
+11.2
+29.3
+38.9
+34.2
+20.7
+13.3
+17.1
+31.3
+40.2
+38.2
+26.1
+15.1
+12.2
+21.7
+29.0
+30.7
+22.3
+12.9
+10.1
+15.3
+20.8
+19.9
+18.3
+10.1
+8.7
+9.0
+9.7
+12.8
+10.1
+6.2
+5.5
+7.6
+2.6
+4.0
+2.5
+0.5
+0.8
+3.1
+−2.6
+
+1.1
+1.3
+1.1
+0.7
+0.4
+0.6
+1.2
+1.3
+1.3
+0.9
+0.6
+0.7
+1.1
+1.4
+1.3
+1.0
+0.7
+0.7
+0.9
+1.1
+1.1
+1.0
+0.8
+0.7
+0.8
+1.0
+1.0
+1.0
+0.9
+0.9
+0.9
+1.0
+1.1
+1.1
+0.6
+0.7
+0.7
+0.8
+0.9
+0.9
+1.0
+1.2
+1.3
+1.5
+
+11.9
+18.7
+17.7
+11.0
+7.5
+12.1
+28.7
+38.9
+32.6
+21.7
+13.0
+17.6
+30.3
+40.1
+38.7
+24.6
+14.4
+10.7
+23.6
+28.1
+28.1
+21.8
+11.7
+11.3
+12.4
+21.8
+20.2
+14.4
+10.7
+11.1
+5.7
+9.5
+17.9
+8.8
+7.7
+1.0
+6.6
+4.1
+5.2
+0.4
+0.0
+9.1
+4.6
+−7.2
+
+1.3
+1.5
+1.3
+0.9
+0.6
+0.9
+1.5
+1.7
+1.7
+1.3
+1.0
+1.2
+1.6
+2.0
+2.0
+1.7
+1.4
+1.4
+1.7
+2.0
+2.1
+2.0
+1.9
+2.0
+2.2
+2.4
+2.6
+2.6
+2.6
+2.7
+2.9
+3.1
+3.3
+3.4
+2.0
+2.2
+2.5
+2.8
+3.0
+3.3
+3.7
+4.1
+4.6
+5.1
+
+13.0
+20.9
+18.9
+12.4
+6.9
+11.7
+29.8
+38.5
+34.7
+20.2
+13.6
+16.9
+31.3
+40.3
+38.1
+26.1
+14.8
+12.5
+21.9
+29.3
+31.8
+22.0
+12.4
+10.3
+14.0
+20.9
+20.5
+17.9
+10.4
+8.4
+9.5
+9.7
+11.8
+11.3
+6.3
+5.3
+5.9
+4.8
+2.6
+2.6
+2.3
+2.0
+0.5
+1.0
+
+1.1
+1.3
+1.1
+0.7
+0.4
+0.7
+1.2
+1.4
+1.3
+0.9
+0.6
+0.8
+1.1
+1.4
+1.4
+1.1
+0.7
+0.7
+1.0
+1.2
+1.2
+1.0
+0.8
+0.8
+0.9
+1.0
+1.1
+1.0
+0.9
+0.9
+0.9
+1.0
+1.1
+1.1
+0.6
+0.6
+0.7
+0.7
+0.8
+0.9
+0.9
+1.0
+1.2
+1.3
+
+12.5
+19.5
+18.1
+10.9
+8.1
+11.6
+29.2
+39.0
+33.5
+20.9
+13.1
+17.4
+31.7
+39.1
+36.6
+24.8
+13.6
+11.8
+21.9
+26.4
+27.9
+24.5
+11.1
+13.2
+10.9
+23.7
+21.3
+18.5
+13.9
+7.9
+5.3
+12.8
+7.6
+13.7
+6.1
+5.2
+7.0
+1.0
+5.1
+3.0
+2.2
+3.5
+−3.2
+7.3
+
+1.3
+1.5
+1.3
+0.9
+0.6
+0.9
+1.4
+1.7
+1.6
+1.2
+0.9
+1.1
+1.5
+1.9
+1.9
+1.5
+1.2
+1.2
+1.5
+1.8
+1.9
+1.7
+1.5
+1.5
+1.7
+2.0
+2.1
+2.0
+1.9
+1.9
+2.1
+2.3
+2.4
+2.5
+1.4
+1.5
+1.7
+1.8
+1.9
+2.1
+2.3
+2.6
+2.9
+3.2
+
+11.7
+17.5
+17.2
+9.2
+9.1
+11.2
+33.3
+39.7
+31.5
+22.2
+13.2
+18.6
+28.8
+35.8
+39.6
+19.8
+10.4
+12.2
+17.5
+26.1
+23.7
+38.9
+5.3
+18.7
+7.8
+23.1
+23.3
+12.6
+0.3
+14.5
+−0.4
+13.8
+0.6
+6.0
+4.7
+9.1
+8.6
+13.0
+−0.9
+−2.5
+10.3
+−5.3
+−6.2
+−4.2
+
+2.0
+2.3
+2.1
+1.7
+1.5
+1.9
+2.5
+2.9
+2.9
+2.7
+2.5
+2.9
+3.4
+3.9
+4.1
+3.9
+3.8
+4.0
+4.5
+5.0
+5.4
+5.6
+5.7
+6.1
+6.5
+7.0
+7.4
+7.7
+8.1
+8.6
+9.1
+9.7
+10.3
+10.9
+6.4
+7.2
+8.1
+8.8
+9.7
+10.6
+11.6
+12.8
+14.0
+15.5
+
+TABLE XI. EE multifrequency band power measurements, Db , and associated uncertainties, σb , (both in units of µK2 ) for
+a given angular multipole range and the window function-weighted multipole ℓeff . The data have been minorly updated from
+D21.
+
+32
+
+95 × 95
+150 × 150
+
+3
+
+0.27
+
+0
+
+−3
+0.24
+
+0.38
+
+0
+
+−3
+0.31
+
+3
+
+95 × 150
+
+∆D̂bνµ;κτ /σb∆νµ;κτ
+
+220 × 220
+
+3
+
+150 × 150
+
+0.27
+
+220 × 220
+
+0.35
+
+0
+
+−3
+0.23
+
+95 × 220
+
+3
+
+0.52
+
+0.61
+
+95 × 150
+
+0.36
+
+0
+
+−3
+0.05
+
+150 × 220
+
+3
+
+0.25
+
+0.53
+
+0.09
+
+95 × 220
+
+0.54
+
+0
+
+−3
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+Angular Multipole `
+FIG. 14. Relative T T difference spectra as indicated by the row and column labels, i.e. difference spectra ∆D̂bνµ;κτ divided
+by the square root of the associated covariance, σb∆νµ;κτ . The blue shading indicates the range of 1 − 3 σ fluctuations, while
+gray indicates data excluded in the analysis. We conservatively exclude all T T data at ℓ < 750. This is motivated by the shape
+of the transfer function, which slowly rises and plateaus at ℓ ≈ 750; the common-mode filter removes T T power on large and
+intermediate angular scales. We further exclude 150 × 220 GHz and 220 × 220 GHz T T spectra at ℓ < 1000, based on our model
+for correlated atmospheric noise. The PTE values are indicated in the top right corner of each panel. All PTE values are in
+the 95th percentile and the multifrequency spectra are in good agreement with one another.
+
+33
+
+95 × 95
+150 × 150
+
+3
+
+0.26
+
+0
+
+−3
+0.13
+
+0.14
+
+0
+
+−3
+0.22
+
+3
+
+95 × 150
+
+∆D̂bνµ;κτ /σb∆νµ;κτ
+
+220 × 220
+
+3
+
+150 × 150
+
+0.80
+
+220 × 220
+
+0.17
+
+0
+
+−3
+0.41
+
+95 × 220
+
+3
+
+0.38
+
+0.23
+
+95 × 150
+
+0.35
+
+0
+
+−3
+0.10
+
+150 × 220
+
+3
+
+0.38
+
+0.14
+
+0.33
+
+95 × 220
+
+0.45
+
+0
+
+−3
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+Angular Multipole `
+FIG. 15. Relative TE difference spectra as indicated by the row and column labels, i.e. difference spectra ∆D̂bνµ;κτ divided
+by the square root of the associated covariance, σb∆νµ;κτ . The blue shading indicates the range of 1 − 3 σ fluctuations and PTE
+values are given in the top right corner of each panel. All PTE values are in the 95th percentile and the multifrequency spectra
+are in good agreement with one another.
+
+34
+
+95 × 95
+150 × 150
+
+3
+
+0.69
+
+0
+
+−3
+0.61
+
+0.39
+
+0
+
+−3
+0.49
+
+3
+
+95 × 150
+
+∆D̂bνµ;κτ /σb∆νµ;κτ
+
+220 × 220
+
+3
+
+150 × 150
+
+0.79
+
+220 × 220
+
+0.46
+
+0
+
+−3
+0.56
+
+95 × 220
+
+3
+
+0.60
+
+0.32
+
+95 × 150
+
+0.78
+
+0
+
+−3
+0.38
+
+150 × 220
+
+3
+
+0.08
+
+0.51
+
+0.16
+
+95 × 220
+
+0.14
+
+0
+
+−3
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+1000
+
+2000
+
+Angular Multipole `
+FIG. 16. Relative EE difference spectra as indicated by the row and column labels, i.e. difference spectra ∆D̂bνµ;κτ divided
+by the square root of the associated covariance, σb∆νµ;κτ . The blue shading indicates the range of 1 − 3 σ fluctuations. The
+multifrequency spectra are in good agreement with one another, as evidenced by the PTE values (given in the top right corner
+of each panel) which all lie in the 95th percentile.
+
+35
+
+TT
+
+TE
+
+EE
+
+95×95
+
+3
+0
+−3
+
+95×150
+
+3
+0
+−3
+
+95×220
+
+0
+
+150×150
+
+−3
+3
+0
+−3
+
+150×220
+
+(D̂bνµ − Dbνµ )/σbνµ
+
+3
+
+3
+0
+
+220×220
+
+−3
+3
+0
+−3
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+1000
+
+2000
+
+3000
+
+Angular Multipole `
+
+FIG. 17. Relative residuals of the SPT-3G 2018 T T /TE/EE multifrequency band powers to the best-fit ΛCDM model, i.e.
+difference between the SPT-3G data and the model prediction scaled by the error bar of the band powers measurement. The
+blue shading indicates the range of 1 − 3 σ fluctuations. Note that the SPT-3G band powers are correlated by up to 40% for
+neighboring bins. The residuals are consistent with zero and the standard model provides a good fit to the data.
+
+
