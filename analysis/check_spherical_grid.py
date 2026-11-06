@@ -8,7 +8,7 @@ import argparse
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src/stages'))
-from spherical_grid_test import np, hp, transport, synth, analyse, hp_inverse, car_average
+from spherical_grid_test import np, hp, transport, synth, analyse, hp_inverse, car_average, regions
 
 p = argparse.ArgumentParser()
 p.add_argument('--pixell', action='store_true')
@@ -22,6 +22,15 @@ def bearing(t, p, u, q):
     return np.arctan2(np.sin(u)*np.sin(q-p), np.cos(t)*np.sin(u)*np.cos(q-p)-np.sin(t)*np.cos(u))
 phase = np.exp(2j*(bearing(t0, p0, t, phi)-bearing(t, phi, t0, p0)))
 np.testing.assert_allclose(transport(t, phi, t0, p0), phase, atol=1e-15)
+# The footprint uses production C2, not the distinct C1 sin(2*pi*x) taper.
+ntheta = 384
+theta = (np.arange(ntheta)+.5)*np.pi/ntheta
+dec = 90-np.degrees(theta)
+row = np.flatnonzero((dec < -42)&(dec > -44.5))[0]
+distance = np.radians(-42-dec[row])
+x = np.sqrt((1-np.cos(distance))/(1-np.cos(np.radians(2.5))))
+expected = (.5*(1-np.cos(np.pi*x)))**2*np.sin(theta[row])
+np.testing.assert_allclose(regions(ntheta)['field1500'][row, 0], expected, atol=1e-14)
 np.random.seed(10)
 e = hp.synalm(np.r_[0., 0., np.ones(31)], lmax=32)
 a = np.array([e, e*0])

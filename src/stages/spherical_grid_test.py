@@ -110,8 +110,8 @@ def regions(ntheta):
     d = np.minimum(np.minimum(dec[:, None]+70, -42-dec[:, None]),
         np.degrees(np.arcsin(np.cos(np.radians(dec[:, None]))*
                              np.sin(np.radians(50-np.abs(dra)[None, :])))))
-    x = np.clip(d/2.5, 0, 1)
-    mask = (x-np.sin(2*np.pi*x)/(2*np.pi))**2
+    from make_masks import taper
+    mask = taper(np.radians(np.maximum(d, 0)), 'C2', 2.5)**2
     result = {'field1500': mask, 'fullsky': np.ones_like(mask)}
     for centre in (0, -30, -56, -75):
         result[f'dec{centre}'] = np.broadcast_to((abs(dec[:, None]-centre)<3).astype(float), mask.shape)
