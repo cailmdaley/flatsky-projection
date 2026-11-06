@@ -61,10 +61,13 @@ def moments(v, weight):
     return np.average((v-mean)**2, weights=weight), np.average((v-mean)**3, weights=weight)
 
 
-def statistics(raw, smooth, broad, mask, weight, threshold):
+def statistics(raw, smooth, broad, mask, weight, threshold, pixel_deg=.1):
     wavelet = smooth-broad
-    # Strict comparison avoids plateau ties (probability zero for these fields).
-    neighbours = maximum_filter(smooth, size=3, mode="nearest")
+    # A fixed physical neighbourhood prevents sub-HEALPix interpolation
+    # ripples from becoming extra peaks when chart pixels are refined.
+    # Peaks are maxima in a +/-0.3 degree square, not just 8 neighbours.
+    half_width = int(round(.3/pixel_deg))
+    neighbours = maximum_filter(smooth, size=2*half_width+1, mode="nearest")
     peaks = mask & (smooth == neighbours) & (smooth > threshold)
     return np.array((*moments(raw[mask], weight), *moments(smooth[mask], weight),
                      np.average(abs(wavelet[mask]), weights=weight), peaks.sum()))
@@ -100,8 +103,8 @@ def run(seed, nside, pixel_deg):
             planar = [gaussian_filter(raw, s/np.deg2rad(pixel_deg), mode="nearest",
                                       truncate=5.) for s in (SIGMA, 2*SIGMA)]
             # raw field is identical in both arms, providing an exact null.
-            reference = statistics(raw, *truth, mask, weight, threshold)
-            measured = statistics(raw, *planar, mask, weight, threshold)
+            reference = statistics(raw, *truth, mask, weight, threshold, pixel_deg)
+            measured = statistics(raw, *planar, mask, weight, threshold, pixel_deg)
             rows.append(dict(chart=chart, diameter=diameter,
                 g2=float(np.average(g*g, weights=weight)),
                 mean_log_mu=float(np.average(np.log(mu), weights=weight)),
