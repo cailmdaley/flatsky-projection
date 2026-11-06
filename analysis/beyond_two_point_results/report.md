@@ -69,15 +69,33 @@ Shape noise, masks, source distributions, cosmological derivatives, multiscale c
 A dedicated weak-lensing analysis is needed to set a tolerance in survey-error units.
 The 14.6° disk, correlation spectrum and filter here do not reproduce Gatti et al.’s 14.6° square Morlet-scattering analysis.
 
-Jeffrey et al. (2024, arXiv:2403.02314, §6.3) explicitly apply the same flattening to data and simulations and distinguish unbiased inference from potentially suboptimal compression.
+Jeffrey et al. (arXiv:2403.02314, §6.3; bibliography key jeffrey25) explicitly apply the same flattening to data and simulations and distinguish unbiased inference from potentially suboptimal compression.
 That shared deterministic transformation is a valid forward model when implemented consistently at every parameter value, including masks, noise, filtering and spin transport.
 It removes this particular model/data mismatch; these toy measurements do not demonstrate calibrated cosmological posteriors or recover information discarded by compression.
+
+## Suggested manuscript scope
+
+Replace the concluding claim that the next step is only to estimate beyond-two-point effects with a short filtering example and an explicit survey-level limit.
+The four-panel control figure need not enter the main article.
+A possible paragraph, using generated macros, is:
+
+Beyond spectra, chart magnification changes the angular scale of a fixed planar filter, even for a scalar field on a conformal chart.
+In a signal-only lognormal control, applying a Gaussian filter of central width $\sigma=0.5^\circ$ after projection rather than on the sphere raises the third central moment by \ngTANThirdLarge\ on a $60^\circ$-diameter gnomonic disk and by \ngSTGThirdLarge\ on conformal STG.
+Consistently projecting data and simulations includes this effect in the forward model, while leaving possible losses from patching or compression \citep{jeffrey25}.
+A safe patch size in survey-error units requires a dedicated weak-lensing analysis with its noise, mask and multiscale covariance.
+
+To use those macros, add the corresponding input of paper/beyond_two_point_numbers.tex and run analysis/paper_numbers.py --beyond-two-point-only after editing main.tex.
+The measured effects belong to this toy field and filter; do not describe them as DES scattering or weak-lensing parameter biases.
 
 ## Reproduction
 
 `lc run --executor htcondor --profile htcondor9 beyond_two_point beyond_two_point_resolution -u highell`
-`bash env.sh python3 analysis/check_beyond_two_point.py`
+`bash env.sh python3 analysis/check_beyond_two_point.py --results`
 `bash env.sh python3 analysis/beyond_two_point_report.py`
+`~/.local/share/uv/tools/lightcone-cli/bin/python analysis/check_beyond_two_point_provenance.py`
+
+The provenance gate checks both canonical hashes, all 36 unit hashes, gathered bytes and actual stage contents against their unit git pins.
+It then runs lc verify on an isolated unchanged two-output slice of astra.yaml because the CLI has no output selector; unrelated large map outputs are not rehashed.
 
 Raw paired measurements and their lightcone manifests live under results/highell/beyond_two_point and beyond_two_point_resolution.
 summary.json contains every table cell, paired standard error, signal-only scatter and sampling-control comparison.
