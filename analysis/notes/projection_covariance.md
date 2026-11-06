@@ -95,55 +95,103 @@ A broad mean response therefore does not, by itself, imply broad bin correlation
 The remapping does change the diagonal variance through its angular anisotropy; the variance uses an angular average of **squared** directional power, not the square of its average.
 Spatially varying geometry and the survey window can introduce off-diagonal covariance, which requires their retained position and directional dependence.
 
-## Existing field measurement
+## A leading local, finite-annulus prediction
 
-`analysis/projection_covariance.py` reads the finest-spectrum thread's exact rebinnings of the production 20 skies.
-It measures average lag correlations at widths 30, 50 and 100 and separations of one, two and four bins.
-Its uncertainty deletes **whole sky realizations**, preserving all dependence among bin pairs.
-This does not make 20 realizations sufficient for a full covariance matrix; it supplies uncertainty on a specified average statistic.
-These are decoupled, pure-B NaMaster bandpowers, not raw annular pseudo-powers.
+A leading local approximation can retain more information than $R$ without constructing the full amplitude operator.
+Write the position- and direction-dependent native map power as $P(\boldsymbol{x},\boldsymbol{k})$.
+It includes the full local Jacobian, the signed polarization rotation, HEALPix interpolation at $J^T\boldsymbol{k}$, and pixel averaging in the map frame.
+For locally stationary covariance and nearby Fourier modes,
 
-At width 50 over $3500\leq\ell<4800$, the measured adjacent correlations and delete-one jackknife standard errors are:
+$$
+K(\boldsymbol{k},\boldsymbol{k}')\simeq
+\mathcal F_{\boldsymbol{x}}\!\left[W^2(\boldsymbol{x})
+P\!\left(\boldsymbol{x},\frac{\boldsymbol{k}+\boldsymbol{k}'}2\right)\right]
+(\boldsymbol{k}-\boldsymbol{k}').
+$$
 
-| Projection | TT | EE | BB |
-|---|---:|---:|---:|
-| ZEA | −0.091 ± 0.042 | 0.010 ± 0.060 | 0.135 ± 0.055 |
-| SFL | 0.033 ± 0.053 | 0.065 ± 0.047 | 0.196 ± 0.061 |
-| STG | −0.153 ± 0.036 | −0.053 ± 0.039 | 0.382 ± 0.044 |
+Wick's theorem squares this Fourier kernel before the annular sums.
+For narrow bins of common width $\Delta$, locally straight annulus boundaries reduce the radial pair-overlap factor to
 
-These numbers are preliminary, generated in `results/highell/bin_correlation_diagnostic/measured.json`; the table is a research note, not paper-number source.
-STG's BB lies at the numerical floor and does not measure shear-induced B covariance.
-The SFL BB trend is visible, but these decoupled TT/EE products do not establish the source of the large correlations described by SPT.
-The table's extension above3500 is outside the2018 SPT spectra's range, which stops at3000; it must not be presented as a direct reproduction of that analysis.
-Neither an all-off-diagonal average nor this preliminary table settles agreement with SPT's different estimator and mask.
-An average over **all** off-diagonal entries is particularly unsuitable for excluding local band correlations: with $N$ bins and correlation $r$ only between immediate neighbours, that average is just $2r/N$.
-For 86 bins, even adjacent correlation 0.2 contributes only 0.0047 to the all-off-diagonal average.
+$$
+T_\Delta(d_\parallel-s)=\max\!\left(0,1-\frac{|d_\parallel-s|}{\Delta}\right),
+$$
 
-`analysis/check_coupled_correlations.py` checks the estimator distinction on the same 20 skies.
-Without mask decoupling, ZEA's high-$\ell$ adjacent correlation is $0.092\pm0.060$ for EE and $0.213\pm0.053$ for pure BB; SFL gives $0.134\pm0.045$ and $0.261\pm0.058$.
-Mask decoupling thus matters numerically, but these coupled products still do not establish a large positive ZEA EE excess over a matched Gaussian control.
+where $s$ is the separation of bin centres and $d_\parallel=\boldsymbol d\cdot\widehat{\boldsymbol k}$.
+Thus the relevant pair sum is the direction average of $|\mathcal F[W^2P]|^2 T_\Delta$, not an average of $P$ propagated through $R$.
+The wide-bin limit recovers $W^4\langle P^2\rangle$, while finite bins retain the redistribution of that variance among neighbouring annuli.
+`analysis/local_bin_covariance.py` implements the pair sums and their ratios to a homogeneous control with the same radial mean.
+Its spatial arrays are reflected from native westward pixel indices into the eastward coordinates used by the analytical Jacobian before their Fourier transform.
+Missing that reflection changes the finite-bin answer even though the wide-bin limit is unchanged.
 
-## Matched homogeneous Gaussian controls
+This is a **leading approximation for coupled spectra**, not an exact Gaussian covariance for the purified, mask-decoupled estimator.
+It omits pure-B boundary terms, reciprocal-grid alias images, higher local-stationarity corrections and annulus curvature.
+The control uses the locally constant radial spectrum approximation over a mode-coupling width.
+STG BB has no geometrical signal in this model and is excluded.
+The exact toy-operator check is scalar; no exact EE/BB Wick trace with the actual NaMaster pure-B amplitude operator has been computed.
+The BB comparisons below validate only the stated broad-band statistics of the complete pipeline, not a precision full-matrix pure-B prediction.
+ZEA BB above4500 also contains alias/floor contributions absent from this leading geometrical model, so its agreement after broad-band averaging must not be read as a geometrical closure of those top bins.
+`analysis/check_local_bin_covariance.py` tests finite-bin overlap against exact discrete Wick annulus-pair counts for an amplitude-modulated white Gaussian field, the lag-sum/Parseval invariant, and the uniform-mask anisotropic limit.
+`analysis/check_local_covariance_orientation.py` checks spatial/directional orientation against an exact Wick trace on a sheared chart, with a wrong-reflection negative control.
+The complete projected/control comparison now tests this approximation on two broad bands:2000–3000 at width100 and3500–4800 at width50.
+Across the eight non-floor auto-spectra in each band, the largest fractional difference in predicted variance ratio is5.5%, and the largest absolute difference in predicted adjacent correlation is about0.02.
+These are bounds on those sixteen **band-averaged summaries**, not on every covariance-matrix element or every multipole.
+For high-ell SFL TT/EE/BB, predicted coupled variance ratios are3.525/3.820/5.036 against measured3.670±0.088/3.945±0.098/5.185±0.128; predicted adjacent correlations are0.145/0.154/0.226 against0.130±0.013/0.142±0.014/0.226±0.013.
+The wide-bin approximation instead gives4.336/4.779/7.110, demonstrating why finite annuli matter.
+`analysis/summarize_bin_covariance.py` generates the full family table and maxima in `results/highell/bin_covariance_comparison/local_summary.{json,md}`.
+The predictions use stride8/nchi128, with source-content hashes in `results/highell/bin_covariance_local_prediction/prediction.json`.
+A stride16/nchi64 sweep changes TT/EE variances by at most0.14% and correlations by0.0011; SFLBB's worst per-bin changes are1.8% and0.003.
 
-`bin_covariance_flat_controls` contains256 independent homogeneous Gaussian skies per chart, materialized through `lc` on OSG.
-All canonical and sixteen unit content hashes were checked against their manifests.
+## Complete projected and homogeneous ensembles
+
+The final measurement uses260 newly synthesized independent Gaussian skies per chart, not the old production20.
+`bin_covariance_pilot` contains seeds0..3 and `bin_covariance_sims` contains4..259, all synthesized at Nside8192/lmax6000, reprojected with production rebin8/FlattenPol, and measured with the same1500d mask and pure-B estimator.
+T and E are independent draws, so these runs test each auto-spectrum covariance, not TE or TT–EE cross-covariance.
+All gathered and unit content hashes passed direct verification against their manifests: pilot4 units, extension256 units and controls16 batches.
+
+`bin_covariance_flat_controls` contains256 independent homogeneous Gaussian skies per chart.
 Their radial TT/EE/BB input means come from the production20, keeping the native sampling window; T, E and B are independent in each control.
 The masks, pure-B estimator, unit-width pseudos and mask-response decoupling match the projected ensemble.
-NaMaster1.5.1 initializes OpenMP workers with base-seed+thread, so consecutive base seeds reuse Fourier streams; `control_seed` separates bases by1024, and the executable gate pins four actual OpenMP threads and requires all inter-sky Fourier-row overlaps below0.9.
+NaMaster1.5.1 initializes OpenMP workers with base-seed+thread, so consecutive base seeds reuse Fourier streams; `control_seed` separates bases by1024, and an executable four-thread gate rejects shared Fourier rows.
+No grid control was drawn with the invalid adjacent-base-seed scheme.
 
-The preliminary comparison of the production20 against these256 controls shows that a small mean off-diagonal correlation can coexist with substantially enlarged variances.
-At width50 over3500–4800, the mean per-bin **fractional variance ratio**, $(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm projected}/(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm homogeneous}$, is3.79±0.31 for SFL TT,3.43±0.24 for SFL EE and4.36±0.37 for SFL BB.
-ZEA BB gives2.98±0.23, while its TT and EE give0.95±0.05 and1.07±0.06.
-Errors delete whole skies separately in each independent ensemble; the small finite-control-sample bias of a variance ratio is not removed.
-These are research diagnostics in `/sptlocal/user/cailmdaley/pol_project/bin_correlations/comparison-production20/`, pending confirmation by the260 newly synthesized projected skies.
-The controls' broad-band mean offsets of about0.2–0.4% for TT/EE and1% for ZEA BB are measured rather than assumed away; positive deterministic per-bin rescalings cancel exactly from correlation and fractional variance.
-The control spectra's linear interpolation and the small difference between production-alm power and the new CAMB reference explain part of those offsets, as checked in the independent review.
+`analysis/compare_bin_covariance.py` retains both coupled and mask-decoupled widths30/50/100 and lag separations of one, two and four bins.
+Errors delete **whole skies** independently in the projected and control ensembles, retaining all dependence among band pairs.
+Pointwise bin-pair curves are also saved; their errors are not simultaneous confidence bands.
+All-off-diagonal averages cannot exclude local correlations: with $N$ bins and correlation $r$ only between immediate neighbours, that average is $2r/N$.
 
-STG BB's adjacent correlation is0.440±0.012 in controls **without any projection**, compared with0.382±0.044 in the production20.
-Its projected/control mean ratio is0.883±0.002, so this is not a clean matched-B signal comparison.
-An estimator E-to-B residual is a plausible cause, not yet isolated; STG's high-ell BB must be excluded from projection-covariance conclusions.
-The projected and control ensembles are unlensed and noise-free, with no source holes or time-domain filtering.
-They test whether radial spectra and the same simple mask determine the covariance, not whether they reproduce SPT's full estimator.
+At width50 over3500–4800 the mask-decoupled results are:
+
+| Chart / spectrum | Fractional-variance ratio to homogeneous | Adjacent rho, projected | Adjacent rho, homogeneous | Excess rho |
+|---|---:|---:|---:|---:|
+| ZEA TT |0.992±0.024|−0.052±0.012|−0.053±0.011|0.001±0.016|
+| ZEA EE |1.021±0.026|−0.021±0.013|−0.042±0.011|0.021±0.017|
+| ZEA BB |3.111±0.080|0.080±0.012|−0.020±0.014|0.100±0.018|
+| SFL TT |3.612±0.086|0.060±0.013|−0.044±0.013|0.104±0.018|
+| SFL EE |3.892±0.094|0.072±0.014|−0.021±0.012|0.093±0.019|
+| SFL BB |5.056±0.123|0.159±0.013|−0.019±0.011|0.178±0.017|
+| STG TT |1.008±0.025|−0.024±0.012|−0.042±0.011|0.018±0.016|
+| STG EE |1.060±0.028|−0.043±0.013|−0.028±0.013|−0.015±0.018|
+
+The fractional-variance ratio averages $(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm projected}/(\operatorname{Var}\widehat C_b/\langle\widehat C_b\rangle^2)_{\rm homogeneous}$ over bins, rather than taking a ratio of range-averaged powers.
+Its small finite-control inverse-variance bias is not removed (approximately0.8% in the Gaussian-bandpower limit, below these errors).
+Positive deterministic per-bin power rescalings cancel exactly from correlations and fractional variance.
+This matters because the high-ell projected/control mean ratios are0.9965/0.9982/1.0003 for SFL TT/EE/BB and0.9875 for ZEA BB; their small mean mismatches are measured, not assumed away.
+The controls are matched radial-spectrum diagnostics, not perfectly identical mean spectra.
+
+Mask decoupling changes the absolute adjacent correlations: high-ell coupled SFL TT/EE/BB give0.130±0.013/0.142±0.014/0.226±0.013, while coupled ZEA EE/BB give0.062±0.013/0.161±0.011.
+The projected-minus-control excess is more stable across these two estimators.
+
+STG BB's adjacent correlation is0.440±0.012 in controls **without any projection**, compared with0.380±0.013 in projected skies.
+Its projected/control mean ratio is0.8844±0.0009, so it is not a clean matched-B signal comparison.
+An estimator E-to-B residual is plausible but not isolated; exclude this numerical floor from geometrical BB conclusions.
+The ensembles are unlensed and noise-free, without source holes or time-domain filtering.
+They test the covariance consequences of position/direction dependence under the same simple mask, not SPT's complete pipeline.
+
+Final artifacts are `results/highell/bin_covariance_comparison/{comparison.json,moments.npz,comparison.png,binwise.png}`.
+The old20,13-sky and44-sky artifacts are superseded for final measurement claims.
+Run `analysis/paper_numbers.py --covariance-only` for the generated `paper/covariance_numbers.tex`; it refuses incomplete or old seed sets.
+The central writer emits only macros cited by `paper/main.tex`, so add the intended macro references there and regenerate; an unquoted covariance result is deliberately omitted from the LaTeX file.
+`analysis/bin_covariance_numbers.py:numbers()` returns the complete validated dictionary independently of that publication filter.
 
 ## The SPT references
 
@@ -153,7 +201,9 @@ The covariance revisions broaden cosmological parameter uncertainties by up to 1
 Section IV.A says projection-induced correlations fall to at most 20% only for separations of at least $\Delta\ell=100$; it uses wider bins for the null tests.
 Figure8's caption also states that the minimum-variance TT/TE/EE data bandpowers are correlated by **up to40% for neighboring bins**.
 This provides a quantitative comparison target within its multipole range, not a universal amplitude for every bin, and does not identify $R$ as its source.
-`analysis/compare_bin_covariance.py` explicitly includes2000–3000 alongside the extension to4800.
+Table III uses bins of width100 above2000, whereas its lower-multipole bins have width50.
+Thus the matched-binning comparison over2000–3000 uses our width100 results; our width50 extension to4800 is a separate diagnostic.
+`analysis/compare_bin_covariance.py` explicitly includes2000–3000 alongside the extension to4800, with both widths retained.
 
 Camphuis et al., arXiv:2506.20707, Section III.B, explicitly says excess high-$\ell$ bin correlations that were difficult to compute analytically motivated the move to full spherical harmonic transforms.
 It does not provide a quantitative excess-correlation curve in that discussion.
@@ -169,4 +219,14 @@ A defensible replacement is:
 > Linear reprojection preserves the Gaussianity of the unlensed input, but its covariance on the plane need not be statistically homogeneous.
 > The mean-spectrum response $R$ does not determine the bandpower covariance: that calculation requires the full anisotropic two-point function, with the mask and mode purification included before the Gaussian contractions.
 
-A final quantitative statement about projection's contribution to the SPT excess requires the larger ensemble and a matched control estimator; it is not established by these 20 skies.
+The matched-binning2000–3000 comparison at width100 gives ZEA adjacent TT/EE correlations−0.016±0.020/−0.019±0.022 after mask decoupling, with projected-minus-control excess0.044±0.029/−0.008±0.031.
+The corresponding coupled TT/EE values are0.031±0.020/0.027±0.022.
+The largest individual adjacent-pair estimates in this range are0.083/0.067 for decoupled TT/EE and0.133/0.110 for coupled TT/EE, with per-pair errors around0.06; these maxima are descriptive, not simultaneous confidence limits.
+Thus our simple-mask Lambert experiment does **not** reproduce an up-to40% neighbouring TT/EE correlation in that range.
+This is not a contradiction of SPT's results: their maximum need not occur in this band; their mask, masking-before-projection, filtering and minimum-variance multifrequency/TE estimator differ, and our input is unlensed.
+The exact source of their reported excess remains unassigned.
+The leading local model reproduces the broad-band **coupled** variance ratios and neighbouring correlations measured here, not SPT's full covariance.
+
+For the paper, replace the disk-averaged ordinary-sky assertion and its20-sky field follow-up with the260/256 comparison, stating the auto-spectrum and simple-mask scope.
+Replace the inference from broad $R$ rows with the exact mean-versus-covariance distinction above.
+If space permits, give the leading $\mathcal F[W^2P]$ finite-annulus calculation and its broad-summary accuracy as a separate approximation, not an exact $R$-based covariance prescription.

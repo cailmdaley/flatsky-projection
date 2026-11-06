@@ -1,0 +1,80 @@
+[
+  {
+    "key": "carron26",
+    "quote": "comparable or sometimes lower cost than the 2D FFT at the same resolution",
+    "source": "sources/carron26.txt",
+    "url": "https://arxiv.org/pdf/2603.17166",
+    "sha256": "44acc5d160a646746ec02249d092c6b535deb4a3f70fedaf197af51f03506273"
+  },
+  {
+    "key": "ge24",
+    "quote": "projecting from a Lambert to an Equirectangular pixelization, applying some weights, then projecting back",
+    "source": "sources/ge24.txt",
+    "url": "https://arxiv.org/pdf/2411.06000",
+    "sha256": "219a8891c93193b4a2261894c8cd4a18676c350ec077fb7542ccbeead8819dc0"
+  },
+  {
+    "key": "gatti24",
+    "quote": "works on a two-dimensional projection",
+    "source": "sources/gatti24.txt",
+    "url": "https://arxiv.org/pdf/2310.17557",
+    "sha256": "6d110090362ee9a19cdd2f8dd9f7af089cbde3c9c93b5d8101b6dfbae925cad7"
+  },
+  {
+    "key": "jeffrey25",
+    "quote": "makes the compression potentially suboptimal",
+    "source": "sources/jeffrey25.txt",
+    "url": "https://arxiv.org/pdf/2403.02314",
+    "sha256": "8b9785eac2f55235af03551863672f967f5279c78b8118d3a94d9205a32c2668"
+  },
+  {
+    "key": "balkenhol23",
+    "quote": "does not preserve angles and leads to increasing bin-to-bin correlations at high $\\ell$",
+    "source": "sources/balkenhol23.txt",
+    "url": "https://arxiv.org/pdf/2212.05642",
+    "sha256": "5ccb901d5672c3ddc945f653a23b49813b6d0d1e8e1b8bd6398d78176405ca0b"
+  },
+  {
+    "key": "spt3gd1",
+    "quote": "projection effects were causing excess correlation between power spectrum bins at high $\\ell$, in a manner that is difficult to compute analytically",
+    "source": "sources/spt3gd1.tex",
+    "url": "https://arxiv.org/src/2506.20707",
+    "sha256": "af5dd74141e2ec9cec1280704e6a55eb7356795b1107d40d357bd5dc8a4e4d39",
+    "archive_member": "skymaps.tex"
+  },
+  {
+    "key": "pires20",
+    "quote": "can generate substantial $B$ modes",
+    "source": "sources/pires20.txt",
+    "url": "https://arxiv.org/pdf/1910.03106",
+    "sha256": "977f203bf05b64ecdd7aba1d56f6c36220e100078d9d926ac6ecb340722d5e8f"
+  },
+  {
+    "key": "wallis17",
+    "quote": "the stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.",
+    "source": "sources/wallis17.txt",
+    "url": "https://arxiv.org/pdf/1703.09233",
+    "sha256": "84d351b58ffa8cfe0ea72036728c297c15def3e7f18bfdc2235d7f662af1997d"
+  },
+  {
+    "key": "casas23",
+    "quote": "significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane",
+    "source": "sources/casas23.txt",
+    "url": "https://arxiv.org/pdf/2310.07590",
+    "sha256": "16580d322df67d6187ff15219a5ef5169a694dd8eed7bfd988e162ac6d93a64a"
+  },
+  {
+    "key": "bk7",
+    "quote": "other map projections will have significantly lower distortion",
+    "source": "sources/bk7.txt",
+    "url": "https://arxiv.org/pdf/1603.05976",
+    "sha256": "28110132da47aa5c6b35befab67e66055988f5c0a0f6b13614a23419ce74fcd4"
+  },
+  {
+    "key": "wallis17",
+    "quote": "The stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.",
+    "source": "sources/wallis17.txt",
+    "url": "https://arxiv.org/pdf/1703.09233",
+    "sha256": "84d351b58ffa8cfe0ea72036728c297c15def3e7f18bfdc2235d7f662af1997d"
+  }
+]

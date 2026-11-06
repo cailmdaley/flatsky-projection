@@ -1,0 +1,103 @@
+# Masked E-template subtraction
+
+The data-only test uses the SFL 1500d field, polar reflattening, a pure-E estimate, a scalar Wiener weight, subtraction at Q/U, and NaMaster pure-B spectra.
+It uses no polarization data outside the analysis mask's support.
+The sky remains the production unlensed E-only sky; this is a controlled leakage-plus-white-noise test, not an SPT likelihood or a forecast including lensing B sample variance.
+
+## Estimator and masks
+
+For grid-handed Q/U and a C2 E window W_E, the pure-E coefficient is
+
+    E_pure(k) = -k^-2 integral [Q (d_x^2-d_y^2) + 2 U d_x d_y]
+                               [W_E(x) exp(-i k.x)] dx.
+
+The product rule gives `pure_e()` in `analysis/masked_template.py`.
+In the continuum, integration by parts gives the exact response
+
+    E_pure(k) = k^-2 FFT[W_E IFFT(k'^2 E(k'))].
+
+A pure B input vanishes, but an E input does not have unit response near the boundary.
+For wavelengths short compared with the taper, the response is approximately W_E E.
+This approximation gives a leftover leakage proportional to (1-W_E) S_J[E].
+Reusing the broad B-analysis taper for E therefore creates an avoidable residual; it does not measure the information limit of the mask edge.
+The primary estimator uses a narrower E taper with the same observed support, and retains the broad-taper and ordinary pseudo-E estimates as controls.
+There is no division by a small mask value and no use of an unobserved map extension.
+The operator produces a nonlocal extension from observed coefficients, which is an estimator choice rather than extra data.
+
+The test gates cover the E sign, pure-B annihilation, the exact product-rule E response, outside-support isolation, and regression of raw/oracle spectra to the earlier operator test.
+The scalar C/(C+N) Wiener factor uses grid wavenumber and an isotropic theory prior with the flat-pixel window.
+It is not the optimal position- and direction-dependent cut-sky posterior.
+
+## Noise and sample variance
+
+Each independent split has uniform white Q/U noise of 5 microkelvin-arcmin per component.
+A template uses E estimated from its own split.
+The split-cross BB power is noise-unbiased even though the template and B noise in an individual split can be correlated.
+The ensemble scatter of that cross-power includes E leakage sample variance, direct B noise, and template noise.
+The two splits correspond to a coadd noise level smaller by sqrt(2); they do not represent two independent 5 microkelvin-arcmin coadds.
+
+There are two distinct residual statistics.
+Writing f for the Wiener factor, L for the uncorrected leakage power and t for the local tan-squared misalignment coefficient, the ideal oracle gives
+
+    isolated residual auto = (1-f)^2 L + f^2 t N_E,
+    observed split-cross mean = (1-f)^2 L.
+
+The isolated auto subtracts the noisy-E template from noise-FREE Q/U.
+It tests the template-noise prediction but is not an observed-data BB spectrum.
+For L=t C and f=C/(C+N_E), it becomes t C N_E/(C+N_E).
+The cross mean lacks the template-noise term; comparing it directly with that auto noise limit would incorrectly suggest that the limit has been beaten.
+The local prediction in `masked_template_report.py` uses the measured raw L for its signal term, the actual isotropic Wiener prior for f, and the independently computed geometry for t.
+It omits finite-mask mode coupling and is a local approximation, not an exact bandpower forward model.
+
+A fixed ensemble `R^{BB<-EE} C_EE` subtraction shifts the mean of BB but leaves its variance unchanged.
+The primary variance comparison uses that ideal, perfectly known mean as its reference.
+It also presumes that the template residual's mean can be calibrated and removed; neither arm is charged a calibration uncertainty.
+The report separately gives sample RMS about zero without subtracting the template residual's mean.
+A supplementary reference subtracts a fixed diagonal BB/EE ratio times each realization's noisy cross EE.
+This allows EE-amplitude conditioning but is not the full non-diagonal R estimator, nor an optimal conditional estimator.
+The ratio is set by the noiseless ensemble means, so its calibration uncertainty is also excluded.
+Paired seed bootstraps give indicative confidence intervals on standard-deviation gains; twenty seeds do not resolve small gains precisely.
+Residual/raw ratio errors use the paired delta method, retaining denominator sample variance and numerator/denominator covariance; `analysis/masked_template_results/uncertainty-check.md` cross-checks this against a paired bootstrap.
+
+## Paper changes
+
+The unmasked-grid test remains a test of S_J and should retain that qualification.
+The masked experiment is a second validation, not a replacement for the noise-free operator demonstration.
+The sentence saying subtraction comes after purification needs to specify E purification before construction and B purification after Q/U subtraction.
+The present test does not establish that pure E is uniquely necessary; the pseudo-E control probes E-only leakage, while the pure-B annihilation gate protects an independent grid-pure-B signal from being absorbed solely through mask-induced mixing.
+That gate does not calibrate the response to a spherical B signal, which the projection itself mixes into grid E.
+Locally, writing a=2 delta psi gives E_grid=E_sky cos(a)-B_sky sin(a) and B_grid=E_sky sin(a)+B_sky cos(a).
+The unfiltered subtraction therefore returns B_sky/cos(a), not B_sky; a Wiener factor f changes that B response to [cos(a)^2+f sin(a)^2]/cos(a).
+A cosmological B analysis needs that response calibration as well as a residual-leakage correction, neither of which is measured by the E-only ensemble here.
+The blanket assertion that Wiener filtering never increases leakage is supported here only for the tested noise model and isotropic weight.
+No statement about optimal mask-edge reconstruction, a cosmological B error bar, source-hole masks, anisotropic noise or real SPT data follows from these runs.
+
+## Generated numbers and suggested wording
+
+`analysis/masked_template_numbers.py:numbers()` returns a dictionary consumed by the sole central writer, `analysis/paper_numbers.py`.
+Its `--masked-template-only` mode writes `paper/masked_template_numbers.tex`; the full writer also includes these macros in `paper/numbers.tex`.
+The paper source was not edited by this thread.
+A compact addition after the unmasked operator test could read as follows, using those exported macros:
+
+> We also estimate E solely from the masked, noisy Q/U on the 1500d field, using pure-E multipoles with a narrower taper on the same observed support, followed by Wiener filtering and Q/U subtraction before B purification.
+> Over ell=900--1100, the operator-isolated residual is `\maskedTemplateResidualPercent` of the original leakage, compared with `\maskedTemplateOracleResidualPercent` for E from the full grid.
+> In two independent white-noise splits, each at 5 microkelvin-arcmin, the standard deviation of their BB cross-spectrum falls by `\maskedTemplateStdGain`, with paired-seed 95% bootstrap interval `\maskedTemplateStdGainInterval`, relative to subtracting a perfectly known ensemble leakage power.
+> This E-only, uniform-noise test does not calibrate a spherical B response; the gain disappears on the damping tail, where the remaining Wiener bias must also be removed.
+
+The standard-deviation comparison assumes the mean residual is calibrated in both arms.
+At the reference band the result also holds without residual debiasing, through `maskedTemplateRMSGain`; it does not hold without residual debiasing at high ell, through `maskedTemplateHighRMSGain`.
+A supplementary EE-amplitude-conditioned comparison gives `maskedTemplateConditionedGain`, but should not be described as the full non-diagonal R estimator.
+
+The report figure's left panel is raw projection leakage and operator-isolated noisy-template autos, not total observed-data BB.
+Its oracle, masked and local-prediction curves nearly coincide; the broad E-taper control shows the avoidable attenuation penalty.
+The right panel is the masked estimator's measured split-cross standard-deviation ratio, with paired-seed 95% bootstrap bars in the four summary bands.
+The first two bands overlap and their plotted points are not independent.
+
+## Reproduction
+
+Production is the additive `masked_template_realistic` ASTRA output in the highell universe.
+Run it with `lc run masked_template_realistic -u highell --executor htcondor --profile htcondor9 --rerun-triggers code,input,params`.
+Existing production outputs are unchanged.
+Generate the report with `bash env.sh python analysis/masked_template_report.py --input results/highell/masked_template_realistic --out analysis/masked_template_results`.
+The report refuses an incomplete or duplicated seed set; the pilot requires an explicit `--expected-seeds 1`.
+Its summary stores the SHA256 of every numerical source file.

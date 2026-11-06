@@ -59,11 +59,18 @@ def run(seed, out, nside=2048):
                     metric=profiles(np.linalg.norm(tangent,axis=0).reshape(x.shape)/ARCMIN,kind)
                     image=amplitude*source+background
                     fixed,peak,pos,_=fit(image,template,power,pixel)
-                    corrected=fit(image,metric,power,pixel)[0]
-                    blank=fit(background,template,power,pixel)[0]
+                    mf=fft.fft2(metric)
+                    corrected=np.sum(np.conj(mf)*fft.fft2(image)/power).real/np.sum(abs(mf)**2/power).real
+                    tf=fft.fft2(template)
+                    norm=np.sum(abs(tf)**2/power).real
+                    weight=np.conj(tf)/power
+                    blank=np.sum(weight*fft.fft2(background)).real/norm
+                    cmb_amplitude=np.sum(weight*fft.fft2(cmb)).real/norm
                     rows.append(dict(projection=proj,ra=ra,dec=dec,profile=kind,
                         input_uK=amplitude,fixed_uK=fixed,peak_uK=peak,
-                        blank_uK=blank,metric_uK=corrected,position_arcmin=pos.tolist()))
+                        blank_uK=blank,cmb_blank_uK=float(cmb_amplitude),
+                        white_blank_uK=float(blank-cmb_amplitude),metric_uK=corrected,
+                        position_arcmin=pos.tolist()))
                     if seed==0 and ra==45. and dec==-68.:
                         examples[proj+'_'+kind+'_source']=source
                         examples[proj+'_'+kind+'_image']=image

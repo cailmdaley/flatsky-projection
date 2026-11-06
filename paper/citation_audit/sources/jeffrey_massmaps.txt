@@ -1,0 +1,2991 @@
+MNRAS 000, 000–000 (2021)
+
+Preprint 23 November 2021
+
+Compiled using MNRAS LATEX style file v3.0
+
+DES 2019-0489
+FERMILAB-PUB-21-342-AE-SCD
+
+arXiv:2105.13539v2 [astro-ph.CO] 22 Nov 2021
+
+Dark Energy Survey Year 3 results: curved-sky weak lensing mass map
+reconstruction
+N. Jeffrey,1,2? M. Gatti,3,4 † C. Chang,5,6 L. Whiteway,2 U. Demirbozan,3 A. Kovacs,7,8 G. Pollina,9 D. Bacon,10
+N. Hamaus,9 T. Kacprzak,11 O. Lahav,2 F. Lanusse,12 B. Mawdsley,10,10 S. Nadathur,10 J. L. Starck,12 P. Vielzeuf,3
+D. Zeurcher,11 A. Alarcon,13 A. Amon,14 K. Bechtol,15 G. M. Bernstein,4 A. Campos,16 A. Carnero Rosell,17,18,19
+M. Carrasco Kind,20,21 R. Cawthon,15 R. Chen,22 A. Choi,23 J. Cordero,24 C. Davis,14 J. DeRose,25,26 C. Doux,4
+A. Drlica-Wagner,5,27,6 K. Eckert,4 F. Elsner,2 J. Elvin-Poole,23,28 S. Everett,26 A. Ferté,29 G. Giannini,3
+D. Gruen,30,14,31 R. A. Gruendl,20,21 I. Harrison,32,24 W. G. Hartley,33 K. Herner,27 E. M. Huff,29 D. Huterer,34
+N. Kuropatkin,27 M. Jarvis,4 P. F. Leget,14 N. MacCrann,35 J. McCullough,14 J. Muir,14 J. Myles,30,14,31 A. NavarroAlsina,36 S. Pandey,4 J. Prat,5 M. Raveri,6 R. P. Rollins,24 A. J. Ross,23 E. S. Rykoff,14,31 C. Sánchez,4 L. F. Secco,4,4
+I. Sevilla-Noarbe,37,37 E. Sheldon,38 T. Shin,4 M. A. Troxel,22 I. Tutusaus,39,40 T. N. Varga,41,9 B. Yanny,27 B. Yin,16
+Y. Zhang,27 J. Zuntz,42 T. M. C. Abbott,43 M. Aguena,44,18 S. Allam,27 F. Andrade-Oliveira,45,18 M. R. Becker,13
+E. Bertin,46,47 S. Bhargava,48 D. Brooks,2 D. L. Burke,14,31 J. Carretero,3 F. J. Castander,39,40 C. Conselice,24,49
+M. Costanzi,50,51,52 M. Crocce,39,40 L. N. da Costa,18,53 M. E. S. Pereira,34 J. De Vicente,37 S. Desai,54 H. T. Diehl,27
+J. P. Dietrich,55 P. Doel,2 I. Ferrero,56 B. Flaugher,27 P. Fosalba,39,40 J. Garcı́a-Bellido,57 E. Gaztanaga,39,40
+D. W. Gerdes,58,34 T. Giannantonio,59,60 J. Gschwend,18,53 G. Gutierrez,27 S. R. Hinton,61 D. L. Hollowood,26
+B. Hoyle,55,41,9 B. Jain,4 D. J. James,62 M. Lima,44,18 M. A. G. Maia,18,53 M. March,4 J. L. Marshall,63 P. Melchior,64
+F. Menanteau,20,21 R. Miquel,65,3 J. J. Mohr,55,41 R. Morgan,15 R. L. C. Ogando,18,53 A. Palmese,27,6 F. PazChinchón,20,59 A. A. Plazas,64 M. Rodriguez-Monroy,37 A. Roodman,14,31 E. Sanchez,37 V. Scarpine,27 S. Serrano,39,40
+M. Smith,66 M. Soares-Santos,34 E. Suchyta,67 G. Tarle,34 D. Thomas,10 C. To,30,14,31 and J. Weller41,9
+(DES Collaboration)
+The authors’ affiliations are shown in Appendix A.
+
+Accepted 2021 May 11. Received 2021 May 07; in original form 2021 March 26
+
+ABSTRACT
+
+We present reconstructed convergence maps, mass maps, from the Dark Energy Survey (DES) third year (Y3) weak
+gravitational lensing data set. The mass maps are weighted projections of the density field (primarily dark matter) in
+the foreground of the observed galaxies. We use four reconstruction methods, each is a maximum a posteriori estimate
+with a different model for the prior probability of the map: Kaiser-Squires, null B-mode prior, Gaussian prior, and
+a sparsity prior. All methods are implemented on the celestial sphere to accommodate the large sky coverage of the
+DES Y3 data. We compare the methods using realistic ΛCDM simulations with mock data that are closely matched
+to the DES Y3 data. We quantify the performance of the methods at the map level and then apply the reconstruction
+methods to the DES Y3 data, performing tests for systematic error effects. The maps are compared with optical
+foreground cosmic-web structures and are used to evaluate the lensing signal from cosmic-void profiles. The recovered
+dark matter map covers the largest sky fraction of any galaxy weak lensing map to date.
+Key words: gravitational lensing: weak – cosmology: large-scale structure of Universe – methods: statistical
+
+1 INTRODUCTION
+Weak gravitational lensing is one of the primary cosmological probes of recent galaxy surveys (for a detailed review of
+weak lensing see Bartelmann & Schneider 2001; Mandelbaum
+2018a). By measuring the subtle distortions of galaxy shapes
+due to the mass distribution between the observed galaxies
+and us the observers, we are able to place tight constraints
+on the cosmological model describing the Universe and asso?
+
+E-mail: niall.jeffrey@phys.ens.fr
+† E-mail: mgatti@ifae.es
+© 2021 The Authors
+
+ciated nuisance parameters. In particular, weak lensing most
+tightly constrains the content of matter in the Universe (Ωm )
+as well as the level at which matter clusters (σ8 , defined to be
+the standard deviation of the linear overdensity fluctuations
+on a 8 h−1 Mpc scale). Weak lensing also has great potential
+to constrain dark energy by using galaxy shapes measured at
+a range of redshifts. In addition to information about the cosmological model describing the Universe, the reconstructed
+maps of the mass distribution from weak lensing are rich in
+information about the interaction between galaxies, clusters,
+and the cosmic web.
+The main focus of weak lensing analyses to date has been
+
+2
+
+N. Jeffrey, M. Gatti et al.
+
+the measurement of two-point summary statistics such as correlation functions or power spectra (Troxel et al. 2018; Hildebrandt et al. 2017; Hikage et al. 2019; Hamana et al. 2020).
+A zero-mean Gaussian density field can be statistically completely characterized by its two-point statistics. The methodologies for measuring and modelling these two-point statistics are now relatively well-developed and standard analyses
+of two-point statistics in weak lensing now take into account
+several non-trivial systematic effects that were not known a
+decade ago. These effects include intrinsic alignment (IA),
+clustering of source galaxies, small-scale modelling of baryonic effects, and uncertainty in photometric redshift calibrations (a detailed review of recent developments in these areas
+can be found in Mandelbaum 2018b).
+In the standard model of cosmology, the initial highlyGaussian density field becomes increasingly non-Gaussian on
+small scales through non-linear structure formation. As the
+techniques for two-point analyses mature, it is natural to
+ask whether we could extract significantly more information
+from the same data simply by going to higher order (i.e. nonGaussian) summary statistics, and whether we understand,
+at the same level as the two-point statistics, the non-trivial
+systematic effects in these higher-order statistics. Common
+higher-order statistics with weak lensing include shear peak
+statistics (Dietrich & Hartlap 2010; Kratochvil et al. 2010;
+Liu et al. 2015; Kacprzak et al. 2016; Martinet et al. 2018;
+Peel et al. 2018; Shan et al. 2018; Ajani et al. 2020), higher
+moments of the weak lensing convergence (Van Waerbeke
+et al. 2013; Petri et al. 2015; Vicinanza et al. 2016; Chang
+et al. 2018; Vicinanza et al. 2018; Peel et al. 2018; Gatti
+et al. 2020b), three-point correlation functions or bispectra
+(Takada & Jain 2003, 2004; Semboloni et al. 2011; Fu et al.
+2014), Minkowski functionals (Kratochvil et al. 2012; Petri
+et al. 2015; Vicinanza et al. 2019; Parroni et al. 2020), and
+machine-learning methods (Ribli et al. 2019; Fluri et al. 2018,
+2019; Jeffrey et al. 2021). Many of these have recently been
+applied to data (Liu et al. 2015; Kacprzak et al. 2016; Martinet et al. 2018; Fluri et al. 2019; Jeffrey et al. 2021), often
+performing well in terms of cosmological constraints.
+This paper will focus on the key element for many of the
+methods described above: a weak lensing convergence map,
+often referred to as a mass map. Such a map quantifies the
+integrated total mass along the line of sight (weighted by a
+lensing efficiency that peaks roughly half-way between the
+source and the observer). Two crucial features make a convergence map appealing for extracting higher-order statistics:
+1) the map preserves the phase information of the mass distribution and 2) the convergence is a scalar field, which can
+be easier to manipulate/model than a shear field (the latter
+is closer to what we observe, as explained in Sec. 2). Many
+methods for generating these convergence maps have been
+proposed; the foundation of most of them is the direct inversion algorithm developed in Kaiser & Squires (1993, hereafter
+KS), a purely analytic solution for converting between shear
+(the observable) and convergence. Many papers are based on
+the KS method, including cosmological analyses (Van Waerbeke et al. 2013; Vikram et al. 2015; Chang et al. 2015; Liu
+et al. 2015; Chang et al. 2018; Oguri et al. 2018).
+The main difficulties associated with the KS method are
+the treatment of the noise and mask effects. In practice,
+galaxy surveys only observe a part of the sky, and mask
+out different regions of their sky footprint where the shear
+MNRAS 000, 000–000 (2021)
+
+field cannot be properly estimated. This usually affects the
+map-making process, resulting in a poor estimate of the convergence field near masked regions and near the edge of the
+footprint. Moreover, we can observe only a noisy realization
+of the shear field, which often leads to a noise-dominated estimate of the convergence field. Methods more sophisticated
+than KS were developed to deal with these issues. These include noise modelling and signal priors, either in closed-form
+(Marshall et al. 2002; Lanusse et al. 2016; Alsing et al. 2017;
+Jeffrey et al. 2018b; Price et al. 2019) – this is the approach
+we will take in this work – or implicitly learned using samples
+from the prior (e.g. using deep learning Shirasaki et al. 2019;
+Jeffrey et al. 2020). Many methods have been shown to improve some aspects of the reconstruction of the convergence
+maps, but ultimately the choice of method depends on the
+science application of these maps.
+Therefore there is no single comprehensive test for comparative performance between methods; a number of different
+tests have to be considered.
+One goal of this paper is to present an objective and
+systematic comparison between several map reconstruction methods using the same set of simulations and data.
+We present results using the DES Y3 shear catalogue of
+100,204,026 galaxies in 4143 deg2 . These results highlight expected differences in the maps constructed using the different
+algorithms and illustrate the advantages or disadvantages of
+their use in different science cases. We present a comprehensive framework under which most of the convergence mapmaking methods described previously can be connected and
+compared. We focus particularly on four methods that span
+the range of the most popular methods: KS, null B-mode
+prior, Gaussian prior (Wiener), and halo-model sparsity prior
+(Glimpse). The methods are applied first to a set of DES Y3like mock galaxy catalogues to demonstrate the performance
+of each method when the true underlying convergence field is
+known.
+Applying the four methods to the DES Y3 data, we fulfil
+further goals of performing tests for effects of observational
+systematic error. We compare the reconstructed weak lensing
+convergence maps with DES observations of foreground structures; this has further applications for future cosmographic
+studies and full analyses correlating these maps with cosmological observables (e.g. type Ia supernovae, galaxies and cosmic web structures). Further papers (to follow) will use the
+maps generated here for cosmology analyses and inference.
+The structure of the paper is as follows: in Sec. 2 we provide the theoretical background for weak gravitational lensing
+and the framework that connects convergence with observable
+quantities in a galaxy survey. In Sec. 3 we present a mathematical framework in which the four different mass mapping
+methods of interest (KS, null B-mode, Wiener, Glimpse) are
+seen to differ only with respect to the priors that are adopted.
+The data products and simulations used in this work are described in Sec. 4. In Sec. 5 we carry out a series of tests
+on mass maps generated from the four methods and compare them systematically. We then apply the four methods
+to the DES Y3 data in Sec. 6 and present tests for additional
+systematic residuals from observational effects. We additionally compare and analyse the maps with observations of foreground structures. We conclude in Sec. 7.
+
+DES Year 3: weak lensing mass map reconstruction
+2 WEAK GRAVITATIONAL LENSING ON THE SPHERE
+We begin with the gravitational potential Φ and the matter
+overdensity field δ ≡ δρ/ρ̄; these real scalar fields on spacetime are related by the Poisson equation
+
+∇2r Φ(t, r) =
+
+3Ωm H02
+δ(t, r) .
+2a(t)
+
+(1)
+
+Here t is time, r is a comoving spatial coordinate, Ωm is the
+total matter density today, H0 is the Hubble constant today,
+and a ≡ 1/(1 + z) is the scale factor.
+Weak gravitational lensing is the small distortion of the
+shapes of distant galaxies caused by the gravitational warping
+of spacetime (and hence the distortion of light paths) by mass
+located between the galaxies and an observer; see Bartelmann
+& Schneider (2001) for a comprehensive introduction.
+We will parametrize the observer’s past lightcone as
+(χ, θ, ϕ) with χ the comoving radial distance from the observer and θ, ϕ a point on the observer’s celestial sphere.
+The effect of weak lensing can be encapsulated in the lensing potential, denoted φ, a real scalar field on the lightcone;
+its value is related to the gravitational potential Φ projected
+along the line of sight:
+
+φ(χ, θ, ϕ) =
+
+2
+c2
+
+Z
+
+χ
+
+0
+
+dχ0
+
+fK (χ − χ0 )
+Φ(χ0 , θ, ϕ).
+fK (χ)fK (χ0 )
+
+(2)
+
+Z
+dχ n(z(χ)) φ(χ, θ, ϕ),
+
+The convergence satisfies
+3Ωm H02
+×
+κ(θ, φ) =
+2c2
+Z χ
+Z ∞
+fK (χ0 )fK (χ − χ0 ) δ(χ0 , θ, φ)
+dχ0
+dχ n(z(χ))
+.
+fK (χ)
+a(χ0 )
+0
+0
+
+(6)
+
+We now move to harmonic space, obtaining harmonic coefficients φ̂`m , κ̂`m and γ̂`m for φ, κ and γ respectively. Here
+for example:
+γ=
+
+X
+
+γ̂`m 2 Y`m
+
+(7)
+
+`m
+
+with
+Z
+
+∗
+dΩ γ(θ, ϕ) 2 Y`m
+(θ, ϕ).
+
+γ̂`m =
+
+(8)
+
+We can decompose the harmonic coefficients into real and
+imaginary parts: κ̂`m = κ̂E,`m + iκ̂B,`m and γ̂`m = γ̂E,`m +
+iγ̂B,`m . In harmonic space, equations 4 and 5 become:
+1
+κ̂`m = − `(` + 1)φ̂`m
+2
+and
+γ̂lm =
+
+(9)
+
+1p
+(` − 1)`(` + 1)(` + 2)φ̂`m .
+2
+
+(10)
+
+Thus
+
+This equation assumes the Born approximation (the path of
+integration is not perturbed by the intervening mass). Here
+the angular distance function fK is sin, the identity, or sinh
+depending on whether the curvature K is positive, zero, or
+negative.
+The radial dependence of φ in equation 2 would allow a
+three-dimensional analysis; however, instead of this, we integrate away the radial dependence using as a weight function
+the normalised redshift distribution n(z) of source galaxies,
+obtaining
+
+φ(θ, ϕ) =
+
+3
+
+(3)
+
+a real scalar field on the celestial sphere.
+To handle φ as well as derived quantities we use the formalism of spin-weight functions on the sphere as described in
+Castro et al. (2005). Let s Ylm (θ, ϕ) denote the spin-weight s
+spherical harmonic basis functions. Recall that the covariant
+derivative ð increments the spin-weight s while its adjoint ð̄
+decrements it; these operators act in a straightforward fashion on the basis functions.
+The convergence κ = κE + iκB (of spin-weight 0 i.e. a
+scalar) and shear γ = γ1 + iγ2 (of spin-weight 2) are related
+to the lensing potential via:
+
+κ=
+
+1
+(ðð̄ + ð̄ð)φ,
+4
+
+(4)
+
+γ=
+
+1
+ððφ.
+2
+
+(5)
+
+s
+γ̂lm = −
+
+(` − 1)(` + 2)
+κ̂`m .
+`(` + 1)
+
+(11)
+
+3 MASS MAP INFERENCE
+The formalism introduced in the previous section relates an
+ideal complex shear field defined on the full celestial sphere
+γ to the convergence field κ for a given source redshift distribution. This ideal shear field is full-sky, sampled everywhere,
+and noise-free. Inferring the unknown convergence field from
+ellipticity measurements of a finite set of source galaxies in
+the presence of survey masks and galaxy shape noise (discussed below) is the challenge of mass mapping.
+The real and imaginary parts of the shear γ are relative to
+a chosen two dimensional coordinate system. In weak lensing, the observed ellipticity (Bartelmann & Schneider (2001)
+equation 4.10) of a galaxy obs is related to the reduced shear
+g plus the intrinsic ellipticity of the source galaxy s through
+obs ≈ g + s ,
+(12)
+γ
+.
+1−κ
+In the weak lensing limit, the reduced shear is approximately
+the true shear, g ≈ γ. This allows an observed shear to be
+defined, γobs = obs ; this can be interpreted as a noisy measurement of the true shear that has been degraded by shape
+noise (caused by the unknown intrinsic ellipticities s of the
+observed galaxies):
+where g =
+
+γobs ≈ γ + s .
+
+(13)
+MNRAS 000, 000–000 (2021)
+
+4
+
+N. Jeffrey, M. Gatti et al.
+
+The shape noise is larger than the lensing signal by a factor of
+O(100) per galaxy. It is therefore a dominant source of noise.
+In a Bayesian framework we consider the posterior distribution of the convergence κ conditional on the observed shear
+γ (here we have dropped the subscript obs for brevity) and
+on the model M:
+p(κ|γ, M) =
+
+p(γ|κ, M) p(κ|M)
+,
+p(γ|M)
+
+(15)
+
+κ
+
+where M is our model (which in our case changes depending
+on the chosen prior distribution). Here, the elements of the
+vectors κ and γ are the pixel values of a pixelized convergence
+map and the observed shear field, respectively.
+We can express the linear data model in matrix notation,
+γ = Aκ + n ,
+
+(16)
+
+where the matrix operation A corresponds to the linear transformation from the ideal (noise-free and full-sky) convergence
+field to the shear field (equation 11). The noise term n is the
+vector of noise contributions per pixel (equation 13).
+Assume that the average shape noise per pixel on the celestial sphere (e.g. per HEALPix Górski et al. (2005) pixel)
+is Gaussian distributed, so that the likelihood (dropping M
+for brevity) is given by
+h 1
+i
+1
+p(γ|κ) = p
+exp − (γ −Aκ)† N−1 (γ −Aκ) (17)
+2
+(det2πN)
+where it is assumed that the noise covariance N = hnn† i is
+known and that the average noise per pixel is both Gaussian
+and uncorrelated (so that N is diagonal). With this likelihood, the masked (unobserved) pixels have infinite variance.
+Under the assumption that the variance per galaxy due to
+weak lensing is negligible in comparison to the variance due to
+the intrinsic ellipticity, we can generate noise realizations by
+rotating the galaxy shapes in the catalogue and thus removing
+the lensing correlations. This procedure is extremely fast, and
+allows us to easily construct a Monte Carlo estimate of the
+noise covariance N.
+
+3.1 Prior probability distribution
+This work considers four forms for the prior probability distribution p(κ|M) that appears in equation 15. This prior probability is intrinsic to the method and cannot be ‘ignored’ (in
+the sense that not including a prior is identical to actively
+choosing to use a uniform prior).
+The various prior probability distributions used in this
+work correspond to various mass mapping methods, with each
+MNRAS 000, 000–000 (2021)
+
+(i) Direct Kaiser-Squires inversion. In the absence of smoothing this corresponds to a maximum a posteriori estimate with
+a uniform prior:
+p(κ) ∝ 1 .
+
+(14)
+
+where p(γ|κ, M) is the likelihood (encoding the noise model),
+p(κ|M) is the prior, and p(γ|M) is the Bayesian evidence.
+We formulate all reconstructed convergence κ maps as the
+most probable maps (given our observed data and assumptions); this is the peak of the posterior i.e. the maximum a
+posteriori estimate. From equation 14 we see that the maximum a posteriori estimate is given by
+κ̂ = arg max log p(γ|κ, M) + log p(κ|M) ,
+
+prior arising from a different physically motivated constraint.
+They are:
+
+(18)
+
+Although this is an improper prior as it is cannot be normalized, the resulting posterior is nevertheless normalizable.
+One may set wide bounds for this distribution and in practice
+these would not impact the final result.
+Usually the Kaiser-Squires inversion is followed by a
+smoothing of small angular scales, where it is expected that
+noise dominates over signal. This corresponds to a lower
+bound on the prior with respect to angular scale.
+(ii) E-mode prior (null B-modes). As discussed further in
+Sec. 3.3, this prior incorporates our knowledge that weak
+gravitational lensing produces negligible B-mode contributions. This corresponds to the log-prior
+−log p(κ) = iIm(κ)=0 + constant ,
+
+(19)
+
+where the indicator function iIm(κ)=0 is discussed in Sec. 3.3.
+(iii) Gaussian random field prior, assuming a certain E-mode
+power spectrum (and with zero B-mode power). The maximum a posteriori estimate under such a prior (combined
+with our Gaussian likelihood) corresponds to a Wiener filter
+(Wiener 1949; Zaroubi et al. 1995). The prior distribution
+h 1
+i
+1
+p(κ) = p
+exp − κ† S−1
+κ κ ,
+2
+(det2πSκ )
+
+(20)
+
+with the power spectrum contributing to the signal covariance matrix Sκ , will be discussed in Sec. 3.4.
+(iv) Sparsity-enforced wavelet ‘halo’ prior with null B-modes.
+In the late Universe it is expected that quasi-spherical halo
+structures form. A wavelet basis whose elements have this
+quasi-spherical structure in direct (pixel) space should be a
+sparse representation of the convergence κ signal. This is included in the log-prior distribution
+−log p(κ) = λ||φ† κ||1 + iIm(κ)=0
+
+,
+
+(21)
+
+where the l1 norm of the wavelet transformed convergence
+φ† κ is small when the convergence field contains quasispherical halo structures, for a suitable choice of wavelet
+transform φ† . Unlike the case of the Gaussian prior, where
+the lack of B-modes can be included in the power spectrum,
+here the second term is added to enforce that the signals compatible with the prior contain only E-modes. This is further
+discussed in Sec. 3.5.
+In the rest of this section we will explain the physical motivation for these choices and show how they are implemented.
+3.2 Kaiser-Squires on the sphere
+In the flat sky limit, for relatively small sky coverage, the ð
+operators on the sphere may be approximated using partial
+
+DES Year 3: weak lensing mass map reconstruction
+derivatives ∂ with respect to θ and φ. In this regime the
+relationship between shear γ and convergence κ (equations
+4 and 5) reduce to
+
+γ̃(k) =
+
+k12 − k22 + 2ik1 k2
+κ̃(k) ,
+k12 + k22
+
+(22)
+
+where k1 and k2 are the components of k, defined in terms
+of the Fourier transform
+Z
+
+
+
+dθ κ(θ) exp iθ · k ,
+
+κ̃(k) =
+
+(23)
+
+R2
+
+where θ has components θ and ϕ. The well-known KaiserSquires (KS) method estimates the convergence by directly
+inverting equation 22.
+For the DES Y3 sky coverage, the flat sky approximation
+cannot be used without introducing substantial errors (Wallis
+et al. 2017), so as in the Y1 mass map analysis (Chang et al.
+2018) we require a curved-sky treatment. KS on the sphere
+corresponds to a decomposition of the spin-2 field γ into a
+curl-free E-mode component and a divergence-free B-mode
+component, as described in Sec. 2.
+With these components γ̂E,`m and γ̂B,`m we use equation 11
+to recover κ̂E,`m and κ̂B,`m , which transform as scalars using
+a spin-0 spherical harmonic transform to recover κ(θ, ϕ) =
+κE (θ, ϕ) + i κB (θ, ϕ).
+The spherical harmonic operations described above are
+entirely analogous to CMB linear polarization, where the
+Q and U Stokes parameters correspond to the γ1 and γ2
+components. As such, all spherical harmonic transformations use either the scalar or ‘polarization’ transforms of
+HEALPix (Górski et al. 2005). All maps presented in this
+work use NSIDE = 1024 and all relevant spherical harmonic
+transforms use `max = 2048.
+As with flat-sky KS, this generalization of KS to the celestial sphere corresponds to an inverse of the linear operation
+A in equation 16 and, as such, corresponds to a maximum
+likelihood estimate (c.f. equation 17) of the convergence field
+κ. Direct KS inversion therefore corresponds to a maximum
+a posteriori estimate with a uniform prior p(κ) ∝ 1.
+Even with this Bayesian maximum a posteriori interpretation, the KS reconstruction method has the advantage of
+simplicity: the transformation is linear if B-modes are included (which can be a useful mathematical property) and
+the method is computationally straightforward.
+As is standard practice the KS inversion is followed by a
+smoothing of small angular scales, corresponding to a lower
+bound on the prior with respect to angular scale. We treat
+the choice of the angular smoothing parameter as a free parameter, the effects of which we investigate using simulated
+data (Sec. 5).
+3.3 Null B-mode prior
+We can decompose a convergence map into a real E-mode
+and imaginary B-mode component
+κ = κE + i κB ,
+
+(24)
+
+where the shear representation of the E-mode κE is curl-free
+and the B-mode κB is divergence-free.
+
+5
+
+The Born-approximation weak lensing derivation (see
+Sec. 2) makes it clear that weak gravitational lensing generates no B-mode components. Higher order contributions can
+contribute to non-zero B-modes (e.g. Krause & Hirata 2010),
+although these effects are generally much smaller than the
+leading E-mode contribution. Additionally, intrinsic alignments of galaxies can induce non-zero B-mode contributions (Blazek et al. 2019; Samuroff et al. 2019), although
+intrinsic alignment effects are not included in this map reconstruction analysis. We also note that systematic effects,
+such as shear measurement systematic errors of point-spreadfunction residuals, can also generate spurious B-modes (e.g.
+Asgari et al. 2019), but no significant B-modes have been
+measured in the DES Y3 shear catalogue (Gatti, Sheldon
+et al. 2021).
+The standard KS reconstruction generates spurious Bmodes due to shape noise and masks. It is therefore wellmotivated to have a prior probability distribution for convergence κ that gives no probability to κB and the KS uniform
+prior to κE only, giving the following log-prior
+−log p(κ) = iIm(κ)=0 + constant ,
+
+(25)
+
+where the indicator function of a set C is defined as
+(
+iC (x) =
+
+0
++∞
+
+if x ∈ C
+otherwise
+
+(26)
+
+,
+
+which in our case gives zero prior probability to convergence
+κ maps with an imaginary component (corresponding to Bmodes). The maximum a posteriori estimate with this prior
+and Gaussian likelihood is given by the following optimization
+problem:
+κ̂ = arg min (γ − Aκ)† N−1 (γ − Aκ) + iIm(κ)=0 .
+
+(27)
+
+κ
+
+This formulation allows us to maximize the log posterior
+(equation 15) using Forward-Backward Splitting (Combettes
+& Wajs 2005), with a proximity operator corresponding to
+an orthogonal projector onto the set C. This is implemented
+with the following iterative method
+h
+i
+κ(n+1) = Re κ(n) + µA† N−1 γ − Aκ(n)
+,
+
+(28)
+
+where µ controls the gradient steps and is free to be chosen within certain broad conditions (see Combettes & Wajs
+2005), which allows us to represent the iterative method as
+h
+
+κ(n+1) = Re κ(n) + µ0 A† ng
+
+γ − Aκ(n)
+
+i
+
+,
+
+(29)
+
+where
+is an element-wise (Hadamard) product. Here we
+have absorbed the amplitude of the noise variance into µ0
+leaving just a vector of number of galaxies per pixel ng with
+galaxy weights according to Sec. 4. In practice, the second
+term can be numerically unstable due to the forward and
+backward transforms (A, A† ) on the HEALPix sphere, becoming increasingly problematic for low signal-to-noise data,
+which necessitates some regularization of the gradient update
+steps. As with KS, we ultimately smooth small scales of the
+reconstructed map, and we therefore initialize κ(0) with the
+MNRAS 000, 000–000 (2021)
+
+6
+
+N. Jeffrey, M. Gatti et al.
+
+smoothed KS reconstruction and include the smoothing operation after each gradient update step which also serves as
+a regularizer in the gradient descent. This also implies that
+the final map would be slightly smoother than if it had been
+smoothed only at the end of the iterative procedure.
+Although the motivation and the algorithm are somewhat
+different, this method is inspired by and gives a similar outcome to that shown in Mawdsley et al. (2020). The algorithm
+described here is also similar to the GKS special case of the
+MCALens method for flat-sky mass mapping as described in
+the appendices of Starck et al. (2021).
+
+We explicitly provide a B-mode power spectrum set to zero,
+thus simultaneously achieving the null B-mode prior equivalent to Sec. 3.3.
+3.5 Sparsity prior
+The optimization problem solved by the Glimpse algorithm
+using a sparsity prior is
+κ̂ = arg min (γ −Aκ)† N−1 (γ −Aκ)+λ||ωΦ† κ||1 +iIm(κ)=0 ,
+κ
+
+(33)
+3.4 Gaussian prior (Wiener filter)
+
+†
+
+This prior is that of a Gaussian random field, which is applicable for the density field on large scales at late times,
+p(κ|Sκ ) = p
+
+h 1
+i
+1
+exp − κ† S−1
+κ κ .
+2
+(det2πSκ )
+
+(30)
+
+The maximum a posteriori estimate with this prior and
+Gaussian likelihood is given by the following optimization
+problem:
+κ̂ = arg min (γ − Aκ)† N−1 (γ − Aκ) + κ† S−1
+κ κ .
+
+(31)
+
+κ
+
+The solution to this problem is the Wiener filter:
+κ̂W = Wγ
+
+−1
+W = Sκ A† ASκ A† + N
+.
+
+(32)
+
+Here Sκ and N are the signal and noise covariance matrices
+respectively, which are hκκ† i and hnn† i for this problem.
+Direct evaluation of the matrix W, which has at least 1012
+elements and is sparse in neither pixel space nor harmonic
+space, would be extremely computationally expensive. We
+therefore make use of a class of methods that use additional
+messenger fields (introduced by Elsner & Wandelt 2013) to
+iteratively transform between pixel space, where N is diagonal, and harmonic space, where Sκ is diagonal. Such methods
+have seen widespread use in cosmology where the signal covariance is often sparse due to the statistical isotropy of the
+underlying signal (Jasche & Lavaux 2015; Alsing et al. 2017;
+Jeffrey et al. 2018a).
+For a Wiener filter messenger field implementation on the
+sphere we the Dante1 package (Kodi Ramanah et al. 2019),
+which uses an optimized novel messenger field implementation to perform Wiener filtering on the sphere for spin-2 fields.
+We test convergence by doubling the Dante precision (with
+precision parameter from 10−5 to 5 × 10−6 ), which effectively
+corresponds to increasing the number of iterations, and showing a negligible MSE change of 3 × 10−5 per cent with simulated data.
+The signal covariance matrix in harmonic space is diagonal,
+with elements given by an assumed fiducial power spectrum.
+Our fiducial E-mode power spectrum is taken as the power
+spectrum of the convergence truth map from the simulated
+data (see Sec. 4) which was corrected for the mask using the
+NaMaster2 pseudo-C` estimation code (Alonso et al. 2019).
+1
+2
+
+https://github.com/doogesh/dante
+https://github.com/LSSTDESC/NaMaster
+
+MNRAS 000, 000–000 (2021)
+
+where ω is a diagonal matrix of weights, and Φ is the inverse
+wavelet transform. The indicator function iIm(·)=0 in the final
+term imposes realness on the reconstruction (null B-modes).
+The use of nonuniform discrete Fourier transform (NDFT) allows the first term to perform a forward-fitted Kaiser-Squireslike step without binning the shear data, allowing the smaller
+scales to be retained in the reconstruction. The full algorithm,
+including the calculation of the weights, is described in Sec.
+3.2 in Lanusse et al. (2016).
+Glimpse operates on a small patch of the sky, which it
+treats as flat. Input shear data is transferred (projected) from
+the celestial sphere to the tangent plane (i.e. the plane tangent to the sphere at the patch centre); the ‘shear to convergence’ calculation is done on the tangent plane (where
+the flatness simplifies the analysis); the results (which are reported at a lattice of points - call this an ‘output lattice’)
+are then mapped back to the sphere. The mapping between
+sphere and tangent plane is the orthographic projection.
+To analyse the large DES footprint we run Glimpse on
+multiple (overlapping) small patches and paste the results
+together. We set each of our patches to be 256 square degrees
+(a compromise: larger would stress the flat-sky approximation
+while smaller would suppress large-scale modes). The density
+of such patches is one per 13 square degrees. The output
+lattices were set to have 330 × 330 points. Each pixel in our
+draft convergence map (HEALPix NSIDE = 2048) is obtained
+from a weighted average of the convergences at all the output
+lattice points, from all the patches, that happen to fall in
+that pixel. The weights are chosen to be unity in the centre
+of each patch but to fall away to zero (sharply but smoothly)
+away from the central one-ninth of each output patch. As a
+last step the output convergence map is downsampled to a
+NSIDE = 1024.
+An alternative to this patching strategy would be to implement wavelets on the sphere. The sparsity-based statistical model described by Price et al. (2021) demonstrate such
+a strategy, with the added benefit of sampling the posterior
+distribution (not just maximization), though uses wavelets
+on the sphere that have infinite support in pixel space.
+The choice of wavelet transformation (sometime called a
+‘dictionary’) depends on the structures contained in the signal. Theory predicts the formation of quasi-spherical haloes
+of bound matter. It is standard practice to represent the spatial distribution of matter in haloes with spherically symmetric Navarro-Frenk-White (Navarro et al. 1996) or Singular Isothermal Sphere profiles. The starlet, Coefficients of
+Isotropic Undecimated Wavelets (Starck et al. 2015), in two
+dimensions are well suited to represent the observed convergence of a dark matter halo. The wavelet transform used in
+
+DES Year 3: weak lensing mass map reconstruction
+bin
+bin
+bin
+bin
+
+0.02
+n(z)
+
+the Glimpse algorithm is the starlet (Starck et al. 2007),
+which can represent positive, isotropic objects well. This prior
+in the starlet basis represents a physical model that the matter field is a superposition of spherically symmetric dark matter haloes.
+The full Glimpse algorithm is described in detail in
+Lanusse et al. (2016).
+
+7
+
+1
+2
+3
+4
+
+0.01
+
+0.00
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+z
+
+3.6 Properties of inferred maps
+As described above, each of our maps is a maximum a posteriori estimate given the observed data; that is, each is the most
+probable map for the data given one of our assumed models.
+All mapping methods take into account the same noise covariance matrix (characterising the noise amplitude and distribution across the observed area); differences between the
+maps arise from the different assumptions about the prior
+probability distribution for the underlying convergence κ.
+Although the map (in practice this is a set of pixel values)
+is the most probable map, a given statistic of the map will
+not necessarily correspond to the most probable statistic. For
+example, if the convergence κ field is indeed Gaussian, we can
+see that the resulting most probable map is the Wiener filter
+map. The two-point statistics (e.g. power spectrum) of the
+Wiener filtered map will comprise terms such as hκ̂κ̂† i =
+hWγγ † W† i. If the signal-to-noise ratio is not infinite (i.e.
+S + N 6= S), equation 32 for W shows that the two-point
+statistics of the Wiener filtered map hκ̂κ̂† i will have lower
+amplitude than those of the truth hκκ† i.
+This is no contradiction: the pixel values forming their
+most probable combination κ̂ maximize p(κ|γ), but would
+not maximize a transformed probability p(κ2 |γ). For most
+summary statistics, the map cannot simultaneously be the
+most probable map and be trivially used to derive the most
+probable summary statistic. If we evaluated the full posterior p(κ|γ) rather than evaluating a maximum a posteriori
+point-estimate, we could transform the probability density to
+further evaluate functions of the map (e.g. spectra, correlation functions, moments).
+If we wished to jointly estimate the map and a given statistic µ used in the map-making process (e.g. C` for Wiener filtering or λ for the sparsity prior) we could instead form the
+joint posterior p(κ, µ|γ) and jointly estimate µ. It has been
+demonstrated that under certain assumptions one can indeed
+jointly sample the lensing map and the unknown power spectrum (Wandelt et al. 2004; Alsing et al. 2017) or the unknown
+λ parameter (e.g. Higson et al. 2019; Price et al. 2019) if this
+is desired. In this work we evaluate a point-estimate that
+maximizes p(κ|γ) and, as we do not aim to evaluate the full
+posterior, we fix C` (even doubling the amplitude leads to
+sub-5-percent change in mean-square-error for the point estimate) and tune λ using simulated data (Sec. 5).
+For inference using map-based statistics, the theoretical
+predictions can be simply adjusted for the given map reconstruction. In a forward-modelling framework (as used by
+many higher-order statistics), the predictions are measured
+from mock maps and the same operations are applied consistently to the mock data and to the observed data.
+
+Figure 1. Redshift distributions as estimated in data for the four
+DES Y3 tomographic bins (Myles et al. 2020).
+
+4 DATA AND SIMULATIONS
+In this paper we used data products from the first three years
+(Y3) of the Dark Energy Survey (DES, Dark Energy Survey Collaboration et al. 2016; Abbott et al. 2018), and mock
+galaxy catalogues that were tailored to match the data. DES
+is a five-year survey that covers ∼ 5000 deg2 of the South
+Galactic Cap. Mounted on the Cerro Tololo Inter-American
+Observatory (CTIO) four metre Blanco telescope in Chile,
+the 570 megapixel Dark Energy Camera (DECam, Flaugher
+et al. 2015) images the field in grizY filters. The raw images
+were processed by the DES Data Management (DESDM)
+team (Sevilla et al. 2011; Morganson et al. 2018; Abbott et al.
+2018). For the full details of the data, we refer the readers to
+Sevilla-Noarbe et al. (2020) and Gatti, Sheldon et al. (2021).
+
+4.1 The DES Y3 shear catalogue
+The DES Y3 shear catalogue, described in detail in Gatti,
+Sheldon et al. (2021), builds upon the Y3 Gold catalogue
+(Sevilla-Noarbe et al. 2020). It is created using the METACALIBRATION algorithm (Huff & Mandelbaum 2017; Sheldon &
+Huff 2017), which infers the galaxy ellipticities starting from
+noisy images of the detected objects in the r, i, z bands.
+The METACALIBRATION algorithm was used previously in the
+DES Y1 analysis (Zuntz, Sheldon et al. 2018). METACALIBRATION provides an estimate of the shear field, and it relies
+on a self calibration framework using the data itself to correct for the response of the estimator to shear as well as
+for selection effects. Objects are included in the catalogue
+if they pass a number of selection cuts designed to reduce
+potential systematic biases (Gatti, Sheldon et al. 2021). Inverse variance weights are assigned to galaxies. The final DES
+Y3 shear catalogue has 100,204,026 objects, with a weighted
+neff = 5.59 galaxies arcmin−2 .
+Despite the METACALIBRATION response self-correcting for
+most of the multiplicative bias, it is known that for the DES
+Y3 shear catalogue there is an additional multiplicative bias
+of approximately 2 or 3 per cent (MacCrann et al. 2020). This
+factor arises partly from a shear-redshift-dependent detection
+bias due to blending of galaxy images, for which the METACALIBRATION implementation adopted in DES Y3 is unable
+to account (Sheldon et al. 2020). This multiplicative factor
+is left uncalibrated but is marginalised over in the main cosmological analysis. In Gatti, Sheldon et al. (2021) the shear
+MNRAS 000, 000–000 (2021)
+
+8
+
+N. Jeffrey, M. Gatti et al.
+
+catalogue has also been tested for additive biases (e.g. due to
+point-spread-function residuals). In particular, the catalogue
+is characterized by a non-zero mean shear whose origin is unknown and which is subtracted at the catalogue level before
+performing any analysis.
+A two-stage blinding procedure was used in the DES Y3
+analysis to mitigate confirmation bias. The first level of this
+procedure blinded the shear catalogue by means of a multiplicative factor, in a fashion similar to what has been adopted
+in the Y1 analysis (Zuntz, Sheldon et al. 2018). The second
+level of blinding (Muir et al. 2020) was applied to the summary statistics under examination (e.g. cosmic shear, galaxygalaxy lensing, galaxy-galaxy clustering). Since in this work
+we do not directly measure any summary statistics from the
+data maps, only the first level of blinding has been considered. All the systematic tests on the maps obtained from the
+data have been performed first using the blinded catalogue,
+and then repeated after unblinding.
+The shear catalogue is further divided into four tomographic bins; redshift distribution estimates (Fig. 1) for each
+of the tomographic bins are provided by the SOMPZ method
+(Myles, Alarcon et al. 2020), further informed by clustering
+(WZ) constraints (Gatti, Giannini et al. 2020a). The n(z) are
+also tweaked to take into account the redshift-dependent effect of blending (MacCrann et al. 2020). When running the
+cosmological analysis, constraints on the n(z) are further improved by shear-ratio constraints (Sánchez et al. 2020). The
+tomographic bins are selected so as to have roughly equal
+number density.
+The catalogue is then used to create shear maps (i.e. pixelized maps for the two components of the shear field). The
+maps are constructed using a HEALPix pixelization (Górski
+et al. 2005) with NSIDE = 1024 (corresponding to a pixel size
+of 3.44 arcmin). The estimated value of the shear field in the
+map pixels is given by:
+Pn
+ν
+j=1 j wj
+ν
+γobs = Pn
+, ν = 1, 2,
+(34)
+R̄ j=1 wj
+where ν refers to the two shear field components, n is the
+total number of galaxies in the sample, wj is the per-galaxy
+inverse variance weight, and R̄ is the average METACALIBRATION response of the sample. Eq. 34 is used to create shear
+field maps for the full catalogue as well as for the four tomographic bins. As mentioned earlier, the multiplicative shear
+bias is left uncalibrated when creating the shear maps. Any
+non-zero mean shear is subtracted from the catalogue before
+creating the maps.
+4.2 Simulated mock galaxy catalogue
+To build our simulated galaxy catalogue, we use a single realization of the 108 available Takahashi et al. (2017) simulations. These are a set of full-sky lensing convergence and
+shear maps obtained for a range of redshifts between z = 0.05
+and 5.3 at intervals of 150 h−1 Mpc comoving distance.
+Initial conditions were generated using the 2LPTIC code
+(Crocce et al. 2006) and the N-body simulation used LGADGET2 (Springel 2005) with cosmological parameters
+consistent with WMAP 9 year results (Hinshaw et al. 2013):
+Ωm = 0.279, σ8 = 0.82, Ωb = 0.046, ns = 0.97, h = 0.7.
+The simulations begin with 14 boxes with side lengths L =
+450, 900, 1350, ..., 6300 h−1 Mpc in steps of 450 h−1 Mpc, with
+MNRAS 000, 000–000 (2021)
+
+six independent copies at each box size and 20483 particles
+per box. Snapshots are taken at the redshift corresponding
+to the lens planes at intervals of 150 h−1 Mpc comoving distance. The average matter power spectra of the simulations
+agree with the revised HALOFIT (Takahashi et al. 2012) predictions within 5 per cent for k < 1 h Mpc−1 at z < 1, for
+k < 0.8 h Mpc−1 at z < 3, and for k < 0.5 h Mpc−1 at z < 7.
+A multiple plane ray-tracing algorithm (GRayTrix, Hamana
+et al. 2015) is used to estimate the values of the shear and
+convergence fields for the simulation snapshots. Shear and
+convergence field maps are provided in the form of HEALPix
+maps with resolution NSIDE = 4096.
+We use the convergence and shear maps at different redshifts to generate a simulated DES Y3 shape catalogue, using
+the following procedure. First, we generate convergence and
+shear field HEALPix maps for the four DES Y3 tomographic
+bins (and for the full catalogue as well) by stacking the shear
+and convergence snapshots, properly weighted by the fiducial
+DES Y3 redshift distributions of the bins. Simulated galaxies are then randomly drawn within the DES Y3 footprint
+according to the DES Y3 number density. Each simulated
+galaxy is assigned a shear and convergence value depending
+on its position (i.e. by looking at the value of that particular pixel of the convergence and shear maps into which they
+fall). To assign realistic shape noise and weights to the simulated galaxies, we make use of the fiducial DES Y3 shape
+catalogue. In particular, we randomly rotate the ellipticity of
+each galaxy in the data such that it can be used as intrinsic ellipticity. This intrinsic ellipticity is added to a random
+galaxy of the simulated catalogue, using the shear addition
+formula (e.g. Seitz & Schneider 1997). We also assign to the
+simulated galaxy the inverse variance weight from the same
+real galaxy we used to obtain the intrinsic ellipticity. Following this procedure, we obtain a simulated DES Y3 catalogue,
+with the same number density, shape noise and weights of
+the catalogue in data. Finally, following Eq. 34, we use the
+simulated catalogue to create a NSIDE = 1024 ‘true’ convergence map, which will be used as comparison in all the tests
+on simulations.
+
+5 SIMULATION TESTS
+In this section we discuss and compare the different mass map
+methods outlined in Sec. 3. To this aim, we use simulated
+convergence maps and a number of different statistics to test
+the quality of the reconstruction with respect to the input
+convergence map available in simulations. Here, we only show
+tests on the maps created using the full shear catalogue.
+We do not expect any conclusion drawn in this section
+to change when considering tomographic maps rather than
+the full map. All the maps considered have been converted
+to HEALPix (Górski et al. 2005) maps with NSIDE = 1024
+(corresponding to a pixel resolution of 3.44 arcmin).
+As mentioned in the introduction, there is no single comprehensive test for comparative performance between methods. Rather, a number of different tests can be performed,
+aimed at highlighting the advantages and disadvantages of
+each method. In particular, Sec. 5.1 discusses how different
+methods deal with mask effects, Sec. 5.2 shows the convergence field estimates in the presence of realistic shape noise
+from the different methods when realistic, noisy shear fields
+
+DES Year 3: weak lensing mass map reconstruction
+κE input
+60◦
+
+30◦
+
+KS κE
+0◦
+
+−30◦
+
+90◦
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+
+Declination
+
+Declination
+
+90◦
+
+−60◦
+
+60◦
+
+30◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−45◦
+−60◦
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+κE input - KS κE
+◦
+
+60
+
+◦
+
+30
+
+◦
+
+0
+
+KS κB
+
+◦
+
+−30
+
+◦
+
+90
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+Declination
+
+Declination
+
+0◦
+
+−30◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+90
+
+9
+
+◦
+
+60
+
+◦
+
+30◦
+
+0◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+Figure 2. Simulated noise-free DES Y3 weak lensing mass maps. Top left panel: the original input convergence field map. Top right panel:
+the convergence field map (E-mode) obtained using the spherical KS algorithm from a noiseless realization of the shear field. Bottom left
+panel: residual map of the input convergence field and the KS map. Bottom right panel: KS B-mode map. Maps have been smoothed at
+10 arcmin for visualization purposes. Inset: RAcentre , Deccentre = 70◦ , −40◦ ; ∆RA, ∆Dec = 15◦ , 10◦ .
+
+κE input - KS E
+
+κE input - Null B-mode prior
+
+-0.005 0.005
+
+-0.005 0.005
+
++110.00◦
+
+−25.00◦
+
++90.00◦
+
++70.00◦
+
++110.00◦
+
+C` /C`input
+
+−25.00◦
+
++90.00◦
+
+100
+
++70.00◦
+6 × 10−1
+
+Figure 3. Zoomed-in version of the residual maps for the KS (left)
+and null B-mode prior methods (right). The maps have been
+zoomed close to the edge of the footprint. The null B-mode prior
+method is characterized by a lower amplitude of the residual map,
+owing to a better handling of the mask effects.
+
+are provided as input, while Secs. 5.3–5.5 show quantitative
+tests on a number of summary statistics. In these tests, whenever meaningful, we varied the parameters of the method (i.e.
+the θ parameter for KS and null B-mode prior methods and
+the λ parameter for Glimpse). We note that these tests are
+by no means exhaustive, as other summary statistics could be
+
+KS
+Null B-mode Prior
+102
+
+103
+
+`
+Figure 4. Power spectrum of the reconstructed maps, for the KS
+and the null B-mode prior methods, obtained from a noiseless realization of the shear field. No smoothing has been applied to the
+recovered maps. We compare here with the power spectra of the
+input convergence field.
+
+examined (e.g. higher order statistics, phases, peaks). While
+we think the tests presented in this section allow us to characterize the advantages and disadvantages of each method,
+MNRAS 000, 000–000 (2021)
+
+10
+
+N. Jeffrey, M. Gatti et al.
+KS κE
+60◦
+
+30◦
+
+Null B-mode prior κE
+0◦
+
+−30◦
+
+90◦
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+
+Declination
+
+Declination
+
+90◦
+
+−60◦
+
+60◦
+
+0◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+Wiener κE )
+90◦
+
+60◦
+
+30◦
+
+GLIMPSE κE
+0◦
+
+−30◦
+
+90◦
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+Declination
+
+Declination
+
+30◦
+
+60◦
+
+30◦
+
+0◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+Figure 5. Simulated DES Y3 weak lensing mass maps, obtained from a noisy realization of the shear field, with different map making
+methods. Top left panel: noisy KS E-mode reconstructed map. Top right panel: null B-mode prior method reconstructed map. Bottom left
+panel: Wiener filter reconstructed map. Bottom right panel: Glimpse reconstructed map. The maps in the top panels have been smoothed
+at 10 arcmin; no further smoothing is applied to the maps showed in the lower panels. Inset: RAcentre , Deccentre = 70◦ , −40◦ ; ∆RA,
+∆Dec = 15◦ , 10◦ .
+
+further tests could be performed depending on the particular
+science application.
+
+5.1 Mask effects
+To demonstrate the effects of the mask and missing data,
+we generate a mock catalogue with no shape noise. Fig. 2
+shows the input true convergence map (top left), the KS Emode reconstruction (top left), the KS residual map (bottom
+left), and the KS B-mode map (bottom right). The residual is
+defined as the difference between the input true map and the
+reconstructed E-mode map. In these figures the maps have
+been smoothed with a Gaussian kernel with σ = 10 arcmin
+for visualization.
+In the noise-free case all methods other than KS (including
+Wiener and Glimpse) have a null B-mode prior and are thus
+equivalent. In this noise-free limit, the noise covariance becomes a binary matrix (for the mask) and the signal factors
+can divide out (although our code implementations of Wiener
+and Glimpse would not be able to deal with this zero limit in
+practice). The noise-free result is therefore the same for the
+null B-mode prior method, the Wiener filter, and Glimpse.
+MNRAS 000, 000–000 (2021)
+
+From the KS residual map (bottom left), where the residual is between the KS idealised case with no shape noise and
+the truth, we recover most of the features of the input convergence map, except for the part of the map close to the edges of
+the DES footprint. As discussed in Sec. 3, the KS reconstruction is susceptible to mask effects in the case of partial sky
+coverage, resulting in a non-zero residual map and spurious
+B-modes (i.e. E-mode leakage). The amplitude of the residual
+map is strongly reduced when a null B-mode prior is applied,
+as shown in Fig. 3. We can also quantify the effect of the null
+B-mode prior by measuring the power spectra of the recovered maps. In Fig. 4 we compare the power spectra of the KS
+and null B-mode prior maps with the input convergence map
+power spectrum. The maps have not been smoothed in this
+comparison. We use the HEALPix routine anafast to estimate the power spectra of our maps. The power spectra are
+binned in 20 bins between ` = 0 and ` = 2048. Fig. 4 clearly
+shows that the KS method underpredicts the power spectrum
+at large scales, due to mask effects and E-mode leakage. The
+null B-mode prior, on the contrary, better recovers the power
+spectrum at all scales. This holds in the case the spurious
+B-modes are caused only by mask and edge effects. As all the
+
+DES Year 3: weak lensing mass map reconstruction
+methods other than KS include a null B-mode prior, these
+methods are less susceptible to mask effects.
+5.2 Reconstruction from realistic mock data
+Fig. 5 shows the reconstructed maps from the simulated realistic noisy shear catalogue using the four methods for comparison. Again, the KS and the null-B-mode reconstruction
+have been smoothed at 10 arcmin. The Glimpse reconstruction uses a sparsity parameter of λ = 3 (discussed below).
+Recall that all the map making methods take into account
+the noise covariance matrix of the data, thereby characterising the noise amplitude and distribution across the observed
+area. As a result, all methods naturally take into account
+inhomogeneities in the noise properties across the DES Y3
+footprint.
+The KS E-mode map is now noticeably degraded compared
+to the noise-free example (Fig. 2). Though the most significant features of the input convergence field can still be spotted by eye, a number of noise-induced small-scale peaks dominate the reconstructed map. The null B-mode prior method
+map looks similar to the KS E mode map, whereas the impact of noise is reduced in the case of the other methods, due
+to their signal priors in the map inference process. In particular, the sparsity prior adopted by the Glimpse method
+suppresses the noise enhancing peaky features, which are assumed to be the result of a superposition of spherically symmetric dark matter haloes (a feature that can be noted in the
+zoomed-in portion of the Glimpse map). The noise is also
+suppressed in the case of the Wiener filter reconstruction, although the map shows fewer peak features compared to the
+Glimpse map. The Wiener method has a prior distribution
+for which the convergence field is a realization of Gaussian
+random field, and therefore it is better suited to recover the
+large-scale structures in the map that have been less affected
+by non-linear structure collapse.
+5.3 Pearson correlation coefficient
+The first statistic we examine is the Pearson correlation coefficient, which quantifies the correlation between the true
+convergence from simulation and the reconstructed convergence from the simulated mock data catalogue. The Pearson
+coefficient also reveals the ability of one method to preserve
+the phases of the convergence field, as it would assume low
+values if phases were not preserved. The Pearson correlation
+coefficient, defined for two convergence fields κ1 and κ2 , is
+given by
+hκ1 κ2 i
+p
+rκ = p
+,
+hκ21 i hκ22 i
+
+(35)
+
+where hκ1 κ2 i is the sample covariance estimated using pixel
+values of κ1 and κ2 .
+In this case, we compute the Pearson correlation coefficient
+between the true simulated convergence map and the reconstructed E-mode convergence map. The results are shown in
+Fig. 6. In general, the closer to unity the Pearson coefficient
+value, the better the reconstruction.
+For KS and the null B-mode prior methods the smoothing parameter of the Gaussian kernel σ was varied, while
+for Glimpse we varied the sparsity parameter λ. Recall that
+
+11
+
+in our implementation of the null B-mode prior method the
+map is recursively smoothed at every iteration of the algorithm, so that the final map is slightly smoother than if it
+were smoothed only at the end of the iterative procedure.
+This means that in practice a given value of the smoothing parameter θ for the null B-mode prior method should be
+compared to a slightly larger value θ for the KS method.
+The effect of the tuning parameter for the null B-mode
+prior method is similar to KS, although the former method
+performs slightly better at small smoothing parameter values. The KS and null B-mode prior methods maximise the
+Pearson coefficient at 10 and 5 arcmin of smoothing respectively. This is due the small angular scales being shape noise
+dominated, with 5 − 10 arcmin corresponding to the scale
+where the amplitude of shape noise is comparable to the amplitude of the signal. One can interpret this as the smoothing
+up to 5 − 10 arcmin removing more small-scale noise-induced
+spurious structures than true signal. A different shape noise
+contribution (or, equivalently, a different data set) would
+change this scale; in the limit of no shape noise, the optimal scale would be the smallest scale allowed by the pixelization scheme. The null B-mode prior method performs slightly
+better than KS at small θ because of the extra regularization
+(i.e. smoothing) performed at every step of the iterative algorithm; this further suppresses noise, improving the Pearson
+coefficient at small scales.
+For Glimpse, the level of suppression of the shape noise is
+controlled by the sparsity coefficient λ, for which we found
+λ = 3 to optimize the Pearson correlation coefficient. The
+Wiener filter has no free parameters in our implementation provided the fiducial power spectrum is assumed. Both
+Glimpse and the Wiener filter outperform standard KS and
+null B-mode prior methods, delivering a higher Pearson coefficient.
+5.4 RMSE
+The second statistic we examine is the root-mean-square error
+(RMSE) of the residuals, defined to be
+v
+u
+N
+u1 X
+truth
+recon
+RMSE(κ
+,κ
+)≡t
+∆κ2p ,
+(36)
+N p=1
+where N is the number of pixels and ∆κp is the difference
+between the reconstructed map and the true map in pixel
+p. Again, we only consider E-mode maps and maps recovered from noisy estimates of the shear field. The results are
+shown in Fig. 6. In general, the closer to zero the RMSE, the
+better the reconstruction. The RMSE reveals the ability of
+one method to preserve the phases and the amplitude of the
+convergence field.
+The results from this test match those from the Pearson
+coefficient test. The null B-mode prior method shows a similar trend to the KS method, although it is characterized by
+a smaller RMSE at small scales. The Glimpse and Wiener
+methods perform better (i.e. the RMSE is closer to zero) than
+standard KS and the null B-mode prior methods.
+For KS and the null B-mode prior methods the RMSE is
+reduced strongly with smoothing, indicating that the variance at small scales is completely dominated by shape noise,
+reaching a minimum after smoothing the reconstructed maps
+at 10 − 20 arcmin. We note that the minimum of the RMSE
+MNRAS 000, 000–000 (2021)
+
+N. Jeffrey, M. Gatti et al.
+Pearson Coefficient
+
+12
+
+0.40
+
+KS
+Null B-mode Prior
+
+0.35
+0.30
+0.25
+
+Wiener
+GLIMPSE
+
+0.20
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+30
+
+35
+
+40
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+3.0
+
+3.5
+
+4.0
+
+4.5
+
+5.0
+
+λ
+
+Smoothing parameter θ [arcmin]
+0.0080
+KS
+Null B-mode Prior
+
+RMSE
+
+0.0075
+
+Wiener
+GLIMPSE
+
+0.0070
+0.0065
+0.0060
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+30
+
+35
+
+Smoothing parameter θ [arcmin]
+
+40
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+3.0
+
+3.5
+
+4.0
+
+4.5
+
+5.0
+
+λ
+
+Figure 6. Top: Pearson correlation coefficient between the reconstructed map and the true, noiseless convergence map, for the four different
+mass map methods. When possible, we varied the tuning parameters of the methods. Errors are estimated from jackknife resampling.
+Bottom: RMSE (see Sec. 5.4 for a definition) for the four different mass map methods. When possible, we varied the tuning parameters
+of the methods. Errors are estimated from jackknife resampling.
+
+signal and the maximum of the Pearson coefficient for these
+two maps are at a similar smoothing parameter value (even
+though the value does not need to be exactly the same). For
+these two methods, the RMSE should converge at very large
+smoothing parameter values (larger than those showed here)
+to the RMSE of the original field, as the reconstructed map
+signal goes to zero. Similar to the Pearson coefficient case, the
+null B-mode prior method has a smaller RMSE compared to
+KS at small scales, due to the extra noise suppression of the
+algorithm.
+The Glimpse and Wiener methods have a significantly
+smaller RMSE compared to KS, meaning the reconstructed
+Glimpse and Wiener maps map is more accurate than KS on
+the pixel level. For Glimpse the minimum RMSE is reached
+for a sparsity parameter λ = 3, the same value that maximises the Pearson coefficient.
+
+The power spectra are binned in 20 bins between ` = 0 and
+` = 2048. For the KS and the null B-modes prior methods,
+we considered the maps with 10 arcmin smoothing; for the
+Glimpse method, we considered the map obtained with sparsity parameter λ = 3.
+
+5.5 Power spectra
+
+The left panel of Fig. 7 shows the power spectra of the
+maps compared to the power spectrum of the input convergence field. There is a clear signal suppression at small scales
+and high multipoles; this is a consequence of the priors implemented by the different methods to reduce the impact of
+noise (which dominates the small-scale regime). The KS and
+the null B-modes prior methods show similar behaviour, as
+they implement similar priors; however, the null B-mode prior
+method suppresses the small-scale signal slightly more compared to KS. In general, none of the methods reproduce the
+correct amplitude of the input theory power spectra; this is to
+be expected with point-estimate reconstructions of the map
+(Sec. 3.6).
+
+We now examine, for each method, the power spectrum of
+the residual map (defined to be the difference between the
+reconstructed map and the input convergence map) and the
+power spectrum of the reconstructed map. Recall that the
+reconstruction κ̂ is a maximum a posteriori estimate, so the
+power spectrum of κ̂ is not expected to match the power
+spectrum of the underlying field (Sec. 3.6).
+The differences between power spectra highlight the effect
+of different priors on the maximum a posteriori reconstruction, whereas the residual map power spectra show at which
+scales the recovered maps are most similar to the input convergence field. For these tests, we use the maps recovered
+from a noisy version of the shear field. We use the HEALPix
+routine anafast to estimate the power spectra of our maps.
+
+The right panel of Fig. 7 shows the power spectra of the
+residual maps. At large scales the Wiener map shows the
+smallest amplitude, indicating that it performs best at reproducing the large-scale pattern of the convergence field. For
+Wiener and Glimpse maps, the residuals steadily increase
+at larger multipoles; indeed, none of the methods is able to
+recover the small-scale information. Besides this main trend,
+the KS and null B-mode prior maps also show an increment
+in the residual map power spectrum around ` ∼ 300. The
+smoothing prior is not able to reduce the impact of shape
+noise at these scales, causing the residual map power spectrum to increase substantially. This shows that the Wiener
+and Glimpse methods are indeed better than the KS and
+null B-mode prior methods at recovering intermediate scales.
+
+MNRAS 000, 000–000 (2021)
+
+DES Year 3: weak lensing mass map reconstruction
+κE Power Spectrum
+
+13
+
+κE Residual Power Spectrum
+1.75
+1.50
+
+C` /C`input
+
+100
+
+1.25
+1.00
+10−1
+
+KS
+Null B-mode Prior
+Wiener
+GLIMPSE
+
+0.75
+0.50
+
+10−2
+
+0.25
+102
+
+103
+
+`
+
+102
+
+103
+
+`
+
+Figure 7. Simulations. Left panel: power spectrum of the reconstructed maps obtained from a noisy realization of the shear field with
+respect to the power spectrum of the input convergence field. For the KS and the null B-mode prior methods, we considered the maps
+with 10 arcmin smoothing; for the Glimpse method, we considered the map obtained with sparsity parameter λ = 3. As discussed in
+Sec. 3.6, the power of the maximum a posteriori estimates will not match the power of the truth, and is expected to be reduced. For
+the Wiener filter, this reduction is known analytically as a function of signal and noise covariance. Right panel: power spectrum of the
+residual map, defined as the difference between the recovered map and the input convergence field.
+
+5.6 Convergence one-point distribution and recovery of the
+input convergence pixel values
+
+In Fig. 8 we show the one-point distribution function (PDF)
+of the convergence field. For KS and the null B-mode prior reconstructions we considered maps with 10 arcmin smoothing,
+and we used λ = 3 for Glimpse.
+The PDFs of the pixel values of the reconstructed maps
+are not identical to those of the input. This is expected. As
+all reconstructions are a maximum a posteriori estimate of
+the underlying convergence field, the variance (and possibly
+higher-order moments) of the reconstructed map will be suppressed. The asymmetric distributions are a sign that the
+recovered map is not dominated by noise, whose PDF is completely symmetric.
+We also show in Fig. 9 density plots illustrating the relation
+between the values of the pixels of the recovered maps and
+those of the input convergence map. For a perfect reconstruction, the density plots would look like a straight, diagonal line
+(the black line in the Figure). In general, it can be noted that
+the values of the pixels of the recovered maps scatter more
+around zero than the values of the pixels of the input map.
+This is a consequence of the noise; however, as already noted
+in Fig. 8, the density plots not being perfectly symmetric
+means that the maps are not dominated by noise. Generally,
+pixels with negative (positive) values in the recovered maps
+are also associated to the ones with negative (positive) values
+in the input convergence map, although with a large scatter.
+The scatter is larger for pixels with positive values, due to
+the long positive tail of the convergence PDF.
+The density plots for the Wiener filter and Glimpse maps
+are tighter, whereas KS and null B-mode prior method show
+a larger scatter. The density plots convey the same information encoded by the RMSE: a higher (lower) RMSE value
+is associated to a tighter (broader) density plot around the
+black diagonal line in Fig. 9.
+
+6 APPLICATION TO DATA
+6.1 Map reconstruction
+In this section we present the reconstructed mass maps using DES Y3 weak lensing data. We show only maps created using the full catalogue. We also created maps for
+the four tomographic bins; they are not shown here, but
+they will be made publicly available following publication at
+https://des.ncsa.illinois.edu/releases.
+Fig. 10 shows the four maps obtained with the KS, null
+B-mode prior, Wiener filter and Glimpse methods, obtained
+from the METACALIBRATION catalogue. We recall that these
+maps have been obtained applying the METACALIBRATION response correction and the inverse variance weights, as explained in Sec. 4. The maps obtained with the different methods visually show the same differences as the ones obtained
+in simulations (Fig. 5), with the Wiener and Glimpse maps
+particularly suppressing the noise thanks to their priors.
+
+6.2 Systematic error tests
+We perform a number of tests on the recovered maps. We first
+test if any spurious correlation exists between our maps and
+quantities that are not expected to correlate with the convergence maps. The shear catalogue used to produce the mass
+maps have been largely tested in Gatti, Sheldon et al. (2021),
+but the potential correlation between convergence maps and
+systematic errors was not investigated there. We therefore
+consider a number of catalogue and observational properties as potential systematic errors, in a fashion similar to
+what was done in Gatti, Sheldon et al. (2021). In particular,
+we consider the two components of the point-spread-function
+(PSF) ellipticity at the galaxy position (PSF1 , PSF2 ), their
+E and B-modes maps (PSFE , PSFB ), and the size of the PSF
+(TPSF ). As observing condition properties, we consider mean
+air-mass, mean brightness, mean magnitude limit (depth),
+mean exposure time, and mean seeing (all in the i-band).
+A few maps were considered in the shear catalogue tests
+and so are excluded here. For example, we do not include the
+signal-to-noise ratio maps among the systematic maps, as we
+MNRAS 000, 000–000 (2021)
+
+14
+
+N. Jeffrey, M. Gatti et al.
+KS
+
+Null B-mode Prior
+
+GLIMPSE
+
+Wiener
+
+102
+
+PDF
+
+101
+100
+10−1
+10−2
+−0.02
+
+0.00
+
+0.02
+
+κ
+
+−0.02
+
+0.00
+
+0.02
+
+κ
+
+−0.02
+
+0.00
+
+0.02
+
+κ
+
+−0.02
+
+0.00
+
+0.02
+
+κ
+
+Reconstructed κE (with noise)
+
+Input κ
+
+Figure 8. PDFs (one-point distributions) for the different map reconstruction methods, obtained from a simulated, noisy realization of the
+shear field. The grey shaded histogram in each panel is the PDF of the true, input convergence field.
+
+KS
+
+Null B-mode Prior
+
+Wiener
+
+GLIMPSE
+
+κrecovered
+
+0.01
+
+0.00
+
+−0.01
+−0.01
+
+0.00
+
+κinput
+
+0.01
+
+−0.01
+
+0.00
+
+0.01
+
+κinput
+
+−0.01
+
+0.00
+
+0.01
+
+κinput
+
+−0.01
+
+0.00
+
+0.01
+
+κinput
+
+Figure 9. Density plots showing the relation between the values of the pixels of the recovered maps and the input convergence field map. A
+map that perfectly recovered the truth would have a density plot that followed the black solid line. All of the density plots are normalised.
+The linear correlation between variables shown in this plot is quantified by the Pearson correlation coefficient discussed in section 5.3. As
+discussed in Sec. 3.6, the pixel variance of the as maximum a posteriori estimates will not be equal to pixel variance of the truth, and is
+expected to be reduced.
+
+actually expect to measure a signal (indeed, overdense regions
+of the sky should be populated by red elliptical galaxies with
+high signal-to-noise). Similarly, we expect (and measure) at
+high significance a correlation between galaxy colours and our
+mass maps.
+We follow Chang et al. (2018) and create (using meansubtracted values) a systematic map M S for each of the systematic errors. We first assume a linear dependence between
+the convergence maps and the systematic maps:
+κE = bM S .
+
+(37)
+
+We fit all the pixel values of the convergence maps assuming
+such a linear relationship with the systematic maps. We show
+the measured coefficient for each of these systematic maps in
+the left panel of Fig. 11. Errors are estimated using jackknife
+errors. We do not find any particularly significant correlation;
+individually, the coefficients are measured with a significance
+smaller than 3σ. The overall χ2 of the null hypothesis (considering the correlations among the 10 systematic maps considered here) is 6, 12, 10, and 17 for 10 d.o.f., for KS, null
+B-mode prior, Wiener, and Glimpse respectively, indicating
+compatibility with no significant dependence on systematic
+errors. We also compute the Pearson coefficient between the
+convergence maps and the systematic maps; results are shown
+MNRAS 000, 000–000 (2021)
+
+in the right panel of Fig. 11 (note that in the same Figure we
+also show the Pearson coefficient with redMaPPer clusters,
+discussed in the next section). The main difference with the
+linear fit is that the Pearson coefficient does not assume a
+priori any relation between the convergence maps and systematic maps. Again, we do not find any strong evidence of
+systematic contamination, with the χ2 of the null hypothesis
+being 5, 5, 7, and 10 for 10 d.o.f., for KS, null B-mode prior,
+Wiener, and Glimpse respectively.
+
+6.3 Structures in the reconstructed maps
+6.3.1 Galaxy cluster distribution
+For obvious reasons the true convergence map is not available in data; nevertheless we can check that the reconstructed
+mass maps probe the foreground matter density field by correlating them with a sample of other tracers. For visualization
+purposes, we show in Fig. 12 the Glimpse map with a few
+redMaPPer clusters superimposed.
+From Fig. 12 we can see that clusters tend to populate the
+densest regions in the reconstructed convergence map and
+avoid the regions with negative convergence signal.
+
+DES Year 3: weak lensing mass map reconstruction
+KS κE
+60◦
+
+30◦
+
+Null B-mode prior κE
+0◦
+
+−30◦
+
+90◦
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+
+Declination
+
+Declination
+
+90◦
+
+−60◦
+
+60◦
+
+30◦
+
+0◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+Wiener κE
+90
+
+◦
+
+60
+
+◦
+
+30
+
+◦
+
+GLIMPSE κE
+0
+
+◦
+
+−30
+
+◦
+
+90
+
+0◦
+
+0◦
+
+−15◦
+
+−15◦
+
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+Declination
+
+Declination
+
+15
+
+◦
+
+60
+
+◦
+
+30◦
+
+0◦
+
+-0.01
+
+−30◦
+
+0.00
+
+0.01
+
+−30◦
+−45◦
+−60◦
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+150◦ 120◦ 90◦ 60◦ 30◦ 0◦ −30◦ −60◦ −90◦
+Right Ascension
+
+Figure 10. METACALIBRATION DES Y3 weak lensing mass maps, obtained from the official DES Y3 shear catalogue and created using
+different map making methods. Top left panel: noisy KS E-mode map Top right panel: E-mode map obtained with the null B-mode prior
+method. Bottom left panel: E-mode Wiener filter map. Bottom right panel: E-mode Glimpse map. The maps in the top panels have been
+smoothed at 10 arcmin; no further smoothing is applied to the maps showed in the lower panels. Inset: RAcentre , Deccentre = 70◦ , −40◦ ;
+∆RA, ∆Dec = 15◦ , 10◦ .
+
+We also report in Fig. 11 the Pearson coefficient between
+the maps and the effective richness of redMaPPer clusters at
+z < 0.6. In particular, we follow Jeffrey et al. (2018b) and
+define an effective lensed cluster richness λeff
+R :
+λeff
+R = λR
+
+p(χ)χ
+,
+a(χ)
+
+triangular figure markers), which were shown to improve the
+correlation for these maps.
+
+6.3.2 Cosmic void imprints
+(38)
+
+where λR is the redMaPPer cluster richness, a(χ) is the scale
+factor evaluated at the comoving distance to a given cluster χ, and p(χ) is the lensing efficiency, defined as p(χ) =
+R +∞ 0
+0
+0
+dχ n(χ0 ) χ χ−χ
+0 , with n(χ ) the redshift distribution of the
+χ
+source galaxies used to create the mass maps as a function of
+comoving density. The effective richness is then normalised to
+the mean of the effective richness of all clusters considered.
+For all the maps, the measured Pearson coefficient shown in
+Fig. 11 is significantly larger than 0, showing how the recovered maps successfully trace the foreground matter density
+field. Again, we use parameter value θ = 10 arcmin for the
+KS and the null B-mode prior reconstruction and λ = 3 for
+Glimpse by default. For the redMaPPer result in the right
+panel of Fig. 11, we also plot θ = 5 arcmin and λ = 1 (the
+
+Cosmic voids are an increasingly favoured cosmic probe and
+have now already been successfully used to extract cosmological information (for a recent overview see Pisani et al. 2019).
+We expect these large lower-density regions in the cosmic web
+to display a typical imprinting in the convergence signal when
+cross-correlated with weak lensing mass maps (for previous
+results from DES Y1 data see Chang et al. 2018).
+We create a catalogue of so-called ‘2D voids’ (Sánchez et al.
+2017) from the DES Y3 redMaGiC (Rozo et al. 2016) photometric redshift data set by searching for projected underdensities in tomographic slices of the galaxy catalogue. On
+average, these tunnel-like voids correspond to density minima that are compensated by an overdense zone in their surroundings. With this simple approach, we detect 3, 222 voids
+in the DES Y3 data set, which are larger on average, although
+also less underdense, than most voids from other void finders
+MNRAS 000, 000–000 (2021)
+
+16
+
+N. Jeffrey, M. Gatti et al.
+
+KS
+Null B-mode Prior
+
+KS
+Null B-mode Prior
+
+Wiener
+GLIMPSE
+
+GLIMPSE
+Wiener
+
+0.5
+
+Pearson Coefficient
+
+4
+
+0
+−2
+
+0.3
+0.2
+0.1
+
+Seeing
+
+Exposure time
+
+Sky brightness
+
+Airmass
+
+Depth
+
+PSF size
+
+PSF κB
+
+PSF κE
+
+redMaPPer
+
+Seeing
+
+Exposure time
+
+Sky brightness
+
+Airmass
+
+Depth
+
+PSF size
+
+PSF κB
+
+PSF κE
+
+PSF 2
+
+PSF 1
+
+PSF 2
+
+0.0
+
+−4
+
+PSF 1
+
+b/σb
+
+2
+
+0.4
+
+Figure 11. Left panel: Best fit values for the coefficient of the relation κE = bM S for a given systematic map S. The values of the slopes are
+shown for different tomographic bins, and the uncertainties are estimated through jackknife resampling. Right panel: Pearson coefficient
+between the recovered convergence map and the systematic maps S. Uncertainties are estimated through jackknife resampling. When
+applicable, systematic maps are considered in the i-band. For the redMaPPer cluster correlation (right panel) we also show the result for
+different tuning parameters (see text for details) that are shown with with triangle markers.
+
+KS κE vs. Redmapper Clusters
+90◦
+
+60◦
+
+30◦
+
+0◦
+
+−30◦
+
+0◦
+
+Declination
+
+−15◦
+-0.01
+
+0.00
+
+0.01
+
+−30◦
+
+−45◦
+
+−60◦
+
+150◦
+
+120◦
+
+90◦
+
+60◦
+30◦
+Right Ascension
+
+0◦
+
+−30◦
+
+−60◦
+
+−90◦
+
+Figure 12. METACALIBRATION DES Y3 weak lensing mass maps using galaxies in the third redshift bin (see Figure 1), obtained with
+the KS method, with redMaPPer clusters in the redshift range 0.3 < z < 0.5 (green circles) superimposed. In the wide field, we
+randomly selected a subsample of the clusters with richness λRM > 35; for the small inset, we zoom in on the (randomly chosen) location
+(RA, Dec) = (70◦ , −40◦ ) (cyan marker on the large map). The circles are centred at the cluster centre, with the size of the circles scaling
+with the mass (richness) of the clusters. Visually, the clusters coincide with the high κ regions and avoid the low κ regions. The κ map is
+smoothed by a 1 deg Gaussian filter to highlight large-scale features.
+
+MNRAS 000, 000–000 (2021)
+
+1
+
+2
+
+R/Rv
+
+DES Year 3: weak lensing mass map reconstruction
+3
+
+0.1
+
+Void radius
+
+Underdensity (δg)
+
+κ × 103
+
+0.0
+
+−0.1
+−0.2
+
+Wiener
+null B-modes
+GLIMPSE
+KS
+
+(κ − κKS)/σKS
+
+−0.3
+
+17
+
+4
+
+0.1
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+300
+
+0.2
+
+Redshift (z)
+0.3
+0.4
+0.5
+
+0.6
+
+0.7
+
+Centered on RA=41.2 ◦ Dec=-12.2 ◦
+
+Model void R =250h−1 Mpc
+DES Y3 redMaGiC data
+
+600
+900
+1200
+1500
+Comoving distance [Mpc/h]
+
+1800
+
+Figure 14. The line-of-sight density of redMaGiC galaxies aligned
+with a significant “vole” in the KS mass map. At low redshifts, we
+find evidence for an extended system of underdensities.
+
+2
+0
+-2
+
+0
+
+1
+
+2
+
+3
+
+4
+
+R/Rv
+
+Figure 13. Top panel: Void imprints on the DES mass maps. Bottom
+panel: Differences of signals measured from different mass maps,
+relative to the KS results and errors (shaded ranges are 1σ and 2σ
+about the KS signal).
+
+(see e.g. Fang et al. 2019). They certainly are useful tools in
+void lensing studies (Davies et al. 2018) and they have been
+widely used in previous DES analyses (see e.g. Vielzeuf et al.
+2021; Kovács et al. 2017, 2019; Fang et al. 2019).
+The lensing imprint of typical individual voids is expected
+to be undetectable (Amendola et al. 1999). Therefore, after
+selecting our void sample, we follow a stacking method to
+measure the mean signal of all voids (see e.g. Vielzeuf et al.
+2021). Knowing the angular size of voids, we re-scale the local
+mass map patches around the void centres. In such re-scaled
+units, we then extract convergence κ patches five times the
+R/Rv = 1 void radius, stack them to increase signal-to-noise,
+and measure radial profiles from the average κ patch. Without a large set of simulations to estimate covariance of the
+void profile statistic, we estimate uncertainty using a voidby-void jackknife method (see e.g. Sánchez et al. 2017). We
+then correct these re-sampling based uncertainties with reference to previous DES Y1 void analysis results that used more
+accurate Monte Carlo simulations (Vielzeuf et al. 2021).
+Fig. 13 shows the measured profiles using the DES voids. As
+anticipated, we detect a negative convergence signal within
+the void radius (R/Rv < 1) and a surrounding ring (1 <
+R/Rv < 3) of positive convergence signal (due to compensating mass around voids). We note that different mass map
+versions show consistent signals (within the quoted uncertainties). While these void lensing results remain open to much
+further quantitative work, there is certainly clear detection of
+correlations between underdensities of galaxies and matter;
+this will motivate further studies using DES Y3. We finally
+remark that the typical convergence signal associated with local underdensities can be affected by the void definition and
+selection. We explore alternative void samples extracted from
+DES Y3 data in Appendix B.
+
+6.3.3 Line-of-sight underdensities
+Posing a slightly different question, we also examine the distribution of galaxies in a line-of-sight aligned with the most
+negative fluctuations in the DES Y3 mass maps. We call these
+voids in lensing maps or voles (see e.g. Davies et al. 2018).
+We use a slightly modified version of the 2D void finder algorithm to identify them in the DES mass maps. We apply a
+Gaussian smoothing of 2 deg in order to intentionally select
+relatively deep and extended voles.
+Following the previous DES Year 1 (Y1) analyses (Chang
+et al. 2018), the redMaGiC galaxy position catalogue is projected into two-dimensional slices of 100 h−1 Mpc along the
+line-of-sight. This thickness corresponds to the approximate
+photo-z errors of the redMaGiC galaxies that allows the robust identification of voids (see Sánchez et al. 2017, for details). At redshifts 0.1 < z < 0.7, galaxy density contrasts
+are measured in 15 tomographic slices aligned with voles.
+Galaxies are counted within an aperture of 2 deg of the
+void centre, which approximately corresponds to the full angular size of voles. The measured density contrasts at the
+different redshifts are used to reconstruct the radial density profile aligned with the given vole. Fig. 14 shows the
+line-of-sight galaxy density aligned with a significant vole at
+(RA, Dec) ≈ (41.2◦ , −12.2◦ ) in the KS map.
+We find an extended underdensity that is consistent with a
+super-void with radius Rv ≈ 250 h−1 Mpc (assuming simple Gaussian void profiles as in Finelli et al. 2016). This
+super-void, similar to the biggest underdensity found in the
+preceding DES Y1 analysis (Chang et al. 2018), will have
+smaller-scale substructures that are inaccessible using redMaGiC photometric redshift data. Nevertheless, such a supervoid is comparable to the largest known underdensities in the
+local Universe, and these objects are of great interest in cosmology (see e.g. Shimakawa et al. 2021). Their integrated
+Sachs-Wolfe imprint has already been studied using DES Y3
+data to probe dark energy (for details see Kovács et al. 2019).
+
+7 SUMMARY
+In this work we constructed weak lensing convergence maps
+(‘mass maps’) from the DES Y3 data set using four reconstruction methods. The first method considered is the direct
+MNRAS 000, 000–000 (2021)
+
+0.9 <z <1.3
+Source galaxies
+
+0
+
+18
+
+N. Jeffrey, M. Gatti et al.
+
+inversion of the shear field, also known as the Kaiser-Squires
+method, followed by a smoothing of small angular scales. The
+second method uses a prior on the B-modes of the map,
+imposing that the reconstructed convergence field must be
+purely an E-mode map (null B-mode prior); this method also
+includes smoothing at small scales. The third method, the
+Wiener filter, uses a Gaussian prior distribution for the underlying convergence field. Lastly, the Glimpse method implements a sparsity prior in wavelet (starlet) space, which can
+be interpreted as a physical model where the matter field is
+composed of a superposition of spherically symmetric haloes.
+All methods are implemented on the sphere to accommodate the large sky coverage of the DES Y3 footprint. We
+compared the different methods using simulations that are
+closely matched to the DES Y3 data. We quantified the performance of the methods at the map level using a number
+of different summary statistics: the Pearson coefficient with
+the ‘true’ simulated convergence map, the root-mean-square
+error (RMSE) of the residual maps, the power spectra of the
+mass maps and residual maps, and the 1-point distribution
+function (PDF) of the mass maps.
+The tests performed suggested that using our physicallymotivated priors to recover the convergence field from a noisy
+realization of the shear field generally improves some aspects
+of the reconstruction. In particular, null B-mode, Wiener,
+and Glimpse delivered larger values of the Pearson coefficient
+and smaller values of the RMSE compared to the standard
+KS method, indicating that their use of physically-motivated
+informative priors significantly improve the accuracy of the
+reconstruction. We furthermore showed that a null B-mode
+prior mitigates the troublesome effects of masks and missing
+data. We also note how the choice of the prior can make the
+comparison of certain statistics with theoretical predictions
+non-trivial when taking the maximum a posteriori result as
+a point estimate κ̂, rather than evaluating the full posterior
+distribution p(κ). Even if the effect of the prior cannot be
+easily modelled for a given theoretical summary statistic for
+cosmological inference, a forward modelling framework can
+be implemented that compares observed and simulated summary statistics.
+We have presented the official DES Y3 mass maps, obtained with the four different methods, and assessed their
+robustness against a number of systematic error maps representing catalogue properties and observing conditions. This
+recovered mass map, of which the dominant mass contribution is dark matter, covers the largest sky fraction of any
+galaxy weak lensing map of the late Universe.
+We emphasize that the choice of the particular mass map
+method depends on the goals and details of the science application. Science applications of these DES Y3 mass maps are
+expected in future work.
+
+ACKNOWLEDGMENTS
+Funding for the DES Projects has been provided by the U.S.
+Department of Energy, the U.S. National Science Foundation,
+the Ministry of Science and Education of Spain, the Science
+and Technology Facilities Council of the United Kingdom, the
+Higher Education Funding Council for England, the National
+Center for Supercomputing Applications at the University of
+Illinois at Urbana-Champaign, the Kavli Institute of CosmoMNRAS 000, 000–000 (2021)
+
+logical Physics at the University of Chicago, the Center for
+Cosmology and Astro-Particle Physics at the Ohio State University, the Mitchell Institute for Fundamental Physics and
+Astronomy at Texas A&M University, Financiadora de Estudos e Projetos, Fundação Carlos Chagas Filho de Amparo à
+Pesquisa do Estado do Rio de Janeiro, Conselho Nacional de
+Desenvolvimento Cientı́fico e Tecnológico and the Ministério
+da Ciência, Tecnologia e Inovação, the Deutsche Forschungsgemeinschaft and the Collaborating Institutions in the Dark
+Energy Survey.
+The Collaborating Institutions are Argonne National Laboratory, the University of California at Santa Cruz, the University of Cambridge, Centro de Investigaciones Energéticas,
+Medioambientales y Tecnológicas-Madrid, the University of
+Chicago, University College London, the DES-Brazil Consortium, the University of Edinburgh, the Eidgenössische Technische Hochschule (ETH) Zürich, Fermi National Accelerator
+Laboratory, the University of Illinois at Urbana-Champaign,
+the Institut de Ciències de l’Espai (IEEC/CSIC), the Institut
+de Fı́sica d’Altes Energies, Lawrence Berkeley National Laboratory, the Ludwig-Maximilians Universität München and
+the associated Excellence Cluster Universe, the University of
+Michigan, NFS’s NOIRLab, the University of Nottingham,
+The Ohio State University, the University of Pennsylvania,
+the University of Portsmouth, SLAC National Accelerator
+Laboratory, Stanford University, the University of Sussex,
+Texas A&M University, and the OzDES Membership Consortium.
+Based in part on observations at Cerro Tololo InterAmerican Observatory at NSF’s NOIRLab (NOIRLab Prop.
+ID 2012B-0001; PI: J. Frieman), which is managed by the Association of Universities for Research in Astronomy (AURA)
+under a cooperative agreement with the National Science
+Foundation.
+The DES data management system is supported by the
+National Science Foundation under Grant Numbers AST1138766 and AST-1536171. The DES participants from Spanish institutions are partially supported by MICINN under
+grants ESP2017-89838, PGC2018-094773, PGC2018-102021,
+SEV-2016-0588, SEV-2016-0597, and MDM-2015-0509, some
+of which include ERDF funds from the European Union.
+IFAE is partially funded by the CERCA program of the
+Generalitat de Catalunya. Research leading to these results
+has received funding from the European Research Council
+under the European Union’s Seventh Framework Program
+(FP7/2007-2013) including ERC grant agreements 240672,
+291329, and 306478. We acknowledge support from the
+Brazilian Instituto Nacional de Ciência e Tecnologia (INCT)
+do e-Universo (CNPq grant 465376/2014-2).
+This manuscript has been authored by Fermi Research Alliance, LLC under Contract No. DE-AC02-07CH11359 with
+the U.S. Department of Energy, Office of Science, Office of
+High Energy Physics.
+NJ has been supported by funding from l’Ecole Normale Supérieure, Paris. OL and NJ acknowledge support from a European Research Council Advanced Grant
+TESTDE (FP7/291329) and STFC Consolidated Grants
+ST/M001334/1 and ST/R000476/1. AK has been supported
+by a Juan de la Cierva fellowship from MINECO with project
+number IJC2018-037730-I, and funding for this project was
+also available in part through SEV-2015-0548 and AYA201789891-P. Cosmic voids computational work has been per-
+
+DES Year 3: weak lensing mass map reconstruction
+formed on the UK SCIAMA High Performance Computing
+cluster supported by the ICG, SEPNet and the University of
+Portsmouth.
+
+DATA AVAILABILITY
+The full metacalibration catalogue and mass maps will be
+made publicly available following publication, at https://
+des.ncsa.illinois.edu.
+
+REFERENCES
+Abbott T. M. C., et al., 2018, ApJS, 239, 18
+Ajani V., Peel A., Pettorino V., Starck J.-L., Li Z., Liu J., 2020,
+Phys. Rev. D, 102, 103531
+Alonso D., Sanchez J., Slosar A., 2019, MNRAS, 484, 4127–4151
+Alsing J., Heavens A., Jaffe A. H., 2017, MNRAS, 466, 3272
+Amendola L., Frieman J. A., Waga I., 1999, MNRAS, 309, 465
+Asgari M., et al., 2019, A&A, 624, A134
+Bartelmann M., Schneider P., 2001, Phys. Rep., 340, 291
+Blazek J. A., MacCrann N., Troxel M., Fang X., 2019, Physical
+Review D, 100, 103506
+Castro P. G., Heavens A. F., Kitching T. D., 2005, Phys. Rev. D,
+72, 023516
+Cautun M., Cai Y.-C., Frenk C. S., 2016, Monthly Notices of the
+Royal Astronomical Society, 457, 2540–2553
+Chang C., et al., 2015, Phys. Rev. Lett., 115, 051301
+Chang C., et al., 2018, MNRAS, 475, 3165
+Combettes P. L., Wajs V. R., 2005, Multiscale Modeling & Simulation, 4, 1168
+Crocce M., Pueblas S., Scoccimarro R., 2006, MNRAS, 373, 369
+Dark Energy Survey Collaboration et al., 2016, MNRAS, 460, 1270
+Davies C. T., Cautun M., Li B., 2018, MNRAS, 480, L101
+Dietrich J. P., Hartlap J., 2010, MNRAS, 402, 1049
+Elsner F., Wandelt B. D., 2013, A&A, 549, A111
+Fang Y., et al., 2019, MNRAS, 490, 3573
+Finelli F., Garcı́a-Bellido J., Kovács A., Paci F., Szapudi I., 2016,
+MNRAS, 455, 1246
+Flaugher B., et al., 2015, AJ, 150, 150
+Fluri J., Kacprzak T., Refregier A., Amara A., Lucchi A., Hofmann
+T., 2018, Phys. Rev. D, 98, 123518
+Fluri J., Kacprzak T., Lucchi A., Refregier A., Amara A., Hofmann
+T., Schneider A., 2019, Phys. Rev. D, 100, 063514
+Fu L., et al., 2014, MNRAS, 441, 2725
+Gatti M., Giannini G., et al., 2020a, arXiv e-prints, p.
+arXiv:2012.08569
+Gatti M., et al., 2020b, MNRAS, 498, 4060
+Gatti M., Sheldon E., et al., 2021, Mon. Not. Roy. Astron. Soc.,
+504, 4312
+Górski K. M., Hivon E., Banday A. J., Wandelt B. D., Hansen
+F. K., Reinecke M., Bartelmann M., 2005, ApJ, 622, 759
+Hamana T., Sakurai J., Koike M., Miller L., 2015, PASJ, 67, 34
+Hamana T., et al., 2020, PASJ, 72, 16
+Hamaus N., Pisani A., Choi J.-A., Lavaux G., Wandelt B. D.,
+Weller J., 2020, J. Cosmology Astropart. Phys., 2020, 023
+Higson E., Handley W., Hobson M., Lasenby A., 2019, MNRAS,
+483, 4828
+Hikage C., et al., 2019, PASJ, 71, 43
+Hildebrandt H., et al., 2017, MNRAS, 465, 1454
+Hinshaw G., et al., 2013, ApJS, 208, 19
+Huff E., Mandelbaum R., 2017, preprint (arXiv:1702.02600)
+Jasche J., Lavaux G., 2015, MNRAS, 447, 1204
+Jeffrey N., Heavens A. F., Fortio P. D., 2018a, Astronomy and
+Computing, 25, 230
+Jeffrey N., et al., 2018b, MNRAS, 479, 2871
+
+19
+
+Jeffrey N., Lanusse F., Lahav O., Starck J.-L., 2020, MNRAS, 492,
+5023
+Jeffrey N., Alsing J., Lanusse F., 2021, MNRAS, 501, 954
+Kacprzak T., et al., 2016, MNRAS, 463, 3653
+Kaiser N., Squires G., 1993, ApJ, 404, 441
+Kodi Ramanah D., Lavaux G., Wandelt B. D., 2019, MNRAS, 490,
+947
+Kovács A., et al., 2017, MNRAS, 465, 4166
+Kovács A., et al., 2019, MNRAS, 484, 5267
+Kratochvil J. M., Haiman Z., May M., 2010, Phys. Rev. D, 81,
+043519
+Kratochvil J. M., Lim E. A., Wang S., Haiman Z., May M., Huffenberger K., 2012, Phys. Rev. D, 85, 103513
+Krause E., Hirata C. M., 2010, A&A, 523, A28
+Lanusse F., Starck J. L., Leonard A., Pires S., 2016, A&A, 591,
+A2
+Liu J., Petri A., Haiman Z., Hui L., Kratochvil J. M., May M.,
+2015, Phys. Rev. D, 91, 063507
+MacCrann N., et al., 2020, Submitted to MNRAS
+Mandelbaum R., 2018a, ARA&A, 56, 393
+Mandelbaum R., 2018b, ARA&A, 56, 393
+Marshall P. J., Hobson M. P., Gull S. F., Bridle S. L., 2002, MNRAS, 335, 1037
+Martinet N., et al., 2018, MNRAS, 474, 712
+Mawdsley B., et al., 2020, MNRAS, 493, 5662
+Morganson E., et al., 2018, PASP, 130, 074501
+Muir J., et al., 2020, MNRAS, 494, 4454
+Myles J., Alarcon A., et al., 2020, arXiv e-prints, p.
+arXiv:2012.08566
+Nadathur S., Crittenden R., 2016, ApJ, 830, L19
+Nadathur S., Hotchkiss S., Crittenden R., 2017, MNRAS, 467, 4067
+Nadathur S., Carter P., Percival W. J., 2018, MNRAS, 482,
+2459–2470
+Nadathur S., Carter P. M., Percival W. J., Winther H. A., Bautista
+J. E., 2019, Physical Review D, 100
+Navarro J. F., Frenk C. S., White S. D. M., 1996, ApJ, 462, 563
+Neyrinck M. C., 2008, MNRAS, 386, 2101
+Oguri M., et al., 2018, PASJ, 70, S26
+Parroni C., Cardone V. F., Maoli R., Scaramella R., 2020, A&A,
+633, A71
+Peel A., Pettorino V., Giocoli C., Starck J.-L., Baldi M., 2018,
+A&A, 619, A38
+Petri A., Liu J., Haiman Z., May M., Hui L., Kratochvil J. M.,
+2015, Phys. Rev. D, 91, 103511
+Pisani A., et al., 2019, BAAS, 51, 40
+Pollina G., et al., 2019, Monthly Notices of the Royal Astronomical
+Society, 487, 2836–2852
+Price M. A., Cai X., McEwen J. D., Pereyra M., Kitching T. D.,
+2019, MNRAS, 492, 394
+Price M. A., McEwen J. D., Pratley L., Kitching T. D., 2021,
+MNRAS, 500, 5436
+Raghunathan S., Nadathur S., Sherwin B. D., Whitehorn N., 2020,
+ApJ, 890, 168
+Ribli D., Pataki B. Á., Csabai I., 2019, Nature Astronomy, 3, 93
+Rozo E., et al., 2016, MNRAS, 461, 1431–1450
+Samuroff S., et al., 2019, MNRAS, 489, 5453
+Sánchez C., et al., 2017, MNRAS, 465, 746
+Sánchez C., Prat J., et al., 2020, To be submitted to MNRAS
+Seitz C., Schneider P., 1997, A&A, 318, 687
+Semboloni E., Schrabback T., van Waerbeke L., Vafaei S., Hartlap
+J., Hilbert S., 2011, MNRAS, 410, 143
+Sevilla-Noarbe I., et al., 2020, arXiv e-prints, p. arXiv:2011.03407
+Sevilla I., et al., 2011, in Meeting of the APS Division of Particles
+and Fields. (arXiv:1109.6741)
+Shan H., et al., 2018, MNRAS, 474, 1116
+Sheldon E. S., Huff E. M., 2017, ApJ, 841, 24
+Sheldon E. S., Becker M. R., MacCrann N., Jarvis M., 2020, ApJ,
+902, 138
+MNRAS 000, 000–000 (2021)
+
+20
+
+N. Jeffrey, M. Gatti et al.
+
+Shimakawa R., et al., 2021, arXiv e-prints, p. arXiv:2103.04291
+Shirasaki M., Yoshida N., Ikeda S., 2019, Phys. Rev. D, 100, 043527
+Springel V., 2005, MNRAS, 364, 1105
+Starck J.-L., Fadili J., Murtagh F., 2007, IEEE transactions on
+image processing, 16, 297
+Starck J.-L., Murtagh F., Fadili J., 2015, Sparse Image and Signal Processing: Wavelets and Related Geometric Multiscale
+Analysis, Second Edition, 2 edn. Cambridge University Press,
+doi:10.1017/CBO9781316104514
+Starck J. L., Themelis K. E., Jeffrey N., Peel A., Lanusse F., 2021,
+arXiv e-prints, p. arXiv:2102.04127
+Sutter P. M., et al., 2015, Astronomy and Computing, 9, 1
+Takada M., Jain B., 2003, MNRAS, 344, 857
+Takada M., Jain B., 2004, MNRAS, 348, 897
+Takahashi R., Sato M., Nishimichi T., Taruya A., Oguri M., 2012,
+ApJ, 761, 152
+Takahashi R., Hamana T., Shirasaki M., Namikawa T., Nishimichi
+T., Osato K., Shiroyama K., 2017, ApJ, 850, 24
+Troxel M. A., et al., 2018, Phys. Rev. D, 98, 043528
+Van Waerbeke L., et al., 2013, MNRAS, 433, 3373
+Vicinanza M., Cardone V. F., Maoli R., Scaramella R., Er X., 2016,
+preprint (arXiv:1606.03892)
+Vicinanza M., Cardone V. F., Maoli R., Scaramella R., Er X., 2018,
+Phys. Rev. D, 97, 023519
+Vicinanza M., Cardone V. F., Maoli R., Scaramella R., Er X.,
+Tereno I., 2019, Phys. Rev. D, 99, 043534
+Vielzeuf P., et al., 2021, MNRAS, 500, 464
+Vikram V., et al., 2015, Phys. Rev. D, 92, 022006
+Wallis C. G. R., McEwen J. D., Kitching T. D., Leistedt B., Plouviez A., 2017, preprint (arXiv:1703.09233)
+Wandelt B. D., Larson D. L., Lakshminarayanan A., 2004, Phys.
+Rev. D, 70, 083511
+Wiener N., 1949, Extrapolation, interpolation, and smoothing of
+stationary time series. Vol. 7, MIT
+Zaroubi S., Hoffman Y., Fisher K. B., Lahav O., 1995, ApJ, 449,
+446
+Zuntz J., Sheldon E., et al., 2018, MNRAS, 481, 1149
+
+APPENDIX A: AUTHOR AFFILIATIONS
+1
+
+Laboratoire de Physique de l’Ecole Normale Supérieure, ENS,
+Université PSL, CNRS, Sorbonne Université, Université de Paris,
+Paris, France
+2 Department of Physics & Astronomy, University College
+London, Gower Street, London, WC1E 6BT, UK
+3 Institut de Fı́sica d’Altes Energies (IFAE), The Barcelona Institute of Science and Technology, Campus UAB, 08193 Bellaterra
+(Barcelona) Spain
+4 Department of Physics and Astronomy, University of Pennsylvania, Philadelphia, PA 19104, USA
+5 Department of Astronomy and Astrophysics, University of
+Chicago, Chicago, IL 60637, USA
+6 Kavli Institute for Cosmological Physics, University of Chicago,
+Chicago, IL 60637, USA
+7 Instituto de Astrofı́sica de Canarias (IAC), Calle Vı́a Láctea,
+E-38200, La Laguna, Tenerife, Spain
+8 Departamento de Astrofı́sica, Universidad de La Laguna (ULL),
+E-38206, La Laguna, Tenerife, Spain
+9
+Universitäts-Sternwarte, Fakultät für Physik, LudwigMaximilians Universität München, Scheinerstr. 1, 81679 München,
+Germany
+10 Institute of Cosmology and Gravitation, University of
+Portsmouth, Portsmouth, PO1 3FX, UK
+11 Department of Physics, ETH Zurich, Wolfgang-Pauli-Strasse
+MNRAS 000, 000–000 (2021)
+
+16, CH-8093 Zurich, Switzerland
+12 AIM, CEA, CNRS, Université Paris-Saclay, Université de
+Paris, F-91191 Gif-sur-Yvette, France
+13 Argonne National Laboratory, 9700 South Cass Avenue,
+Lemont, IL 60439, USA
+14 Kavli Institute for Particle Astrophysics & Cosmology, P. O.
+Box 2450, Stanford University, Stanford, CA 94305, USA
+15 Physics Department, 2320 Chamberlin Hall, University of
+Wisconsin-Madison, 1150 University Avenue Madison, WI 537061390
+16 Department of Physics, Carnegie Mellon University, Pittsburgh,
+Pennsylvania 15312, USA
+17 Instituto de Astrofisica de Canarias, E-38205 La Laguna,
+Tenerife, Spain
+18 Laboratório Interinstitucional de e-Astronomia - LIneA, Rua
+Gal. José Cristino 77, Rio de Janeiro, RJ - 20921-400, Brazil
+19 Universidad de La Laguna, Dpto. Astrofı́sica, E-38206 La
+Laguna, Tenerife, Spain
+20 Center for Astrophysical Surveys, National Center for Supercomputing Applications, 1205 West Clark St., Urbana, IL 61801,
+USA
+21 Department of Astronomy, University of Illinois at UrbanaChampaign, 1002 W. Green Street, Urbana, IL 61801, USA
+22 Department of Physics, Duke University Durham, NC 27708,
+USA
+23 Center for Cosmology and Astro-Particle Physics, The Ohio
+State University, Columbus, OH 43210, USA
+24 Jodrell Bank Center for Astrophysics, School of Physics and
+Astronomy, University of Manchester, Oxford Road, Manchester,
+M13 9PL, UK
+25 Department of Astronomy, University of California, Berkeley,
+501 Campbell Hall, Berkeley, CA 94720, USA
+26 Santa Cruz Institute for Particle Physics, Santa Cruz, CA
+95064, USA
+27 Fermi National Accelerator Laboratory, P. O. Box 500, Batavia,
+IL 60510, USA
+28 Department of Physics, The Ohio State University, Columbus,
+OH 43210, USA
+29 Jet Propulsion Laboratory, California Institute of Technology,
+4800 Oak Grove Dr., Pasadena, CA 91109, USA
+30 Department of Physics, Stanford University, 382 Via Pueblo
+Mall, Stanford, CA 94305, USA
+31 SLAC National Accelerator Laboratory, Menlo Park, CA
+94025, USA
+32 Department of Physics, University of Oxford, Denys Wilkinson
+Building, Keble Road, Oxford OX1 3RH, UK
+33 Department of Astronomy, University of Geneva, ch. d’Écogia
+16, CH-1290 Versoix, Switzerland
+34 Department of Physics, University of Michigan, Ann Arbor,
+MI 48109, USA
+35 Department of Applied Mathematics and Theoretical Physics,
+University of Cambridge, Cambridge CB3 0WA, UK
+36 Instituto de Fı́sica Gleb Wataghin, Universidade Estadual de
+Campinas, 13083-859, Campinas, SP, Brazil
+37 Centro de Investigaciones Energéticas, Medioambientales y
+Tecnológicas (CIEMAT), Madrid, Spain
+38 Brookhaven National Laboratory, Bldg 510, Upton, NY 11973,
+USA
+39 Institut d’Estudis Espacials de Catalunya (IEEC), 08034
+Barcelona, Spain
+40 Institute of Space Sciences (ICE, CSIC), Campus UAB, Carrer
+de Can Magrans, s/n, 08193 Barcelona, Spain
+
+DES Year 3: weak lensing mass map reconstruction
+
+21
+
+41
+
+0
+
+1
+
+2
+
+R/Rv
+
+3
+
+4
+
+0.4
+Over-compensated voids
+
+0.3
+0.2
+κ × 103
+
+0.1
+0.0
+
+−0.1
+Void radius
+
+Under-compensated voids
+
+−0.2
+−0.3
+−0.4
+2
+0
+-2
+
+VIDE x KS
+REVOLVER x KS
+2D voids x KS
+
+Wiener
+
+GLIMPSE
+
+null B-modes
+
+2
+0
+-2
+
+Wiener
+
+R/Rv
+GLIMPSE
+
+null B-modes
+
+2
+0
+-2
+
+Wiener
+
+R/Rv
+GLIMPSE
+
+null B-modes
+
+(κ − κKS)/σKS
+
+Max Planck Institute for Extraterrestrial Physics, Giessenbachstrasse, 85748 Garching, Germany
+42 Institute for Astronomy, University of Edinburgh, Edinburgh
+EH9 3HJ, UK
+43 Cerro Tololo Inter-American Observatory, NSF’s National
+Optical-Infrared Astronomy Research Laboratory, Casilla 603, La
+Serena, Chile
+44 Departamento de Fı́sica Matemática, Instituto de Fı́sica,
+Universidade de São Paulo, CP 66318, São Paulo, SP, 05314-970,
+Brazil
+45 Instituto de Fı́sica Teórica, Universidade Estadual Paulista,
+São Paulo, Brazil
+46 CNRS, UMR 7095, Institut d’Astrophysique de Paris, F-75014,
+Paris, France
+47 Sorbonne Universités, UPMC Univ Paris 06, UMR 7095,
+Institut d’Astrophysique de Paris, F-75014, Paris, France
+48 Department of Physics and Astronomy, Pevensey Building,
+University of Sussex, Brighton, BN1 9QH, UK
+49 University of Nottingham, School of Physics and Astronomy,
+Nottingham NG7 2RD, UK
+50 Astronomy Unit, Department of Physics, University of Trieste,
+via Tiepolo 11, I-34131 Trieste, Italy
+51 INAF-Osservatorio Astronomico di Trieste, via G. B. Tiepolo
+11, I-34143 Trieste, Italy
+52 Institute for Fundamental Physics of the Universe, Via Beirut
+2, 34014 Trieste, Italy
+53 Observatório Nacional, Rua Gal. José Cristino 77, Rio de
+Janeiro, RJ - 20921-400, Brazil
+54 Department of Physics, IIT Hyderabad, Kandi, Telangana
+502285, India
+55 Faculty of Physics, Ludwig-Maximilians-Universität, Scheinerstr. 1, 81679 Munich, Germany
+56 Institute of Theoretical Astrophysics, University of Oslo. P.O.
+Box 1029 Blindern, NO-0315 Oslo, Norway
+57 Instituto de Fisica Teorica UAM/CSIC, Universidad Autonoma
+de Madrid, 28049 Madrid, Spain
+58 Department of Astronomy, University of Michigan, Ann Arbor,
+MI 48109, USA
+59 Institute of Astronomy, University of Cambridge, Madingley
+Road, Cambridge CB3 0HA, UK
+60 Kavli Institute for Cosmology, University of Cambridge,
+Madingley Road, Cambridge CB3 0HA, UK
+61 School of Mathematics and Physics, University of Queensland,
+Brisbane, QLD 4072, Australia
+62 Center for Astrophysics | Harvard & Smithsonian, 60 Garden
+Street, Cambridge, MA 02138, USA
+63 George P. and Cynthia Woods Mitchell Institute for Fundamental Physics and Astronomy, and Department of Physics and
+Astronomy, Texas A&M University, College Station, TX 77843,
+USA
+64 Department of Astrophysical Sciences, Princeton University,
+Peyton Hall, Princeton, NJ 08544, USA
+65 Institució Catalana de Recerca i Estudis Avançats, E-08010
+Barcelona, Spain
+66 School of Physics and Astronomy, University of Southampton,
+Southampton, SO17 1BJ, UK
+67 Computer Science and Mathematics Division, Oak Ridge
+National Laboratory, Oak Ridge, TN 37831
+
+0
+
+1
+
+2
+
+3
+
+4
+
+R/Rv
+
+Figure B1. Top panel: Different mass map imprints of different
+types of voids. Bottom panel: Differences in signals measured from
+different mass map reconstructions, relative to the KS results and
+errors (shaded ranges are 1σ and 2σ around the KS results).
+
+APPENDIX B: ALTERNATIVE SAMPLES OF VOIDS
+We considered alternative catalogues of voids to test how the
+mass map imprints may depend on the void definition and
+selection.
+VIDE3 (Sutter et al. 2015) is a watershed void finder based
+on ZOBOV (Neyrinck 2008) that has been widely employed
+for various void studies (see e.g. Hamaus et al. 2020, and
+references therein). It has already been successfully used to
+study voids in the DES Y1 data (Pollina et al. 2019; Fang
+et al. 2019).
+VIDE’s default centre is the volume-weighted barycentre,
+which does not generally coincide with the density minimum inside the void due to non-spherical void geometry. Instead, the barycentre preserves information about the void
+boundary. Therefore, a different kind of imprint signal is expected when correlated with convergence maps, with more
+pronounced positive rings rather than negative centres (for
+a comprehensive study on the κ signal associated with voids
+see Cautun et al. 2016). In the DES Y3 redMaGiC data,
+VIDE detected 12, 841 voids. We then halved this catalogue
+using the compensation of voids to further increase and isolate the expected signal from the boundary zone, expecting
+to see an enhanced positive convergence κ imprint from these
+over-compensated voids.
+We are also interested in detecting the most pronounced
+
+3
+
+https://bitbucket.org/cosmicvoids/
+MNRAS 000, 000–000 (2021)
+
+22
+
+N. Jeffrey, M. Gatti et al.
+
+negative κ signals associated with a specific subclass of large
+and deep voids that are under -compensated. As a third option, we thus used the public4 void finder algorithm REVOLVER
+(Nadathur et al. 2018, 2019), also based on the ZOBOV algorithm.
+A proxy for the gravitational potential (and thus for the
+convergence field) at the positions of voids can be defined as
+
+1.2
+Reff
+λv ≡ δ g
+,
+(B1)
+1 h−1 Mpc
+R
+using the average galaxy density contrast δ g = V1 V δg d3 x
+1/3
+3
+and the effective spherical radius, Reff = 4π
+V
+, where
+the volume V is the total volume of the void (for further details see Nadathur & Crittenden 2016; Nadathur et al. 2017).
+Raghunathan et al. (2020) showed that different values of the
+λv parameter indicate different (CMB) lensing imprints, including signals with either positive or negative sign, aligned
+with the void centre5 . Following this, we keep only 7, 782 of
+the most under-compensated voids defined by the lowest λv
+values. Leaving more detailed analyses for future work, we
+note that a subclass of voids with high λv values would also
+correspond to over-compensated voids such as our VIDE sample.
+Fig. B1 shows the measured profiles of our REVOLVER, VIDE,
+and 2D void analyses given the uncertainties. As anticipated
+based on the differences in the nature of the voids we selected,
+we detected qualitatively different signals in each case:
+• the VIDE voids show a relative depression in convergence
+at the void centre compared to the pronounced peak at the
+void boundary, matching our expectations.
+• the REVOLVER voids we selected are associated with
+strong negative κ imprints that in fact extend far beyond
+the void radius, indicating surrounding voids on average.
+• 2D voids combine the advantages of the other finders.
+They excel in marking the actual radius of voids in the mass
+map profiles, with reduced central and wall amplitudes.
+We thus report that all three void types we consider show
+consistent signals when mass maps are varied for a given void
+sample. We leave more detailed analysis for future work.
+
+4
+5
+
+https://github.com/seshnadathur/REVOLVER/
+REVOLVER voids may also be defined using barycentres.
+
+MNRAS 000, 000–000 (2021)
+
+

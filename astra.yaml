@@ -101,10 +101,30 @@ inputs:
     type: data
     label: CAMB E spectrum for pure-E flat controls
     source: src/stages/data/bin_covariance_theory.npz
+  - id: masked_template_operator
+    type: data
+    label: Masked pure-E template estimator
+    source: analysis/masked_template.py
+  - id: masked_template_geometry
+    type: data
+    label: Template geometry and angular harmonic operator
+    source: analysis/template_subtraction.py
+  - id: masked_template_flattening
+    type: data
+    label: Polar flattening and apodized 1500d mask implementation
+    source: analysis/polar_flatten.py
+  - id: masked_template_stage
+    type: data
+    label: Masked template stage entrypoint
+    source: src/stages/masked_template.py
   - id: local_source_estimator
     type: data
     label: Local compact-source profiles and matched-filter implementation
     source: analysis/local_measurements.py
+  - id: local_source_resolution_simulator
+    type: data
+    label: Paired CMB sampling resolution control for compact-source filtering
+    source: src/stages/local_source_resolution.py
   - id: local_source_simulator
     type: data
     label: Spherical compact-source CMB injection implementation
@@ -1229,6 +1249,42 @@ outputs:
         disk: 12Gi
         time_limit: 3h
 
+  - id: masked_template_pilot
+    type: data
+    label: Masked noisy pure-E template on the SFL 1500d field
+    inputs: [projected_qu, flatsky_masks]
+    units:
+      seed: [0]
+      projection: [ProjSFL]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/masked_template.py
+        --maps {inputs.projected_qu} --masks {inputs.flatsky_masks}
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 4
+        memory: 16Gi
+        disk: 24Gi
+        time_limit: 3h
+
+  - id: masked_template_realistic
+    type: data
+    label: Twenty-seed masked noisy SFL E-template comparison
+    inputs: [projected_qu, flatsky_masks, masked_template_operator, masked_template_geometry, masked_template_flattening, masked_template_stage, lensing_qe_theory]
+    units:
+      seed: "0..20"
+      projection: [ProjSFL]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/masked_template.py
+        --maps {inputs.projected_qu} --masks {inputs.flatsky_masks}
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 4
+        memory: 16Gi
+        disk: 24Gi
+        time_limit: 3h
+
   - id: local_source_geometry
     type: data
     label: Local compact-source matched-filter geometry and affine noise controls
@@ -1243,6 +1299,26 @@ outputs:
         disk: 1Gi
         time_limit: 1h
 
+  - id: local_source_resolution
+    type: data
+    label: Paired CMB sampling convergence for compact-source significance
+    inputs: [local_source_estimator, local_source_simulator, local_source_resolution_simulator, lensing_qe_theory, lensing_qe_geometry]
+    units:
+      nside: [4096, 8192]
+      seed: 0..16
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/local_source_resolution.py
+        --seed {units.seed} --nside {units.nside} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 2Gi
+        time_limit: 2h
+        per_unit:
+          - when: {nside: 8192}
+            memory: 8Gi
+
   - id: local_source_sims
     type: data
     label: Spherical CMB compact-source matched-filter injections on the 1500d field
@@ -1252,7 +1328,7 @@ outputs:
       BICEP, plus a common beam-smoothed HEALPix CMB and 18 uK arcmin noise.
       Source profiles bypass intermediate HEALPix pixelization intentionally.
     units:
-      seed: 0..16
+      seed: 0..64
     recipe:
       command: >-
         bash env.sh python3 src/stages/local_source_sims.py
