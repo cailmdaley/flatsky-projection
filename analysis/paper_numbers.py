@@ -953,6 +953,34 @@ def scalar_numbers():
     print('Wrote paper/scalar_numbers.tex and paper/scalar_summary.npz')
 
 
+def beam_numbers():
+    """Write measured beam macros without rerunning the geometry calculation."""
+    import json
+
+    data = json.loads((ROOT / 'paper' / 'beam_summary.json').read_text())
+    M = Macros()
+    M.add('beamMeasuredEll', f(data['ell_response'], 0))
+    for footprint, name in (('disk5', 'Disk'), ('field1500d', 'Field')):
+        response = data['response'][footprint]
+        prefix = 'beamMeasured' + name
+        M.add(prefix + 'Difference', pct(response['fractional_difference'], 3))
+        M.add(prefix + 'Prediction', pct(response['prediction'], 3))
+        M.add(prefix + 'SFL', f(response['sfl_mean'], 5))
+        M.add(prefix + 'Sphere', f(response['sphere_mean'], 5))
+        M.add(prefix + 'SectorMin', f(response['sfl_sector_min'], 5))
+        M.add(prefix + 'SectorMax', f(response['sfl_sector_max'], 5))
+        M.add(prefix + 'ModelResidual', pct(response['sector_model_max_abs_1000_3000'], 3))
+        for projection in ('ProjZEA', 'ProjSTG'):
+            diagnostic = data['b_diagnostic'][footprint + '_' + projection]
+            for key, label in (('mismatch', 'Mismatch'), ('differential', 'Differential'),
+                               ('cross_mismatch', 'CrossMismatch')):
+                M.add(prefix + projection[4:] + label, sci(diagnostic[key], 3))
+    assert all(name.isalpha() for name in M)
+    path = ROOT / 'paper' / 'beam_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 def section5_numbers():
     """Compute Section 5 geometry macros from specified footprint charts."""
     import section5_geometry as G5
@@ -1003,5 +1031,7 @@ if __name__ == "__main__":
         scalar_numbers()
     elif "--section5-only" in sys.argv:
         section5_numbers()
+    elif "--beam-only" in sys.argv:
+        beam_numbers()
     else:
         main()

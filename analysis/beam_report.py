@@ -40,7 +40,8 @@ def target_model(ell,chi):
 def b_diagnostics():
     """Use the production pure-B workspaces and retain all cross terms."""
     import pymaster as nmt
-    res=np.deg2rad(2/60)
+    sys.path.insert(0, str(ROOT/'src'/'stages'))
+    from beam_reprojection import mask_slices
     lo=np.arange(0.,6000.,50.)
     bins=nmt.NmtBinFlat(lo,lo+50)
     out={'ell':lo+25}
@@ -50,14 +51,16 @@ def b_diagnostics():
         pairs['mismatch']=pairs['sfl_base']-pairs['sphere_base']
         pairs['differential']=((pairs['sfl_beam']-pairs['sfl_base'])
                                -(pairs['sphere_beam']-pairs['sphere_base']))
-        ny,nx=pairs['sfl_base'].shape[1:]
         for footprint,mi,maskdir,workdir in (
             ('disk5',5,'flatsky_masks','coupling_matrices'),
             ('field1500d',0,'field_flatsky_masks','field_coupling')):
-            mask=np.load(ROOT/'results'/'highell'/maskdir/f'mask_{proj}_{mi}.npz')['mask']
+            metadata=np.load(ROOT/'results'/'highell'/maskdir/f'mask_{proj}_{mi}.npz')
+            mask=metadata['mask']
+            ys,xs=mask_slices(metadata)
+            lx,ly=float(metadata['lx_rad']),float(metadata['ly_rad'])
             workspace=nmt.NmtWorkspaceFlat()
             workspace.read_from(str(ROOT/'results'/'highell'/workdir/f'w22_{proj}_{mi}.fits'))
-            fields={tag:nmt.NmtFieldFlat(nx*res,ny*res,mask,list(pair),purify_b=True)
+            fields={tag:nmt.NmtFieldFlat(lx,ly,mask,list(pair[:,ys,xs]),purify_b=True)
                     for tag,pair in pairs.items()}
             prefix=f'{footprint}_{proj}_'
             for tag,fld in fields.items():

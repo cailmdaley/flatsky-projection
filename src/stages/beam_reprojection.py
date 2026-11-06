@@ -19,6 +19,15 @@ def log(text):
     print(f"[{time.strftime('%H:%M:%S')}] {text}", flush=True)
 
 
+def mask_slices(metadata):
+    """Production masks store their crop in the original full target map."""
+    if 'lo' in metadata:
+        lo, hi = int(metadata['lo']), int(metadata['hi'])
+        return slice(lo, hi), slice(lo, hi)
+    return (slice(int(metadata['ylo']), int(metadata['yhi'])),
+            slice(int(metadata['xlo']), int(metadata['xhi'])))
+
+
 def run(args):
     set_threads(args.max_procs)
     import gc
@@ -88,33 +97,42 @@ def run(args):
 
     edges = np.arange(500., 4100., 100.)
     sectors = np.linspace(0, np.pi, 13)
-    ell = np.hypot(kx,ky)
-    # Physical east points opposite the array x axis.
-    chi = np.mod(np.arctan2(ky,-kx), np.pi)
-    ib = np.digitize(ell.ravel(), edges)-1
-    ic = np.digitize(chi.ravel(), sectors)-1
-    valid = (ib>=0)&(ib<len(edges)-1)&(ic>=0)&(ic<12)
-    bins2d = ib[valid]*12+ic[valid]
-    # rfft columns away from DC and Nyquist stand for two Fourier modes.
-    multiplicity = np.broadcast_to(np.where((kx==0)|(kx==np.pi/res),1.,2.),ell.shape)
-    size = (len(edges)-1)*12
-
-    def bin_power(power):
-        return np.bincount(bins2d, weights=(power*multiplicity).ravel()[valid],
-                           minlength=size).reshape(-1,12)
 
     result = dict(ell=(edges[1:]+edges[:-1])/2, chi=(sectors[1:]+sectors[:-1])/2,
                   fwhm=args.fwhm, nside=args.nside, rebin=args.rebin)
     binner = nmt.NmtBinFlat(edges[:-1],edges[1:])
-    lx, ly = nx*res, ny*res
     for proj in projections:
         pairs = {tag: np.load(out/f'{tag}_{proj}.npy') for tag in
                  ('sfl_base','sfl_beam','sphere_base','sphere_beam')}
         for footprint, directory, mi in (('disk5',args.disk_masks,5),
                                           ('field1500d',args.field_masks,0)):
-            mask = np.load(Path(directory)/f'mask_{proj}_{mi}.npz')['mask']
+            metadata = np.load(Path(directory)/f'mask_{proj}_{mi}.npz')
+            mask = metadata['mask']
+            ys, xs = mask_slices(metadata)
+            cropped = {tag: pair[:, ys, xs] for tag, pair in pairs.items()}
+            my, mx = mask.shape
+            lx, ly = float(metadata['lx_rad']), float(metadata['ly_rad'])
+            ky = np.fft.fftfreq(my, res)[:, None]*2*np.pi
+            kx = np.fft.rfftfreq(mx, res)[None, :]*2*np.pi
+            ell = np.hypot(kx, ky)
+            # Physical east points opposite the array x axis.
+            chi = np.mod(np.arctan2(ky, -kx), np.pi)
+            ib = np.digitize(ell.ravel(), edges)-1
+            ic = np.digitize(chi.ravel(), sectors)-1
+            valid = (ib>=0)&(ib<len(edges)-1)&(ic>=0)&(ic<12)
+            bins2d = ib[valid]*12+ic[valid]
+            column_weight = np.full(mx//2+1, 2.)
+            column_weight[0] = 1.
+            if mx % 2 == 0:
+                column_weight[-1] = 1.
+            multiplicity = np.broadcast_to(column_weight, ell.shape)
+
+            def bin_power(power):
+                return np.bincount(bins2d, weights=(power*multiplicity).ravel()[valid],
+                                   minlength=(len(edges)-1)*12).reshape(-1,12)
+
             powers = {}
-            for tag, pair in pairs.items():
+            for tag, pair in cropped.items():
                 power = sum(np.abs(rfft2(m*mask))**2 for m in pair)
                 powers[tag] = bin_power(power)
             for origin in ('sfl','sphere'):
@@ -124,10 +142,10 @@ def run(args):
 
             # NaMaster's purified pseudo-B excludes ambiguous boundary modes.
             # Ratios share the same mask and need no pixel-window correction.
-            baseline = pairs['sphere_base']
-            mismatch = pairs['sfl_base']-baseline
-            differential = ((pairs['sfl_beam']-pairs['sfl_base'])
-                            -(pairs['sphere_beam']-baseline))
+            baseline = cropped['sphere_base']
+            mismatch = cropped['sfl_base']-baseline
+            differential = ((cropped['sfl_beam']-cropped['sfl_base'])
+                            -(cropped['sphere_beam']-baseline))
             for tag, pair in (('baseline',baseline), ('mismatch',mismatch),
                               ('differential',differential)):
                 fld = nmt.NmtFieldFlat(lx,ly,mask,list(pair),purify_b=True)
