@@ -1133,6 +1133,24 @@ outputs:
         disk: 12Gi
         time_limit: 3h
 
+  - id: spherical_grid_alias_test
+    type: data
+    label: Paired out-of-band spherical grid injection
+    description: |
+      Same zero-B alms cut at 256 or extended to 512, reconstructed to 256.
+      Differences isolate aliasing on Nside 128 and 384x768 CAR.
+    units:
+      seed: [0, 1, 2]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/spherical_grid_alias_test.py
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 2Gi
+        time_limit: 2h
+
   - id: spherical_grid_test
     type: data
     label: Zero-B spherical HEALPix and CAR pixel tests
