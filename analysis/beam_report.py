@@ -85,49 +85,29 @@ def plot(data,model):
     import matplotlib.pyplot as plt
     import paper_style as PS
     with plt.rc_context(PS.rc()):
-        fig,axs=plt.subplots(2,3,figsize=(PS.TEXT_W,4.5))
+        fig,axs=plt.subplots(1,2,figsize=(PS.TEXT_W,2.4),layout='constrained')
         ell=data['ell']
         index=np.argmin(abs(ell-3000))
-        for row,footprint in enumerate(('disk5','field1500d')):
+        ax=axs[0]
+        for footprint,label,color in (('disk5',r'5\% disk',PS.SECONDARY[1]),
+                                      ('field1500d','1500d field',PS.PROJ_COLORS['ProjSFL'])):
             prefix=footprint+'_ProjZEA_'
-            s=data[prefix+'sfl_response']
-            r=data[prefix+'sphere_response']
-            ax=axs[row,0]
-            ax.plot(ell,100*(s/r-1),'o',color=PS.PROJ_COLORS['ProjSFL'],ms=2.4,label='Maps')
-            ax.plot(ell,100*(model[footprint+'_source']/model[footprint+'_sphere']-1),
-                    color=PS.PROJ_COLORS['ProjSFL'],label='Local model')
-            ax.set(xlim=(500,4000),ylabel=r'$R_{\rm SFL}/R_{\rm sphere}-1$ [\%]')
-            ax.set_title(r'5\% disk' if row==0 else '1500d field')
-            if row==0:
-                ax.legend(fontsize=6.5)
-            ax=axs[row,1]
-            chi=np.rad2deg(data['chi'])
-            for tag,label,color,marker in (
-                ('sfl','SFL-filtered',PS.PROJ_COLORS['ProjSFL'],'o'),
-                ('sphere','Sphere-filtered',PS.SECONDARY[1],'+')):
-                ax.plot(chi,data[prefix+tag+'_response2d'][index],marker,
-                        color=color,ms=3,label=label)
-                key=footprint+('_source2d' if tag=='sfl' else '_sphere2d')
-                ax.plot(chi,model[key][index],color=color)
-            ax.set(xlim=(0,180),ylabel='Power response',xlabel=r'Target mode direction $\chi$ [deg]')
-            ax.set_title(rf'ZEA target, $\ell\simeq{ell[index]:.0f}$')
-            if row==0:
-                ax.legend(fontsize=6.5)
-            ax=axs[row,2]
-            p=footprint+'_ProjSTG_'
-            base=data[p+'baseline_ee']
-            for tag,label,style in (('mismatch','Unfiltered path mismatch',':'),
-                                    ('differential','Filter differential','-')):
-                ax.semilogy(ell,data[p+tag+'_bb']/base,style,color=PS.SECONDARY[0],label=label)
-            ax.set(xlim=(500,4000),ylabel=r'Pure pseudo-$BB$/baseline pseudo-$EE$')
-            ax.set_title('Conformal STG target')
-            if row==0:
-                ax.legend(fontsize=5.9)
-        for ax in axs[:,0]:
-            ax.set_xlabel(r'Target multipole $\ell$')
-        for ax in axs[:,2]:
-            ax.set_xlabel(r'Target multipole $\ell$')
-        fig.tight_layout(pad=.8,w_pad=1.2,h_pad=1.2)
+            ax.plot(ell,100*(data[prefix+'sfl_response']/data[prefix+'sphere_response']-1),
+                    'o',color=color,ms=2.4,label=label)
+            ax.plot(ell,100*(model[footprint+'_source']/model[footprint+'_sphere']-1),color=color)
+        ax.set(xlim=(500,4000),xlabel=r'$\ell$',ylabel=r'$R_{\rm SFL}/R_{\rm sphere}-1$ [\%]')
+        ax.legend()
+        ax=axs[1]
+        footprint='field1500d'
+        prefix=footprint+'_ProjZEA_'
+        chi=np.rad2deg(data['chi'])
+        for tag,key,label,color,marker in (
+            ('sfl','_source2d','Filtered on SFL',PS.PROJ_COLORS['ProjSFL'],'o'),
+            ('sphere','_sphere2d','Filtered on the sphere',PS.SECONDARY[1],'+')):
+            ax.plot(chi,data[prefix+tag+'_response2d'][index],marker,color=color,ms=3,label=label)
+            ax.plot(chi,model[footprint+key][index],color=color)
+        ax.set(xlim=(0,180),xlabel=r'Mode direction $\chi$ [deg]',ylabel='Power response')
+        ax.legend()
         path=ROOT/'figures'/'beam_reprojection.pdf'
         fig.savefig(path)
         fig.savefig(path.with_suffix('.png'),dpi=180)

@@ -89,7 +89,7 @@ def binwise_comparison(projected, control):
     """
     rows = []
     for (proj, width, spec, estimator), a in projected.items():
-        if width != 50:
+        if width not in (50, 100):
             continue
         b = control[proj, width, spec, estimator]
         ell = np.arange(a.shape[1])*width+width/2
@@ -246,7 +246,7 @@ def main():
             moments[prefix+'_correlation'] = correlation(values)
     np.savez_compressed(args.out/'moments.npz', **moments)
     plot_comparison(result, args.out)
-    if result['binwise']:
+    if any(r['width'] == 50 for r in result['binwise']):
         plot_binwise(result['binwise'], args.out)
 
 
