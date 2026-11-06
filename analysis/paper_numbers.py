@@ -1161,12 +1161,18 @@ def beyond_two_point_numbers():
                        if r['chart'] == chart and r['diameter'] == diameter)
             for key, label in (('smooth_variance', 'Variance'),
                                ('smooth_third', 'Third'),
+                               ('reduced_skewness', 'ReducedSkewness'),
                                ('wavelet_l1', 'Wavelet'),
                                ('peaks_gt_2sigma', 'Peaks')):
                 stat = row['statistics'][key]
                 prefix = 'ng'+chart+label+size
-                M.add(prefix, pct(stat['bias'], 1))
-                M.add(prefix+'Error', pct(stat['se'], 1))
+                digits = 3 if label == 'Wavelet' else 2 if label == 'ReducedSkewness' else 1
+                M.add(prefix, pct(stat['bias'], digits))
+                M.add(prefix+'Error', pct(stat['se'], digits))
+                cal = next(r for r in data['calibrated_records']
+                           if r['chart'] == chart and r['diameter'] == diameter)['statistics'][key]
+                M.add('ngCal'+chart+label+size, pct(cal['bias'], digits))
+                M.add('ngCal'+chart+label+size+'Error', pct(cal['se'], digits))
     path = ROOT/'paper/beyond_two_point_numbers.tex'
     path.write_text(M.tex())
     print(f'Wrote {path}')

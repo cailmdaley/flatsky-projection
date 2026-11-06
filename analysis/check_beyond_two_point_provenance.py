@@ -17,15 +17,17 @@ import yaml
 from lightcone.engine.manifest import read_manifest, sha256_dir
 
 ROOT = Path(__file__).resolve().parents[1]
-IDS = ('beyond_two_point', 'beyond_two_point_resolution')
+IDS = ('beyond_two_point', 'beyond_two_point_resolution',
+       'beyond_two_point_calibrated', 'beyond_two_point_calibrated_resolution')
+COUNTS = (24, 12, 24, 4)
 spec = yaml.safe_load((ROOT/'astra.yaml').read_text())
 spec['outputs'] = [o for o in spec['outputs'] if o['id'] in IDS]
-assert len(spec['outputs']) == 2
-for output in IDS:
+assert len(spec['outputs']) == 4
+for output, count in zip(IDS, COUNTS):
     directory = ROOT/'results/highell'/output
     manifest = read_manifest(directory)
     assert manifest['data_version'] == sha256_dir(directory)
-    assert len(manifest['units']) == (24 if output == IDS[0] else 12)
+    assert len(manifest['units']) == count
     sources = ['src/stages/beyond_two_point.py']
     if output == IDS[1]:
         sources.append('src/stages/beyond_two_point_resolution.py')

@@ -1,9 +1,8 @@
-"""Summarize the OSG paired scalar-lognormal projection controls.
+"""Paired OSG lognormal controls, including variance-normalized summaries.
 
 Run: bash env.sh python3 analysis/beyond_two_point_report.py
-Writes analysis/beyond_two_point_results/{summary.json,comparison.png,report.md}.
-SEs use paired ratio-of-ensemble-means influence functions, NOT independent
-errors for the two arms. A single-patch scatter is explicitly signal-only.
+All reported errors pair the same skies and account for shared denominators.
+A third-moment change alone is not evidence of a change beyond its variance.
 """
 import json
 from pathlib import Path
@@ -14,56 +13,107 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = ROOT/'results/highell/beyond_two_point'
-CONTROL = ROOT/'results/highell/beyond_two_point_resolution'
+RESULTS = ROOT/'results/highell'
+BASE = RESULTS/'beyond_two_point'
+CONTROL = RESULTS/'beyond_two_point_resolution'
 OUT = ROOT/'analysis/beyond_two_point_results'
+BOOT = np.random.default_rng(4).integers(0, 24, (20000, 24))
+KEYS = ('smooth_variance', 'smooth_third', 'reduced_skewness',
+        'wavelet_l1', 'peaks_gt_2sigma')
 
 
 def load(path):
     return json.loads(path.read_text())
 
 
-def summarize():
-    data = [load(p) for p in sorted(BASE.glob('seed*.json'))]
-    assert len(data) == 24
-    assert [d['seed'] for d in data] == list(range(24))
-    names = data[0]['statistics']
+def ensemble(samples):
+    """Original six moments of the ensemble and S3=M3/M2^2, not mean(S3_i)."""
+    mean = np.mean(samples, axis=-2)
+    return np.concatenate((mean, (mean[..., 3]/mean[..., 2]**2)[..., None]), axis=-1)
+
+
+def estimate(t, m):
+    tv, mv = ensemble(t), ensemble(m)
+    bias = mv/tv-1
+    influence = (m-t-bias[:6]*t)/tv[:6]
+    # Log derivative of (M3_m/M3_t)*(M2_t/M2_m)^2.
+    s3_influence = (1+bias[-1])*(
+        (m[:, 3]-mv[3])/mv[3]-(t[:, 3]-tv[3])/tv[3]
+        +2*(t[:, 2]-tv[2])/tv[2]-2*(m[:, 2]-mv[2])/mv[2])
+    influence = np.column_stack((influence, s3_influence))
+    se = influence.std(0, ddof=1)/len(t)**.5
+    # Use delete-one-whole-sky jackknife for the additional nonlinear ratio.
+    leave_one = []
+    for i in range(len(t)):
+        keep = np.arange(len(t)) != i
+        leave_one.append((ensemble(m[keep])/ensemble(t[keep])-1)[-1])
+    se[-1] = np.std(leave_one)*np.sqrt(len(t)-1)
+    bootstrap = ensemble(m[BOOT])/ensemble(t[BOOT])-1
+    return bias, se, bootstrap
+
+
+def summarize_arm(directory, controls):
+    data = [load(p) for p in sorted(directory.glob('seed*.json'))]
+    assert len(data) == 24 and [d['seed'] for d in data] == list(range(24))
+    calibrated = 'calibrated' in directory.name
+    assert all(d['mean_scale_calibration'] == calibrated for d in data)
+    names = data[0]['statistics']+['reduced_skewness']
     records = []
-    bootstrap_indices = np.random.default_rng(4).integers(0, len(data), (20000, len(data)))
     for j, row in enumerate(data[0]['rows']):
+        np.testing.assert_allclose(row['plane_sigma_deg'],
+            .5*np.exp(row['mean_log_mu']/2) if calibrated else .5, rtol=1e-12)
         t = np.array([d['rows'][j]['reference'] for d in data])
         m = np.array([d['rows'][j]['measured'] for d in data])
-        assert np.array_equal(t[:, :2], m[:, :2])
-        difference = m-t
-        bias = difference.mean(0)/t.mean(0)
-        se = (difference-bias*t).std(0, ddof=1)/len(data)**.5/t.mean(0)
-        bootstrap = difference[bootstrap_indices].mean(1)/t[bootstrap_indices].mean(1)
+        assert np.array_equal(t[:, :2], m[:, :2])  # Construction identity only.
+        bias, se, bootstrap = estimate(t, m)
         interval = np.percentile(bootstrap, [2.5, 97.5], axis=0)
         record = dict(chart=row['chart'], diameter=row['diameter'],
-                      g2=row['g2'], mean_log_mu=row['mean_log_mu'], statistics={})
+            g2=row['g2'], mean_log_mu=row['mean_log_mu'],
+            plane_sigma_deg=row['plane_sigma_deg'], statistics={})
         for k, name in enumerate(names):
-            controls = {}
-            for resolution in ('sphere', 'plane', 'both'):
-                c = [load(CONTROL/f'seed{s:03d}_{resolution}.json')['rows'][j]
-                     for s in range(4)]
-                cm = np.array([r['measured'] for r in c])
-                ct = np.array([r['reference'] for r in c])
-                cbias = (cm-ct).mean(0)/ct.mean(0)
-                # Paired four-seed drift: do not confuse cosmic scatter
-                # of the subset with sampling-resolution dependence.
-                bbias = difference[:4].mean(0)/t[:4].mean(0)
-                controls[resolution] = dict(bias=float(cbias[k]),
+            sampling = {}
+            for resolution, c in controls.items():
+                ct = np.array([d['rows'][j]['reference'] for d in c])
+                cm = np.array([d['rows'][j]['measured'] for d in c])
+                cbias = ensemble(cm)/ensemble(ct)-1
+                bbias = ensemble(m[:4])/ensemble(t[:4])-1
+                sampling[resolution] = dict(bias=float(cbias[k]),
                                            paired_drift=float(cbias[k]-bbias[k]))
-            record['statistics'][name] = dict(bias=float(bias[k]), se=float(se[k]),
+            stat = dict(bias=float(bias[k]), se=float(se[k]),
                 bootstrap_se=float(bootstrap[:, k].std(ddof=1)),
                 bootstrap_95_interval=interval[:, k].tolist(),
-                reference_mean=float(t[:, k].mean()),
-                single_patch_signal_std=float(t[:, k].std(ddof=1)),
-                bias_over_single_patch_signal_std=float(difference[:, k].mean()/t[:, k].std(ddof=1)),
-                controls=controls)
+                reference_mean=float(ensemble(t)[k]), controls=sampling)
+            if k < 6:
+                stat['single_patch_signal_std'] = float(t[:, k].std(ddof=1))
+                stat['bias_over_single_patch_signal_std'] = float(
+                    (m-t)[:, k].mean()/t[:, k].std(ddof=1))
+            if name == 'peaks_gt_2sigma':
+                stat['reference_total'] = int(t[:, k].sum())
+                stat['measured_total'] = int(m[:, k].sum())
+                stat['net_count_delta'] = int((m-t)[:, k].sum())
+            record['statistics'][name] = stat
         records.append(record)
-    return dict(nseed=len(data), ncontrol=4, model='signal-only scalar lognormal',
-                records=records)
+    return records
+
+
+def summarize():
+    controls = {r: [load(CONTROL/f'seed{s:03d}_{r}.json') for s in range(4)]
+                for r in ('sphere', 'plane', 'both')}
+    fine = RESULTS/'beyond_two_point_calibrated_resolution'
+    calibrated_controls = {'both': [load(fine/f'seed{s:03d}_n1024_p0.050.json') for s in range(4)]}
+    records = summarize_arm(BASE, controls)
+    calibrated = summarize_arm(RESULTS/'beyond_two_point_calibrated', calibrated_controls)
+    raw_spreads = []
+    for diameter in (14.6, 30., 60.):
+        rows = [r for r in records if r['diameter'] == diameter]
+        entry = dict(diameter=diameter)
+        for key in ('raw_variance', 'raw_third'):
+            means = np.array([r['statistics'][key]['reference_mean'] for r in rows])
+            entry[key] = float(np.ptp(means)/means[2])  # ZEA normalization.
+        raw_spreads.append(entry)
+    return dict(nseed=24, ncontrol=4, model='signal-only scalar lognormal',
+                records=records, calibrated_records=calibrated,
+                raw_cross_chart_spreads=raw_spreads)
 
 
 def figure(summary):
@@ -73,8 +123,8 @@ def figure(summary):
     colors = dict(TAN='#bd544a', STG='#687ba5', ZEA='#7b9b65')
     fig, axes = plt.subplots(2, 2, figsize=(9, 6), sharex=True)
     for ax, key, label in zip(axes.flat,
-            ('smooth_variance', 'smooth_third', 'wavelet_l1', 'peaks_gt_2sigma'),
-            ('Variance difference (%)', 'Third-moment difference (%)',
+            ('smooth_third', 'reduced_skewness', 'wavelet_l1', 'peaks_gt_2sigma'),
+            ('Third-moment difference (%)', 'Reduced-skewness difference (%)',
              'Wavelet L1 difference (%)', 'Peak-count difference (%)')):
         for chart, color in colors.items():
             rows = [r for r in summary['records'] if r['chart'] == chart]
@@ -94,88 +144,105 @@ def figure(summary):
     plt.close(fig)
 
 
+def table(lines, records):
+    lines += ['| Chart | Sky-disk diameter | Variance | Third moment | Reduced skewness | Wavelet L1 | Peaks > 2σ |',
+              '|---|---:|---:|---:|---:|---:|---:|']
+    for row in records:
+        cells = [f'{100*row["statistics"][k]["bias"]:.2f} ± {100*row["statistics"][k]["se"]:.2f}' for k in KEYS]
+        lines.append(f'| {row["chart"]} | {row["diameter"]:g}° | '+' | '.join(cells)+' |')
+
+
 def report(summary):
     lines = ['# Scalar lognormal projection control', '',
-        'A fixed planar smoothing kernel changes non-Gaussian statistics even on a conformal chart.',
-        'These measurements are signal-only controls, not weak-lensing survey forecasts.', '',
-        '## Paired differences', '',
-        'Values are percent differences of ensemble means, with paired Monte Carlo standard errors from 24 skies.',
-        'The reference applies the Gaussian filter on the sphere before projection; the measurement filters after projection.', '',
-        '![Paired fractional differences for moments, wavelet L1 and peaks.](comparison.png)', '',
-        'Fractional differences are shown against sky-disk diameter; bars are paired Monte Carlo errors and exclude the sampling shifts tabulated below.', '',
-        '| Chart | Sky-disk diameter | Smoothed variance | Third central moment | Wavelet L1 | Peaks > 2σ |',
-        '|---|---:|---:|---:|---:|---:|']
-    keys = ('smooth_variance', 'smooth_third', 'wavelet_l1', 'peaks_gt_2sigma')
-    for row in summary['records']:
-        cells = [f'{100*row["statistics"][k]["bias"]:.2f} ± {100*row["statistics"][k]["se"]:.2f}' for k in keys]
-        lines.append(f'| {row["chart"]} | {row["diameter"]:g}° | '+ ' | '.join(cells)+' |')
-    lines += ['', 'The paired standard errors are checked by 20,000 whole-sky bootstrap resamples.']
-    for chart in ('TAN', 'STG'):
-        stat = next(r for r in summary['records']
-                    if r['chart'] == chart and r['diameter'] == 60.)['statistics']['smooth_third']
-        low, high = np.array(stat['bootstrap_95_interval'])*100
-        lines.append(f'The 60° {chart} third-moment shift has a paired percentile 95% interval of [{low:.2f}, {high:.2f}]%.')
-    lines += ['', '## Model and estimator', '',
-        'The scalar field is exp(G − 0.7²/2) − 1, where G is an isotropic Gaussian sphere with rms 0.7.',
-        'Its input spectrum is proportional to (ℓ + 20)^−1.5 exp[−ℓ(ℓ+1)(0.25°)²], with monopole and dipole zero.',
-        'The nonlinear field is harmonically filtered with Gaussian sigma 0.5° and 1°; their difference defines the wavelet.',
-        'The wavelet statistic is its mean absolute amplitude, not a Morlet scattering transform.',
-        'Patch diameters describe spherical disks, not the 14.6° square patches of DES.',
-        'All area moments use solid-angle weights and subtract the patch mean.',
-        'Peaks exceed twice the full-sphere smoothed rms and are maxima within a fixed ±0.3° chart square.',
-        'The neighbourhood suppresses interpolation-scale duplicate maxima; it is part of this estimator, not a universal peak definition.',
-        'Five Gaussian-sigma overscan excludes artificial map-edge effects.',
-        'Both arms use identical chart pixel locations and solid-angle weights.',
-        'Unfiltered paired moments agree exactly because a scalar is unchanged by a coordinate relabelling.', '',
-        '## Sampling controls', '',
-        'Four identical input-alm seeds repeat with doubled HEALPix sampling, doubled chart sampling, and both.',
-        'The baseline is Nside 512, 0.1° chart pixels and fixed ℓmax=1024; controls use Nside 1024 and/or 0.05° pixels.',
-        'The table lists the largest absolute paired four-seed drift in percentage points across all nine configurations.',
-        'The statistical error bars do not include these numerical shifts.',
-        'The small wavelet and ZEA shifts are not continuum-accuracy measurements or upper bounds.',
-        'Peak shifts on the smallest disks remain unresolved at the sampling-control level; the large TAN effect is substantially larger than that drift.', '',
-        '| Statistic | Sphere only | Plane only | Both |', '|---|---:|---:|---:|']
-    for k in keys:
-        vals = [max(abs(r['statistics'][k]['controls'][c]['paired_drift']) for r in summary['records'])*100
-                for c in ('sphere', 'plane', 'both')]
-        lines.append('| '+k+' | '+' | '.join(f'{v:.3f}' for v in vals)+' |')
-    lines += ['', '## Interpretation', '',
-        'There is no universal ⟨g²⟩ law for these summaries: STG has g=0 everywhere, yet changes the smoothed moments.',
-        'A fixed chart kernel has a position-dependent angular size on the sphere.',
-        'Locally, isotropic magnification μ changes its sky smoothing scale by δ ln σ = −½ ln μ.',
-        'The leading response of a scale-dependent statistic is therefore proportional to its smoothing-scale derivative and ⟨ln μ⟩, not just shear.',
-        'For these azimuthal charts the magnification begins at second order in radius; g² begins at fourth order.',
-        'At fixed determinant, isotropic ensemble statistics can instead have a leading quadratic shear response, but its coefficient depends on the field, filter and statistic.',
-        'Raw scalar one-point statistics and continuous unfiltered extrema are invariant on a matched footprint with the correct measure.',
-        'A nonzero chart dependence enters through filtering, sampling, area weighting, or a spin-field reconstruction, not through a scalar value changing under projection.', '',
-        '## Inference and scope', '',
-        'No largest survey-safe patch size is established here.',
-        'A signal-only single-patch scatter is available in summary.json, but it is not a realistic error bar for DES, Euclid or LSST and must not be described as one.',
-        'Shape noise, masks, source distributions, cosmological derivatives, multiscale covariance and spin-2 mass mapping are absent.',
-        'A dedicated weak-lensing analysis is needed to set a tolerance in survey-error units.',
-        'The 14.6° disk, correlation spectrum and filter here do not reproduce Gatti et al.’s 14.6° square Morlet-scattering analysis.', '',
-        'Jeffrey et al. (arXiv:2403.02314, §6.3; bibliography key jeffrey25) explicitly apply the same flattening to data and simulations and distinguish unbiased inference from potentially suboptimal compression.',
-        'That shared deterministic transformation is a valid forward model when implemented consistently at every parameter value, including masks, noise, filtering and spin transport.',
-        'It removes this particular model/data mismatch; these toy measurements do not demonstrate calibrated cosmological posteriors or recover information discarded by compression.', '',
+        'Fixed central filter scales change the variance and third moment, but the third-moment response largely follows the variance.',
+        'Reduced skewness S3 = M3/M2² shows no significant change in this toy field.',
+        'Most of the large raw-moment and peak shifts disappear after matching the mean angular filter scale.',
+        'These are signal-only filtering controls, not irreducible non-Gaussian biases or weak-lensing survey forecasts.', '',
+        '## Fixed central filter scale', '',
+        'Values are percent differences with paired Monte Carlo standard errors from 24 skies.',
+        'The reference filters on the sphere before projection; the measurement filters after projection with the same central angular width.',
+        'Reduced skewness is formed from ensemble-mean second and third moments, not by averaging the skewness of individual patches.', '',
+        '![Paired fractional differences for third moments, reduced skewness, wavelet L1 and peaks.](comparison.png)', '',
+        'Bars are paired Monte Carlo errors and exclude the sampling drifts below.', '']
+    table(lines, summary['records'])
+    lines += ['', 'Errors use paired influence functions for the original summaries and a delete-one-whole-sky jackknife for reduced skewness; 20,000 whole-sky bootstrap resamples provide a cross-check.',
+        'The large third-moment shift must be quoted together with reduced skewness: it is not evidence for an independent non-Gaussian response beyond variance.',
+        'The reduced-skewness null is specific to this lognormal field and these filters; it is not a theorem that projection affects only variance.', '',
+        '## Mean angular-scale calibration', '',
+        'For each disk and chart, multiply both planar Gaussian widths by exp(⟨ln μ⟩/2), with a solid-angle average over that disk.',
+        'This matches the mean log angular smoothing scale; local magnification variation and shear remain.',
+        'It is a global scale calibration, not a map-level removal of projection.', '',
+        'The same 24 skies give the following residual differences on 60° disks.', '']
+    table(lines, [r for r in summary['calibrated_records'] if r['diameter'] == 60.])
+    lines += ['', 'The unit-central-scale percentages are therefore not invariant properties of a chart or statistic.',
+        'Calibrated residuals describe this chosen mean-scale matching rule; no universal residual law is established.', '',
+        '## Model and estimator', '',
+        'The field is exp(G − 0.7²/2) − 1, with an isotropic Gaussian log-field of rms 0.7.',
+        'Its spectrum is proportional to (ℓ + 20)^−1.5 exp[−ℓ(ℓ+1)(0.25°)²], with monopole and dipole zero.',
+        'The spherical Gaussian widths are sigma 0.5° and 1°; their difference defines the wavelet.',
+        'Wavelet L1 is the mean absolute amplitude, not a Morlet scattering transform.',
+        'The 14.6°, 30° and 60° footprints are spherical disks, not DES square patches.',
+        'Area moments use solid-angle weights and subtract each patch mean.',
+        'Peaks exceed twice the full-sphere reference smoothed rms and are maxima within a fixed ±0.3° chart square.',
+        'That neighbourhood suppresses interpolation-scale duplicates and is part of this estimator.',
+        'The peak threshold is held fixed between the spherical and planar arms, including after scale calibration.',
+        'Six reference Gaussian-sigma overscan excludes map-edge effects for both filter normalizations.',
+        'The paired raw-moment equality is a construction identity, since both arms use the same raw array; it is not an empirical test of invariance.', '',
+        'Independently sampled raw scalar moments agree across charts on the matched disk to the following fractional spreads.', '',
+        '| Diameter | Raw variance spread (%) | Raw third-moment spread (%) |', '|---|---:|---:|']
+    for row in summary['raw_cross_chart_spreads']:
+        lines.append(f'| {row["diameter"]:g}° | {100*row["raw_variance"]:.3f} | {100*row["raw_third"]:.3f} |')
+    lines += ['', 'The 14.6° peak percentages involve only a few count changes across all 24 skies.', '',
+              '| Chart | Reference count | Planar count | Net change |', '|---|---:|---:|---:|']
+    for row in summary['records'][:3]:
+        s = row['statistics']['peaks_gt_2sigma']
+        lines.append(f'| {row["chart"]} | {s["reference_total"]} | {s["measured_total"]} | {s["net_count_delta"]:+d} |')
+    lines += ['', '## Sampling controls', '',
+        'Four identical-alm seeds repeat at doubled HEALPix and/or chart sampling.',
+        'The baseline is Nside 512, 0.1° pixels and fixed ℓmax=1024; controls use Nside 1024 and/or 0.05° pixels.',
+        'All listed drifts are maxima of absolute paired four-seed differences over the nine chart/footprint configurations, in percentage points.',
+        'They are numerical regression diagnostics, not independent physical bounds.', '',
+        '| Statistic | Sphere only | Plane only | Both | Calibrated, both |', '|---|---:|---:|---:|---:|']
+    for k in KEYS:
+        values = [max(abs(r['statistics'][k]['controls'][c]['paired_drift']) for r in summary['records'])*100
+                  for c in ('sphere', 'plane', 'both')]
+        values += [max(abs(r['statistics'][k]['controls']['both']['paired_drift']) for r in summary['calibrated_records'])*100]
+        lines.append('| '+k+' | '+' | '.join(f'{v:.3f}' for v in values)+' |')
+    lines += ['', 'Small wavelet and ZEA shifts are not continuum-accuracy measurements or upper limits.',
+        'The small-disk peak changes remain unresolved at the sampling-control level.', '',
+        '## Interpretation and inference', '',
+        'At fixed central chart scale there is no universal shear-only law: STG has g=0 yet its smoothed moments change.',
+        'Locally, magnification changes a chart kernel’s sky width by δ ln sigma = −½ ln μ.',
+        'For the monotonic second and third moments here, a smoothing-scale derivative times ⟨ln μ⟩ explains the leading response.',
+        'The second-order-in-radius magnification response versus fourth-order g² comparison assumes unit chart scale at the tangent point; a global scale matching removes most of it.',
+        'It must not be presented as an irreducible distortion that survives scale calibration.',
+        'Wavelet L1 is near a stationary point of its scale response in this toy spectrum, so its small shift and its failure to scale simply with ⟨ln μ⟩ are not evidence of general wavelet robustness.',
+        'No quantitative universal wavelet response law is established.',
+        'For homogeneous isotropic fields and local isotropic filters, pure fixed-determinant shear can have a leading quadratic response with a field- and statistic-dependent coefficient.',
+        'Continuous unfiltered scalar values and extrema are invariant under coordinate relabelling on a matched footprint with the correct measure.', '',
+        'No largest survey-safe patch size is established.',
+        'Shape noise, masks, source distributions, cosmological derivatives, multiscale covariance and spin-two mass mapping are absent.',
+        'The stored signal-only single-patch scatter is not a realistic survey error bar.',
+        'A dedicated weak-lensing analysis is needed for survey-error tolerances, and this disk/lognormal/Gaussian example does not reproduce DES scattering patches.', '',
+        'Jeffrey et al. (arXiv:2403.02314, §6.3; bibliography key jeffrey25) apply the same flattening to data and simulations and distinguish correct forward modelling from potentially suboptimal compression.',
+        'A shared deterministic transformation removes this particular data/model mismatch only when masks, noise, filtering and spin transport are included consistently at every parameter value.',
+        'These toys do not demonstrate calibrated cosmological posteriors or recover information discarded by compression.', '',
         '## Suggested manuscript scope', '',
-        'Replace the concluding claim that the next step is only to estimate beyond-two-point effects with a short filtering example and an explicit survey-level limit.',
-        'The four-panel control figure need not enter the main article.',
-        'A possible paragraph, using generated macros, is:', '',
-        r'Beyond spectra, chart magnification changes the angular scale of a fixed planar filter, even for a scalar field on a conformal chart.',
-        r'In a signal-only lognormal control, applying a Gaussian filter of central width $\sigma=0.5^\circ$ after projection rather than on the sphere raises the third central moment by \ngTANThirdLarge\ on a $60^\circ$-diameter gnomonic disk and by \ngSTGThirdLarge\ on conformal STG.',
-        r'Consistently projecting data and simulations includes this effect in the forward model, while leaving possible losses from patching or compression \citep{jeffrey25}.',
-        r'A safe patch size in survey-error units requires a dedicated weak-lensing analysis with its noise, mask and multiscale covariance.', '',
-        'To use those macros, add the corresponding input of paper/beyond_two_point_numbers.tex and run analysis/paper_numbers.py --beyond-two-point-only after editing main.tex.',
-        'The measured effects belong to this toy field and filter; do not describe them as DES scattering or weak-lensing parameter biases.', '',
+        'The useful result is a filtering-scale calibration example with a reduced-skewness null, not a discovery of an extra higher-order bias.',
+        'If retained, put it after the scalar-versus-spin-two footprint discussion and quote both raw and normalized moments.',
+        'The conclusion should reserve survey-error bounds for a dedicated study.', '',
+        r'On scalar lognormal skies, applying a fixed central-width Gaussian filter after projection rather than on the sphere changes the third moment by \ngTANThirdLarge\ on a $60^\circ$ gnomonic disk, but the reduced skewness $S_3=M_3/M_2^2$ is consistent with zero shift (\ngTANReducedSkewnessLarge\ with jackknife error \ngTANReducedSkewnessLargeError).',
+        r'Most of the raw-moment change is removed by matching the mean angular filter scale; the large third-moment shift alone does not establish an independent higher-order bias.',
+        r'Projection therefore belongs in the simulations and filtering convention of a higher-order analysis \citep{jeffrey25}; realistic safe-patch bounds require a dedicated weak-lensing study.', '',
+        'To use the macros, input paper/beyond_two_point_numbers.tex and run analysis/paper_numbers.py --beyond-two-point-only after editing main.tex.', '',
         '## Reproduction', '',
-        '`lc run --executor htcondor --profile htcondor9 beyond_two_point beyond_two_point_resolution -u highell`',
+        '`lc run --executor htcondor --profile htcondor9 beyond_two_point beyond_two_point_resolution beyond_two_point_calibrated beyond_two_point_calibrated_resolution -u highell`',
         '`bash env.sh python3 analysis/check_beyond_two_point.py --results`',
         '`bash env.sh python3 analysis/beyond_two_point_report.py`',
         '`~/.local/share/uv/tools/lightcone-cli/bin/python analysis/check_beyond_two_point_provenance.py`', '',
-        'The provenance gate checks both canonical hashes, all 36 unit hashes, gathered bytes and actual stage contents against their unit git pins.',
-        'It then runs lc verify on an isolated unchanged two-output slice of astra.yaml because the CLI has no output selector; unrelated large map outputs are not rehashed.', '',
-        'Raw paired measurements and their lightcone manifests live under results/highell/beyond_two_point and beyond_two_point_resolution.',
-        'summary.json contains every table cell, paired standard error, signal-only scatter and sampling-control comparison.', '']
+        'The provenance gate checks canonical hashes, all unit hashes, gathered bytes and stage contents against unit git pins.',
+        'It runs lc verify on an isolated unchanged four-output slice because the CLI has no output selector.',
+        'Raw measurements and manifests live under results/highell/beyond_two_point*; summary.json holds all cells, bootstrap errors, counts and controls.', '']
     (OUT/'report.md').write_text('\n'.join(lines))
 
 

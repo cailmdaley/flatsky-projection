@@ -8,6 +8,7 @@
       "diameter": 14.6,
       "g2": 5.511405884490835e-06,
       "mean_log_mu": 0.012194591649902988,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -17,9 +18,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 0.5868648757001759,
-          "single_patch_signal_std": 0.23555338563545905,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 0.5868648757001761,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -33,7 +32,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.23555338563545913,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -44,8 +45,6 @@
             0.0
           ],
           "reference_mean": 1.296593498028339,
-          "single_patch_signal_std": 1.086821076517139,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -59,109 +58,138 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 1.086821076517139,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.005839985883467375,
-          "se": 0.00032280073420068895,
-          "bootstrap_se": 0.00031731791934361817,
+          "bias": 0.00583998588346768,
+          "se": 0.0003228007342006305,
+          "bootstrap_se": 0.00031731791934354846,
           "bootstrap_95_interval": [
-            0.005268681539786638,
-            0.006513924956530724
+            0.005268681539787573,
+            0.00651392495653097
           ],
-          "reference_mean": 0.23985176932941651,
-          "single_patch_signal_std": 0.11166430663527355,
-          "bias_over_single_patch_signal_std": 0.01254412434211085,
+          "reference_mean": 0.23985176932941643,
           "controls": {
             "sphere": {
-              "bias": 0.007028463329732774,
-              "paired_drift": 3.415797005133607e-05
+              "bias": 0.007028463329732837,
+              "paired_drift": 3.415797005157373e-05
             },
             "plane": {
-              "bias": 0.006978036219786925,
-              "paired_drift": -1.626913989451282e-05
+              "bias": 0.006978036219787098,
+              "paired_drift": -1.6269139894165008e-05
             },
             "both": {
-              "bias": 0.007022994993422917,
-              "paired_drift": 2.8689633741479578e-05
+              "bias": 0.0070229949934226266,
+              "paired_drift": 2.8689633741363352e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.11166430663527353,
+          "bias_over_single_patch_signal_std": 0.012544124342111496
         },
         "smooth_third": {
-          "bias": 0.010954595129973037,
-          "se": 0.0013238604200392285,
-          "bootstrap_se": 0.0013248271147053127,
+          "bias": 0.010954595129973432,
+          "se": 0.0013238604200390427,
+          "bootstrap_se": 0.0013248271147051753,
           "bootstrap_95_interval": [
-            0.008639127015746711,
-            0.013840248968103467
+            0.008639127015748215,
+            0.013840248968103567
           ],
-          "reference_mean": 0.20610737269931823,
-          "single_patch_signal_std": 0.1942975463548158,
-          "bias_over_single_patch_signal_std": 0.011620439185065024,
+          "reference_mean": 0.2061073726993182,
           "controls": {
             "sphere": {
-              "bias": 0.019150045311374025,
-              "paired_drift": -0.0010685196669429527
+              "bias": 0.019150045311373987,
+              "paired_drift": -0.0010685196669431019
             },
             "plane": {
-              "bias": 0.019021774826568815,
-              "paired_drift": -0.0011967901517481623
+              "bias": 0.019021774826568194,
+              "paired_drift": -0.0011967901517488944
             },
             "both": {
-              "bias": 0.019145709550657957,
-              "paired_drift": -0.0010728554276590203
+              "bias": 0.019145709550657974,
+              "paired_drift": -0.001072855427659114
             }
-          }
+          },
+          "single_patch_signal_std": 0.1942975463548157,
+          "bias_over_single_patch_signal_std": 0.011620439185065536
         },
         "wavelet_l1": {
-          "bias": 0.0009164763242738612,
-          "se": 0.00023511637987624776,
-          "bootstrap_se": 0.00022758591615072842,
+          "bias": 0.0009164763242739404,
+          "se": 0.00023511637987627223,
+          "bootstrap_se": 0.00022758591615074962,
           "bootstrap_95_interval": [
-            0.0004660523022263755,
-            0.0013578330406545495
+            0.0004660523022262886,
+            0.0013578330406544825
           ],
           "reference_mean": 0.16932586394223614,
-          "single_patch_signal_std": 0.0319154853973924,
-          "bias_over_single_patch_signal_std": 0.004862315062986806,
           "controls": {
             "sphere": {
-              "bias": 0.0010439184319528578,
-              "paired_drift": -6.752816362977712e-06
+              "bias": 0.0010439184319528394,
+              "paired_drift": -6.7528163629759774e-06
             },
             "plane": {
-              "bias": 0.0009962497101641142,
-              "paired_drift": -5.4421538151721346e-05
+              "bias": 0.0009962497101643208,
+              "paired_drift": -5.442153815149453e-05
             },
             "both": {
-              "bias": 0.0010426294804803166,
-              "paired_drift": -8.041767835518989e-06
+              "bias": 0.0010426294804803948,
+              "paired_drift": -8.041767835420544e-06
             }
-          }
+          },
+          "single_patch_signal_std": 0.03191548539739241,
+          "bias_over_single_patch_signal_std": 0.00486231506298684
         },
         "peaks_gt_2sigma": {
-          "bias": 0.03260869565217391,
-          "se": 0.018132223724138655,
-          "bootstrap_se": 0.018068998570487674,
+          "bias": 0.032608695652173836,
+          "se": 0.018132223724138658,
+          "bootstrap_se": 0.018068998570487667,
           "bootstrap_95_interval": [
             0.0,
-            0.07228915662650602
+            0.07228915662650603
           ],
           "reference_mean": 3.8333333333333335,
-          "single_patch_signal_std": 2.3895909540204223,
-          "bias_over_single_patch_signal_std": 0.05231020806707143,
           "controls": {
             "sphere": {
-              "bias": 0.09090909090909091,
+              "bias": 0.09090909090909083,
               "paired_drift": 0.0
             },
             "plane": {
-              "bias": 0.09090909090909091,
+              "bias": 0.09090909090909083,
               "paired_drift": 0.0
             },
             "both": {
-              "bias": 0.09090909090909091,
+              "bias": 0.09090909090909083,
               "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.3895909540204223,
+          "bias_over_single_patch_signal_std": 0.05231020806707143,
+          "reference_total": 92,
+          "measured_total": 95,
+          "net_count_delta": 3
+        },
+        "reduced_skewness": {
+          "bias": -0.0007506884496275568,
+          "se": 0.000975275700300272,
+          "bootstrap_se": 0.0009066402295742302,
+          "bootstrap_95_interval": [
+            -0.0023846556348057295,
+            0.0011683988924114175
+          ],
+          "reference_mean": 3.5826771535640085,
+          "controls": {
+            "sphere": {
+              "bias": 0.0049735606869181215,
+              "paired_drift": -0.0011219079346729277
+            },
+            "plane": {
+              "bias": 0.004947717770721338,
+              "paired_drift": -0.001147750850869711
+            },
+            "both": {
+              "bias": 0.004980199635235216,
+              "paired_drift": -0.001115268986355833
             }
           }
         }
@@ -172,6 +200,7 @@
       "diameter": 14.6,
       "g2": 0.0,
       "mean_log_mu": 0.004061672279031765,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -182,8 +211,6 @@
             0.0
           ],
           "reference_mean": 0.5867968280373054,
-          "single_patch_signal_std": 0.2354760444335642,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -197,7 +224,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.2354760444335643,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -207,9 +236,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 1.2953821051591488,
-          "single_patch_signal_std": 1.0851635145462584,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 1.295382105159149,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -223,97 +250,97 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 1.0851635145462588,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.001917372459931848,
-          "se": 0.00016984329919575184,
-          "bootstrap_se": 0.00016552657463218446,
+          "bias": 0.0019173724599317321,
+          "se": 0.00016984329919569888,
+          "bootstrap_se": 0.0001655265746321464,
           "bootstrap_95_interval": [
-            0.001607129026818022,
-            0.00225887865330268
+            0.0016071290268181494,
+            0.002258878653302654
           ],
-          "reference_mean": 0.23989312836137108,
-          "single_patch_signal_std": 0.11162830309674551,
-          "bias_over_single_patch_signal_std": 0.004120500490349198,
+          "reference_mean": 0.2398931283613711,
           "controls": {
             "sphere": {
-              "bias": 0.0022436550364260724,
-              "paired_drift": -5.430505954907676e-05
+              "bias": 0.0022436550364262065,
+              "paired_drift": -5.4305059548953594e-05
             },
             "plane": {
-              "bias": 0.0022264831523873406,
-              "paired_drift": -7.147694358780859e-05
+              "bias": 0.002226483152387493,
+              "paired_drift": -7.147694358766721e-05
             },
             "both": {
-              "bias": 0.002238122306508523,
-              "paired_drift": -5.983778946662627e-05
+              "bias": 0.002238122306508661,
+              "paired_drift": -5.98377894664992e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.1116283030967455,
+          "bias_over_single_patch_signal_std": 0.004120500490349633
         },
         "smooth_third": {
-          "bias": 0.003477436059508003,
-          "se": 0.0005576674803719905,
-          "bootstrap_se": 0.000567807943167538,
+          "bias": 0.003477436059508454,
+          "se": 0.0005576674803718003,
+          "bootstrap_se": 0.000567807943167384,
           "bootstrap_95_interval": [
-            0.0025475855647265344,
-            0.0047612364302392005
+            0.002547585564727478,
+            0.004761236430239817
           ],
-          "reference_mean": 0.2061381754307925,
-          "single_patch_signal_std": 0.19421885026351665,
-          "bias_over_single_patch_signal_std": 0.003690848357466973,
+          "reference_mean": 0.20613817543079238,
           "controls": {
             "sphere": {
-              "bias": 0.006189705855991833,
-              "paired_drift": -0.0011423537033765788
+              "bias": 0.006189705855991878,
+              "paired_drift": -0.001142353703376786
             },
             "plane": {
-              "bias": 0.006095482527050001,
-              "paired_drift": -0.001236577032318411
+              "bias": 0.0060954825270493895,
+              "paired_drift": -0.0012365770323192748
             },
             "both": {
-              "bias": 0.006129156223523692,
-              "paired_drift": -0.00120290333584472
+              "bias": 0.006129156223523724,
+              "paired_drift": -0.0012029033358449404
             }
-          }
+          },
+          "single_patch_signal_std": 0.19421885026351654,
+          "bias_over_single_patch_signal_std": 0.003690848357467488
         },
         "wavelet_l1": {
-          "bias": 0.00031278602633701136,
-          "se": 9.22727882687104e-05,
-          "bootstrap_se": 8.886993118459477e-05,
+          "bias": 0.0003127860263369975,
+          "se": 9.227278826872287e-05,
+          "bootstrap_se": 8.886993118462074e-05,
           "bootstrap_95_interval": [
-            0.00013641589016628522,
-            0.0004838198865181
+            0.00013641589016631926,
+            0.0004838198865181664
           ],
           "reference_mean": 0.16933649716659463,
-          "single_patch_signal_std": 0.031889943360519084,
-          "bias_over_single_patch_signal_std": 0.0016609026069372601,
           "controls": {
             "sphere": {
-              "bias": 0.0003613528789501152,
-              "paired_drift": 5.265500215088383e-06
+              "bias": 0.00036135287895011636,
+              "paired_drift": 5.265500215179131e-06
             },
             "plane": {
-              "bias": 0.0003507613639762372,
-              "paired_drift": -5.326014758789618e-06
+              "bias": 0.0003507613639763818,
+              "paired_drift": -5.326014758555431e-06
             },
             "both": {
-              "bias": 0.0003637183746856783,
-              "paired_drift": 7.630995950651438e-06
+              "bias": 0.00036371837468562873,
+              "paired_drift": 7.6309959506915e-06
             }
-          }
+          },
+          "single_patch_signal_std": 0.0318899433605191,
+          "bias_over_single_patch_signal_std": 0.0016609026069373681
         },
         "peaks_gt_2sigma": {
-          "bias": -0.01075268817204301,
-          "se": 0.01058096757326769,
-          "bootstrap_se": 0.01028122298488406,
+          "bias": -0.010752688172043001,
+          "se": 0.010580967573267689,
+          "bootstrap_se": 0.010281222984884058,
           "bootstrap_95_interval": [
-            -0.034482758620689655,
+            -0.03448275862068961,
             0.0
           ],
           "reference_mean": 3.875,
-          "single_patch_signal_std": 2.4013130466113926,
-          "bias_over_single_patch_signal_std": -0.017351617993107766,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -326,6 +353,35 @@
             "both": {
               "bias": 0.0,
               "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.4013130466113926,
+          "bias_over_single_patch_signal_std": -0.017351617993107766,
+          "reference_total": 93,
+          "measured_total": 92,
+          "net_count_delta": -1
+        },
+        "reduced_skewness": {
+          "bias": -0.00035960486256392254,
+          "se": 0.0003049257055553518,
+          "bootstrap_se": 0.0003053553143681945,
+          "bootstrap_95_interval": [
+            -0.0008383558772276006,
+            0.00036330195205408385
+          ],
+          "reference_mean": 3.581977155690767,
+          "controls": {
+            "sphere": {
+              "bias": 0.0016897707635632475,
+              "paired_drift": -0.0010285803041110153
+            },
+            "plane": {
+              "bias": 0.0016302912811800852,
+              "paired_drift": -0.0010880597864941777
+            },
+            "both": {
+              "bias": 0.0016405506950041282,
+              "paired_drift": -0.0010778003726701346
             }
           }
         }
@@ -336,6 +392,7 @@
       "diameter": 14.6,
       "g2": 1.3713149507517758e-06,
       "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -345,9 +402,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 0.586989859671413,
-          "single_patch_signal_std": 0.23526458676971573,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 0.5869898596714132,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -361,7 +416,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.2352645867697157,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -372,8 +429,6 @@
             0.0
           ],
           "reference_mean": 1.2979969291966997,
-          "single_patch_signal_std": 1.0856824004884515,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -387,97 +442,97 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 1.0856824004884513,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": -6.389665205201446e-05,
-          "se": 0.00011422111398789186,
-          "bootstrap_se": 0.00011100436122425297,
+          "bias": -6.389665205153161e-05,
+          "se": 0.00011422111398786842,
+          "bootstrap_se": 0.00011100436122420509,
           "bootstrap_95_interval": [
-            -0.00027906387097904596,
-            0.0001518770974264583
+            -0.0002790638709787879,
+            0.00015187709742740528
           ],
-          "reference_mean": 0.23992671890348408,
-          "single_patch_signal_std": 0.11156263814713704,
-          "bias_over_single_patch_signal_std": -0.00013741620250624036,
+          "reference_mean": 0.23992671890348397,
           "controls": {
             "sphere": {
-              "bias": -9.031910682947193e-05,
-              "paired_drift": 1.3747696184864303e-05
+              "bias": -9.031910682943955e-05,
+              "paired_drift": 1.3747696184784886e-05
             },
             "plane": {
-              "bias": -0.00013722716218001062,
-              "paired_drift": -3.316035916567439e-05
+              "bias": -0.00013722716217978714,
+              "paired_drift": -3.31603591655627e-05
             },
             "both": {
-              "bias": -0.00013509393625642585,
-              "paired_drift": -3.1027133242089616e-05
+              "bias": -0.0001350939362564363,
+              "paired_drift": -3.1027133242211846e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.11156263814713704,
+          "bias_over_single_patch_signal_std": -0.00013741620250590862
         },
         "smooth_third": {
-          "bias": -0.00020533049490977583,
-          "se": 0.00037338607734452723,
-          "bootstrap_se": 0.00036633522578990773,
+          "bias": -0.0002053304949098944,
+          "se": 0.00037338607734441464,
+          "bootstrap_se": 0.0003663352257898083,
           "bootstrap_95_interval": [
-            -0.0008518893083147742,
-            0.0005737633087841546
+            -0.0008518893083146961,
+            0.0005737633087844023
           ],
-          "reference_mean": 0.20623580215252868,
-          "single_patch_signal_std": 0.19415259627456827,
-          "bias_over_single_patch_signal_std": -0.00021810936416326573,
+          "reference_mean": 0.20623580215252857,
           "controls": {
             "sphere": {
-              "bias": -8.321029773681202e-05,
-              "paired_drift": -0.0008001655835338223
+              "bias": -8.321029773683541e-05,
+              "paired_drift": -0.0008001655835339072
             },
             "plane": {
-              "bias": -0.0002711941153149974,
-              "paired_drift": -0.0009881494011120078
+              "bias": -0.0002711941153159536,
+              "paired_drift": -0.0009881494011130254
             },
             "both": {
-              "bias": -0.00025808910806714885,
-              "paired_drift": -0.0009750443938641592
+              "bias": -0.0002580891080671277,
+              "paired_drift": -0.0009750443938641995
             }
-          }
+          },
+          "single_patch_signal_std": 0.19415259627456816,
+          "bias_over_single_patch_signal_std": -0.00021810936416293526
         },
         "wavelet_l1": {
-          "bias": -4.076816786388118e-06,
-          "se": 4.864984145879491e-05,
-          "bootstrap_se": 4.777136861758891e-05,
+          "bias": -4.0768167864913e-06,
+          "se": 4.8649841458791095e-05,
+          "bootstrap_se": 4.777136861757423e-05,
           "bootstrap_95_interval": [
-            -9.687216643278853e-05,
-            9.239914095167944e-05
+            -9.687216643312346e-05,
+            9.239914095141004e-05
           ],
           "reference_mean": 0.1693474448055169,
-          "single_patch_signal_std": 0.03189937373041023,
-          "bias_over_single_patch_signal_std": -2.1643011287613387e-05,
           "controls": {
             "sphere": {
-              "bias": 3.83481366305626e-05,
-              "paired_drift": 4.5545016080918496e-05
+              "bias": 3.8348136630395047e-05,
+              "paired_drift": 4.554501608078354e-05
             },
             "plane": {
-              "bias": 2.3284766480868385e-05,
-              "paired_drift": 3.0481645931224278e-05
+              "bias": 2.3284766480946573e-05,
+              "paired_drift": 3.0481645931335066e-05
             },
             "both": {
-              "bias": 2.4511919549753697e-05,
-              "paired_drift": 3.1708799000109594e-05
+              "bias": 2.4511919549663475e-05,
+              "paired_drift": 3.170879900005197e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.03189937373041024,
+          "bias_over_single_patch_signal_std": -2.1643011287722143e-05
         },
         "peaks_gt_2sigma": {
           "bias": 0.0,
-          "se": 0.015702502576404678,
-          "bootstrap_se": 0.015756963604068967,
+          "se": 0.01570250257640468,
+          "bootstrap_se": 0.01575696360406897,
           "bootstrap_95_interval": [
-            -0.029411764705882353,
-            0.033707865168539325
+            -0.02941176470588236,
+            0.03370786516853941
           ],
           "reference_mean": 3.8333333333333335,
-          "single_patch_signal_std": 2.42570772580179,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -490,6 +545,35 @@
             "both": {
               "bias": 0.0,
               "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.42570772580179,
+          "bias_over_single_patch_signal_std": 0.0,
+          "reference_total": 92,
+          "measured_total": 92,
+          "net_count_delta": 0
+        },
+        "reduced_skewness": {
+          "bias": -7.755118379404458e-05,
+          "se": 0.0002269733078154239,
+          "bootstrap_se": 0.00020118559859855166,
+          "bootstrap_95_interval": [
+            -0.00042655120746799,
+            0.0003497533223636161
+          ],
+          "reference_mean": 3.5826701922436026,
+          "controls": {
+            "sphere": {
+              "bias": 9.743735849654378e-05,
+              "paired_drift": -0.0008278332733222538
+            },
+            "plane": {
+              "bias": 3.242267542891142e-06,
+              "paired_drift": -0.0009220283642759064
+            },
+            "both": {
+              "bias": 1.2083778744287343e-05,
+              "paired_drift": -0.0009131868530745102
             }
           }
         }
@@ -500,6 +584,7 @@
       "diameter": 30.0,
       "g2": 9.931755657676841e-05,
       "mean_log_mu": 0.05171210954424971,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -510,8 +595,6 @@
             0.0
           ],
           "reference_mean": 0.6099042720327006,
-          "single_patch_signal_std": 0.10984886743134954,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -525,7 +608,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.10984886743134956,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -535,9 +620,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 1.280904531710964,
-          "single_patch_signal_std": 0.49422346324056365,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 1.2809045317109644,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -551,109 +634,138 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.4942234632405636,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.023478562678585852,
-          "se": 0.0008096161151907101,
-          "bootstrap_se": 0.0007772307558849747,
+          "bias": 0.023478562678585835,
+          "se": 0.0008096161151907086,
+          "bootstrap_se": 0.0007772307558849714,
           "bootstrap_95_interval": [
-            0.021967936762781578,
-            0.02500402938512966
+            0.02196793676278198,
+            0.025004029385129627
           ],
           "reference_mean": 0.26187781434786905,
-          "single_patch_signal_std": 0.053322481021475396,
-          "bias_over_single_patch_signal_std": 0.11530811321065922,
           "controls": {
             "sphere": {
-              "bias": 0.024817013126309937,
-              "paired_drift": 0.00031984380521759073
+              "bias": 0.024817013126309906,
+              "paired_drift": 0.0003198438052174346
             },
             "plane": {
-              "bias": 0.024664935800225253,
-              "paired_drift": 0.0001677664791329067
+              "bias": 0.02466493580022533,
+              "paired_drift": 0.00016776647913285814
             },
             "both": {
-              "bias": 0.02482107735331671,
-              "paired_drift": 0.0003239080322243633
+              "bias": 0.024821077353316845,
+              "paired_drift": 0.0003239080322243737
             }
-          }
+          },
+          "single_patch_signal_std": 0.053322481021475396,
+          "bias_over_single_patch_signal_std": 0.11530811321065929
         },
         "smooth_third": {
-          "bias": 0.047678048745121285,
-          "se": 0.003510151544319358,
-          "bootstrap_se": 0.0033760856148743502,
+          "bias": 0.047678048745121826,
+          "se": 0.003510151544319362,
+          "bootstrap_se": 0.0033760856148743234,
           "bootstrap_95_interval": [
-            0.041559141349225594,
-            0.05464899416477875
+            0.04155914134922591,
+            0.054648994164778725
           ],
-          "reference_mean": 0.21657344113452917,
-          "single_patch_signal_std": 0.08690862748376353,
-          "bias_over_single_patch_signal_std": 0.11881212927036301,
+          "reference_mean": 0.21657344113452914,
           "controls": {
             "sphere": {
-              "bias": 0.05784765171063919,
-              "paired_drift": 0.0009536900718662422
+              "bias": 0.057847651710639214,
+              "paired_drift": 0.0009536900718662977
             },
             "plane": {
-              "bias": 0.05748793251029879,
-              "paired_drift": 0.0005939708715258368
+              "bias": 0.05748793251029882,
+              "paired_drift": 0.0005939708715259062
             },
             "both": {
-              "bias": 0.05788670826403606,
-              "paired_drift": 0.0009927466252631079
+              "bias": 0.05788670826403597,
+              "paired_drift": 0.0009927466252630524
             }
-          }
+          },
+          "single_patch_signal_std": 0.08690862748376353,
+          "bias_over_single_patch_signal_std": 0.11881212927036337
         },
         "wavelet_l1": {
-          "bias": 0.0016612076691489674,
-          "se": 0.00035781253944356794,
-          "bootstrap_se": 0.0003500110781051273,
+          "bias": 0.0016612076691486788,
+          "se": 0.00035781253944356935,
+          "bootstrap_se": 0.0003500110781051168,
           "bootstrap_95_interval": [
-            0.001010590509072494,
-            0.0023674839661522464
+            0.0010105905090725064,
+            0.002367483966152295
           ],
-          "reference_mean": 0.17179352313349028,
-          "single_patch_signal_std": 0.013907155615262876,
-          "bias_over_single_patch_signal_std": 0.02052071077900858,
+          "reference_mean": 0.1717935231334903,
           "controls": {
             "sphere": {
-              "bias": 0.0012938329714317488,
-              "paired_drift": 0.00023881034286510165
+              "bias": 0.0012938329714318186,
+              "paired_drift": 0.0002388103428652144
             },
             "plane": {
-              "bias": 0.0010880117409266788,
-              "paired_drift": 3.298911236003163e-05
+              "bias": 0.0010880117409266532,
+              "paired_drift": 3.298911236004898e-05
             },
             "both": {
-              "bias": 0.0012917049113017364,
-              "paired_drift": 0.00023668228273508924
+              "bias": 0.0012917049113017054,
+              "paired_drift": 0.00023668228273510117
             }
-          }
+          },
+          "single_patch_signal_std": 0.013907155615262876,
+          "bias_over_single_patch_signal_std": 0.020520710779008498
         },
         "peaks_gt_2sigma": {
-          "bias": 0.047858942065491177,
-          "se": 0.013266108622167743,
-          "bootstrap_se": 0.013145551704909919,
+          "bias": 0.04785894206549113,
+          "se": 0.013266108622167745,
+          "bootstrap_se": 0.013145551704909915,
           "bootstrap_95_interval": [
-            0.02427151754638474,
-            0.07588075880758809
+            0.024271517546384513,
+            0.07588075880758804
           ],
           "reference_mean": 16.541666666666668,
-          "single_patch_signal_std": 4.671645894363018,
-          "bias_over_single_patch_signal_std": 0.1694620449768937,
           "controls": {
             "sphere": {
-              "bias": 0.05405405405405406,
-              "paired_drift": 0.012958163643095155
+              "bias": 0.054054054054053946,
+              "paired_drift": 0.0129581636430951
             },
             "plane": {
-              "bias": 0.0410958904109589,
+              "bias": 0.041095890410958846,
               "paired_drift": 0.0
             },
             "both": {
-              "bias": 0.05405405405405406,
-              "paired_drift": 0.012958163643095155
+              "bias": 0.054054054054053946,
+              "paired_drift": 0.0129581636430951
+            }
+          },
+          "single_patch_signal_std": 4.671645894363018,
+          "bias_over_single_patch_signal_std": 0.1694620449768937,
+          "reference_total": 397,
+          "measured_total": 416,
+          "net_count_delta": 19
+        },
+        "reduced_skewness": {
+          "bias": 0.00016198484674556646,
+          "se": 0.002014235461715848,
+          "bootstrap_se": 0.0019142547168988604,
+          "bootstrap_95_interval": [
+            -0.00321702727004243,
+            0.004256152550669358
+          ],
+          "reference_mean": 3.1579684139257473,
+          "controls": {
+            "sphere": {
+              "bias": 0.00723422229540005,
+              "paired_drift": 0.0002796202658150726
+            },
+            "plane": {
+              "bias": 0.007190615248940713,
+              "paired_drift": 0.00023601321935573516
+            },
+            "both": {
+              "bias": 0.00726342092032084,
+              "paired_drift": 0.00030881889073586244
             }
           }
         }
@@ -664,6 +776,7 @@
       "diameter": 30.0,
       "g2": 0.0,
       "mean_log_mu": 0.01712988696232228,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -674,8 +787,6 @@
             0.0
           ],
           "reference_mean": 0.6098963079905214,
-          "single_patch_signal_std": 0.10986484318588613,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -689,7 +800,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.10986484318588614,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -700,8 +813,6 @@
             0.0
           ],
           "reference_mean": 1.2816467140713,
-          "single_patch_signal_std": 0.4942175415133135,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -715,109 +826,138 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.4942175415133135,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.007724873811612931,
-          "se": 0.00029582631594659816,
-          "bootstrap_se": 0.0002837844966203969,
+          "bias": 0.007724873811612909,
+          "se": 0.00029582631594660103,
+          "bootstrap_se": 0.00028378449662037534,
           "bootstrap_95_interval": [
-            0.007162401058322127,
-            0.008275849406974886
+            0.007162401058322543,
+            0.008275849406975056
           ],
-          "reference_mean": 0.26185147914460294,
-          "single_patch_signal_std": 0.053318665166046546,
-          "bias_over_single_patch_signal_std": 0.037937364475965116,
+          "reference_mean": 0.261851479144603,
           "controls": {
             "sphere": {
-              "bias": 0.008109395116117383,
-              "paired_drift": 1.871457805572435e-05
+              "bias": 0.008109395116117302,
+              "paired_drift": 1.8714578055689657e-05
             },
             "plane": {
-              "bias": 0.008050793253385301,
-              "paired_drift": -3.988728467635774e-05
+              "bias": 0.008050793253385535,
+              "paired_drift": -3.988728467607672e-05
             },
             "both": {
-              "bias": 0.008106304560375945,
-              "paired_drift": 1.5624022314286376e-05
+              "bias": 0.008106304560375754,
+              "paired_drift": 1.5624022314142394e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.05331866516604656,
+          "bias_over_single_patch_signal_std": 0.03793736447596522
         },
         "smooth_third": {
-          "bias": 0.015568463530917417,
-          "se": 0.001241953284662997,
-          "bootstrap_se": 0.0011928452800715542,
+          "bias": 0.015568463530917676,
+          "se": 0.0012419532846630003,
+          "bootstrap_se": 0.0011928452800715646,
           "bootstrap_95_interval": [
-            0.013353825504140996,
-            0.018004231520006807
+            0.01335382550414103,
+            0.018004231520007002
           ],
-          "reference_mean": 0.21656918300910302,
-          "single_patch_signal_std": 0.0869025642576616,
-          "bias_over_single_patch_signal_std": 0.03879804303128541,
+          "reference_mean": 0.216569183009103,
           "controls": {
             "sphere": {
-              "bias": 0.01878256678983237,
-              "paired_drift": -0.0002823518698876204
+              "bias": 0.018782566789832256,
+              "paired_drift": -0.00028235186988778693
             },
             "plane": {
-              "bias": 0.01862462309346505,
-              "paired_drift": -0.00044029556625493904
+              "bias": 0.01862462309346502,
+              "paired_drift": -0.0004402955662550223
             },
             "both": {
-              "bias": 0.018766553163107654,
-              "paired_drift": -0.0002983654966123364
+              "bias": 0.018766553163107602,
+              "paired_drift": -0.0002983654966124405
             }
-          }
+          },
+          "single_patch_signal_std": 0.08690256425766159,
+          "bias_over_single_patch_signal_std": 0.03879804303128556
         },
         "wavelet_l1": {
-          "bias": 0.0006531445992297243,
-          "se": 0.00012635482813635093,
-          "bootstrap_se": 0.00012376013845281694,
+          "bias": 0.0006531445992299378,
+          "se": 0.00012635482813635795,
+          "bootstrap_se": 0.0001237601384528267,
           "bootstrap_95_interval": [
-            0.00041946469815109567,
-            0.0009037182331563784
+            0.0004194646981509231,
+            0.0009037182331565914
           ],
           "reference_mean": 0.17178712306631297,
-          "single_patch_signal_std": 0.013908247563382877,
-          "bias_over_single_patch_signal_std": 0.008067287495182008,
           "controls": {
             "sphere": {
-              "bias": 0.0005065635825821428,
-              "paired_drift": 5.456647805997765e-05
+              "bias": 0.0005065635825820536,
+              "paired_drift": 5.456647805979209e-05
             },
             "plane": {
-              "bias": 0.00043820024572224987,
-              "paired_drift": -1.3796858799915298e-05
+              "bias": 0.00043820024572216454,
+              "paired_drift": -1.3796858800096956e-05
             },
             "both": {
-              "bias": 0.000505796523642178,
-              "paired_drift": 5.379941912001283e-05
+              "bias": 0.0005057965236421325,
+              "paired_drift": 5.379941911987096e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.013908247563382877,
+          "bias_over_single_patch_signal_std": 0.008067287495182008
         },
         "peaks_gt_2sigma": {
-          "bias": 0.012626262626262626,
-          "se": 0.009260542341101881,
+          "bias": 0.012626262626262541,
+          "se": 0.00926054234110188,
           "bootstrap_se": 0.009320403138254687,
           "bootstrap_95_interval": [
-            -0.0026881720430107525,
-            0.032967730239303786
+            -0.0026881720430107503,
+            0.03296773023930388
           ],
           "reference_mean": 16.5,
-          "single_patch_signal_std": 4.773113103169898,
-          "bias_over_single_patch_signal_std": 0.04364726517688759,
           "controls": {
             "sphere": {
               "bias": 0.0,
-              "paired_drift": -0.027777777777777776
+              "paired_drift": -0.02777777777777768
             },
             "plane": {
-              "bias": 0.0136986301369863,
-              "paired_drift": -0.014079147640791476
+              "bias": 0.013698630136986356,
+              "paired_drift": -0.014079147640791323
             },
             "both": {
               "bias": 0.0,
-              "paired_drift": -0.027777777777777776
+              "paired_drift": -0.02777777777777768
+            }
+          },
+          "single_patch_signal_std": 4.773113103169898,
+          "bias_over_single_patch_signal_std": 0.04364726517688759,
+          "reference_total": 396,
+          "measured_total": 401,
+          "net_count_delta": 5
+        },
+        "reduced_skewness": {
+          "bias": 5.8140506673964865e-05,
+          "se": 0.0007125071294465709,
+          "bootstrap_se": 0.000673776686525716,
+          "bootstrap_95_interval": [
+            -0.0011267611640405685,
+            0.0014933086852313906
+          ],
+          "reference_mean": 3.1585415565312585,
+          "controls": {
+            "sphere": {
+              "bias": 0.002457987049248045,
+              "paired_drift": -0.00031505825435962365
+            },
+            "plane": {
+              "bias": 0.0024191129625839025,
+              "paired_drift": -0.00035393234102376603
+            },
+            "both": {
+              "bias": 0.0024483764108649275,
+              "paired_drift": -0.000324668892742741
             }
           }
         }
@@ -828,6 +968,7 @@
       "diameter": 30.0,
       "g2": 2.4504902923976182e-05,
       "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -838,8 +979,6 @@
             0.0
           ],
           "reference_mean": 0.6100098383812299,
-          "single_patch_signal_std": 0.10984021045110108,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -853,7 +992,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.10984021045110108,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -863,9 +1004,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 1.2820103105642733,
-          "single_patch_signal_std": 0.4941912358992508,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 1.2820103105642728,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -879,97 +1018,97 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.4941912358992508,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": -4.281457404949618e-05,
-          "se": 5.998337800102161e-05,
-          "bootstrap_se": 5.8446234117548e-05,
+          "bias": -4.2814574049643284e-05,
+          "se": 5.998337800102278e-05,
+          "bootstrap_se": 5.844623411752478e-05,
           "bootstrap_95_interval": [
-            -0.00015713107793761987,
-            7.208562253519963e-05
+            -0.00015713107793750015,
+            7.208562253537825e-05
           ],
-          "reference_mean": 0.26186969620812867,
-          "single_patch_signal_std": 0.053334096750934507,
-          "bias_over_single_patch_signal_std": -0.00021021898152658866,
+          "reference_mean": 0.2618696962081287,
           "controls": {
             "sphere": {
-              "bias": -0.00016983675170544478,
-              "paired_drift": 3.3503172489850495e-05
+              "bias": -0.00016983675170545443,
+              "paired_drift": 3.350317248984602e-05
             },
             "plane": {
-              "bias": -0.0001682006470348035,
-              "paired_drift": 3.513927716049177e-05
+              "bias": -0.00016820064703482185,
+              "paired_drift": 3.51392771604786e-05
             },
             "both": {
-              "bias": -0.00017105071361920486,
-              "paired_drift": 3.228921057609041e-05
+              "bias": -0.00017105071361911417,
+              "paired_drift": 3.228921057618628e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.053334096750934507,
+          "bias_over_single_patch_signal_std": -0.00021021898152671876
         },
         "smooth_third": {
-          "bias": -7.848516665349392e-05,
-          "se": 0.00016275835806750196,
-          "bootstrap_se": 0.00016009409508372337,
+          "bias": -7.848516665376337e-05,
+          "se": 0.00016275835806751654,
+          "bootstrap_se": 0.00016009409508372762,
           "bootstrap_95_interval": [
-            -0.0003917879179141212,
-            0.0002398867686217679
+            -0.000391787917914041,
+            0.00023988676862192143
           ],
-          "reference_mean": 0.21656852113575212,
-          "single_patch_signal_std": 0.08691833623478792,
-          "bias_over_single_patch_signal_std": -0.0001955561646661759,
+          "reference_mean": 0.21656852113575217,
           "controls": {
             "sphere": {
-              "bias": -0.0002654831694593164,
-              "paired_drift": -9.855210678091117e-05
+              "bias": -0.00026548316945940176,
+              "paired_drift": -9.855210678100246e-05
             },
             "plane": {
-              "bias": -0.00023439570213896503,
-              "paired_drift": -6.746463946055982e-05
+              "bias": -0.00023439570213901195,
+              "paired_drift": -6.746463946061265e-05
             },
             "both": {
-              "bias": -0.0002549137825923652,
-              "paired_drift": -8.798271991396e-05
+              "bias": -0.0002549137825922365,
+              "paired_drift": -8.798271991383722e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.08691833623478792,
+          "bias_over_single_patch_signal_std": -0.0001955561646661493
         },
         "wavelet_l1": {
-          "bias": 8.212833634723294e-05,
-          "se": 5.459390002466887e-05,
-          "bootstrap_se": 5.33309231457442e-05,
+          "bias": 8.212833634746453e-05,
+          "se": 5.459390002467194e-05,
+          "bootstrap_se": 5.33309231457636e-05,
           "bootstrap_95_interval": [
-            -2.2366887966049606e-05,
-            0.0001865387517900453
+            -2.2366887965918902e-05,
+            0.000186538751790366
           ],
-          "reference_mean": 0.1717883938212834,
-          "single_patch_signal_std": 0.013906095857495769,
-          "bias_over_single_patch_signal_std": 0.001014569087750125,
+          "reference_mean": 0.17178839382128339,
           "controls": {
             "sphere": {
-              "bias": 5.741573737968144e-06,
-              "paired_drift": 4.534583720750049e-05
+              "bias": 5.741573737783057e-06,
+              "paired_drift": 4.5345837207166895e-05
             },
             "plane": {
-              "bias": 6.416329125840495e-06,
-              "paired_drift": 4.602059259537284e-05
+              "bias": 6.416329125791265e-06,
+              "paired_drift": 4.60205925951751e-05
             },
             "both": {
-              "bias": 4.394098153674391e-06,
-              "paired_drift": 4.3998361623206736e-05
+              "bias": 4.394098153781556e-06,
+              "paired_drift": 4.3998361623165394e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.013906095857495773,
+          "bias_over_single_patch_signal_std": 0.0010145690877499584
         },
         "peaks_gt_2sigma": {
-          "bias": -0.004999999999999999,
-          "se": 0.005036141121067235,
+          "bias": -0.0050000000000001155,
+          "se": 0.005036141121067236,
           "bootstrap_se": 0.0049230904328147525,
           "bootstrap_95_interval": [
-            -0.01518987341772152,
-            0.004750593824228028
+            -0.015189873417721489,
+            0.004750593824228044
           ],
           "reference_mean": 16.666666666666668,
-          "single_patch_signal_std": 4.62193886162287,
-          "bias_over_single_patch_signal_std": -0.018029951461554613,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -982,6 +1121,35 @@
             "both": {
               "bias": 0.0,
               "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 4.62193886162287,
+          "bias_over_single_patch_signal_std": -0.018029951461554613,
+          "reference_total": 400,
+          "measured_total": 398,
+          "net_count_delta": -2
+        },
+        "reduced_skewness": {
+          "bias": 7.142759973044477e-06,
+          "se": 9.11900196606875e-05,
+          "bootstrap_se": 9.050804464941087e-05,
+          "bootstrap_95_interval": [
+            -0.00017232739663136377,
+            0.00018292260519999761
+          ],
+          "reference_mean": 3.158092469849916,
+          "controls": {
+            "sphere": {
+              "bias": 7.418668654102234e-05,
+              "paired_drift": -0.00016561826597283336
+            },
+            "plane": {
+              "bias": 0.00010201161442613405,
+              "paired_drift": -0.00013779333808772165
+            },
+            "both": {
+              "bias": 8.71882109598765e-05,
+              "paired_drift": -0.0001526167415539792
             }
           }
         }
@@ -992,6 +1160,7 @@
       "diameter": 60.0,
       "g2": 0.0016587035844906105,
       "mean_log_mu": 0.2105649619169997,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -1002,8 +1171,6 @@
             0.0
           ],
           "reference_mean": 0.6506812745695553,
-          "single_patch_signal_std": 0.09301669663304461,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1017,7 +1184,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.09301669663304461,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -1027,9 +1196,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 1.5044707070614605,
-          "single_patch_signal_std": 0.5471198165649099,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 1.5044707070614607,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1043,109 +1210,138 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.5471198165649099,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.09033288071093898,
-          "se": 0.001389524158306165,
-          "bootstrap_se": 0.0013505094923123506,
+          "bias": 0.0903328807109387,
+          "se": 0.0013895241583061612,
+          "bootstrap_se": 0.001350509492312293,
           "bootstrap_95_interval": [
-            0.08769062618643542,
-            0.09297993320873765
+            0.08769062618643547,
+            0.09297993320873747
           ],
-          "reference_mean": 0.2917580788711141,
-          "single_patch_signal_std": 0.04931984873157439,
-          "bias_over_single_patch_signal_std": 0.5343760861586845,
+          "reference_mean": 0.29175807887111416,
           "controls": {
             "sphere": {
-              "bias": 0.09537203063300344,
-              "paired_drift": 0.0005018670210726744
+              "bias": 0.09537203063300348,
+              "paired_drift": 0.0005018670210725773
             },
             "plane": {
-              "bias": 0.09470596858950708,
-              "paired_drift": -0.0001641950224236799
+              "bias": 0.0947059685895073,
+              "paired_drift": -0.00016419502242359663
             },
             "both": {
-              "bias": 0.09538953768750928,
-              "paired_drift": 0.0005193740755785187
+              "bias": 0.09538953768750913,
+              "paired_drift": 0.0005193740755782272
             }
-          }
+          },
+          "single_patch_signal_std": 0.049319848731574384,
+          "bias_over_single_patch_signal_std": 0.5343760861586847
         },
         "smooth_third": {
-          "bias": 0.19559757858873736,
-          "se": 0.007789206117319627,
-          "bootstrap_se": 0.007430685262938934,
+          "bias": 0.1955975785887376,
+          "se": 0.007789206117319635,
+          "bootstrap_se": 0.007430685262938924,
           "bootstrap_95_interval": [
-            0.18177879597395702,
-            0.21054393094056337
+            0.18177879597395719,
+            0.21054393094056292
           ],
           "reference_mean": 0.29804256714618915,
-          "single_patch_signal_std": 0.1540991826853111,
-          "bias_over_single_patch_signal_std": 0.3783044363655969,
           "controls": {
             "sphere": {
-              "bias": 0.23127575723962435,
-              "paired_drift": 0.0009373070589251964
+              "bias": 0.23127575723962424,
+              "paired_drift": 0.0009373070589251409
             },
             "plane": {
-              "bias": 0.22967699234901318,
-              "paired_drift": -0.0006614578316859743
+              "bias": 0.2296769923490134,
+              "paired_drift": -0.0006614578316856967
             },
             "both": {
-              "bias": 0.2313418569483565,
-              "paired_drift": 0.0010034067676573388
+              "bias": 0.23134185694835652,
+              "paired_drift": 0.001003406767657422
             }
-          }
+          },
+          "single_patch_signal_std": 0.15409918268531106,
+          "bias_over_single_patch_signal_std": 0.37830443636559696
         },
         "wavelet_l1": {
-          "bias": 0.0029662970117626457,
-          "se": 0.0006923003104895736,
-          "bootstrap_se": 0.0006722884798122545,
+          "bias": 0.002966297011762764,
+          "se": 0.0006923003104895776,
+          "bootstrap_se": 0.0006722884798122565,
           "bootstrap_95_interval": [
-            0.0016553383190024765,
-            0.0042904440141691615
+            0.0016553383190022585,
+            0.004290444014169048
           ],
           "reference_mean": 0.17302310988939273,
-          "single_patch_signal_std": 0.00877567676732095,
-          "bias_over_single_patch_signal_std": 0.0584841428688431,
           "controls": {
             "sphere": {
-              "bias": 0.0035366574098938722,
-              "paired_drift": 0.0008878455227748511
+              "bias": 0.0035366574098938397,
+              "paired_drift": 0.0008878455227747661
             },
             "plane": {
-              "bias": 0.002604752991771975,
-              "paired_drift": -4.40588953470461e-05
+              "bias": 0.002604752991771875,
+              "paired_drift": -4.4058895347198757e-05
             },
             "both": {
-              "bias": 0.0035266252484689306,
-              "paired_drift": 0.0008778133613499095
+              "bias": 0.0035266252484691396,
+              "paired_drift": 0.000877813361350066
             }
-          }
+          },
+          "single_patch_signal_std": 0.008775676767320946,
+          "bias_over_single_patch_signal_std": 0.058484142868842466
         },
         "peaks_gt_2sigma": {
           "bias": 0.22501532801961988,
           "se": 0.011330839306120485,
-          "bootstrap_se": 0.011090474959148363,
+          "bootstrap_se": 0.011090474959148364,
           "bootstrap_95_interval": [
-            0.2039320764204791,
-            0.24716981132075472
+            0.20393207642047909,
+            0.24716981132075477
           ],
           "reference_mean": 67.95833333333333,
-          "single_patch_signal_std": 11.693473343732379,
-          "bias_over_single_patch_signal_std": 1.3077095416532416,
           "controls": {
             "sphere": {
-              "bias": 0.2087227414330218,
-              "paired_drift": 0.017500170900106443
+              "bias": 0.20872274143302172,
+              "paired_drift": 0.01750017090010636
             },
             "plane": {
-              "bias": 0.19811320754716982,
-              "paired_drift": 0.006890637014254464
+              "bias": 0.19811320754716988,
+              "paired_drift": 0.006890637014254519
             },
             "both": {
-              "bias": 0.2125,
-              "paired_drift": 0.021277429467084635
+              "bias": 0.2124999999999999,
+              "paired_drift": 0.021277429467084552
+            }
+          },
+          "single_patch_signal_std": 11.693473343732379,
+          "bias_over_single_patch_signal_std": 1.3077095416532416,
+          "reference_total": 1631,
+          "measured_total": 1998,
+          "net_count_delta": 367
+        },
+        "reduced_skewness": {
+          "bias": 0.005696198620487314,
+          "se": 0.004966017821263743,
+          "bootstrap_se": 0.00440593048067913,
+          "bootstrap_95_interval": [
+            -0.002513185710977109,
+            0.014505015227320082
+          ],
+          "reference_mean": 3.5013257214783513,
+          "controls": {
+            "sphere": {
+              "bias": 0.02620005562961958,
+              "paired_drift": -0.00015908581576806746
+            },
+            "plane": {
+              "bias": 0.026115092417247077,
+              "paired_drift": -0.0002440490281405694
+            },
+            "both": {
+              "bias": 0.02622234210373353,
+              "paired_drift": -0.00013679934165411467
             }
           }
         }
@@ -1156,6 +1352,7 @@
       "diameter": 60.0,
       "g2": 0.0,
       "mean_log_mu": 0.06853573964498616,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -1165,9 +1362,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 0.6504881048047411,
-          "single_patch_signal_std": 0.09293491603798557,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 0.6504881048047412,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1181,7 +1376,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.09293491603798557,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -1192,8 +1389,6 @@
             0.0
           ],
           "reference_mean": 1.5036257073829702,
-          "single_patch_signal_std": 0.5461808221976103,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1207,109 +1402,138 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.5461808221976102,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": 0.02918608121229611,
-          "se": 0.0004442222082887467,
-          "bootstrap_se": 0.00043150899152781904,
+          "bias": 0.029186081212296155,
+          "se": 0.0004442222082887405,
+          "bootstrap_se": 0.000431508991527817,
           "bootstrap_95_interval": [
-            0.028323363747369653,
-            0.030015752047696267
+            0.02832336374736987,
+            0.030015752047696204
           ],
           "reference_mean": 0.29174721289452576,
-          "single_patch_signal_std": 0.049317272410212616,
-          "bias_over_single_patch_signal_std": 0.17265670692764012,
           "controls": {
             "sphere": {
-              "bias": 0.030807739845410523,
-              "paired_drift": 0.0003557440405219693
+              "bias": 0.030807739845410742,
+              "paired_drift": 0.0003557440405221879
             },
             "plane": {
-              "bias": 0.030610201714902488,
-              "paired_drift": 0.0001582059100139338
+              "bias": 0.030610201714902585,
+              "paired_drift": 0.00015820591001403095
             },
             "both": {
-              "bias": 0.030806746408914818,
-              "paired_drift": 0.00035475060402626393
+              "bias": 0.030806746408914787,
+              "paired_drift": 0.0003547506040262327
             }
-          }
+          },
+          "single_patch_signal_std": 0.04931727241021261,
+          "bias_over_single_patch_signal_std": 0.17265670692764046
         },
         "smooth_third": {
-          "bias": 0.06056861911663828,
-          "se": 0.002200230408641307,
-          "bootstrap_se": 0.0021024271059590445,
+          "bias": 0.060568619116638356,
+          "se": 0.002200230408641312,
+          "bootstrap_se": 0.0021024271059590176,
           "bootstrap_95_interval": [
-            0.05667246014063782,
-            0.06480449893668912
+            0.05667246014063777,
+            0.06480449893668926
           ],
-          "reference_mean": 0.2980265903729907,
-          "single_patch_signal_std": 0.1540860469938145,
-          "bias_over_single_patch_signal_std": 0.11714921234663561,
+          "reference_mean": 0.29802659037299073,
           "controls": {
             "sphere": {
-              "bias": 0.07199065780960003,
-              "paired_drift": 0.0015204207520257834
+              "bias": 0.07199065780960012,
+              "paired_drift": 0.0015204207520258528
             },
             "plane": {
-              "bias": 0.07154644316535595,
-              "paired_drift": 0.0010762061077817103
+              "bias": 0.07154644316535563,
+              "paired_drift": 0.0010762061077813634
             },
             "both": {
-              "bias": 0.07199545482788139,
-              "paired_drift": 0.0015252177703071468
+              "bias": 0.07199545482788117,
+              "paired_drift": 0.001525217770306897
             }
-          }
+          },
+          "single_patch_signal_std": 0.15408604699381448,
+          "bias_over_single_patch_signal_std": 0.11714921234663571
         },
         "wavelet_l1": {
-          "bias": 0.0020521553967383964,
-          "se": 0.00023396635127630522,
-          "bootstrap_se": 0.00022732559207569477,
+          "bias": 0.0020521553967380868,
+          "se": 0.00023396635127631202,
+          "bootstrap_se": 0.0002273255920756897,
           "bootstrap_95_interval": [
-            0.0016044793185406817,
-            0.0024953331736848232
+            0.0016044793185403805,
+            0.0024953331736844433
           ],
-          "reference_mean": 0.17301048069800773,
-          "single_patch_signal_std": 0.008775623720772912,
-          "bias_over_single_patch_signal_std": 0.040458023606491915,
+          "reference_mean": 0.1730104806980078,
           "controls": {
             "sphere": {
-              "bias": 0.0018671668956119901,
-              "paired_drift": 0.00028868448013533274
+              "bias": 0.0018671668956118381,
+              "paired_drift": 0.00028868448013508186
             },
             "plane": {
-              "bias": 0.0015842286516658888,
-              "paired_drift": 5.746236189231417e-06
+              "bias": 0.0015842286516656312,
+              "paired_drift": 5.746236188874931e-06
             },
             "both": {
-              "bias": 0.0018607481978355333,
-              "paired_drift": 0.0002822657823588759
+              "bias": 0.0018607481978354379,
+              "paired_drift": 0.0002822657823586816
             }
-          }
+          },
+          "single_patch_signal_std": 0.008775623720772912,
+          "bias_over_single_patch_signal_std": 0.04045802360649231
         },
         "peaks_gt_2sigma": {
-          "bias": 0.06396063960639606,
+          "bias": 0.06396063960639609,
           "se": 0.005108590448896912,
           "bootstrap_se": 0.004996818586557007,
           "bootstrap_95_interval": [
-            0.05461165048543689,
-            0.07421389683603134
+            0.05461165048543681,
+            0.07421389683603132
           ],
           "reference_mean": 67.75,
-          "single_patch_signal_std": 11.580530888183578,
-          "bias_over_single_patch_signal_std": 0.3741912503989722,
           "controls": {
             "sphere": {
-              "bias": 0.04672897196261682,
-              "paired_drift": -0.0035854934461882135
+              "bias": 0.04672897196261672,
+              "paired_drift": -0.0035854934461883037
             },
             "plane": {
-              "bias": 0.050314465408805034,
+              "bias": 0.05031446540880502,
               "paired_drift": 0.0
             },
             "both": {
-              "bias": 0.05,
-              "paired_drift": -0.0003144654088050314
+              "bias": 0.050000000000000044,
+              "paired_drift": -0.00031446540880497587
+            }
+          },
+          "single_patch_signal_std": 11.580530888183578,
+          "bias_over_single_patch_signal_std": 0.3741912503989722,
+          "reference_total": 1626,
+          "measured_total": 1730,
+          "net_count_delta": 104
+        },
+        "reduced_skewness": {
+          "bias": 0.001269447603635232,
+          "se": 0.0015362862452280544,
+          "bootstrap_se": 0.0013703149635097913,
+          "bootstrap_95_interval": [
+            -0.0012507855093399467,
+            0.004036532201351911
+          ],
+          "reference_mean": 3.5013988316150066,
+          "controls": {
+            "sphere": {
+              "bias": 0.008871047760504513,
+              "paired_drift": 0.0007351778987827462
+            },
+            "plane": {
+              "bias": 0.008839608323276682,
+              "paired_drift": 0.0007037384615549147
+            },
+            "both": {
+              "bias": 0.008877506928489431,
+              "paired_drift": 0.0007416370667676642
             }
           }
         }
@@ -1320,6 +1544,7 @@
       "diameter": 60.0,
       "g2": 0.0003935551459815828,
       "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
       "statistics": {
         "raw_variance": {
           "bias": 0.0,
@@ -1330,8 +1555,6 @@
             0.0
           ],
           "reference_mean": 0.6505005046543509,
-          "single_patch_signal_std": 0.0929468759479994,
-          "bias_over_single_patch_signal_std": 0.0,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1345,7 +1568,9 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.0929468759479994,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "raw_third": {
           "bias": 0.0,
@@ -1355,9 +1580,7 @@
             0.0,
             0.0
           ],
-          "reference_mean": 1.503705678115689,
-          "single_patch_signal_std": 0.5461835051980717,
-          "bias_over_single_patch_signal_std": 0.0,
+          "reference_mean": 1.5037056781156892,
           "controls": {
             "sphere": {
               "bias": 0.0,
@@ -1371,113 +1594,1385 @@
               "bias": 0.0,
               "paired_drift": 0.0
             }
-          }
+          },
+          "single_patch_signal_std": 0.5461835051980716,
+          "bias_over_single_patch_signal_std": 0.0
         },
         "smooth_variance": {
-          "bias": -0.00034855136623201363,
-          "se": 8.248315869371461e-05,
-          "bootstrap_se": 8.104518855536442e-05,
+          "bias": -0.0003485513662319084,
+          "se": 8.248315869371616e-05,
+          "bootstrap_se": 8.104518855537487e-05,
           "bootstrap_95_interval": [
-            -0.0005066993443440401,
-            -0.0001887083852803022
+            -0.0005066993443440471,
+            -0.00018870838528021195
           ],
           "reference_mean": 0.2917428356187471,
-          "single_patch_signal_std": 0.049315357227830474,
-          "bias_over_single_patch_signal_std": -0.00206198169615874,
           "controls": {
             "sphere": {
-              "bias": -0.0005091729052938169,
-              "paired_drift": 3.238265918509178e-05
+              "bias": -0.0005091729052938421,
+              "paired_drift": 3.238265918514838e-05
             },
             "plane": {
-              "bias": -0.0005064571834255957,
-              "paired_drift": 3.5098381053313044e-05
+              "bias": -0.0005064571834255682,
+              "paired_drift": 3.509838105342222e-05
             },
             "both": {
-              "bias": -0.0005070402311148306,
-              "paired_drift": 3.451533336407814e-05
+              "bias": -0.0005070402311149191,
+              "paired_drift": 3.451533336407131e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.049315357227830474,
+          "bias_over_single_patch_signal_std": -0.0020619816961587874
         },
         "smooth_third": {
-          "bias": -0.000937753035346212,
-          "se": 0.0004042263605248908,
-          "bootstrap_se": 0.00039800062095231336,
+          "bias": -0.0009377530353462671,
+          "se": 0.0004042263605248835,
+          "bootstrap_se": 0.0003980006209522926,
           "bootstrap_95_interval": [
-            -0.0017200172439532082,
-            -0.00016554887448246117
+            -0.0017200172439535838,
+            -0.0001655488744825049
           ],
           "reference_mean": 0.29801929873031235,
-          "single_patch_signal_std": 0.15407554792639563,
-          "bias_over_single_patch_signal_std": -0.0018138407147486276,
           "controls": {
             "sphere": {
-              "bias": -0.0015169593448641642,
-              "paired_drift": -5.938512954094862e-05
+              "bias": -0.0015169593448640661,
+              "paired_drift": -5.938512954073438e-05
             },
             "plane": {
-              "bias": -0.0015391681543107515,
-              "paired_drift": -8.159393898753598e-05
+              "bias": -0.001539168154310766,
+              "paired_drift": -8.159393898743428e-05
             },
             "both": {
-              "bias": -0.0015075185523439661,
-              "paired_drift": -4.9944337020750617e-05
+              "bias": -0.0015075185523439893,
+              "paired_drift": -4.994433702065759e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.15407554792639563,
+          "bias_over_single_patch_signal_std": -0.0018138407147486502
         },
         "wavelet_l1": {
-          "bias": 0.00010864083183866206,
-          "se": 7.00978580680587e-05,
-          "bootstrap_se": 6.835309876887973e-05,
+          "bias": 0.00010864083183870221,
+          "se": 7.009785806806295e-05,
+          "bootstrap_se": 6.835309876888591e-05,
           "bootstrap_95_interval": [
-            -2.8402034772671125e-05,
-            0.00024036760082079916
+            -2.8402034772517792e-05,
+            0.0002403676008207899
           ],
           "reference_mean": 0.17301115618158103,
-          "single_patch_signal_std": 0.008776639215376783,
-          "bias_over_single_patch_signal_std": 0.002141602891913875,
           "controls": {
             "sphere": {
-              "bias": -0.00012214448980138695,
-              "paired_drift": 2.019568904507285e-05
+              "bias": -0.00012214448980130133,
+              "paired_drift": 2.0195689045210408e-05
             },
             "plane": {
-              "bias": -0.00011372753701158592,
-              "paired_drift": 2.861264183487388e-05
+              "bias": -0.00011372753701177629,
+              "paired_drift": 2.861264183473544e-05
             },
             "both": {
-              "bias": -0.00011877655174191037,
-              "paired_drift": 2.3563627104549432e-05
+              "bias": -0.00011877655174186152,
+              "paired_drift": 2.356362710465021e-05
             }
-          }
+          },
+          "single_patch_signal_std": 0.00877663921537678,
+          "bias_over_single_patch_signal_std": 0.002141602891914271
         },
         "peaks_gt_2sigma": {
-          "bias": -0.0018472906403940886,
-          "se": 0.002585361625804582,
+          "bias": -0.001847290640394128,
+          "se": 0.002585361625804583,
           "bootstrap_se": 0.002532195974315466,
           "bootstrap_95_interval": [
-            -0.006909547738693468,
-            0.0030600223661162293
+            -0.006909547738693345,
+            0.003060022366116268
           ],
           "reference_mean": 67.66666666666667,
-          "single_patch_signal_std": 11.47271495356688,
-          "bias_over_single_patch_signal_std": -0.010895415819699883,
           "controls": {
             "sphere": {
-              "bias": 0.0031446540880503146,
-              "paired_drift": 0.0031446540880503146
+              "bias": 0.003144654088050425,
+              "paired_drift": 0.003144654088050425
             },
             "plane": {
-              "bias": 0.0031446540880503146,
-              "paired_drift": 0.0031446540880503146
+              "bias": 0.003144654088050425,
+              "paired_drift": 0.003144654088050425
             },
             "both": {
-              "bias": 0.003105590062111801,
-              "paired_drift": 0.003105590062111801
+              "bias": 0.0031055900621117516,
+              "paired_drift": 0.0031055900621117516
+            }
+          },
+          "single_patch_signal_std": 11.47271495356688,
+          "bias_over_single_patch_signal_std": -0.010895415819699883,
+          "reference_total": 1624,
+          "measured_total": 1621,
+          "net_count_delta": -3
+        },
+        "reduced_skewness": {
+          "bias": -0.0002409397214041542,
+          "se": 0.00028883502763401355,
+          "bootstrap_se": 0.00028065249874472124,
+          "bootstrap_95_interval": [
+            -0.0008168169402336889,
+            0.00027880302852317747
+          ],
+          "reference_mean": 3.5014182323170924,
+          "controls": {
+            "sphere": {
+              "bias": -0.0004993812046133472,
+              "paired_drift": -0.00012421860305822374
+            },
+            "plane": {
+              "bias": -0.0005270440015932021,
+              "paired_drift": -0.0001518814000380786
+            },
+            "both": {
+              "bias": -0.0004941962075758477,
+              "paired_drift": -0.00011903360602072421
             }
           }
         }
       }
+    }
+  ],
+  "calibrated_records": [
+    {
+      "chart": "TAN",
+      "diameter": 14.6,
+      "g2": 5.511405884490835e-06,
+      "mean_log_mu": 0.012194591649902988,
+      "plane_sigma_deg": 0.5030579610853384,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.5868648757001761,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.23555338563545916,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.2965934980283393,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 1.086821076517139,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": -7.425738499600154e-05,
+          "se": 0.00031200676417507384,
+          "bootstrap_se": 0.00030450834648687033,
+          "bootstrap_95_interval": [
+            -0.0006720441641599767,
+            0.0005142834788832982
+          ],
+          "reference_mean": 0.23985176932941646,
+          "controls": {
+            "both": {
+              "bias": 0.0007447066170660488,
+              "paired_drift": -8.905094390776469e-06
+            }
+          },
+          "single_patch_signal_std": 0.11166430663527353,
+          "bias_over_single_patch_signal_std": -0.00015950276067373378
+        },
+        "smooth_third": {
+          "bias": -0.0010278829292204028,
+          "se": 0.0014715130038713028,
+          "bootstrap_se": 0.0014344570640217802,
+          "bootstrap_95_interval": [
+            -0.0036488710094335465,
+            0.0019332767685567452
+          ],
+          "reference_mean": 0.2061073726993182,
+          "controls": {
+            "both": {
+              "bias": 0.00334359348698543,
+              "paired_drift": -0.0011410690199971096
+            }
+          },
+          "single_patch_signal_std": 0.19429754635481572,
+          "bias_over_single_patch_signal_std": -0.0010903598833778472
+        },
+        "wavelet_l1": {
+          "bias": 6.986166013756012e-05,
+          "se": 9.478935859144907e-05,
+          "bootstrap_se": 9.254700282740394e-05,
+          "bootstrap_95_interval": [
+            -0.00011331219092808876,
+            0.00025111433870197416
+          ],
+          "reference_mean": 0.16932586394223614,
+          "controls": {
+            "both": {
+              "bias": 6.800642073012675e-05,
+              "paired_drift": -5.0857741757948105e-05
+            }
+          },
+          "single_patch_signal_std": 0.03191548539739242,
+          "bias_over_single_patch_signal_std": 0.0003706472206802514
+        },
+        "peaks_gt_2sigma": {
+          "bias": 0.010869565217391353,
+          "se": 0.011179173388151874,
+          "bootstrap_se": 0.011504059702419233,
+          "bootstrap_95_interval": [
+            0.0,
+            0.03896103896103886
+          ],
+          "reference_mean": 3.8333333333333335,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.3895909540204223,
+          "bias_over_single_patch_signal_std": 0.01743673602235714,
+          "reference_total": 92,
+          "measured_total": 93,
+          "net_count_delta": 1
+        },
+        "reduced_skewness": {
+          "bias": -0.0008795042879150561,
+          "se": 0.001032613049306435,
+          "bootstrap_se": 0.0009156386716779461,
+          "bootstrap_95_interval": [
+            -0.002550894357407585,
+            0.0010310063578902512
+          ],
+          "reference_mean": 3.5826771535640076,
+          "controls": {
+            "both": {
+              "bias": 0.0018508679312470022,
+              "paired_drift": -0.0011215214791577832
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "STG",
+      "diameter": 14.6,
+      "g2": 0.0,
+      "mean_log_mu": 0.004061672279031765,
+      "plane_sigma_deg": 0.5010164498419495,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.5867968280373053,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.2354760444335643,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.295382105159149,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 1.0851635145462588,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": -5.0740495762924276e-05,
+          "se": 0.0001623226267168117,
+          "bootstrap_se": 0.00015788168235109464,
+          "bootstrap_95_interval": [
+            -0.0003600071971708918,
+            0.00025965304126164806
+          ],
+          "reference_mean": 0.2398931283613711,
+          "controls": {
+            "both": {
+              "bias": 0.00015085737800224486,
+              "paired_drift": -7.11874166023918e-05
+            }
+          },
+          "single_patch_signal_std": 0.1116283030967455,
+          "bias_over_single_patch_signal_std": -0.00010904310040994126
+        },
+        "smooth_third": {
+          "bias": -0.0005031788048152075,
+          "se": 0.0005285582098141575,
+          "bootstrap_se": 0.0005293743202343661,
+          "bootstrap_95_interval": [
+            -0.0014191613602993897,
+            0.0006542371606674251
+          ],
+          "reference_mean": 0.20613817543079238,
+          "controls": {
+            "both": {
+              "bias": 0.0008954926717426037,
+              "paired_drift": -0.0012233814218496342
+            }
+          },
+          "single_patch_signal_std": 0.19421885026351654,
+          "bias_over_single_patch_signal_std": -0.0005340591842624867
+        },
+        "wavelet_l1": {
+          "bias": 2.840580010232685e-05,
+          "se": 4.781788891021829e-05,
+          "bootstrap_se": 4.632276998355336e-05,
+          "bootstrap_95_interval": [
+            -6.169611527789831e-05,
+            0.0001205237571133721
+          ],
+          "reference_mean": 0.16933649716659463,
+          "controls": {
+            "both": {
+              "bias": 3.8729778925050695e-05,
+              "paired_drift": -7.779947365671447e-06
+            }
+          },
+          "single_patch_signal_std": 0.031889943360519105,
+          "bias_over_single_patch_signal_std": 0.00015083559836344924
+        },
+        "peaks_gt_2sigma": {
+          "bias": -0.010752688172043001,
+          "se": 0.010580967573267689,
+          "bootstrap_se": 0.010281222984884058,
+          "bootstrap_95_interval": [
+            -0.03448275862068961,
+            0.0
+          ],
+          "reference_mean": 3.875,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.4013130466113926,
+          "bias_over_single_patch_signal_std": -0.017351617993107766,
+          "reference_total": 93,
+          "measured_total": 92,
+          "net_count_delta": -1
+        },
+        "reduced_skewness": {
+          "bias": -0.0004017411559436024,
+          "se": 0.00027806540149320877,
+          "bootstrap_se": 0.0002662475405245118,
+          "bootstrap_95_interval": [
+            -0.0008295345596059988,
+            0.00021478495754680406
+          ],
+          "reference_mean": 3.581977155690767,
+          "controls": {
+            "both": {
+              "bias": 0.0005935760536270873,
+              "paired_drift": -0.001080415662037204
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 14.6,
+      "g2": 1.3713149507517758e-06,
+      "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.5869898596714132,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.2352645867697157,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.2979969291967,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 1.0856824004884513,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": -6.389665205175366e-05,
+          "se": 0.00011422111398786487,
+          "bootstrap_se": 0.00011100436122420418,
+          "bootstrap_95_interval": [
+            -0.0002790638709789017,
+            0.00015187709742740528
+          ],
+          "reference_mean": 0.23992671890348402,
+          "controls": {
+            "both": {
+              "bias": -0.0001350939362564363,
+              "paired_drift": -3.1027133242211846e-05
+            }
+          },
+          "single_patch_signal_std": 0.11156263814713704,
+          "bias_over_single_patch_signal_std": -0.00013741620250603303
+        },
+        "smooth_third": {
+          "bias": -0.0002053304949098944,
+          "se": 0.00037338607734440905,
+          "bootstrap_se": 0.0003663352257898034,
+          "bootstrap_95_interval": [
+            -0.0008518893083148099,
+            0.0005737633087839693
+          ],
+          "reference_mean": 0.2062358021525286,
+          "controls": {
+            "both": {
+              "bias": -0.0002580891080671277,
+              "paired_drift": -0.0009750443938641995
+            }
+          },
+          "single_patch_signal_std": 0.1941525962745682,
+          "bias_over_single_patch_signal_std": -0.00021810936416295307
+        },
+        "wavelet_l1": {
+          "bias": -4.0768167864913e-06,
+          "se": 4.864984145879514e-05,
+          "bootstrap_se": 4.777136861756897e-05,
+          "bootstrap_95_interval": [
+            -9.687216643312901e-05,
+            9.239914095162654e-05
+          ],
+          "reference_mean": 0.1693474448055169,
+          "controls": {
+            "both": {
+              "bias": 2.4511919549663475e-05,
+              "paired_drift": 3.170879900005197e-05
+            }
+          },
+          "single_patch_signal_std": 0.03189937373041025,
+          "bias_over_single_patch_signal_std": -2.16430112878309e-05
+        },
+        "peaks_gt_2sigma": {
+          "bias": 0.0,
+          "se": 0.01570250257640468,
+          "bootstrap_se": 0.01575696360406897,
+          "bootstrap_95_interval": [
+            -0.02941176470588236,
+            0.03370786516853941
+          ],
+          "reference_mean": 3.8333333333333335,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 2.42570772580179,
+          "bias_over_single_patch_signal_std": 0.0,
+          "reference_total": 92,
+          "measured_total": 92,
+          "net_count_delta": 0
+        },
+        "reduced_skewness": {
+          "bias": -7.755118379360049e-05,
+          "se": 0.0002269733078150888,
+          "bootstrap_se": 0.0002011855985985342,
+          "bootstrap_95_interval": [
+            -0.00042655120746788733,
+            0.00034975332236360506
+          ],
+          "reference_mean": 3.5826701922436013,
+          "controls": {
+            "both": {
+              "bias": 1.2083778744287343e-05,
+              "paired_drift": -0.0009131868530745102
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "TAN",
+      "diameter": 30.0,
+      "g2": 9.931755657676841e-05,
+      "mean_log_mu": 0.05171210954424971,
+      "plane_sigma_deg": 0.5130966111121179,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6099042720327006,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.10984886743134953,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.2809045317109644,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.4942234632405637,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": 0.0002862782514487794,
+          "se": 0.0005699131491269866,
+          "bootstrap_se": 0.0005504931416221002,
+          "bootstrap_95_interval": [
+            -0.0007866932606171523,
+            0.0013606577290082012
+          ],
+          "reference_mean": 0.26187781434786905,
+          "controls": {
+            "both": {
+              "bias": 0.0023983769881348316,
+              "paired_drift": 0.00017579535790912537
+            }
+          },
+          "single_patch_signal_std": 0.053322481021475396,
+          "bias_over_single_patch_signal_std": 0.0014059721406168087
+        },
+        "smooth_third": {
+          "bias": -0.0003258474538058165,
+          "se": 0.0028867999717472072,
+          "bootstrap_se": 0.002790130723848999,
+          "bootstrap_95_interval": [
+            -0.005621634448337731,
+            0.005285638678487237
+          ],
+          "reference_mean": 0.21657344113452914,
+          "controls": {
+            "both": {
+              "bias": 0.012309523155024538,
+              "paired_drift": 0.0006308842800137882
+            }
+          },
+          "single_patch_signal_std": 0.08690862748376356,
+          "bias_over_single_patch_signal_std": -0.0008120011372736152
+        },
+        "wavelet_l1": {
+          "bias": -0.00053126177753271,
+          "se": 0.0001879356433831011,
+          "bootstrap_se": 0.00018275417085445532,
+          "bootstrap_95_interval": [
+            -0.0008851894070487643,
+            -0.00016146671556469013
+          ],
+          "reference_mean": 0.1717935231334903,
+          "controls": {
+            "both": {
+              "bias": -0.00037928239643791883,
+              "paired_drift": 4.2771257750873204e-05
+            }
+          },
+          "single_patch_signal_std": 0.013907155615262876,
+          "bias_over_single_patch_signal_std": -0.0065626167559585
+        },
+        "peaks_gt_2sigma": {
+          "bias": 0.0025188916876572875,
+          "se": 0.011252709202580879,
+          "bootstrap_se": 0.011106680384810148,
+          "bootstrap_95_interval": [
+            -0.019444444444444375,
+            0.024753498077080365
+          ],
+          "reference_mean": 16.541666666666668,
+          "controls": {
+            "both": {
+              "bias": -0.013513513513513487,
+              "paired_drift": -0.013513513513513487
+            }
+          },
+          "single_patch_signal_std": 4.671645894363018,
+          "bias_over_single_patch_signal_std": 0.00891905499878388,
+          "reference_total": 397,
+          "measured_total": 398,
+          "net_count_delta": 1
+        },
+        "reduced_skewness": {
+          "bias": -0.0008979716988113395,
+          "se": 0.0018528475056344479,
+          "bootstrap_se": 0.0017658942557320298,
+          "bootstrap_95_interval": [
+            -0.004189043465182246,
+            0.002746259146933842
+          ],
+          "reference_mean": 3.1579684139257473,
+          "controls": {
+            "both": {
+              "bias": 0.007471136785928589,
+              "paired_drift": 0.0002746262545101352
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "STG",
+      "diameter": 30.0,
+      "g2": 0.0,
+      "mean_log_mu": 0.01712988696232228,
+      "plane_sigma_deg": 0.5043008637762053,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6098963079905214,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.10986484318588612,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.2816467140713,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.4942175415133135,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": 6.058557545784993e-05,
+          "se": 0.00021892570678687872,
+          "bootstrap_se": 0.0002115507224686114,
+          "bootstrap_95_interval": [
+            -0.0003602636115166896,
+            0.00046580270817278
+          ],
+          "reference_mean": 0.261851479144603,
+          "controls": {
+            "both": {
+              "bias": 0.0006952930898702636,
+              "paired_drift": -3.252644371243285e-05
+            }
+          },
+          "single_patch_signal_std": 0.05331866516604656,
+          "bias_over_single_patch_signal_std": 0.0002975397545905486
+        },
+        "smooth_third": {
+          "bias": -0.00016806513287837,
+          "se": 0.0010482039636149872,
+          "bootstrap_se": 0.0010113916178353668,
+          "bootstrap_95_interval": [
+            -0.002103209744800649,
+            0.0018452292017129555
+          ],
+          "reference_mean": 0.216569183009103,
+          "controls": {
+            "both": {
+              "bias": 0.003899325841575374,
+              "paired_drift": -0.0003971880294655339
+            }
+          },
+          "single_patch_signal_std": 0.0869025642576616,
+          "bias_over_single_patch_signal_std": -0.00041883376895426465
+        },
+        "wavelet_l1": {
+          "bias": -0.00011713357785514411,
+          "se": 4.9864993711468386e-05,
+          "bootstrap_se": 4.860591371753288e-05,
+          "bootstrap_95_interval": [
+            -0.00020963585454664146,
+            -1.9651029537873275e-05
+          ],
+          "reference_mean": 0.17178712306631297,
+          "controls": {
+            "both": {
+              "bias": -9.984130714502104e-05,
+              "paired_drift": -8.058174308822608e-06
+            }
+          },
+          "single_patch_signal_std": 0.013908247563382879,
+          "bias_over_single_patch_signal_std": -0.0014467703614372053
+        },
+        "peaks_gt_2sigma": {
+          "bias": -0.002525252525252597,
+          "se": 0.005732759520757845,
+          "bootstrap_se": 0.005719957232883837,
+          "bootstrap_95_interval": [
+            -0.013661357780350289,
+            0.008287292817679592
+          ],
+          "reference_mean": 16.5,
+          "controls": {
+            "both": {
+              "bias": -0.013513513513513487,
+              "paired_drift": -0.027402402402402326
+            }
+          },
+          "single_patch_signal_std": 4.773113103169898,
+          "bias_over_single_patch_signal_std": -0.008729453035377517,
+          "reference_total": 396,
+          "measured_total": 395,
+          "net_count_delta": -1
+        },
+        "reduced_skewness": {
+          "bias": -0.0002892049100526872,
+          "se": 0.0006439099803793104,
+          "bootstrap_se": 0.0006096712148294722,
+          "bootstrap_95_interval": [
+            -0.0014256698917868905,
+            0.000969794366891856
+          ],
+          "reference_mean": 3.1585415565312585,
+          "controls": {
+            "both": {
+              "bias": 0.0025047719172541782,
+              "paired_drift": -0.0003314431574787946
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 30.0,
+      "g2": 2.4504902923976182e-05,
+      "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6100098383812299,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.10984021045110108,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.282010310564273,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.49419123589925085,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": -4.2814574049643284e-05,
+          "se": 5.998337800102597e-05,
+          "bootstrap_se": 5.84462341175247e-05,
+          "bootstrap_95_interval": [
+            -0.00015713107793750015,
+            7.208562253537825e-05
+          ],
+          "reference_mean": 0.2618696962081287,
+          "controls": {
+            "both": {
+              "bias": -0.00017105071361911417,
+              "paired_drift": 3.228921057618628e-05
+            }
+          },
+          "single_patch_signal_std": 0.05333409675093451,
+          "bias_over_single_patch_signal_std": -0.0002102189815268922
+        },
+        "smooth_third": {
+          "bias": -7.848516665376337e-05,
+          "se": 0.00016275835806751443,
+          "bootstrap_se": 0.0001600940950837288,
+          "bootstrap_95_interval": [
+            -0.0003917879179140465,
+            0.00023988676862192698
+          ],
+          "reference_mean": 0.21656852113575217,
+          "controls": {
+            "both": {
+              "bias": -0.0002549137825922365,
+              "paired_drift": -8.798271991383722e-05
+            }
+          },
+          "single_patch_signal_std": 0.08691833623478797,
+          "bias_over_single_patch_signal_std": -0.0001955561646661758
+        },
+        "wavelet_l1": {
+          "bias": 8.212833634746453e-05,
+          "se": 5.459390002467194e-05,
+          "bootstrap_se": 5.3330923145763756e-05,
+          "bootstrap_95_interval": [
+            -2.2366887965918902e-05,
+            0.000186538751790366
+          ],
+          "reference_mean": 0.17178839382128339,
+          "controls": {
+            "both": {
+              "bias": 4.394098153781556e-06,
+              "paired_drift": 4.3998361623165394e-05
+            }
+          },
+          "single_patch_signal_std": 0.013906095857495773,
+          "bias_over_single_patch_signal_std": 0.0010145690877499584
+        },
+        "peaks_gt_2sigma": {
+          "bias": -0.0050000000000001155,
+          "se": 0.005036141121067236,
+          "bootstrap_se": 0.0049230904328147525,
+          "bootstrap_95_interval": [
+            -0.015189873417721489,
+            0.004750593824228044
+          ],
+          "reference_mean": 16.666666666666668,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 4.62193886162287,
+          "bias_over_single_patch_signal_std": -0.018029951461554613,
+          "reference_total": 400,
+          "measured_total": 398,
+          "net_count_delta": -2
+        },
+        "reduced_skewness": {
+          "bias": 7.142759973044477e-06,
+          "se": 9.1190019660921e-05,
+          "bootstrap_se": 9.05080446494264e-05,
+          "bootstrap_95_interval": [
+            -0.00017232739663136377,
+            0.00018292260520000873
+          ],
+          "reference_mean": 3.158092469849916,
+          "controls": {
+            "both": {
+              "bias": 8.71882109598765e-05,
+              "paired_drift": -0.0001526167415539792
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "TAN",
+      "diameter": 60.0,
+      "g2": 0.0016587035844906105,
+      "mean_log_mu": 0.2105649619169997,
+      "plane_sigma_deg": 0.5555122046362786,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6506812745695553,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.09301669663304463,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.5044707070614611,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.5471198165649099,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": 0.0007257486674066005,
+          "se": 0.0011017203826013172,
+          "bootstrap_se": 0.0010774870819555025,
+          "bootstrap_95_interval": [
+            -0.0013193681814426205,
+            0.00289839595628128
+          ],
+          "reference_mean": 0.2917580788711141,
+          "controls": {
+            "both": {
+              "bias": 0.00661834616043655,
+              "paired_drift": -0.00010738655540842856
+            }
+          },
+          "single_patch_signal_std": 0.049319848731574384,
+          "bias_over_single_patch_signal_std": 0.004293262092067484
+        },
+        "smooth_third": {
+          "bias": 0.009387631410937347,
+          "se": 0.006302787485976397,
+          "bootstrap_se": 0.00616917961512807,
+          "bootstrap_95_interval": [
+            -0.0018257233343468766,
+            0.02182750229087878
+          ],
+          "reference_mean": 0.29804256714618915,
+          "controls": {
+            "both": {
+              "bias": 0.042842497543408076,
+              "paired_drift": -0.00035037368586099404
+            }
+          },
+          "single_patch_signal_std": 0.15409918268531106,
+          "bias_over_single_patch_signal_std": 0.018156577578036893
+        },
+        "wavelet_l1": {
+          "bias": -0.0022427519481832414,
+          "se": 0.0004681468641464367,
+          "bootstrap_se": 0.0004561051543607269,
+          "bootstrap_95_interval": [
+            -0.0031665403458469715,
+            -0.0013852803509051981
+          ],
+          "reference_mean": 0.17302310988939273,
+          "controls": {
+            "both": {
+              "bias": -0.0017675797930118975,
+              "paired_drift": 2.2591796841164857e-05
+            }
+          },
+          "single_patch_signal_std": 0.008775676767320946,
+          "bias_over_single_patch_signal_std": -0.04421857448421638
+        },
+        "peaks_gt_2sigma": {
+          "bias": -0.003065603923972926,
+          "se": 0.006620741627910687,
+          "bootstrap_se": 0.00644492319031081,
+          "bootstrap_95_interval": [
+            -0.015597075643388858,
+            0.009529860228716602
+          ],
+          "reference_mean": 67.95833333333333,
+          "controls": {
+            "both": {
+              "bias": -0.015625,
+              "paired_drift": 0.009453369905956133
+            }
+          },
+          "single_patch_signal_std": 11.693473343732379,
+          "bias_over_single_patch_signal_std": -0.0178162062895537,
+          "reference_total": 1631,
+          "measured_total": 1626,
+          "net_count_delta": -5
+        },
+        "reduced_skewness": {
+          "bias": 0.007924101379250814,
+          "se": 0.004548257284395644,
+          "bootstrap_se": 0.00428962525197243,
+          "bootstrap_95_interval": [
+            0.0002940540580914697,
+            0.01669574138730829
+          ],
+          "reference_mean": 3.5013257214783526,
+          "controls": {
+            "both": {
+              "bias": 0.029174550252928366,
+              "paired_drift": -0.00012615717935449133
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "STG",
+      "diameter": 60.0,
+      "g2": 0.0,
+      "mean_log_mu": 0.06853573964498616,
+      "plane_sigma_deg": 0.5174308889221538,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6504881048047412,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.09293491603798557,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.5036257073829704,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.5461808221976102,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": 0.00016872009717805447,
+          "se": 0.00034806399581018373,
+          "bootstrap_se": 0.0003397594133449726,
+          "bootstrap_95_interval": [
+            -0.000480981314407794,
+            0.0008543089923854551
+          ],
+          "reference_mean": 0.29174721289452576,
+          "controls": {
+            "both": {
+              "bias": 0.002078293070377546,
+              "paired_drift": 0.00016819681880964055
+            }
+          },
+          "single_patch_signal_std": 0.04931727241021261,
+          "bias_over_single_patch_signal_std": 0.0009981009838001254
+        },
+        "smooth_third": {
+          "bias": 0.0020685576815986373,
+          "se": 0.0018509392863149266,
+          "bootstrap_se": 0.0018156103527887366,
+          "bootstrap_95_interval": [
+            -0.0013221027497155229,
+            0.005737479852553515
+          ],
+          "reference_mean": 0.29802659037299073,
+          "controls": {
+            "both": {
+              "bias": 0.013204240300926262,
+              "paired_drift": 0.0011132355957155227
+            }
+          },
+          "single_patch_signal_std": 0.15408604699381448,
+          "bias_over_single_patch_signal_std": 0.004000915104671612
+        },
+        "wavelet_l1": {
+          "bias": -0.0003068178498617513,
+          "se": 0.00014676900419764746,
+          "bootstrap_se": 0.00014291185519874918,
+          "bootstrap_95_interval": [
+            -0.0005988240678601569,
+            -4.083087074426563e-05
+          ],
+          "reference_mean": 0.1730104806980078,
+          "controls": {
+            "both": {
+              "bias": -0.0003670874129451107,
+              "paired_drift": 1.9778564537498156e-05
+            }
+          },
+          "single_patch_signal_std": 0.008775623720772912,
+          "bias_over_single_patch_signal_std": -0.006048881011795949
+        },
+        "peaks_gt_2sigma": {
+          "bias": 0.0006150061500616033,
+          "se": 0.004572963385852387,
+          "bootstrap_se": 0.004483412019315206,
+          "bootstrap_95_interval": [
+            -0.007706015512481906,
+            0.009823303389118805
+          ],
+          "reference_mean": 67.75,
+          "controls": {
+            "both": {
+              "bias": -0.0031250000000000444,
+              "paired_drift": 0.012598270440251524
+            }
+          },
+          "single_patch_signal_std": 11.580530888183578,
+          "bias_over_single_patch_signal_std": 0.0035979927922978098,
+          "reference_total": 1626,
+          "measured_total": 1627,
+          "net_count_delta": 1
+        },
+        "reduced_skewness": {
+          "bias": 0.0017305050295564062,
+          "se": 0.0012934685418678042,
+          "bootstrap_se": 0.0012333778382874923,
+          "bootstrap_95_interval": [
+            -0.0005083523308049065,
+            0.004215724806281278
+          ],
+          "reference_mean": 3.5013988316150066,
+          "controls": {
+            "both": {
+              "bias": 0.009005862316554758,
+              "paired_drift": 0.0007701904815553551
+            }
+          }
+        }
+      }
+    },
+    {
+      "chart": "ZEA",
+      "diameter": 60.0,
+      "g2": 0.0003935551459815828,
+      "mean_log_mu": 0.0,
+      "plane_sigma_deg": 0.5,
+      "statistics": {
+        "raw_variance": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 0.6505005046543509,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.09294687594799937,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "raw_third": {
+          "bias": 0.0,
+          "se": 0.0,
+          "bootstrap_se": 0.0,
+          "bootstrap_95_interval": [
+            0.0,
+            0.0
+          ],
+          "reference_mean": 1.5037056781156892,
+          "controls": {
+            "both": {
+              "bias": 0.0,
+              "paired_drift": 0.0
+            }
+          },
+          "single_patch_signal_std": 0.5461835051980716,
+          "bias_over_single_patch_signal_std": 0.0
+        },
+        "smooth_variance": {
+          "bias": -0.0003485513662319084,
+          "se": 8.248315869371327e-05,
+          "bootstrap_se": 8.104518855537407e-05,
+          "bootstrap_95_interval": [
+            -0.0005066993443440471,
+            -0.00018870838528021195
+          ],
+          "reference_mean": 0.2917428356187471,
+          "controls": {
+            "both": {
+              "bias": -0.0005070402311149191,
+              "paired_drift": 3.451533336407131e-05
+            }
+          },
+          "single_patch_signal_std": 0.04931535722783047,
+          "bias_over_single_patch_signal_std": -0.002061981696158834
+        },
+        "smooth_third": {
+          "bias": -0.0009377530353462671,
+          "se": 0.0004042263605248835,
+          "bootstrap_se": 0.0003980006209522926,
+          "bootstrap_95_interval": [
+            -0.0017200172439535838,
+            -0.0001655488744825049
+          ],
+          "reference_mean": 0.29801929873031235,
+          "controls": {
+            "both": {
+              "bias": -0.0015075185523439893,
+              "paired_drift": -4.994433702065759e-05
+            }
+          },
+          "single_patch_signal_std": 0.15407554792639563,
+          "bias_over_single_patch_signal_std": -0.0018138407147486502
+        },
+        "wavelet_l1": {
+          "bias": 0.00010864083183870221,
+          "se": 7.009785806806379e-05,
+          "bootstrap_se": 6.835309876888897e-05,
+          "bootstrap_95_interval": [
+            -2.8402034772517792e-05,
+            0.0002403676008203569
+          ],
+          "reference_mean": 0.17301115618158103,
+          "controls": {
+            "both": {
+              "bias": -0.00011877655174186152,
+              "paired_drift": 2.356362710465021e-05
+            }
+          },
+          "single_patch_signal_std": 0.00877663921537678,
+          "bias_over_single_patch_signal_std": 0.002141602891914271
+        },
+        "peaks_gt_2sigma": {
+          "bias": -0.001847290640394128,
+          "se": 0.002585361625804583,
+          "bootstrap_se": 0.002532195974315466,
+          "bootstrap_95_interval": [
+            -0.006909547738693345,
+            0.003060022366116268
+          ],
+          "reference_mean": 67.66666666666667,
+          "controls": {
+            "both": {
+              "bias": 0.0031055900621117516,
+              "paired_drift": 0.0031055900621117516
+            }
+          },
+          "single_patch_signal_std": 11.47271495356688,
+          "bias_over_single_patch_signal_std": -0.010895415819699883,
+          "reference_total": 1624,
+          "measured_total": 1621,
+          "net_count_delta": -3
+        },
+        "reduced_skewness": {
+          "bias": -0.0002409397214041542,
+          "se": 0.00028883502763401355,
+          "bootstrap_se": 0.0002806524987447218,
+          "bootstrap_95_interval": [
+            -0.0008168169402336889,
+            0.00027880302852317747
+          ],
+          "reference_mean": 3.5014182323170924,
+          "controls": {
+            "both": {
+              "bias": -0.0004941962075758477,
+              "paired_drift": -0.00011903360602072421
+            }
+          }
+        }
+      }
+    }
+  ],
+  "raw_cross_chart_spreads": [
+    {
+      "diameter": 14.6,
+      "raw_variance": 0.0003288500319508624,
+      "raw_third": 0.0020145071060907746
+    },
+    {
+      "diameter": 30.0,
+      "raw_variance": 0.0001861123928915099,
+      "raw_third": 0.0008625350702692247
+    },
+    {
+      "diameter": 60.0,
+      "raw_variance": 0.0002969555956251508,
+      "raw_third": 0.0005619448611442219
     }
   ]
 }

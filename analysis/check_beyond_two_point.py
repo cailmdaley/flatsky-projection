@@ -42,11 +42,42 @@ if '--results' in sys.argv:
         stat = next(r for r in summary['records']
                     if r['chart'] == chart and r['diameter'] == 60.)['statistics']['smooth_third']
         assert .8 < stat['bootstrap_se']/stat['se'] < 1.2
-    # These are sampling-control tolerances, not physical upper limits.
+    # A raw-coordinate check across independently sampled chart grids.
+    assert max(r['raw_variance'] for r in summary['raw_cross_chart_spreads']) < .001
+    assert max(r['raw_third'] for r in summary['raw_cross_chart_spreads']) < .005
+    # The required interpretation gate: raw M3 alone is not a new
+    # non-Gaussian response when S3=M3/M2^2 is consistent with zero.
+    for row in summary['records']:
+        s3 = row['statistics']['reduced_skewness']
+        assert abs(s3['bias']) < 3*s3['se']
+    # These are sampling-control regression tolerances, not physical limits.
     for key, tolerance in [('smooth_variance', .001), ('smooth_third', .003),
                            ('wavelet_l1', .001), ('peaks_gt_2sigma', .03)]:
         drift = max(abs(r['statistics'][key]['controls']['both']['paired_drift'])
                     for r in summary['records'])
         assert drift < tolerance, (key, drift)
-    print('24 paired skies and 12 resolution controls pass')
+    for key, tolerance in [('smooth_variance', .002), ('smooth_third', .005),
+                           ('reduced_skewness', .005), ('wavelet_l1', .002),
+                           ('peaks_gt_2sigma', .05)]:
+        drift = max(abs(r['statistics'][key]['controls']['both']['paired_drift'])
+                    for r in summary['calibrated_records'])
+        assert drift < tolerance, (key, drift)
+    # Exercise the real writer and quoted-macro filter without editing paper.
+    import tempfile
+    from unittest.mock import patch
+    import paper_numbers as PN
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root/'analysis').symlink_to(PN.ROOT/'analysis')
+        (root/'paper').mkdir()
+        (root/'paper/main.tex').write_text(
+            r'\ngTANThirdLarge \ngTANReducedSkewnessLarge \ngCalTANThirdLarge')
+        with patch.object(PN, 'ROOT', root):
+            PN.beyond_two_point_numbers()
+        text = (root/'paper/beyond_two_point_numbers.tex').read_text()
+        assert r'\newcommand{\ngTANThirdLarge}{19.6\%}' in text
+        assert r'\newcommand{\ngTANReducedSkewnessLarge}{0.57\%}' in text
+        assert r'\newcommand{\ngCalTANThirdLarge}{0.9\%}' in text
+        assert 'ngTANWaveletLarge' not in text
+    print('24 paired skies, 24 scale-calibrated pairs and 16 resolution controls pass')
 print('beyond-two-point geometry and estimator gates pass')
