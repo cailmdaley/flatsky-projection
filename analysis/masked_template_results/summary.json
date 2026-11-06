@@ -1,0 +1,292 @@
+{
+  "nseed": 20,
+  "delta_P_per_split_uK_arcmin": 5,
+  "source_sha256": {
+    "masked_template_seed0000.npz": "98fae5c518777b4c6e542f02b9d8799ef61d242397e292a7d49b69ca2892c9d3",
+    "masked_template_seed0001.npz": "b8fcafc0b3c68b8aea05ba48288ae95ee8dec689379f6744c2df558b6073fa41",
+    "masked_template_seed0002.npz": "0c713a00e29beabf74b5c513b75fe6af44a6742f01624fd9274ebc3876d88e90",
+    "masked_template_seed0003.npz": "04a3f07d95a08340769ba4e529381b124ec1f444ceed18da0c183fff7e5a1696",
+    "masked_template_seed0004.npz": "8f51816777095984bea9a99a9307b0e7e58a75157e13550ddcb81b29d705a12f",
+    "masked_template_seed0005.npz": "de1447f113d94e784866a57722e6ff1c4b90982f98a4eeb67cacf01d2557a79e",
+    "masked_template_seed0006.npz": "b087113a91110c77e38095b3293da7face507f9684de2adf063b5e7d7aaa295c",
+    "masked_template_seed0007.npz": "87c3cd7a27f79f0971fcc646d5a30ce817e31f3982784e5e7d71f1a4ff3d98b2",
+    "masked_template_seed0008.npz": "3f011e58150a49fb2dcfd8328e8bf34da7473bed11ae4836e2d1ba83f568d165",
+    "masked_template_seed0009.npz": "e210ed3a54b47c0b074f07f4a46e9ef381bc1124b6d1b060dd7a2df665c09eaa",
+    "masked_template_seed0010.npz": "d1f4e673f7b99b3b361d5b46a5a05e2977e2e94603bc7657114f83d4598212b4",
+    "masked_template_seed0011.npz": "1111ac29d27fef8f1475903111c08c4e5672aa5f597ce9c11be9807dc741039b",
+    "masked_template_seed0012.npz": "51c9fa87581572d8cd344911a57947d96f750a04e2411f8f0f730044e74004e4",
+    "masked_template_seed0013.npz": "766b360e3dd15ab8c6af9e4a1a47df07bca3efca9bda7d60e5261981067152e8",
+    "masked_template_seed0014.npz": "edf4587b67ab591102242bfa4d5c249c8f18f58cd1b4958e27344c4bc64cc406",
+    "masked_template_seed0015.npz": "4552f91c54b39fdaf0f0285460a2d8d6334441a3e0b196744c5ef4ac400a21d6",
+    "masked_template_seed0016.npz": "1fa2002392e73a04cf09c368dbd6eb9bdf1eab3d4f96f3c2a0899ce0a07e5b4c",
+    "masked_template_seed0017.npz": "f93ae9f9a350974d0a9c8a3e7f8d5e25191f3caa2525a3c059045b97b14e8d48",
+    "masked_template_seed0018.npz": "0697ff021418afb715f7622cc63e224820a1f6bfdb63e9fa887ab3fdb53810c0",
+    "masked_template_seed0019.npz": "0443fab58d4a78a27cab7e6724d8c9e60f3edabbf41eefb33ca90af8b3e75d20"
+  },
+  "scope": "SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.",
+  "bands": {
+    "900-1100": {
+      "oracle": {
+        "noiseless_residual_over_raw": 1.0051678138028798e-05,
+        "isolated_noisy_residual_over_raw": 0.01557757277210183,
+        "isolated_noisy_residual_SE_over_raw": 5.3745639834614735e-05,
+        "cross_mean_over_raw_signal": 0.00010252381270028341,
+        "cross_mean_SE_over_raw_signal": 0.00030046688547894786,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.982592675364447,
+        "paired_seed_bootstrap_gain_95pct": [
+          11.320158465192073,
+          36.04054141512361
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 20.439179819362455,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 17.814305471858265
+      },
+      "wide": {
+        "noiseless_residual_over_raw": 0.009183652509148462,
+        "isolated_noisy_residual_over_raw": 0.0244515800923213,
+        "isolated_noisy_residual_SE_over_raw": 0.00010751465620552296,
+        "cross_mean_over_raw_signal": 0.009552639035281972,
+        "cross_mean_SE_over_raw_signal": 0.00027918198685205183,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 21.506070118137583,
+        "paired_seed_bootstrap_gain_95pct": [
+          12.36500637715593,
+          36.62846345373094
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 2.7883312760656382,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 19.172472201569235
+      },
+      "masked": {
+        "noiseless_residual_over_raw": 1.1391997672659203e-05,
+        "isolated_noisy_residual_over_raw": 0.015579019739692442,
+        "isolated_noisy_residual_SE_over_raw": 5.372106288275829e-05,
+        "cross_mean_over_raw_signal": 0.00010300029012165565,
+        "cross_mean_SE_over_raw_signal": 0.00030065271060285585,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.970241987580998,
+        "paired_seed_bootstrap_gain_95pct": [
+          11.307799778880277,
+          36.020189291143524
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 20.426045008849837,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 17.803294942417153
+      },
+      "pseudo": {
+        "noiseless_residual_over_raw": 1.1690831282743697e-05,
+        "isolated_noisy_residual_over_raw": 0.015579224411881781,
+        "isolated_noisy_residual_SE_over_raw": 5.387714871760399e-05,
+        "cross_mean_over_raw_signal": 0.0001043675741454407,
+        "cross_mean_SE_over_raw_signal": 0.00030081086285223437,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 19.95974257056852,
+        "paired_seed_bootstrap_gain_95pct": [
+          11.307390013988885,
+          36.00838716462337
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 20.41369896207022,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 17.793934804572412
+      },
+      "local_Wiener_noise_prediction_over_raw": 0.015507382609487906,
+      "oracle_over_local_noise_prediction": 1.0045262417508793,
+      "estimator_cost_isolated_masked_over_oracle": 1.0000928878723137,
+      "estimator_extra_relative_SE": 2.0858286098765727e-05
+    },
+    "1000-2000": {
+      "oracle": {
+        "noiseless_residual_over_raw": 6.367105031740738e-06,
+        "isolated_noisy_residual_over_raw": 0.03993981075500194,
+        "isolated_noisy_residual_SE_over_raw": 4.700303479210221e-05,
+        "cross_mean_over_raw_signal": 0.0022856638683814556,
+        "cross_mean_SE_over_raw_signal": 0.0003746624829982197,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.65555220138449,
+        "paired_seed_bootstrap_gain_95pct": [
+          4.716770888713415,
+          16.17184436512667
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 5.162677165575814,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 6.482905596383048
+      },
+      "wide": {
+        "noiseless_residual_over_raw": 0.0088680354493709,
+        "isolated_noisy_residual_over_raw": 0.048232144206171175,
+        "isolated_noisy_residual_SE_over_raw": 0.00010271957407465316,
+        "cross_mean_over_raw_signal": 0.012102390898061557,
+        "cross_mean_SE_over_raw_signal": 0.0004062571494177594,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 7.982408885946012,
+        "paired_seed_bootstrap_gain_95pct": [
+          4.375612206208903,
+          14.00802569268865
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 1.1857108427722565,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 5.9787292636326175
+      },
+      "masked": {
+        "noiseless_residual_over_raw": 7.190892789717447e-06,
+        "isolated_noisy_residual_over_raw": 0.03993739723431142,
+        "isolated_noisy_residual_SE_over_raw": 4.707117196973357e-05,
+        "cross_mean_over_raw_signal": 0.002282666423317761,
+        "cross_mean_SE_over_raw_signal": 0.0003747402667645969,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.653755593146709,
+        "paired_seed_bootstrap_gain_95pct": [
+          4.717092876878392,
+          16.17384810105102
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 5.166799042793752,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 6.481559958192875
+      },
+      "pseudo": {
+        "noiseless_residual_over_raw": 7.410969139654853e-06,
+        "isolated_noisy_residual_over_raw": 0.03993763325242793,
+        "isolated_noisy_residual_SE_over_raw": 4.705872153408987e-05,
+        "cross_mean_over_raw_signal": 0.002283555646843724,
+        "cross_mean_SE_over_raw_signal": 0.0003746835646553409,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 8.655065194744976,
+        "paired_seed_bootstrap_gain_95pct": [
+          4.718814385813089,
+          16.168194169051176
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 5.1657327281187175,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 6.48254083420551
+      },
+      "local_Wiener_noise_prediction_over_raw": 0.03989524137696691,
+      "oracle_over_local_noise_prediction": 1.0011171602551265,
+      "estimator_cost_isolated_masked_over_oracle": 0.9999395710534202,
+      "estimator_extra_relative_SE": 1.569007489874454e-05
+    },
+    "2000-3000": {
+      "oracle": {
+        "noiseless_residual_over_raw": 2.525382514273969e-06,
+        "isolated_noisy_residual_over_raw": 0.33984697270808073,
+        "isolated_noisy_residual_SE_over_raw": 0.0004422437195956677,
+        "cross_mean_over_raw_signal": 0.14831789932934983,
+        "cross_mean_SE_over_raw_signal": 0.0037050936079596475,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0360393960275471,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.7393113490987321,
+          1.3634162241185885
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.11506344563745295,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.1081465016162462
+      },
+      "wide": {
+        "noiseless_residual_over_raw": 0.009362542841197084,
+        "isolated_noisy_residual_over_raw": 0.3457657759359237,
+        "isolated_noisy_residual_SE_over_raw": 0.00046718419283098,
+        "cross_mean_over_raw_signal": 0.16222774998076622,
+        "cross_mean_SE_over_raw_signal": 0.0036836224462459106,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0420782802342008,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.7426385400529307,
+          1.3689836596256395
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.10530487131841107,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.1146056849570802
+      },
+      "masked": {
+        "noiseless_residual_over_raw": 3.004789043990424e-06,
+        "isolated_noisy_residual_over_raw": 0.33978693442847213,
+        "isolated_noisy_residual_SE_over_raw": 0.0004420824177215102,
+        "cross_mean_over_raw_signal": 0.1482848184294324,
+        "cross_mean_SE_over_raw_signal": 0.0037044978602598375,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0362060091854914,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.7397461472479541,
+          1.3642144921740718
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.11508903120278659,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.1083247108511527
+      },
+      "pseudo": {
+        "noiseless_residual_over_raw": 3.194056140769099e-06,
+        "isolated_noisy_residual_over_raw": 0.339789727462174,
+        "isolated_noisy_residual_SE_over_raw": 0.00044251713002152633,
+        "cross_mean_over_raw_signal": 0.1482903237075927,
+        "cross_mean_SE_over_raw_signal": 0.003704351183358714,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 1.0362470386340588,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.7395814281616512,
+          1.3644366523879374
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.11508486198846596,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.1083685959003773
+      },
+      "local_Wiener_noise_prediction_over_raw": 0.33953594265148834,
+      "oracle_over_local_noise_prediction": 1.0009160445700196,
+      "estimator_cost_isolated_masked_over_oracle": 0.9998233373122903,
+      "estimator_extra_relative_SE": 1.4640961477977811e-05
+    },
+    "3000-4000": {
+      "oracle": {
+        "noiseless_residual_over_raw": 8.68096907575212e-06,
+        "isolated_noisy_residual_over_raw": 0.8836853374056717,
+        "isolated_noisy_residual_SE_over_raw": 0.0014364341156032157,
+        "cross_mean_over_raw_signal": 0.7949978936297886,
+        "cross_mean_SE_over_raw_signal": 0.056569365819743596,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9964945674495573,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.9761617154954786,
+          1.0143435437971233
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.30287258416696217,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.0306932156560822
+      },
+      "wide": {
+        "noiseless_residual_over_raw": 0.010468237371287612,
+        "isolated_noisy_residual_over_raw": 0.8856659074175129,
+        "isolated_noisy_residual_SE_over_raw": 0.001444910925097739,
+        "cross_mean_over_raw_signal": 0.7994614697637282,
+        "cross_mean_SE_over_raw_signal": 0.056562165436362534,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9966214215554323,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.9763956901213766,
+          1.0142905372400457
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.30133217804269335,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.0308244232617978
+      },
+      "masked": {
+        "noiseless_residual_over_raw": 9.219734205438736e-06,
+        "isolated_noisy_residual_over_raw": 0.8836686901213898,
+        "isolated_noisy_residual_SE_over_raw": 0.0014380013192846171,
+        "cross_mean_over_raw_signal": 0.7950064672783309,
+        "cross_mean_SE_over_raw_signal": 0.05657490361290259,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9963970263059372,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.9759747964160629,
+          1.0143240639134266
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.302867002491243,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.0305923270027362
+      },
+      "pseudo": {
+        "noiseless_residual_over_raw": 9.46072862267675e-06,
+        "isolated_noisy_residual_over_raw": 0.8836703301755144,
+        "isolated_noisy_residual_SE_over_raw": 0.0014375578492163434,
+        "cross_mean_over_raw_signal": 0.7950072509530365,
+        "cross_mean_SE_over_raw_signal": 0.05657360058907888,
+        "cross_standard_deviation_gain_vs_fixed_power_subtraction": 0.9964199756860304,
+        "paired_seed_bootstrap_gain_95pct": [
+          0.9760012249465904,
+          1.0143628112155172
+        ],
+        "sample_RMS_gain_without_residual_debiasing": 0.3028673424096007,
+        "cross_standard_deviation_gain_vs_EE_amplitude_conditioned": 1.0306160639814796
+      },
+      "local_Wiener_noise_prediction_over_raw": 0.8843841716933503,
+      "oracle_over_local_noise_prediction": 0.9992098068802606,
+      "estimator_cost_isolated_masked_over_oracle": 0.9999811615248356,
+      "estimator_extra_relative_SE": 6.643694463040091e-06
+    }
+  },
+  "source_manifest": {
+    "data_version": "sha256:df392e3bab69de3212c9f5e8daa3597cd2136ad25cb616c4d537103d2e4b3c5e",
+    "code_version": "sha256:38f9b62c318dbdff554dd9f8651c021e6c3d5a0d5c3afdffdc74dc56ade2ac0c",
+    "git_sha": "cfce23aee079838d7ef19b3ce638327e33af6dd0",
+    "input_versions": {
+      "flatsky_masks": "sha256:da69fc6a6fbe4d381f527d3a651723b884e538e9a34c23a7509bfbc65e5b6039",
+      "lensing_qe_theory": "mtime-size:1786817738005332822-727144",
+      "masked_template_flattening": "mtime-size:1793937352156303412-23315",
+      "masked_template_geometry": "mtime-size:1793937352167304324-24055",
+      "masked_template_operator": "mtime-size:1793938582536267404-6221",
+      "masked_template_stage": "mtime-size:1793937530668086475-598",
+      "projected_qu": "sha256:5a6aaaba6fdd5d6a00f460ae96ea1a7d7a269c5fef55ca735b98dd7634fde4db"
+    },
+    "recipe": "bash env.sh python3 src/stages/masked_template.py --maps {inputs.projected_qu} --masks {inputs.flatsky_masks} --seed {units.seed} --out {output}"
+  }
+}
