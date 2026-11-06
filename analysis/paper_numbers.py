@@ -9,11 +9,11 @@ Everything here comes from the same three sources the figures use:
 windows removed), `shear_leakage.load_moments` (the mask-weighted shear
 moments), and `shear_leakage.predicted_spectra` (the parameter-free forward
 model, band-limited at the run's own l = 6000). The separate threads' results
-enter through `lensing_numbers.numbers`, `spherical_numbers`, `beam_numbers`,
-`section5_numbers` and `window_numbers`.
+enter through `lensing_numbers.numbers`, `spherical_numbers` and the writers
+below, one per include of `paper/main.tex`.
 
 Run:  bash env.sh python3 analysis/paper_numbers.py     (everything)
-Out:  paper/{numbers,scalar_numbers,window_numbers,beam_numbers,section5_numbers}.tex
+Out:  paper/*_numbers.tex and paper/numbers.tex
       Each file holds only the macros `paper/main.tex` quotes, so a new
       citation in the prose needs one rerun of the writer that owns it.
 """
@@ -306,25 +306,39 @@ def main():
 
     # ---- 4.3 band by band --------------------------------------------------
     pred = SL.predicted_ratios(mom, band_limit=BAND_LIMIT)
-    clean = (keep[None, :, :] & np.isfinite(meas) & np.isfinite(pred)
-             & (meas > 20 * floor[:, :, None]))
+    # The narrow bands, up to the common leakage edge; BANDS[0] is their union.
+    tested = np.array([b > 0 and hi <= L_CLEAN[1] for b, (lo, hi) in enumerate(SL.BANDS)])
+    clean = (tested[:, None, None] & keep[None, :, :] & np.isfinite(meas)
+             & np.isfinite(pred) & (meas > 20 * floor[:, :, None]))
     r = meas[clean] / pred[clean]
     M.add("bandbybandratio", rf"{r.mean():.4f} \pm {r.std():.4f}")
     M.add("numbands", f"{int(clean.sum())}")
     M.add("bandbybandworst", pct(float(np.max(np.abs(r - 1))), 1))
-    M.add("numbandbands", f"{len(SL.BANDS) - 1}")
+    M.add("numbandbands", f"{int(tested.sum())}")
     M.add("bandlo", f"{SL.BANDS[1][0]}")
-    M.add("bandhi", f"{SL.BANDS[-1][1]}")
+    M.add("bandhi", f"{L_CLEAN[1]}")
+    for p in ("ProjSFL", "ProjBICEP", "ProjZEA"):
+        j = P[p]
+        ratio = (meas[..., j] / pred[..., j])[clean[..., j]]
+        M.add(f"band{short[p]}ratio", rf"{ratio.mean():.4f} \pm {ratio.std():.4f}")
+        M.add(f"band{short[p]}worst", pct(float(np.max(np.abs(ratio - 1))), 1))
+    # ZEA's excess over the model, in units of STG's floor, where the floor is
+    # at least 5% of the model on the disks.
+    jz = P["ProjZEA"]
+    measurable = keep[..., jz] & (floor > 0.05 * pred[..., jz])
+    excess = (meas[..., jz] / pred[..., jz] - 1)[measurable] / (floor / pred[..., jz])[measurable]
+    M.add("zeaFloorDisks", rng(excess.min(), excess.max(), 1))
 
-    # The tilts, floor-subtracted, on the reference disk.
-    tilt = (meas[1:, MASK, :] - floor[1:, MASK][:, None]) / (2 * g2[MASK])
+    # The tilts on the reference disk.
+    tilt = meas[1:, MASK, :] / (2 * g2[MASK])
     for p in ("ProjSFL", "ProjBICEP"):
         j = P[p]
         M.add(f"tilt{short[p]}lo", f(tilt[0, j], 2))
         M.add(f"tilt{short[p]}hi", f(tilt[-1, j], 2))
     # ZEA raw, band by band -- the cleanest single test.
     zea = meas[1:, MASK, P["ProjZEA"]] / (2 * g2[MASK, P["ProjZEA"]])
-    M.add("ZEAbands", ", ".join(f"{v:.3f}" for v in zea))
+    M.add("ZEAbands", ", ".join(f"{v:.3f}" for v in zea[:-1]))
+    M.add("ZEAlastband", f(zea[-1], 3))
     zfloor = floor[1:, MASK] / meas[1:, MASK, P["ProjZEA"]]
     ok = np.flatnonzero(zfloor < 0.005)
     M.add("ZEAfloorclean", f"{SL.BANDS[1:][ok[-1]][1]}")
@@ -402,11 +416,12 @@ def main():
     # (`...tan`) and 2<g^2> (`...gg`), `...tanexcess` the fraction by which
     # the first exceeds the second; `...gain` the raw BB/EE at L_REF over the
     # noisy residual there, and `...lensfrac` the noise residual
-    # kernel * N^EE as a fraction of the lensed BB at l = 1000.
+    # kernel * N^EE as a fraction of the lensed BB in the same band.
     # `templatecorr`: the noise-free
     # map-level correlation of S_J[E] with the grid B on SFL's 5% disk.
     import template_subtraction as TPL
     lv = TPL.NOISE_LEVELS[0]
+    cl_bb_reference = float(th["lensed_BB"][TPL.L_REF[0]:TPL.L_REF[1]].mean())
     M.add("templatenoise", f"\\SI{{{lv:g}}}{{\\micro\\kelvin}}-arcmin")
     M.add("templatelref", f"${TPL.L_REF[0]}$--${TPL.L_REF[1]}$")
     for proj in ("ProjSFL", "ProjZEA"):
@@ -428,7 +443,7 @@ def main():
                 M.add(f"{k}gain{word}", f"{float(f'{gain:.2g}'):g}")
                 n_lvl = (lvl * np.deg2rad(1.0 / 60.0)) ** 2
                 M.add(f"{k}lensfrac{word}",
-                      pct(ts[f"{m}_kernel"] * n_lvl / cl_bb_lensed, 0))
+                      pct(ts[f"{m}_kernel"] * n_lvl / cl_bb_reference, 0))
             M.add(f"{k}kernel", f"${f(ts[f'{m}_kernel'], 4)}"
                   f" \\pm {f(ts[f'{m}_kernel_err'], 4)}$")
             M.add(f"{k}tan", f(ts[f"{m}_tan2"], 4))
@@ -475,8 +490,6 @@ def main():
     M.add("DeltamaxSFL", f"\\ang{{{np.degrees(tetb['1500d', 'ProjSFL']['delta_max']):.1f}}}")
 
     prose_numbers(M, mom)
-    local_source_numbers(M)
-    masked_template_numbers(M)
 
     OUT.write_text(M.tex())
     print(M.tex())
@@ -620,8 +633,7 @@ def prose_numbers(M, mom):
 
     for l in ("SFL", "BICEP"):
         j = J[l]
-        t = [(band(bb[j], lo, hi) / band(ee[j], lo, hi)
-              - band(bb[J["STG"]], lo, hi) / band(ee[J["STG"]], lo, hi)) / (2 * g2[j])
+        t = [band(bb[j], lo, hi) / band(ee[j], lo, hi) / (2 * g2[j])
              for lo, hi in SL.BANDS[1:]]
         M.add(f"tilt{l}fieldlo", f(t[0], 2))
         M.add(f"tilt{l}fieldhi", f(t[-1], 2))
@@ -814,13 +826,9 @@ def scalar_numbers():
     diagonal_sem = diagonal_white * np.sqrt(
         (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
     predicted_diagonal = predictions[:, 1] / (predictions[:, 0] / truth[0]) / truth[1]
-    # Calibrate the common residual response on TT while keeping R's
-    # spectrum-dependent shape. This is a known-input forward closure test.
-    full_white = closure[:, 1] / closure[:, 0]
-    full_sem = full_white * np.sqrt(
-        (sem[:, 1] / mean[:, 1])**2 + (sem[:, 0] / mean[:, 0])**2)
-    np.testing.assert_allclose(full_white, diagonal_white / predicted_diagonal,
-                               rtol=2e-12)
+    # Measured white over R applied to the white input: a known-input closure.
+    full_white = closure[:, 1]
+    full_sem = sem[:, 1] / predictions[:, 1]
     clean = (S.ELL >= 1000) & (S.ELL < 4000)
     # Seed influences retain covariance between bands of the same realization.
     summary_sems = {}
@@ -829,7 +837,8 @@ def scalar_numbers():
               * curve[:, :, None, :])[..., clean].mean(-1)
         it = -((measured[:, 0] / mean[:, 0, :, None, :] - 1)
                * curve[:, :, None, :])[..., clean].mean(-1)
-        summary_sems[name] = np.sqrt((iw.var(-1, ddof=1) + it.var(-1, ddof=1)) / S.NSIMS)
+        calibration = it.var(-1, ddof=1) if name == 'diagonal' else 0.
+        summary_sems[name] = np.sqrt((iw.var(-1, ddof=1) + calibration) / S.NSIMS)
     np.savez(ROOT / 'paper' / 'scalar_summary.npz', ell=S.ELL,
              projections=S.PROJS, footprints=['disk5', 'field1500d'],
              spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
@@ -844,7 +853,7 @@ def scalar_numbers():
         writer = csv.writer(stream)
         writer.writerow(['footprint', 'projection', 'spectrum', 'ell', 'measured',
                          'sem', 'forward_model', 'measured_over_forward', 'ratio_sem',
-                         'white_after_tt_diagonal', 'diagonal_sem', 'predicted_diagonal', 'full_tt_calibrated_white', 'full_sem'])
+                         'white_after_tt_diagonal', 'diagonal_sem', 'predicted_diagonal', 'white_over_forward', 'full_sem'])
         for fi, footprint in enumerate(('disk5', 'field1500d')):
             for j, proj in enumerate(S.PROJS):
                 for k, sky in enumerate(('TT', 'white')):
@@ -889,6 +898,8 @@ def scalar_numbers():
         M.add(f'tf{label}mean', pct(abs(error[j].mean()), 0))
         M.add(f'tf{label}worst', pct(np.abs(error[j]).max(), 0))
     M.add('tfclosureworst', pct(closure_error.max(), 1))
+    per_band = closure_error / (full_sem[1][:, clean])
+    M.add('tfclosurezrms', rng(*(lambda z: (z.min(), z.max()))(np.sqrt((per_band**2).mean(1))), 1))
     (ROOT / 'paper' / 'scalar_numbers.tex').write_text(M.tex())
     print('Wrote paper/scalar_numbers.tex and paper/scalar_summary.npz')
 
@@ -944,6 +955,14 @@ def window_numbers():
                 if name == 'Clean':
                     residuals.append(abs(per_seed.mean()))
         M.add('win' + spec + 'CleanMaxResidual', pct(max(residuals), 3))
+    for name, lo, hi in band_names[1:]:
+        sel = (ell >= lo) & (ell < hi)
+        total = d['field_BB_ProjZEA_ratio_total'][:, sel].mean()
+        floor = total - d['field_BB_ProjZEA_ratio_floor_subtracted'][:, sel].mean()
+        M.add('zeaFloorField' + name, f((total - 1) / floor, 1))
+    upper = (ell >= 4000) & (ell < 4800)
+    M.add('winWhiteAliasWorst', pct(max(abs(d[f'field_white_{proj}_ratio_total'][:, upper].mean() - 1)
+                                        for proj in S.PROJS), 1))
     k = np.argmin(abs(ell - 4775))
     corrections = np.concatenate([d[f'field_{s}_correction'][:, k] for s in ('TT', 'EE')])
     M.add('winFieldWallCorrectionMin', f(corrections.min(), 4))
@@ -972,6 +991,48 @@ def window_numbers():
     path = ROOT / 'paper' / 'window_numbers.tex'
     path.write_text(M.tex())
     print(f'Wrote {path}')
+
+
+def production_upper():
+    """STG's TT over 4500-4800 on the 20 skies, against the integer-bin model."""
+    d = np.load('/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz')
+    sel = (d['ell'] >= 4500) & (d['ell'] < 4800)
+    per_seed = (d['field_TT_ProjSTG_ratio'][:, sel] - 1).mean(-1)
+    return {'mean': float(per_seed.mean()),
+            'se': float(per_seed.std(ddof=1) / np.sqrt(len(per_seed)))}
+
+
+def production_band(spec, proj, lo, hi):
+    """One band mean of the 20 skies over the estimator reference."""
+    directory = Path('/sptlocal/user/cailmdaley/pol_project')
+    d = np.load(directory / 'pipeline_windows_production.npz')
+    reference = np.load(directory / 'residual_estimator_response.npz')
+    sel = (d['ell'] >= lo) & (d['ell'] < hi)
+    per_seed = (d[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical'] - 1)[:, sel].mean(-1)
+    return {'mean': float(per_seed.mean()),
+            'se': float(per_seed.std(ddof=1) / np.sqrt(len(per_seed)))}
+
+
+def production_hann_worst():
+    """Largest TT or EE residual of the 20 skies on the estimator reference.
+
+    Residuals are smoothed with the Hann window of full width 600 that the
+    paper uses for measured power, away from the ends of 1000 < l < 4000.
+    """
+    directory = Path('/sptlocal/user/cailmdaley/pol_project')
+    d = np.load(directory / 'pipeline_windows_production.npz')
+    reference = np.load(directory / 'residual_estimator_response.npz')
+    ell = d['ell']
+    centres = np.flatnonzero((ell >= 1300) & (ell < 3700))
+    worst = 0.
+    for spec in ('TT', 'EE'):
+        for proj in S.PROJS:
+            residual = (d[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical']).mean(0) - 1
+            for i in centres:
+                near = np.abs(ell - ell[i]) < 300
+                weight = np.cos(np.pi * (ell[near] - ell[i]) / 600)**2
+                worst = max(worst, abs((residual[near] * weight).sum() / weight.sum()))
+    return worst
 
 
 def residual_numbers():
@@ -1003,12 +1064,38 @@ def residual_numbers():
     M.add('residZEABBRefineDeltaPP', rf"$({100*zea['delta']:+.2f}\pm{100*zea['delta_se']:.2f})$")
     M.add('residZEABBRefineRemaining', uncertainty(zea, 'fine', 'fine_se', nd=2))
     M.add('residMapSeeds', str(zea['nseed']))
-    row = find(d['independent_clean'], projection='ProjSTG', spectrum='EE')
-    M.add('residSTGEEClean', uncertainty(row, 'spherical_residual', 'spherical_se'))
-    tests = find(d['ensemble_tests'], projection='ProjSTG', spectrum='EE',
-                 null='new-model-spherical', lo=1000, hi=4000)
+    for proj in ('ProjSFL', 'ProjSTG', 'ProjZEA'):
+        for spec in ('TT', 'EE'):
+            row = find(d['independent_clean'], projection=proj, spectrum=spec)
+            M.add('resid'+proj[4:]+spec+'Clean', uncertainty(row, 'spherical_residual', 'spherical_se'))
+            M.add('resid'+proj[4:]+spec+'Integer', uncertainty(row, 'bin_residual', 'bin_se'))
+    for spec in ('TT', 'EE'):
+        worst = max(abs(r['spherical_residual']) for r in d['independent_clean'] if r['spectrum'] == spec)
+        M.add('resid'+spec+'CleanWorst', pct(worst, 2))
+    low = find(d['independent_low'], projection='ProjZEA', spectrum='TT')
+    M.add('residZEATTLowInteger', uncertainty(low, 'bin_residual', 'bin_se', nd=2))
+    M.add('residZEATTLow', uncertainty(low, 'spherical_residual', 'spherical_se', nd=2))
+    fits = {(r['projection'], r['spectrum']): r for r in d['ensemble_tests']
+            if r['null'] == 'new-model-spherical' and r['lo'] == 1000 and r['hi'] == 4000}
+    tests = fits['ProjSTG', 'EE']
     M.add('residSTGEEMaxBin', pct(tests['max_bin_residual'], 2))
-    M.add('residSTGEEFitP', '$'+sci(tests['p'], 1)+'$')
+    M.add('residSTGEEFitP', sci(tests['p'], 0))
+    M.add('residEEFitPRange', rng(*sorted(fits[p, 'EE']['p'] for p in ('ProjZEA', 'ProjSFL')), 3))
+    for proj in ('ProjZEA', 'ProjSFL'):
+        M.add('resid'+proj[4:]+'BBClean', uncertainty(fits[proj, 'BB']))
+    M.add('residSFLBBFitP', sci(fits['ProjSFL', 'BB']['p'], 0))
+    M.add('residSTGTTUpperInteger', uncertainty(production_upper()))
+    for name, lo in (('Upper', 4000), ('Wall', 4500)):
+        removed = np.mean([find(d['map_interventions'], projection=proj, spectrum='BB',
+                                lo=lo, hi=4800 if lo == 4500 else 4500)['removed_fraction']
+                           for proj in ('ProjSTG', 'ProjZEA')])
+        M.add('residRefine'+name+'Removed', pct(removed, 0))
+    ring = find(d['ring_controls'], projection='ProjSTG', intervention='n4096_r16', lo=4500, hi=4800)
+    coarse = find(d['ring_controls'], projection='ProjSTG', intervention='n4096_r8', lo=4500, hi=4800)
+    M.add('residRingBDrop', pct(1-ring['bb_ee_vs_4096_r8'], 0))
+    M.add('residRingEEChange', pct(abs(1-ring['ee_native_ratio']/coarse['ee_native_ratio']), 1))
+    M.add('residHannWorst', pct(production_hann_worst(), 2))
+    M.add('residBICEPBBClean', uncertainty(production_band('BB', 'ProjBICEP', 1000, 4000)))
     assert all(name.isalpha() for name in M)
     path = ROOT/'paper/residual_numbers.tex'
     path.write_text(M.tex())
@@ -1163,12 +1250,15 @@ def local_source_numbers(M=None):
     M.add('sourceBICEPPointHigh',pct(max(r['amplitude']-1 for r in rs),1))
     M.add('sourceMetricError',sci(max(abs(r['metric_template_amplitude']-1) for r in rows),1))
     M.add('sourcePositionArcsec',f(60*max(np.linalg.norm(r['position_arcmin']) for r in rows),3))
+    transferred=json.loads((ROOT/'analysis/results_disk_trend/local_sources/local_source_summary.json').read_text())
+    transferred=transferred['sampling_resolution']['8192']['transferred_noise_validation']['ProjSFL']
+    for kind in ('point','cluster'):
+        row=transferred[kind]
+        M.add('sourceSFL'+kind.title()+'Transfer',rf"${row['corner_snr']:.2f} \pm {row['corner_snr_jackknife_error']:.2f}$")
     if own:
         output=ROOT/'paper/local_source_numbers.tex'
         output.write_text(M.tex())
-        print(M.tex())
-        print(f'Wrote {output} (only macros quoted in main.tex)')
-        print(json.dumps(M,indent=2))
+        print(f'Wrote {output}')
 
 
 def choosing_numbers():
@@ -1186,10 +1276,16 @@ def choosing_numbers():
         if row['width'] != 500:
             continue
         prefix = 'choice'+row['projection'][4:]+row['spectrum']
-        M.add(prefix+'VarianceRatio', f(row['variance_over_zea'], 2)
+        M.add(prefix+'VarianceRatio', f"{float(f'{row['variance_over_zea']:.2g}'):g}"
               if row['spectrum'] != 'BB' else sci(row['variance_over_zea'], 1))
         M.add(prefix+'MeanBias', sci(row['mean_bias'], 1))
         M.add(prefix+'MeanBiasError', sci(row['mean_bias_se'], 1))
+    cost = json.loads((ROOT/'analysis/figures/stg_correction_variance.json').read_text())
+    M.add('choiceSkies', str(cost['nsky']))
+    for spec in ('TT', 'EE'):
+        for name, label in (('equal', 'Equal'), ('weighted', 'Weighted'), ('direct', 'Direct')):
+            row = cost[f'{spec}_{name}']
+            M.add('choiceCost'+spec+label, rf"${row['ratio']:.2f} \pm {row['error']:.2f}$")
     path = ROOT/'paper/choosing_numbers.tex'
     path.write_text(M.tex())
     print(f'Wrote {path}')
@@ -1252,3 +1348,8 @@ if __name__ == "__main__":
         beam_numbers()
         section5_numbers()
         covariance_numbers()
+        residual_numbers()
+        choosing_numbers()
+        masked_template_numbers()
+        local_source_numbers()
+        beyond_two_point_numbers()

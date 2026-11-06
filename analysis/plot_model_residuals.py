@@ -10,10 +10,13 @@ read at the sheared wavenumber |J^T l|, with the exact
 sin^2/cos^2(2 dpsi + 2 Delta) kernel for E and B and kernel 1 for T, Delta the
 residual of the pipeline's own flattening angle, averaged over mode azimuth
 and over the footprint with weight W^2 |det J|^2 per unit sky area, and
-band-limited at the sims' l = 6000. No free parameters, no fit. It is
-evaluated at every integer multipole and averaged over each bandpower, as the
-input is: a model read at the bin centre over a binned input draws acoustic
-wiggles of its own.
+band-limited at the sims' l = 6000. No free parameters, no fit. It is then
+compared as the estimator sees it: the spectrum reads the sky at k = l + 1/2,
+and NaMaster's own radial coupling and decoupling act on it
+(`residual_estimator_response.py`), since a model averaged over integer
+multipoles draws acoustic structure of its own at the 0.2% level. That
+reference carries the simulation's windows, so the measured arrays are the
+ones with no window removed.
 
 Normalisation. The pseudo-C_l denominator is the plane-area mask integral,
 sum(W^2 |det J|) per unit sky area, one power of |det J| lower than the
@@ -27,10 +30,10 @@ projection. Aliasing can therefore arrive below 4800 on sheared projections,
 and matters particularly for the small geometric BB of ZEA. This diagnostic
 retains 4800 to expose that rise; it is not a universal clean-data cutoff.
 
-Pixel windows. `spectra` removes the coherent ring-interpolation and finite
-8x8-rebin windows separately for each projection and spin block, inside the
-sky-frame forward integral. No parameter is fitted. Aliased power and the
-STG estimator floor are not removed. Bands show pointwise standard errors,
+Pixel windows. The reference includes the coherent ring-interpolation and
+finite 8x8-rebin windows separately for each projection and spin block,
+inside the sky-frame forward integral. No parameter is fitted. Aliased power
+and the STG estimator floor are not in it. Bands show pointwise standard errors,
 not independent errors across bins or projections; use paired-seed contrasts
 (`report_pipeline_windows.py`) to compare projections.
 
@@ -61,7 +64,7 @@ FIGURE = ROOT / "figures" / "model_residuals.pdf"
 SPECTRA = PPS.SPECTRA
 ELL_MIN, ELL_MAX = PPS.ELL_MIN, PPS.ELL_MAX
 BAND_LIMIT = S.LMAX     # 6000: the run's own harmonic band limit
-Y_LIM = {'TT': (0.98, 1.02), 'EE': (0.98, 1.02), 'BB': (0.97, 1.24)}
+Y_LIM = {'TT': (0.97, 1.03), 'EE': (0.97, 1.03), 'BB': (0.97, 1.24)}
 BAND_ALPHA = 0.25
 FIG_H = 2.2
 
@@ -69,6 +72,20 @@ FIG_H = 2.2
 def binned(values):
     """Bandpowers of an array whose last axis is every multipole below LMAX."""
     return values.reshape(*values.shape[:-1], S.NBINS, S.DELTA_L).mean(-1)
+
+
+WINDOWS = Path('/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz')
+REFERENCE = Path('/sptlocal/user/cailmdaley/pol_project/residual_estimator_response.npz')
+
+
+def load_ratios():
+    """Measured over the estimator reference, per spectrum: (projection, seed, band)."""
+    measured, reference = np.load(WINDOWS), np.load(REFERENCE)
+    ratios = {}
+    for spec in SPECTRA:
+        ratios[spec] = {proj: measured[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical']
+                        for proj in S.PROJS if not (spec == 'BB' and proj == SL.FLOOR_PROJ)}
+    return ratios
 
 
 def load_data():
@@ -87,6 +104,7 @@ def load_data():
 
     return dict(
         mom=mom, ell=S.ELL, model=model, cl_ee=S.theory("unlensed_EE"),
+        ratios=load_ratios(),
         measured={"TT": PPS.measured_tt(), "EE": S.load_field("EE"),
                   "BB": S.load_field("BB")},
     )
@@ -104,18 +122,14 @@ def plot(plt, d):
                              sharex=True, sharey=False, layout="constrained")
     for ax, spec in zip(axes, SPECTRA):
         ax.axhline(1.0, color=PPS.REF_COLOR, lw=PPS.REF_LW, zorder=PPS.REF_Z)
-        measured = d["measured"][spec]
-        if measured is not None:
-            for j, proj in enumerate(S.PROJS):
-                if spec == "BB" and proj == SL.FLOOR_PROJ:
-                    continue
-                r = measured[j][:, keep] / d["model"][spec][j][keep]
-                mean = r.mean(0)
-                err = r.std(0, ddof=1) / np.sqrt(r.shape[0])
-                color = PS.PROJ_COLORS[proj]
-                ax.fill_between(x, mean - err, mean + err, color=color, lw=0,
-                                alpha=BAND_ALPHA, zorder=PPS.DATA_Z[proj] - 1)
-                ax.plot(x, mean, color=color, lw=PS.LW, zorder=PPS.DATA_Z[proj])
+        for proj, ratio in d["ratios"][spec].items():
+            r = ratio[:, keep]
+            mean = r.mean(0)
+            err = r.std(0, ddof=1) / np.sqrt(r.shape[0])
+            color = PS.PROJ_COLORS[proj]
+            ax.fill_between(x, mean - err, mean + err, color=color, lw=0,
+                            alpha=BAND_ALPHA, zorder=PPS.DATA_Z[proj] - 1)
+            ax.plot(x, mean, color=color, lw=PS.LW, zorder=PPS.DATA_Z[proj])
         ax.set_xlabel(r"$\ell$")
         ax.set_ylabel(rf"$C_\ell^{{{spec}}} / C_\ell^{{{spec},\,\mathrm{{model}}}}$")
         ax.tick_params(labelleft=True)

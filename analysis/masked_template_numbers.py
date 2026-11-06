@@ -18,7 +18,13 @@ def numbers(path=SUMMARY):
     high=d['bands']['2000-3000']['masked']
     interval=m['paired_seed_bootstrap_gain_95pct']
     high_interval=high['paired_seed_bootstrap_gain_95pct']
+    wide=low['wide']
     return {
+        'maskedTemplateResidualLowBand':f"{100*d['bands']['1000-2000']['masked']['isolated_noisy_residual_over_raw']:.0f}\\%",
+        'maskedTemplateResidualMidBand':f"{100*high['isolated_noisy_residual_over_raw']:.0f}\\%",
+        'maskedTemplateResidualTopBand':f"{100*d['bands']['3000-4000']['masked']['isolated_noisy_residual_over_raw']:.0f}\\%",
+        'maskedTemplateWienerBias':f"{100*high['cross_mean_over_raw_signal']:.1f}\\%",
+        'maskedTemplateWideResidual':f"{100*wide['isolated_noisy_residual_over_raw']:.1f}\\%",
         'maskedTemplateSeeds':str(d['nseed']),
         'maskedTemplateResidualPercent':f"{100*m['isolated_noisy_residual_over_raw']:.3f}\\%",
         'maskedTemplateResidualSEPercent':f"{100*m['isolated_noisy_residual_SE_over_raw']:.3f}\\%",

@@ -9,7 +9,7 @@ TT skies and 20 independent unit-C_l white skies through the scalar leg on the
           quantity from the forward model alone. F_b carries the CMB's own
           response to the projection, including its acoustic phase.
   bottom  measured white over the coupling matrix applied to the white input,
-          with the common measured/model residual of TT divided out, minus one.
+          minus one, on the same skies.
 
 Run:  bash env.sh python3 analysis/plot_transfer_error.py
 Out:  figures/transfer_error.pdf
