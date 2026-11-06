@@ -1333,6 +1333,41 @@ outputs:
         disk: 1Gi
         time_limit: 1h
 
+  - id: beyond_two_point_calibrated
+    type: data
+    label: Lognormal projection with mean angular filter-scale calibration
+    description: |
+      Same 24 skies as beyond_two_point, widening each planar Gaussian
+      by exp(mean(log(mu))/2) to match its mean log angular scale.
+      Local magnification variation and shear are not removed.
+    units:
+      seed: 0..24
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/beyond_two_point.py
+        --seed {units.seed} --mean-scale-calibration --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 1Gi
+        time_limit: 1h
+
+  - id: beyond_two_point_calibrated_resolution
+    type: data
+    label: Fine-sampling mean-scale-calibrated lognormal control
+    units:
+      seed: [0, 1, 2, 3]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/beyond_two_point.py
+        --seed {units.seed} --nside 1024 --pixel-deg 0.05
+        --mean-scale-calibration --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 1Gi
+        time_limit: 1h
+
 decisions:
   intermediate_nside:
     label: "Intermediate Healpix synthesis resolution"

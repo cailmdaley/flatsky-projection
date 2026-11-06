@@ -33,7 +33,7 @@ def chart_grid(chart, diameter, pixel_deg):
     """Inverse azimuthal projection centred on (RA,dec)=(0,0)."""
     pixel = np.deg2rad(pixel_deg)
     edge = radius(np.deg2rad(diameter/2), chart)
-    n = int(np.ceil((edge+5*2*SIGMA)/pixel))
+    n = int(np.ceil((edge+6*2*SIGMA)/pixel))
     axis = np.arange(-n, n+1)*pixel
     x, y = np.meshgrid(axis, axis)
     r = np.hypot(x, y)
@@ -90,7 +90,7 @@ def lognormal(seed, nside, lmax):
     return field, smoothed
 
 
-def run(seed, nside, pixel_deg):
+def run(seed, nside, pixel_deg, mean_scale_calibration=False):
     lmax = 1024  # Fixed across sampling-resolution controls; identical alms.
     field, smoothed = lognormal(seed, nside, lmax)
     threshold = 2*np.std(smoothed[0])
@@ -100,17 +100,23 @@ def run(seed, nside, pixel_deg):
             theta, phi, mask, weight, g, mu = chart_grid(chart, diameter, pixel_deg)
             raw = hp.get_interp_val(field, theta, phi)
             truth = [hp.get_interp_val(m, theta, phi) for m in smoothed]
-            planar = [gaussian_filter(raw, s/np.deg2rad(pixel_deg), mode="nearest",
+            mean_log_mu = float(np.average(np.log(mu), weights=weight))
+            # Match the mean log angular scale, leaving local magnification
+            # variation and shear intact. Both wavelet widths scale together.
+            scale = np.exp(mean_log_mu/2) if mean_scale_calibration else 1.
+            planar = [gaussian_filter(raw, scale*s/np.deg2rad(pixel_deg), mode="nearest",
                                       truncate=5.) for s in (SIGMA, 2*SIGMA)]
             # raw field is identical in both arms, providing an exact null.
             reference = statistics(raw, *truth, mask, weight, threshold, pixel_deg)
             measured = statistics(raw, *planar, mask, weight, threshold, pixel_deg)
             rows.append(dict(chart=chart, diameter=diameter,
                 g2=float(np.average(g*g, weights=weight)),
-                mean_log_mu=float(np.average(np.log(mu), weights=weight)),
+                mean_log_mu=mean_log_mu, plane_sigma_deg=.5*scale,
                 reference=reference.tolist(), measured=measured.tolist()))
     return dict(seed=seed, nside=nside, lmax=lmax, pixel_deg=pixel_deg,
-                sigma_deg=.5, lognormal_sigma=.7, statistics=STATISTICS, rows=rows)
+                sigma_deg=.5, lognormal_sigma=.7,
+                mean_scale_calibration=mean_scale_calibration,
+                statistics=STATISTICS, rows=rows)
 
 
 if __name__ == "__main__":
@@ -119,9 +125,10 @@ if __name__ == "__main__":
     p.add_argument("--nside", type=int, default=512)
     p.add_argument("--pixel-deg", type=float, default=.1)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--mean-scale-calibration", action="store_true")
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    result = run(a.seed, a.nside, a.pixel_deg)
+    result = run(a.seed, a.nside, a.pixel_deg, a.mean_scale_calibration)
     name = f"seed{a.seed:03d}_n{a.nside}_p{a.pixel_deg:.3f}.json"
     (a.out/name).write_text(json.dumps(result, indent=2)+"\n")
     print(name, flush=True)
