@@ -30,4 +30,19 @@ source = np.exp(-(x*x+y*y)/20)
 mask = np.ones_like(source, dtype=bool)
 out = statistics(source, source, source*0, mask, np.ones(mask.sum()), .5)
 assert out[-1] == 1
+if '--results' in sys.argv:
+    from beyond_two_point_report import summarize
+    summary = summarize()
+    # Conformal-chart third-moment response cannot be a shear-only law.
+    stg = next(r for r in summary['records']
+               if r['chart'] == 'STG' and r['diameter'] == 60.)
+    third = stg['statistics']['smooth_third']
+    assert stg['g2'] == 0 and third['bias'] > 5*third['se']
+    # These are sampling-control tolerances, not physical upper limits.
+    for key, tolerance in [('smooth_variance', .001), ('smooth_third', .003),
+                           ('wavelet_l1', .001), ('peaks_gt_2sigma', .03)]:
+        drift = max(abs(r['statistics'][key]['controls']['both']['paired_drift'])
+                    for r in summary['records'])
+        assert drift < tolerance, (key, drift)
+    print('24 paired skies and 12 resolution controls pass')
 print('beyond-two-point geometry and estimator gates pass')

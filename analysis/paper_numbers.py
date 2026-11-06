@@ -1151,8 +1151,31 @@ def choosing_numbers():
     print(f'Wrote {path}')
 
 
+def beyond_two_point_numbers():
+    """Signal-only lognormal controls, never survey-level parameter biases."""
+    data = json.loads((ROOT/'analysis/beyond_two_point_results/summary.json').read_text())
+    M = Macros()
+    for chart in ('TAN', 'STG', 'ZEA'):
+        for diameter, size in ((14.6, 'Small'), (30., 'Medium'), (60., 'Large')):
+            row = next(r for r in data['records']
+                       if r['chart'] == chart and r['diameter'] == diameter)
+            for key, label in (('smooth_variance', 'Variance'),
+                               ('smooth_third', 'Third'),
+                               ('wavelet_l1', 'Wavelet'),
+                               ('peaks_gt_2sigma', 'Peaks')):
+                stat = row['statistics'][key]
+                prefix = 'ng'+chart+label+size
+                M.add(prefix, pct(stat['bias'], 1))
+                M.add(prefix+'Error', pct(stat['se'], 1))
+    path = ROOT/'paper/beyond_two_point_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 if __name__ == "__main__":
-    if "--masked-template-only" in sys.argv:
+    if "--beyond-two-point-only" in sys.argv:
+        beyond_two_point_numbers()
+    elif "--masked-template-only" in sys.argv:
         masked_template_numbers()
     elif "--choosing-only" in sys.argv:
         choosing_numbers()
