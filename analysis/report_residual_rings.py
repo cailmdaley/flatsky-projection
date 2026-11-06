@@ -8,7 +8,19 @@ ROOT = Path('/sptlocal/user/cailmdaley/pol_project')
 
 
 def main():
-    rows = []
+    rows, input_b = [], []
+    # Production synthesis retains the tiny map2alm B coefficient, whereas
+    # this intervention sets it to zero. Verify that this is irrelevant.
+    import healpy as hp
+    for seed in range(2):
+        ae, ab = hp.read_alm(str(S.ROOT/'results/highell/preprocessed_alms'/f'alms_seed{seed:04d}.fits'), hdu=(2, 3))
+        e, b = hp.alm2cl(ae), hp.alm2cl(ab)
+        for lo, hi in ((100, 1000), (1000, 4000), (4500, 4800)):
+            ratio = float(np.mean(b[lo:hi]/e[lo:hi]))
+            assert ratio < 1e-10, (seed, lo, hi, ratio)
+            input_b.append(dict(seed=seed, lo=lo, hi=hi, bb_ee=ratio))
+        del ae, ab
+    (ROOT/'residual_ring_input_b.json').write_text(json.dumps(input_b, indent=2)+'\n')
     ref = np.load(ROOT/'pipeline_windows_production.npz')
     for proj in ('ProjSTG', 'ProjZEA'):
         ds = [np.load(S.ROOT/'results/highell/residual_ring_test'/f'rings_{proj}_seed{s:04d}.npz') for s in range(2)]
@@ -26,12 +38,16 @@ def main():
                 ee = (value[:, 0, sel]/native[:, 0, sel]).mean(-1)
                 leakage = (value[:, 3, sel]/value[:, 0, sel]).mean(-1)
                 baseline = (native[:, 3, sel]/native[:, 0, sel]).mean(-1)
+                coarse = np.array([(d['n4096_r8'][3, sel]/d['n4096_r8'][0, sel]).mean() for d in ds])
+                relative = leakage/coarse
                 row = dict(projection=proj, intervention=name, lo=lo, hi=hi, nseed=len(ds),
                            bb_input_ee=float(bb.mean()), bb_input_ee_se=float(bb.std(ddof=1)/np.sqrt(len(bb))),
                            ee_native_ratio=float(ee.mean()), ee_native_ratio_se=float(ee.std(ddof=1)/np.sqrt(len(ee))),
                            bb_own_ee=float(leakage.mean()), bb_own_ee_se=float(leakage.std(ddof=1)/np.sqrt(len(leakage))),
                            paired_bb_ee_change=float((leakage-baseline).mean()),
-                           paired_bb_ee_change_se=float((leakage-baseline).std(ddof=1)/np.sqrt(len(leakage))))
+                           paired_bb_ee_change_se=float((leakage-baseline).std(ddof=1)/np.sqrt(len(leakage))),
+                           bb_ee_vs_4096_r8=float(relative.mean()),
+                           bb_ee_vs_4096_r8_se=float(relative.std(ddof=1)/np.sqrt(len(relative))))
                 rows.append(row)
                 print(f'{lo}-{hi} {name}: BB/inputEE {bb.mean():.7g} +/- {row["bb_input_ee_se"]:.2g}; EE/native {ee.mean():.7g}; BB/ownEE {leakage.mean():.7g}; paired BB/EE change {row["paired_bb_ee_change"]:+.7g} +/- {row["paired_bb_ee_change_se"]:.2g}', flush=True)
         for d in ds:

@@ -11,6 +11,33 @@ ROOT = Path('/sptlocal/user/cailmdaley/pol_project')
 OUT = S.ROOT/'analysis/figures/residual_anomalies'
 
 
+def plot_ring_controls():
+    fig, axes = plt.subplots(2, 2, figsize=(10, 6), layout='constrained')
+    for i, proj in enumerate(('ProjSTG', 'ProjZEA')):
+        data = [np.load(S.ROOT/'results/highell/residual_ring_test'/f'rings_{proj}_seed{s:04d}.npz') for s in range(2)]
+        for ax, (lo, hi) in zip(axes[i], ((100, 1000), (1000, 4800))):
+            sel = (S.ELL >= lo) & (S.ELL < hi)
+            for key, style, label in [('n8192_r8', '-', r'$N_{side}=8192$, $8$ samples/axis'),
+                                      ('n4096_r8', '--', r'$N_{side}=4096$, $8$ samples/axis'),
+                                      ('n4096_r16', ':', r'$N_{side}=4096$, $16$ samples/axis')]:
+                values = np.array([d[key][3, sel]/d[key][0, sel] for d in data])
+                scale = 1e6 if proj == 'ProjSTG' else 1e4
+                mean = scale*values.mean(0)
+                error = scale*values.std(0, ddof=1)/np.sqrt(len(values))
+                ax.plot(S.ELL[sel], mean, style, color=PS.PROJ_COLORS[proj], label=label)
+                ax.fill_between(S.ELL[sel], mean-error, mean+error, color=PS.PROJ_COLORS[proj], alpha=.08)
+            ax.set_ylabel(r'$10^6 BB/EE$' if proj == 'ProjSTG' else r'$10^4 BB/EE$')
+            ax.text(.04, .94, PS.PROJ_LABEL[proj], transform=ax.transAxes, va='top')
+            ax.set_xlabel(r'$\ell$')
+            ax.grid(alpha=.15)
+        for d in data:
+            d.close()
+    axes[0, 1].legend(fontsize=8, loc='upper left')
+    fig.savefig(OUT/'ring_controls.png', dpi=160)
+    fig.savefig(OUT/'ring_controls.pdf')
+    plt.close(fig)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     report = np.load(ROOT/'pipeline_windows_production.npz')
@@ -111,6 +138,7 @@ def main():
         fig.savefig(OUT/'production_bb.png', dpi=160)
         fig.savefig(OUT/'production_bb.pdf')
         plt.close(fig)
+    plot_ring_controls()
 
 
 if __name__ == '__main__':
