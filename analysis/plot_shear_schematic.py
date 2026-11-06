@@ -211,7 +211,7 @@ def panel_spectrum(plt, ax, d, ell_th, cl):
     for x, ha, name, pad in ((lo, "right", r"$\ell s_2$", 0.98), (hi, "left", r"$\ell s_1$", 1.02)):
         ax.text(pad * x, 0.015, name, ha=ha, va="bottom",
                 transform=ax.get_xaxis_transform())
-    ax.legend([sky, grid], [r"$C(\ell)$", r"$\langle C(\ell\rho)\rangle_\chi$"],
+    ax.legend([sky, grid], ["sky", "direction average"],
               loc="upper right", handlelength=1.4)
 
 
