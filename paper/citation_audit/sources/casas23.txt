@@ -1,0 +1,1533 @@
+arXiv:2310.07590v3 [astro-ph.CO] 17 Sep 2025
+
+Prepared for submission to JCAP
+
+Recovering CMB polarization maps
+with neural networks: Performance
+in realistic simulations
+
+J. M. Casas,a,b,c,d,1 L. Bonavera,c,d J. González-Nuevo,c,d G.
+Puglisi,e,f C. Baccigalupi,g,h S. R. Cabo,c,d M. M. Cueli,g,h D.
+Crespo,c,d C. González-Gutiérrez,i,d F.J. de Cosj,d
+a Instituto
+
+de Astrofísica de Canarias, E-38205 La Laguna, Tenerife, Spain
+de La Laguna, Departamento de Astrofísica, E-38206 La Laguna, Tenerife,
+
+b Universidad
+
+Spain
+c Departamento
+
+de Física, Universidad de Oviedo,
+C. Federico García Lorca 18, 33007 Oviedo, Spain
+d Instituto Universitario de Ciencias y Tecnologías Espaciales de Asturias (ICTEA),
+C. Independencia 13, 33004 Oviedo, Spain
+e Dipartimento di Fisica e Astronomia, Universitá degli Studi di Catania,
+Via S. Sofia, 64, 95123, Catania, Italy
+f INFN – Sezione di Catania,
+Via S. Sofia 64, 95123 Catania, Italy
+g SISSA,
+Via Bonomea 265, 34136 Trieste, Italy
+h INFN-Sezione di Trieste,
+Via Valerio 2, 34127 Trieste, Italy
+i Departamento de Informática, Universidad de Oviedo,
+Edificio Departamental 1. Campus de Viesques s/n, E-33204, Gijón, Spain
+j Escuela de Ingeniería de Minas, Energía y Materiales, Universidad de Oviedo,
+C. Independencia 13, 33004 Oviedo, Spain
+1
+
+Corresponding author.
+
+E-mail: casasjm@uniovi.es
+
+Abstract. Recovering the polarized cosmic microwave background (CMB) is essential for
+shedding light on the exponential expansion of the very early Universe, known as cosmic
+inflation. Achieving this goal requires not only improved instrumental sensitivity but also the
+development of robust and diverse data analysis techniques. In this work, we explore a novel
+component separation approach based on neural networks, previously validated using realistic
+Planck temperature simulations, to reconstruct the Stokes Q and U polarization maps.
+To validate the method, we first test the network on realistic Planck sky simulations of
+regions deliberately excluded from the training set. We compare the input and output EE
+and BB power spectra, finding a mean absolute error of 0.1 ± 0.3 µK 2 for the E-mode and
+−0.1 ± 0.3 µK 2 for the B-mode. These results demonstrate a partial recovery of the E-mode
+and a limited recovery of the B-mode, the latter remaining dominated by residual Planck
+noise. We then apply the trained network to public Planck observations, recovering CMB
+polarization maps broadly consistent with those obtained using the Commander method.
+The recovered EE spectra differ by less than 5% from the reference at intermediate and small
+angular scales, although significant discrepancies remain at large scales, which may impact
+cosmological interpretations. These results, while encouraging, clearly reflect the limitations
+of the current setup and motivate further improvements in training data and methodology.
+Based on these findings, we conclude that neural network-based methods show potential
+as component separation techniques in polarization CMB experiments. However, substantial improvements and more comprehensive analyses are necessary before these methods can
+provide reliable high-precision cosmological estimates.
+
+Contents
+1 Introduction
+
+1
+
+2 Data
+2.1 Planck observations
+2.2 Simulations
+
+2
+2
+3
+
+3 Methodology
+
+3
+
+4 Results
+4.1 Validation by simulations: ideal case
+4.2 Validation by simulations: realistic case
+4.3 Validation by real observations: Planck PR3 data
+4.4 Robustness tests
+
+5
+5
+6
+8
+12
+
+5 Conclusions
+
+13
+
+1
+
+Introduction
+
+The cosmic microwave background (CMB) has, over the past few decades, greatly aided the
+scientific community in understanding the nature and evolution of the Universe. It originates
+from an epoch approximately 380000 years after the Big Bang, when photons decoupled from
+baryons in an event known as recombination [1]. Although isotropic to first order, the CMB
+exhibits small fluctuations in temperature and polarization, known as anisotropies. These
+can be described by approximating the celestial sphere using the Stokes Q and U parameters
+[2]; specifically, its polarization can be characterized by combining these parameters into
+gradient and curl modes, referred to as E and B modes, respectively [3]. The E modes are
+associated with scalar (density) perturbations in the early Universe, whereas the B modes
+arise from tensor (gravitational) perturbations, produced by gravitational lensing of the CMB
+by intervening large-scale structures as well as by inflationary gravitational waves.
+In recent decades, various experiments have mapped the CMB with high precision. In
+particular, the Planck mission [4] observed the microwave sky over the past decade and produced unprecedentedly detailed maps, which have significantly constrained the fundamental
+properties of the Universe and characterized the main microwave emissions from our Galaxy,
+especially in temperature maps. Current and future missions, such as the Simons Observatory
+[5], LiteBIRD [6], and PICO [7], aim to improve constraints on the CMB polarization, in particular the B-mode power spectrum at large angular scales, in order to search for primordial
+gravitational waves in the cosmological signal.
+With upcoming experiments more sensitive than Planck, the main challenge will be to
+accurately characterize the microwave sky, as the CMB polarization is contaminated at all
+sky regions and scales by Galactic and extragalactic emissions. This challenge is particularly
+critical for constraining the tensor-to-scalar ratio of B- and E-modes down to r = 0.001
+([8], [9]). A precise understanding of the polarization properties of these emissions, known as
+foregrounds, is essential for effectively separating the CMB signal from other sources, a process
+referred to as component separation. Although several physical models are continually being
+
+–1–
+
+tested and improved to address the challenges of the coming decade (the main approaches
+are described in detail in [10]), machine learning models, such as neural networks, have only
+recently begun to be explored for this application, despite having demonstrated promising
+results in other areas of astronomy [11]. Neural networks are promising tools for such analyses
+due to their ability to learn complex non-linear behaviors directly from the data [12], which
+may help disentangle the diverse physical processes contributing to the microwave sky.
+To date, only a few studies have demonstrated the potential of neural networks for
+various tasks in CMB research, particularly in component separation. For instance, they
+have first been validated using temperature maps ([13], [14], [15], [16]), and have subsequently
+shown encouraging results in polarization analysis [17]. Despite the well-known complexity
+of the polarized sky, neural networks have recently begun to be accurately tested with real
+observations [18], suggesting that they could serve as a valuable complement to traditional
+methods in future CMB experiments. Another relevant applications in the recent years are
+for primordial non-Gaussianity [19], delensing [20], cosmic string detection [21], foreground
+characterization ([22], [23]) and inpainting [24]. Neural networks, however, are still viewed
+with skepticism by parts of the community due to their strong dependence on training model
+data, their lack of physical interpretability, and some initial controversial results [25].
+In this work, we aim to assess the performance of a neural network similar to that used
+in our previous study on temperature maps [16] in recovering the CMB polarization signal.
+This paper is organized as follows: Section 2 describes the data used in this study; Section 3
+outlines the adopted methodology; Section 4 presents our results on both simulations and
+real observations; and finally, Section 5 summarizes our conclusions.
+
+2
+
+Data
+
+2.1
+
+Planck observations
+
+The Planck mission, operated by the European Space Agency (ESA), was designed to map the
+full-sky cosmic microwave background (CMB) anisotropies with high sensitivity and angular
+resolution. Launched in 2009 and operational until 2013, Planck carried two instruments:
+the Low Frequency Instrument (LFI), covering 30, 44, and 70 GHz, and the High Frequency
+Instrument (HFI), covering 100-857 GHz. The mission achieved full-sky coverage in both
+temperature and polarization across nine frequency channels, enabling robust foreground
+modeling and component separation.
+The final legacy data release, known as Planck 2018 or Planck Release 3 (PR3), comprises a reprocessing of the entire mission dataset, incorporating improved calibration, beam
+characterization, and systematic error mitigation, particularly in the HFI polarization channels. This release provides temperature and polarization power spectra (TT, TE, EE) with
+cosmic variance-limited precision up to multipoles l ∼ 1500, as well as robust measurements
+of the lensing potential power spectrum derived from four-point correlations.
+The associated Planck 2018 likelihoods were constructed using advanced component
+separation algorithms (Commander, NILC, SEVEM, and SMICA1 ) and validated through
+extensive simulations. The precision of these measurements provided strong support for
+the minimal six-parameter ΛCDM model, leaving limited room for deviations from standard
+inflationary predictions or for the presence of additional relativistic species.
+1
+
+These methods are described in detail in [26].
+
+–2–
+
+2.2
+
+Simulations
+
+To train and validate the neural network before testing its performance on real observations,
+we use a set of realistic microwave sky simulations representing the sky as observed by the
+HFI Planck instrument at 100, 143, and 217 GHz. These channels are in fact the least affected
+by noise in polarization, with levels of 1.96, 1.17, and 1.75 µKdeg, respectively [4].
+The simulations include a lensed CMB map together with Galactic interstellar dust and
+synchrotron emission maps. These foreground maps were downloaded from the Planck Legacy
+Archive (PLA2 ), which incorporates updated foreground models from PR3 [27]. To test the
+robustness of our method, we also use alternative foreground models, different from those
+used for training, by employing the Python Sky Model (PySM; [28], [29], [30]).
+Our method is based on convolutional neural networks (CNNs). Since similar approaches
+designed for spherical data exist [31], but CNNs generally operate on flat grids, we must
+project spherical maps onto two-dimensional planes. Initially, we observed significant E-toB leakage when using the gnomonic projection from Healpy for almost all patch sizes. To
+address this, we adopt the projection method described in [23], since we found that it also
+suffered E-to-B leakage but only for big sky patches.
+Following this approach, we divide the microwave sky maps into square patches of
+256×256 pixels, with a pixel size of 90 arcseconds, and verify that no E-to-B leakage occurs by comparing the average input signal from all sky patches to the theoretical prediction.
+Additionally, we inject extragalactic radio sources into these patches using the model from
+[32] and the CORRSKY software [33]. Finally, instrumental noise at Planck levels is then
+added to each simulation, providing a different noise realization for each patch and minimizing redundancy in the training data. The noise is modeled as isotropic white noise with the
+RMS levels defined above. Although being a simplification with respect to a scan path modulated white noise and/or an end-to-end simulation, it allows to have a first approximation
+of the performance of this kind of network architectures on polarization data, especially at
+the arcmin and sub-arcmin scales.
+For each position, we generate three frequency patches, referred to as the Input Total,
+which include all emissions plus noise at 100, 143, and 217 GHz. We also retain the corresponding CMB-only patch at 143 GHz as the label. The training set comprises 10000 simulations in the northern sky region (90◦ < b < −60◦ ), where b denotes Galactic latitude, including
+the Galactic plane and other complex, physically distinct regions. For each test, the validation set consists of 1000 simulations located in the southern sky region (−60◦ < b < −90◦ ),
+encompassing regions entirely different from those in the training set. This setup allows us
+to test the robustness and generalization capability of our method.
+An example of simulated patches at a random sky position is shown in Figure 1. In this
+figure, the first column from the left shows the Input Total patch containing all polarized
+emissions; the second column shows the CMB contribution within the Input Total. The top
+and bottom rows correspond to the Stokes Q and U maps, respectively.
+
+3
+
+Methodology
+
+An artificial neural network is a type of machine learning model composed of computational
+units called neurons, which are organized into layers [12]. Each neuron contains weights
+and biases, parameters that are iteratively updated during training. When input data pass
+2
+
+https://pla.esac.esa.int
+
+–3–
+
+Figure 1. An example of a realistic simulation used in this work. From left to right, the columns
+display the Input Total patch (with all simulated emissions), the input CMB (which is also part of
+the Input Total), the neural network output, and the residual patch, defined as the difference between
+input and output. The colorbar units in all panels are in µK.
+
+through the network layers, a loss function quantifies the difference between the network’s
+output and the true target. This loss is minimized using the backpropagation algorithm [34],
+which computes gradients that update the weights, biases, and filters throughout the network.
+By repeating this process over many training epochs, the network progressively improves its
+ability to generalize to new data.
+Neural networks are especially effective for analyzing image data, as they apply convolutions and deconvolutions to learn spatial features from input images. For instance, they have
+been widely and successfully applied to image segmentation tasks in recent years [35]. In this
+context, the learnable weights are organized into matrices called kernels, which are optimized
+during training to extract meaningful features at multiple scales.
+In this work, we extend the Cosmic Microwave Background Extraction Neural Network
+(CENN) first presented in [16] to evaluate its performance on CMB polarization maps. CENN
+is a fully convolutional neural network based on the U-Net architecture [36], designed to
+produce clean CMB maps from noisy sky patches by performing a sequence of convolutions and
+deconvolutions. The network minimizes a loss function that measures the difference between
+the predicted and true CMB maps. The mathematical and physical principles underlying this
+approach are detailed in [37] and [16]; here, we briefly summarize the architecture and its
+operation.
+The network processes each Input Total patch by successively convolving the input with
+learnable filters across six consecutive convolutional blocks. Each block extracts hierarchical
+features, while an activation function introduces non-linearity. The encoded information is
+then upsampled through six corresponding deconvolutional blocks, each linked to its convolutional counterpart via skip connections. This structure allows the network to combine global
+context with fine details, distinguishing the CMB signal from contaminating foregrounds.
+In the final block, the feature maps are merged into a single output patch representing the
+recovered CMB. The mean squared error loss function is computed between this output and
+the true CMB map, providing the gradient used to update all weights and filters via backpropagation and the AdaGrad optimizer. Training in this work is particularly performed over
+
+–4–
+
+1000 epochs.
+The specific architecture is illustrated in Figure 2 and can be described as follows. The
+encoder consists of six convolutional blocks, each containing convolutional and pooling layers
+with kernel sizes of 9, 9, 7, 7, 5, and 3, respectively, and with 8, 2, 4, 2, 2, and 2 kernels per
+block. The corresponding numbers of filters are 8, 16, 64, 128, 256, and 512, and a subsampling
+factor of 2 is applied to downsample the feature maps. All layers use padding type “same”
+to preserve spatial dimensions and a leaky ReLU activation function for characterizing the
+quantity of non-linear information allowed to pass through the next layer.
+The decoder comprises six deconvolutional blocks, each with deconvolutional and pooling
+layers using 2, 2, 2, 4, 2, and 8 kernels of sizes 3, 5, 7, 7, 9, and 9, respectively. The numbers
+of filters decrease symmetrically to 256, 128, 64, 16, 8, and finally 1 for the output map. As
+in the encoder, all layers apply “same” padding and a leaky ReLU activation function.
+
+Fine-grained features addition
+(128, 128, 16)
+
+conv1
+
+deconv5
+
+(128, 128, 8)
+
+(128, 128, 8)
+
+(64, 64, 32)
+
+conv2
+
+deconv4
+
+(64, 64, 16)
+
+conv3
+
+(256,
+(256,256,
+256,3)
+3)
+
+(256,
+(256,256,
+256,1)1)
+
+(64, 64, 16)
+
+(32, 32, 128)
+
+deconv3
+
+(32, 32, 64)
+
+(32, 32, 64)
+
+(16, 16, 256)
+
+conv4
+
+deconv2
+
+(16, 16, 128)
+
+(16, 16, 128)
+
+(8, 8, 512)
+
+conv5
+
+deconv1
+(8, 8, 256)
+
+(8, 8, 256)
+
+conv6
+(4, 4, 512)
+
+Figure 2. Architecture of CENN, the neural network used in this work. We show for visualization
+purposes the kind of input and output patches the network reads and outputs, respectively.
+
+4
+
+Results
+
+This section presents the results of validating our network in three stages: first with ideal
+simulations without instrumental noise, then with realistic Planck simulations, and finally
+with real PR3 observations. Additional tests using realistic simulations are performed to
+assess the robustness of the methodology. The evaluation primarily involves comparing input
+and output maps, computing residuals, and estimating the power spectra for both the E- and
+B-mode signals.
+4.1
+
+Validation by simulations: ideal case
+
+We begin by training and validating the network in an idealized scenario, using simulations
+that include only the CMB and astrophysical foregrounds, with no instrumental noise. As
+
+–5–
+
+described in Section 2.2, to ensure robust testing, the network is trained on sky patches
+within the region 90◦ < b < −60◦ , where b is the Galactic latitude, while the remaining sky
+regions are reserved for validation. In total, we generate 1000 Q and U polarization patches
+for validation and compute the average EE and BB power spectra of the input, output and
+residual maps using NaMaster [38]. Figure 3 shows the resulting spectra: the input CMB
+is shown in blue, the network’s output in red, and the residuals in black. Shaded regions
+indicate the 1σ standard deviation for each multipole bin. For reference, the green dotted
+line shows the average spectra of the Input Total at 143 GHz, representing the total signal
+plus foreground contamination provided to the network during validation3 .
+For multipoles l > 200, we found a mean absolute error of 0.5 ± 1 µK 2 for the E-mode
+and 0.05±0.1 µK 2 for the B-mode, corresponding to relative errors below 5% for E and about
+10% for B. The residuals remain well below the input signal: their mean is typically between
+10−2 and 10−1 µK 2 for E, and around 10−2 µK 2 for B, implying that residuals are roughly
+two orders of magnitude smaller than the input E signal, and about an order of magnitude
+smaller than the B signal. Furthermore, the network seems to be able to recover the B-mode
+spectra from the maps despite the presence of foregrounds, highlighting the possibility of
+using this kind of methods in future high-sensitivity CMB experiments targeting this weak
+signal. Nevertheless, both input and output spectra exhibit relatively large uncertainties,
+which can be reduced with further improvements in training and network design.
+Due to the limited patch size of approximately 6.4 square degrees, the statistical power
+at large angular scales is restricted. Consequently, our analysis indicates an excess in the
+recovered B-mode signal for l < 200. While increasing the patch size could improve performance at large scales, preliminary tests have revealed significant E-to-B leakage when
+projecting larger sky regions onto a flat plane, a technical challenge that warrants dedicated
+mitigation in future work.
+Overall, these results show that a relatively simple fully convolutional architecture such
+as CENN can perform component separation on simulated polarized CMB maps in sky regions not seen during training. This motivates the use of machine learning-based methods
+for foreground removal in polarization data and encourages further development of such approaches for application in next-generation CMB experiments with greater sensitivity than
+Planck. However, when extending this architecture to the sphere, the level of uncertainty
+introduced by this kind of networks, particularly at large angular scales, must be thoroughly
+analyzed, especially if the goal is to extract the CMB map for use in sub-percent precision
+cosmological analyses.
+4.2
+
+Validation by simulations: realistic case
+
+Building upon the results described in the previous section, we extended our analysis to
+a more realistic scenario by incorporating instrumental isotropic white noise at Planck -level
+sensitivities (1.96, 1.17, and 1.75 µKdeg for the 100, 145, and 217 GHz channels, respectively;
+see [4]). The neural network was then retrained using these more realistic simulations under
+the same sky conditions as before: training was performed on the northern region (90◦ <
+b < −60◦ ), while validation was conducted on the southern region (−60◦ < b < −90◦ ). To
+enhance the signal-to-noise ratio prior to training, we smoothed the input data with a 15’
+FWHM Gaussian kernel, a standard practice in CMB component separation studies ([39];
+3
+
+Only the total contribution at 143 GHz is shown, as this is the frequency at which the recovered CMB is
+produced.
+
+–6–
+
+101
+
+101
+
+100
+K 2]
+
+K 2]
+
+102
+
+10
+10
+
+1
+2
+
+BB[
+
+EE[
+
+100
+Input Simulation
+Output CENN
+Residuals
+Total Signal
+
+2
+
+10
+
+2
+
+10
+
+3
+
+103
+
+0.1
+K 2]
+
+0
+
+1
+
+BB[
+
+K 2]
+EE[
+
+102
+2
+
+10
+
+102
+
+102
+
+103
+
+102
+
+103
+
+0.0
+0.1
+
+103
+
+Input Simulation
+Output CENN
+Residuals
+Total Signal
+
+Figure 3. Recovered E- and B-mode power spectra using CENN for the ideal case without instrumental noise. Top left: input E-mode spectrum (blue), network’s output (red), and residuals (black);
+the green dotted line shows the average Input Total spectrum at 143 GHz. The bottom left panel
+shows the absolute difference between input and output spectra. Right panels show the same for the
+B-mode. Shaded regions indicate the 1σ standard deviation per bin.
+
+[40] and references therein). This smoothing, however, limits the analysis to multipoles up to
+l ∼ 1000.
+An example of the resulting Q and U maps generated by CENN is shown in Figure 1
+(third column). The fourth column illustrates the residual patches, obtained as the difference
+between input and output maps. For this analysis, all maps were smoothed with a 15’ FWHM.
+We then computed the power spectra for the input, output and residual maps using NaMaster.
+Figure 4 summarizes the network’s performance for this realistic case, with color coding
+consistent with the previous analysis. For the E-mode, we find a mean absolute error of
+approximately 0.1 ± 0.3 µK 2 and mean residuals of about 0.1 µK 2 . For the B-mode, the
+mean absolute error is −0.1 ± 0.3 µK 2 , with residuals at comparable levels. These results are
+broadly similar to the noise-free case but exhibit slightly higher residuals, particularly in the
+BB spectrum, as well as an underestimation of the B-mode instead of the overestimation seen
+in the previous case. Since the foreground contamination remains consistent with the ideal
+case, the increase in the uncertainty is primarily attributable to the addition of instrumental
+noise. The residual structures in the output likely reflect noise features that resemble the
+CMB signal after smoothing, but that the network cannot fully disentangle. This finding has
+important implications for future experiments: with lower instrumental noise than Planck,
+since the performance of CENN could approach the near-ideal recovery demonstrated in
+the noise-free scenario, highlighting its use for next-generation CMB polarization surveys.
+However, it should be noted that the estimations, when compared with the noise-free case,
+indicate that future training of this type of neural network method should incorporate more
+complex noise models than the one used in this work. While the current setup provides a
+useful first approximation of performance with such data maps, real observations and precision
+cosmology will require significant improvements in the quality of the training data.
+Importantly, residual levels at large angular scales remain comparable to those in the
+idealized case, indicating that the inclusion of instrumental noise does not substantially degrade CENN’s capacity to mitigate foregrounds at these scales. As discussed in Section 4.1,
+the limitations at low multipoles appear more strongly linked to the finite patch size and the
+intrinsic complexity of foreground separation, especially for diffuse dust, than to instrumental
+noise.
+
+–7–
+
+Nevertheless, as shown in Figure 4, the B-mode remains more sensitive to both noise
+and residual foregrounds, as expected. The orange curve, representing the difference between
+the network output and the residuals, closely tracks the recovered CMB signal. Its agreement
+with the output spectrum indicates that the network tends to preserve the underlying CMB
+component, even when the true signal is subdominant to noise. This behavior suggests a
+degree of robustness, where the network favors minimizing distortions of the CMB signal,
+albeit at the expense of leaving some residual noise unremoved.
+To explore whether further refinement of the output was feasible, we tested the use
+of a secondary neural network with an identical architecture with respect CENN, trained
+to map the initial network’s outputs to the original noise-free CMB signal. However, this
+additional step did not yield significant improvements, indicating that the current results
+likely reflect the statistical limits imposed by the low signal-to-noise ratio, particularly for
+the B-mode. Therefore, achieving more accurate component separation for such data will
+likely require either more sophisticated machine learning architectures or higher signal-tonoise measurements.
+For context, a first-order comparison with the traditional component separation methods
+employed by Planck (SMICA, NILC, Commander, SEVEM) shows that for the E-mode,
+CENN achieves similar performance: Planck reported mean absolute errors of about 1±6 µK 2
+for comparable simulations smoothed to 10’ FWHM [26], with reliable recovery up to l ∼ 700,
+beyond which noise dominates. For the B-mode, however, conventional methods did not
+attempt a direct estimation nor provided an upper limit in comparable setups, making direct
+comparisons infeasible for this signal component.
+Furthermore, the comparison between the uncertainty levels in the CENN estimations
+(in red) and the official Planck results [41] (in blue) is shown in Figure 5. Horizontal bars
+indicate the multipole bins used in each case. Triangular markers denote upper limits in the
+CENN estimations, primarily due to the use of small sky patches. Black points represent the
+difference between the two estimations, while the red horizontal line indicates the ideal case.
+The relatively high uncertainty levels in the CENN estimates highlight the need for more
+large-scale information in the training data to achieve reliable results. In contrast, the Planck
+uncertainties are systematically lower than those of CENN, clearly indicating that, although
+neural networks can produce compelling CMB maps, further research is required to improve
+their performance for application to real observations.
+For the B-mode, consistent with findings in [42], we observe upper limits across the
+spectrum, underscoring the necessity of further analysis and methodological improvements in
+future work.
+4.3
+
+Validation by real observations: Planck PR3 data
+
+In this section, we evaluate the performance of CENN on the PR3 Planck observations. Importantly, we apply the same trained network used in the previous sections without retraining
+it. For comparison, we use the inpainted map released by the Planck Collaboration from Commander method ([43], [44], [45], [46]), in which structures along the Galactic plane and bright
+point sources have been inferred and removed to facilitate component separation.
+Consistent with our simulation analyses, we consider the HFI full-mission maps at 100,
+143, and 217 GHz, and we aim to output the CMB maps at 143 GHz. All maps, including
+Commander, are smoothed with a 15’ FWHM to improve the signal-to-noise ratio. Sky
+patches are extracted using the same dimensions as in the validation phase with realistic
+simulations. To cover the sky efficiently without overlap, we select 100 patches per frequency
+
+–8–
+
+2
+
+K 2]
+BB[
+
+Input Simulation
+Output CENN
+Residuals
+Total Signal
+
+102
+
+103
+
+102
+
+103
+
+10
+
+1
+
+10
+
+3
+
+10
+
+5
+
+Input Simulation
+Output CENN
+Residuals
+Output CENN - Residuals
+Total Signal
+
+0.5
+0.0
+0.5
+1.0
+
+K 2]
+
+0
+
+101
+
+BB[
+
+K 2]
+EE[
+
+K 2]
+
+2
+
+EE[
+
+101
+100
+10 1
+10 2
+10 3
+10 4
+
+102
+
+103
+
+102
+
+103
+
+Figure 4. Recovered E- and B-mode power spectra for the realistic case with Planck-level instrumental noise and 15’ FWHM smoothing. Top left panel: comparison between the input E-mode
+spectrum from the simulations (blue) and the CENN output (red); the residuals (difference between
+input and output) are shown in black. The green dotted line indicates the average spectrum of the
+Input Total signal at 143 GHz. For reference, the orange dotted line shows the difference between the
+CENN output and the residuals, approximating the estimated recovered CMB signal. The bottom
+left panel displays the absolute difference between input and output spectra. The right panel presents
+the same analysis for the B-mode. Shaded areas represent the 1σ standard deviation per multipole
+bin.
+
+102
+
+Planck Collaboration (2020) I
+This Work
+
+K 2]
+
+101
+
+EE[
+
+100
+
+1
+
+10
+
+2
+
+EE[
+
+K 2]
+
+10
+
+2.0
+1.5
+1.0
+0.5
+0.0
+
+200
+
+400
+
+600
+
+800
+
+1000
+
+Figure 5. Comparison between the CENN systematic uncertainties in the EE estimated power
+spectrum (in red) and the official Planck results [4] (in blue). The CENN spectrum corresponds to
+the results described in Section 4.2 and shown in Figure 4. Arrows in the first three multipole bins
+for the CENN case represent upper limits. Horizontal error bars indicate the binning scheme used
+in each analysis. The bottom panel shows the difference between the two cases, where the red line
+represents the ideal case.
+
+–9–
+
+Planck Sky PR3 (Q)
+
+0
+50
+100
+150
+200
+250
+
+0
+
+100
+
+200
+
+Planck Sky PR3 (U)
+
+0
+
+10
+
+50
+
+5
+
+100
+
+5
+
+200
+
+10
+0
+
+100
+
+200
+
+Commander PR3 (Q)
+
+0
+
+10
+
+50
+
+100
+
+5
+
+100
+
+0
+
+150
+
+5
+
+200
+250
+
+10
+0
+
+100
+
+200
+
+Commander PR3 (U)
+
+0
+
+10
+
+50
+
+5
+
+200
+250
+
+10
+
+100
+
+200
+
+5
+5
+
+200
+250
+
+10
+0
+
+100
+
+200
+
+CENN PR3 (U)
+
+0
+50
+
+10
+5
+
+200
+
+10
+
+250
+
+200
+
+0
+
+100
+
+200
+
+Residuals (U)
+2
+0
+2
+4
+0
+
+100
+
+200
+
+200
+250
+
+0
+
+4
+
+150
+
+250
+
+100
+
+2
+
+0
+
+200
+
+150
+
+0
+
+50
+
+5
+
+100
+
+2
+
+200
+
+Commander - CENN (Q)
+
+50
+
+4
+
+150
+250
+
+0
+
+6
+
+100
+
+0
+
+0
+
+Residuals (Q)
+
+0
+50
+100
+
+0
+
+150
+
+150
+5
+
+0
+
+10
+
+100
+
+0
+
+150
+
+CENN PR3 (Q)
+
+0
+
+50
+
+100
+
+0
+
+150
+250
+
+15
+10
+5
+0
+5
+10
+
+0
+
+100
+
+7.5
+5.0
+2.5
+0.0
+2.5
+5.0
+
+200
+
+Commander - CENN (U)
+
+50
+
+5.0
+
+100
+
+2.5
+
+150
+
+0.0
+2.5
+
+200
+250
+
+5.0
+0
+
+100
+
+200
+
+Figure 6. Example of the CMB recovery of CENN over one sky patch of Planck PR3 observations
+(both Q and U maps in top and bottom rows, respectively), smoothed with a 15’ FWHM. From left
+to right: the sky observed by Planck, the Commander map, the recovered map by CENN, the residual
+patch, computed as the difference between both Planck observations and CENN output and finally
+the difference map between Commander and CENN. The units in all the colorbars are µK.
+
+channel at common sky positions. The Commander map at 143 GHz is also cut at these same
+positions, enabling a direct comparison. The Q and U patches from both methods are then
+converted into E- and B-mode maps using NaMaster.
+Given the challenges in recovering B-modes from Planck data, an issue unresolved by
+traditional methods, and since our goal here is to conduct a first-order comparison of CENN
+with established component separation techniques using real observations to see the ability
+of this kind of methods to generalize from simplistic training data to real observations, we
+restrict our analysis to the recovery of the E-mode power spectrum. A dedicated study of
+B-mode recovery and network optimization for real data is then left for future work.
+Figure 6 illustrates the CENN output on a representative sky patch from the Planck
+HFI observations, smoothed at 15’ FWHM. The top and bottom rows display the Q and U
+maps, respectively. The first column shows the original Planck maps, followed (left to right)
+by the corresponding Commander and CENN outputs, the residual map (difference between
+Planck and CENN), and finally the difference map between Commander and CENN.
+In this example, CENN and Commander exhibit visually broadly consistent behavior.
+The rightmost column reveals that differences between the two methods are generally confined
+to a few pixels with extreme values, while the majority of the structures lie within ±2.5 µK.
+Some residual noise is visible in the CENN output (fourth column), but the residuals remain
+relatively stable, with mean values around ±2 µK. These residuals could likely be reduced
+by retraining the network specifically on real data, as was done iteratively for the Planck
+component separation pipelines. The current network architecture serves only as a first-pass
+model to assess the feasibility of applying deep learning to real CMB observations. Future
+work will require both architectural refinement and improvements in training dataset quality
+to achieve optimal results.
+Furthermore, Figure 7 presents the average EE power spectra from the 100 Q and U
+patches, comparing Commander (in blue) and CENN (in red). The bottom panel shows the
+difference between the two. Shaded regions indicate 1σ uncertainties: for Commander, these
+are statistical (computed from the patch ensemble); for CENN, they include both statistical
+and systematic contributions, being the latter estimated using realistic simulations.
+
+– 10 –
+
+Overall, the trends are consistent with those from the realistic simulations in Section
+4.2. Variance is highest at large angular scales, primarily due to the limited patch sizes (we
+infer significant fluctuations for l < 120). This is likely compounded by limited large-scale
+information exposure during training due to the small patch sizes. Notably, the CENN output
+deviates from Commander’s for l < 300, where Commander appears more stable likely owing
+to its all-sky modeling.
+Additionally, we observe high statistical uncertainty at l ∼ 400. Addressing this will
+require methodological improvements in future work, such as adopting alternative sky projections that permit all-sky coverage. We have not pursued this here due to the risk of border
+artifacts and the E-to-B leakage encountered with larger patches, issues requiring further
+investigation.
+At smaller angular scales, CENN matches Commander within uncertainties. As in Section 4.2, we observe a modest underestimation, though the mean error remains below 5%. This
+performance could be improved through enhanced training data and network refinements.
+Looking ahead, we anticipate in principle improved performance from CENN when applied to current and future observations from next-generation, high-sensitivity experiments
+such as the Simons Observatory, LiteBIRD, and PICO. Compared to the idealized results in
+Section 4.1, the gains in data quality expected from these missions could enable neural networks like CENN to achieve significantly better component separation. These models should
+be further developed and evaluated in upcoming forecasting studies [10]. Overall, our results
+suggest that neural networks seem worth using as methods for component separation in future
+CMB polarization analyses.
+
+EE[
+
+K 2]
+
+101
+100
+10
+
+1
+
+10
+
+2
+
+10
+10
+EE[
+
+K 2]
+
+3
+
+Commander PR3
+CENN PR3
+
+102
+
+103
+
+102
+
+103
+
+0
+10
+
+Figure 7. Recovered E-mode power spectrum at 143 GHz from CENN (in red) applied to the
+Planck PR3 observations, compared with the Commander PR3 map (in blue). The bottom subpanel
+shows the absolute difference between both spectra. Shaded regions indicate the 1σ uncertainties:
+for Commander, these are purely statistical; for CENN, they combine statistical and systematic
+uncertainties.
+
+– 11 –
+
+10
+
+5
+
+10
+
+7
+
+EE[
+
+K 2]
+
+1
+
+K 2]
+
+3
+
+BB[
+
+K 2]
+
+10
+
+Input Simulation
+Output CENN
+Residuals
+Total Signal
+
+102
+
+102
+
+1
+
+10
+10
+10
+
+5
+
+3
+
+7
+9
+
+103
+
+0
+1
+
+10
+10
+
+K 2]
+
+1
+
+0.0
+
+BB[
+
+10
+EE[
+
+101
+
+0.1
+0.2
+
+103
+
+Input Simulation
+Output CENN
+Residuals
+Output CENN - Residuals
+Total Signal
+
+102
+
+103
+
+102
+
+103
+
+Figure 8. E- and B-mode power spectra recovery by CENN in the realistic case with 30’ FWHM
+smoothing. Top left panel: comparison between the input E-mode CMB power spectrum (in blue)
+and the CENN output (in red); residuals are shown in black. The green dotted line indicates the
+average total input spectra for the 143 GHz patches. Bottom left panel: absolute difference between
+the input and recovered spectra. Right panel: same analysis for the B-mode; the orange dotted line
+shows the difference between the output and residual spectra. Shaded areas represent the 1σ standard
+deviation for each multipole bin.
+
+4.4
+
+Robustness tests
+
+To further evaluate the robustness of CENN and identify potential avenues for improvement,
+we conducted additional tests complementing the main analyses presented in the previous
+sections.
+Given the well-established role of smoothing in CMB studies for suppressing background
+noise, our first supplementary test explores the effect of applying a stronger smoothing kernel.
+Specifically, we validated the network in the same southern sky region (−60◦ < b < −90◦ )
+not used during training, using the realistic simulated data from Section 4.2 but smoothed
+with a 30’ FWHM kernel. As shown in Figure 8, this increased smoothing yields a modest
+improvement in the recovered power spectra, with a mean absolute error of 0.3 ± 0.1µK 2
+for the E-mode and −0.05 ± 0.10, µK 2 for the B-mode, and residuals around 10−1 , µK 2 in
+both cases. However, this small gain comes at the expected cost of losing information at
+the smallest angular scales. Despite this trade-off, stronger smoothing may be advantageous
+when the primary scientific goal is to set robust upper limits on the CMB power spectra
+at selected multipoles (e.g., near the first acoustic peak) rather than to reconstruct the full
+angular power spectrum, particularly for the challenging B-mode signal.
+Secondly, we performed a kind of null test to probe the origin of the residual signals and
+to verify that the CENN output indeed represents an upper bound on the true CMB signal.
+For this purpose, we applied the network to a validation dataset constructed without any CMB
+signal, i.e. retaining only foregrounds and instrumental noise, and using the same validation
+sky region as before. Additionally, to further test the network’s generalization capacity beyond
+its initial hint on real observations, we validated it using a different foreground model than
+the one employed during training. Specifically, we used the PySM ‘d4’ and ‘s2’ dust and
+synchrotron models, which produce a physically distinct sky configuration from the PLA
+models used in training4 .
+4
+
+For details on the PySM models and their differences from the PLA templates, see the PySM3 documentation: https://pysm3.readthedocs.io/en/latest/models.html.
+
+– 12 –
+
+1
+
+10
+
+2
+
+10
+0.1
+EE[
+
+K 2]
+
+3
+
+102
+
+102
+
+103
+
+10
+
+1
+
+10
+
+2
+
+10 3
+0.05
+
+103
+
+0.0
+0.1
+
+100
+
+K 2]
+BB[
+
+10
+
+101
+
+K 2]
+
+100
+
+Input Realistic Case
+Output CENN PLA
+Output CENN d4s2
+Residuals Realistic Case
+Total Signal
+
+BB[
+
+EE[
+
+K 2]
+
+101
+
+Input Realistic Case
+Output CENN PLA
+Output CENN d4s2
+Residuals Realistic Case
+Total Signal
+
+102
+
+103
+
+0.00
+0.05
+
+102
+
+103
+
+Figure 9. E- and B-mode power spectra recovery by CENN in a realistic null-test scenario (without
+an input CMB signal) at 15’ FWHM smoothing. Top left panel: comparison between the input
+E-mode CMB spectrum from the 15’ case in Section 4.2 (blue dotted line) and the CENN outputs
+when validated with realistic PLA simulations (in red) and PySM d4s2 foreground models (in orange).
+Residuals from the 15’ realistic case are shown in black. The green dotted line indicates the average
+Input Total spectra at 143 GHz. Bottom left panel: absolute difference between the hypothetical
+input and output spectra. Right panel: same analysis for the B-mode. Shaded areas show the 1σ
+standard deviation for each bin.
+
+Figure 9 illustrates the CENN outputs for the E- and B-mode spectra (left and right
+panels, respectively) recovered from skies generated with the PLA models (in red) and the
+alternative PySM model (in orange). The respective subpanels show the difference between
+the two. For reference, the input and residual signals from the realistic case in Section 4.2
+are shown in blue and black, and the Input Total signal at 143 GHz in green.
+Overall, the outputs for both sky realizations show similar shapes and are generally
+lower in amplitude than the residuals found in the realistic case, especially for the E-mode.
+This result has two important implications: first, it confirms that a significant portion of
+the residuals in the realistic scenario originates from instrumental noise, which the network
+partially misinterprets as a true CMB signal, regardless of the specific foreground sky used.
+Second, and crucially for observational cosmology, this kind of null test demonstrates that
+CENN does not generate spurious CMB power exceeding the level recovered when a true
+CMB signal is present. This property is essential for using CENN outputs as conservative
+upper bounds on the CMB power spectra, particularly for the faint B-mode when applied to
+real observations.
+Furthermore, when validating the network on an alternative sky model, the recovered
+spectra remain consistent, showing only small deviations at large angular scales (typically
+5–10% for both modes). While more extensive tests with diverse foreground configurations are
+necessary for future applications, this initial result indicates the network’s promising capacity
+to generalize to different microwave sky conditions at relevant angular scales. Finally, we
+reiterate a key limitation: due to the current patch size, our analysis does not yet robustly
+probe the largest angular scales, highlighting an area for future methodological development.
+
+5
+
+Conclusions
+
+In this work, we have extended the application of the Cosmic Microwave Background Extraction Neural Network (CENN), previously shown to be effective for temperature component
+
+– 13 –
+
+separation, to the more challenging task of recovering the polarized CMB signal.
+CENN is a convolutional neural network that processes three input sky patches at 100,
+143, and 217 GHz, as observed by Planck, and is trained to reconstruct the CMB Q and
+U Stokes parameter maps at 143 GHz. The training set consists of realistic simulations
+including CMB, Galactic and extragalactic foregrounds, and instrumental noise, with patches
+extracted from the region 90◦ < b < −60◦ . Validation is performed on an independent region
+(−60◦ < b < −90◦ ) not seen during training. The network’s output is evaluated by comparing
+the recovered EE and BB power spectra and the residual spectra (the power spectrum of
+the difference between input and output CMB maps).
+In an ideal, noise-free scenario, CENN demonstrates promising performance to separate
+the polarized CMB signal from foregrounds, achieving mean absolute errors for l > 200 of
+approximately 0.5±1 µK 2 for the E-mode and 0.05±0.1 µK 2 for the B-mode, corresponding
+to relative errors below 5% for E and about 10% for the more challenging B-mode, with
+residuals in the range 10−2 –10−1 µK 2 . Although higher variance is observed in the Bmode, especially at large angular scales, these results indicate that, with methodological
+improvements such as enhanced projection techniques, neural networks like CENN may be
+useful for future high-sensitivity CMB experiments. Extending this work to forecasting for
+missions like the Simons Observatory, LiteBIRD, and PICO remains an important direction
+for future research.
+In a more realistic scenario including Planck -level isotropic white instrumental noise,
+residual power increases to about 10−1 µK 2 for both modes, with a mean absolute error of
+approximately 0.1 ± 0.3 µK 2 for E and −0.1 ± 0.3 µK 2 for B, confirming that the added
+noise is the primary contributor to this higher residual level. Nonetheless, the E-mode is
+recovered with moderate fidelity, while the B-mode remains strongly affected by noise. These
+findings suggest that performance improvements with lower-noise data from next-generation
+experiments are possible but remain to be demonstrated.
+However, for these kinds of methods to be employed in future surveys targeting highprecision cosmological estimations and reliable CMB maps and power spectrum reconstructions, significant improvements in the quality of training data are necessary to reduce the
+current high uncertainties associated with the methodology.
+Although this work provides a first approximation of the performance of such methods
+when applied to this type of data and analysis, further development is required. Future
+efforts should incorporate more realistic sky signals and complex instrumental noise models,
+including scan-path-modulated white noise and/or full end-to-end simulations.
+Furthermore, at large angular scales, residuals remain comparable to the ideal case, with
+only minor foreground contamination below ℓ ∼ 80. This indicates that, within the current
+framework, limitations at large scales arise mainly from the finite patch size rather than
+instrumental noise, highlighting an area for future methodological refinement.
+Residual analysis in the realistic case shows that although the B-mode is more sensitive
+to noise and foregrounds, the CENN output retains a conservative representation of the true
+CMB signal, even when the signal is weaker than the noise. Attempts to further clean the
+output using a secondary neural network produced similar results, implying that with the
+present architecture and Planck-like noise levels, the residuals approach the statistical limit
+for CMB recovery, especially for the faint B-modes.
+Applying the trained network to the Planck PR3 data, using 100 sky patches at the
+same frequencies, we find that the estimated EE power spectra agree with those from the
+Commander maps within 5% at intermediate and small scales, with slight differences at high
+
+– 14 –
+
+multipoles, although higher uncertainty levels with respect Commander maps have been found
+in our analysis. We suggest that improvements in the training data and architecture should
+also reveal better performance in future works with trainings especially dedicated to the
+application of these methods in real data. Also, larger scales remain dominated by statistical
+uncertainty, reinforcing the need for improved patch-based methodologies for future satellite
+missions.
+Additional tests with stronger smoothing (30’ FWHM) yielded slight improvements in
+the recovery capacity but at the expense of angular resolution. This suggests that stronger
+smoothing may be beneficial for setting conservative upper limits near specific multipoles,
+such as the first acoustic peak.
+Finally, a robust null test applying CENN to simulations without an input CMB signal
+and validating on alternative foreground models confirmed that residual signals are mainly
+due to instrumental noise, with no spurious CMB recovery beyond the level found when the
+true CMB is present. The network’s performance was consistent across different foreground
+realizations, with only minor large-scale differences.
+In summary, these results demonstrate that neural network methods like CENN appear to be promising tools for component separation in CMB polarization studies for future
+experiments. However, improvements in both the methodology and the training data are necessary before these methods can be reliably applied to real observations and high-precision
+cosmological analyses. Current limitations have been identified, particularly in low signal-tonoise regimes and at large angular scales which highlight the need for further methodological
+advances, including future training directly on the sphere.
+
+Acknowledgments
+The authors would like to warmly thank the editor for their comments that highly improved
+this paper. JMC acknowledges the PID2023-151567NB-I00 project. JMC, LB and JGN acknowledge the CNS2022-135748 project. JMC, LB, JGN and DC acknowledge the PID2021125630NB-I00 project. JMC and SRC also acknowledge the SV-PA-21-AYUD/2021/51301
+grant. GP acknowledges support from Italian Research Center on High Performance Computing Big Data and Quantum Computing (ICSC), project funded by European Union NextGenerationEU and National Recovery and Resilience Plan (NRRP) Mission 4 Component 2 within
+the activities of Spoke 3 (Astrophysics and Cosmos Observations). CB acknowledges support
+from the COSMOS project of the Italian Space Agency, and the INDARK Initiative of the
+INFN. CGC and FJDC acknowledge the PID2021-127331NB-I00 project.
+This research has made use of the packages Matplotlib [47], Keras [48], Numpy [49], Namaster
+[38], HEALPix [50] and Healpy [51] packages.
+
+References
+[1] S. Weinberg, Cosmology (2008).
+[2] W. Hu and M. White, A CMB polarization primer, NA 2 (1997) 323 [astro-ph/9706147].
+[3] M. Zaldarriaga and U. Seljak, All-sky analysis of polarization in the microwave background,
+Phys. Rev. D 55 (1997) 1830 [astro-ph/9609170].
+[4] Planck Collaboration, N. Aghanim, Y. Akrami, F. Arroja, M. Ashdown, J. Aumont et al.,
+Planck 2018 results. I. Overview and the cosmological legacy of Planck, A&A 641 (2020) A1
+[1807.06205].
+
+– 15 –
+
+[5] P. Ade, J. Aguirre, Z. Ahmed, S. Aiola, A. Ali, D. Alonso et al., The simons observatory:
+science goals and forecasts, Journal of Cosmology and Astroparticle Physics 2019 (2019)
+056–056.
+[6] LiteBIRD Collaboration, E. Allys, K. Arnold, J. Aumont, R. Aurlien, S. Azzoni et al., Probing
+Cosmic Inflation with the LiteBIRD Cosmic Microwave Background Polarization Survey, arXiv
+e-prints (2022) arXiv:2202.02773 [2202.02773].
+[7] S. Hanany, M. Alvarez, E. Artis, P. Ashton, J. Aumont, R. Aurlien et al., PICO: Probe of
+Inflation and Cosmic Origins, arXiv e-prints (2019) arXiv:1902.10541 [1902.10541].
+[8] N. Krachmalnicoff, C. Baccigalupi, J. Aumont, M. Bersanelli and A. Mennella, Characterization
+of foreground emission on degree angular scales for CMB B-mode observations . Thermal dust
+and synchrotron signal from Planck and WMAP data, A&A 588 (2016) A65 [1511.00532].
+[9] G. Puglisi, V. Galluzzi, L. Bonavera, J. Gonzalez-Nuevo, A. Lapi, M. Massardi et al.,
+Forecasting the Contribution of Polarized Extragalactic Radio Sources in CMB Observations,
+ApJ 858 (2018) 85 [1712.09639].
+[10] U. Fuskeland, J. Aumont, R. Aurlien, C. Baccigalupi, A.J. Banday, H.K. Eriksen et al.,
+Tensor-to-scalar ratio forecasts for extended LiteBIRD frequency configurations, arXiv e-prints
+(2023) arXiv:2302.05228 [2302.05228].
+[11] M.J. Smith and J.E. Geach, Astronomia ex machina: a history, primer and outlook on neural
+networks in astronomy, Royal Society Open Science 10 (2023) 221454 [2211.03796].
+[12] I.J. Goodfellow, Y. Bengio and A. Courville, Deep Learning, MIT Press, Cambridge, MA, USA
+(2016).
+[13] M.A. Petroff, G.E. Addison, C.L. Bennett and J.L. Weiland, Full-sky cosmic microwave
+background foreground cleaning using machine learning, The Astrophysical Journal 903 (2020)
+104.
+[14] G.-J. Wang, H.-L. Shi, Y.-P. Yan, J.-Q. Xia, Y.-Y. Zhao, S.-Y. Li et al., Recovering the CMB
+Signal with Machine Learning, ApJS 260 (2022) 13 [2204.01820].
+[15] J.M. Casas, J. González-Nuevo, L. Bonavera, D. Herranz, S.L. Suarez Gomez, M.M. Cueli
+et al., Multi-frequency point source detection with fully convolutional networks: Performance in
+realistic microwave sky simulations, A&A 658 (2022) A110 [2111.04075].
+[16] J.M. Casas, L. Bonavera, J. González-Nuevo, C. Baccigalupi, M.M. Cueli, D. Crespo et al.,
+CENN: A fully convolutional neural network for CMB recovery in realistic microwave sky
+simulations, A&A 666 (2022) A89 [2205.05623].
+[17] Y.-P. Yan, G.-J. Wang, S.-Y. Li and J.-Q. Xia, Recovering CMB Polarization Signals with
+Machine Learning, arXiv e-prints (2023) arXiv:2302.13572 [2302.13572].
+[18] J.M. Casas, L. Bonavera, J. González-Nuevo, M.M. Cueli, D. Crespo, E. Goitia et al.,
+Constraining the polarisation flux density and angle of point sources by training a convolutional
+neural network, A&A 670 (2023) A76 [2212.13055].
+[19] C.P. Novaes, A. Bernui, I.S. Ferreira and C.A. Wuensche, A neural-network based estimator to
+search for primordial non-Gaussianity in Planck CMB maps, JCAP 2015 (2015) 064
+[1409.3876].
+[20] J. Caldeira, W.L.K. Wu, B. Nord, C. Avestruz, S. Trivedi and K.T. Story, DeepCMB: Lensing
+reconstruction of the cosmic microwave background with deep neural networks, Astronomy and
+Computing 28 (2019) 100307 [1810.01483].
+[21] R. Ciuca, O.F. Hernández and M. Wolman, A convolutional neural network for cosmic string
+detection in CMB temperature maps, MNRAS 485 (2019) 1377 [1708.08878].
+
+– 16 –
+
+[22] F. Farsian, N. Krachmalnicoff and C. Baccigalupi, Foreground model recognition through Neural
+Networks for CMB B-mode observations, JCAP 2020 (2020) 017 [2003.02278].
+[23] N. Krachmalnicoff and G. Puglisi, ForSE: A GAN-based Algorithm for Extending CMB
+Foreground Models to Subdegree Angular Scales, ApJ 911 (2021) 42 [2011.02221].
+[24] G. Montefalcone, M.H. Abitbol, D. Kodwani and R.D.P. Grumitt, Inpainting CMB maps using
+partial convolutional neural networks, JCAP 2021 (2021) 055 [2011.01433].
+[25] H.U. Nørgaard-Nielsen, Confirmation of the detection of B modes in the Planck polarization
+maps, Astronomische Nachrichten 339 (2018) 432 [1808.02360].
+[26] Planck Collaboration, R. Adam, P.A.R. Ade, N. Aghanim, M. Arnaud, M. Ashdown et al.,
+Planck 2015 results. IX. Diffuse component separation: CMB maps, A&A 594 (2016) A9
+[1502.05956].
+[27] Planck Collaboration, Y. Akrami, M. Ashdown, J. Aumont, C. Baccigalupi, M. Ballardini et al.,
+Planck 2018 results. IV. Diffuse component separation, A&A 641 (2020) A4 [1807.06208].
+[28] B. Thorne, J. Dunkley, D. Alonso and S. Næss, The Python Sky Model: software for simulating
+the Galactic microwave sky, MNRAS 469 (2017) 2821 [1608.02841].
+[29] A. Zonca, B. Thorne, N. Krachmalnicoff and J. Borrill, The Python Sky Model 3 software, The
+Journal of Open Source Software 6 (2021) 3783 [2108.01444].
+[30] P.-E.G.S. Group, Full-sky models of galactic microwave emission and polarization at
+sub-arcminute scales for the python sky model, 2502.20452.
+[31] N. Krachmalnicoff and M. Tomasi, Convolutional neural networks on the HEALPix sphere: a
+pixel-based algorithm and its application to CMB data analysis, A&A 628 (2019) A129
+[1902.04083].
+[32] M. Tucci, L. Toffolatti, G. de Zotti and E. Martínez-González, High-frequency predictions for
+number counts and spectral properties of extragalactic radio sources. New evidence of a break at
+mm wavelengths in spectra of bright blazar sources, A&A 533 (2011) A57 [1103.5707].
+[33] J. González-Nuevo, L. Toffolatti and F. Argüeso, Predictions of the Angular Power Spectrum of
+Clustered Extragalactic Point Sources at Cosmic Microwave Background Frequencies from Flat
+and All-Sky Two-dimensional Simulations, ApJ 621 (2005) 1 [astro-ph/0405553].
+[34] D.E. Rumelhart, G.E. Hinton and R.J. Williams, Learning Representations by
+Back-propagating Errors, Nature 323 (1986) 533.
+[35] J. Long, E. Shelhamer and T. Darrell, Fully convolutional networks for semantic segmentation,
+in Proceedings of the IEEE conference on computer vision and pattern recognition,
+pp. 3431–3440, 2015.
+[36] O. Ronneberger, P. Fischer and T. Brox, U-Net: Convolutional networks for biomedical image
+segmentation, Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015
+(2015) .
+[37] I.J. Goodfellow, Technical report: Multidimensional, downsampled convolution for
+autoencoders, Tech. Rep. Université de Montréal (2010).
+[38] D. Alonso, J. Sanchez, A. Slosar and LSST Dark Energy Science Collaboration, A unified
+pseudo-Cℓ framework, MNRAS 484 (2019) 4127 [1809.09603].
+[39] Planck Collaboration, R. Adam, P.A.R. Ade, N. Aghanim, M. Arnaud, M. Ashdown et al.,
+Planck 2015 results. IX. Diffuse component separation: CMB maps, A&A 594 (2016) A9
+[1502.05956].
+[40] Planck Collaboration, R. Adam, P.A.R. Ade, N. Aghanim, M.I.R. Alves, M. Arnaud et al.,
+Planck 2015 results. X. Diffuse component separation: Foreground maps, A&A 594 (2016) A10
+[1502.01588].
+
+– 17 –
+
+[41] Planck Collaboration, Y. Akrami, F. Arroja, M. Ashdown, J. Aumont, C. Baccigalupi et al.,
+Planck 2018 results. I. Overview and the cosmological legacy of Planck, arXiv e-prints (2018)
+arXiv:1807.06205 [1807.06205].
+[42] M. Tristram, A.J. Banday, K.M. Górski, R. Keskitalo, C.R. Lawrence, K.J. Andersen et al.,
+Planck constraints on the tensor-to-scalar ratio, A&A 647 (2021) A128 [2010.01139].
+[43] H.K. Eriksen, C. Dickinson, C.R. Lawrence, C. Baccigalupi, A.J. Banday, K.M. Górski et al.,
+Cosmic Microwave Background Component Separation by Parameter Estimation, ApJ 641
+(2006) 665 [astro-ph/0508268].
+[44] H.K. Eriksen, J.B. Jewell, C. Dickinson, A.J. Banday, K.M. Górski and C.R. Lawrence, Joint
+Bayesian Component Separation and CMB Power Spectrum Estimation, ApJ 676 (2008) 10
+[0709.1058].
+[45] M. Galloway, K.J. Andersen, R. Aurlien, R. Banerji, M. Bersanelli, S. Bertocco et al.,
+BEYONDPLANCK. III. Commander3, A&A 675 (2023) A3 [2201.03509].
+[46] Planck Collaboration V, Planck 2018 results. V. CMB power spectra and likelihoods, A&A 641
+(2020) A5 [1907.12875].
+[47] J.D. Hunter, Matplotlib: A 2d graphics environment, Computing In Science & Engineering 9
+(2007) 90.
+[48] F. Chollet, “Keras.” https://github.com/fchollet/keras, 2015.
+[49] T. Oliphant, “NumPy: A guide to NumPy.” USA: Trelgol Publishing, 2006.
+[50] K.M. Górski, E. Hivon, A.J. Banday, B.D. Wand elt, F.K. Hansen, M. Reinecke et al.,
+HEALPix: A Framework for High-Resolution Discretization and Fast Analysis of Data
+Distributed on the Sphere, ApJ 622 (2005) 759 [astro-ph/0409513].
+[51] A. Zonca, L.P. Singer, D. Lenz, M. Reinecke, C. Rosset, E. Hivon et al., healpy: equal area
+pixelization and spherical harmonics transforms for data on the sphere in python, Journal of
+Open Source Software 4 (2019) 1298.
+
+– 18 –
+
+

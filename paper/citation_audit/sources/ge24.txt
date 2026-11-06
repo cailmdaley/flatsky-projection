@@ -1,0 +1,4343 @@
+arXiv:2411.06000v3 [astro-ph.CO] 30 Apr 2025
+
+Cosmology From CMB Lensing and Delensed EE Power Spectra Using 2019-2020
+SPT-3G Polarization Data
+F. Ge ,1, ∗ M. Millea ,1 E. Camphuis ,2 C. Daley ,3, 4 N. Huang,5 Y. Omori,6, 7 W. Quan,8, 7
+E. Anderes,9 A. J. Anderson ,10, 7, 6 B. Ansarinejad,11 M. Archipley ,7, 6 L. Balkenhol ,2 K. Benabed,2
+A. N. Bender ,12, 7, 6 B. A. Benson ,10, 7, 6 F. Bianchini ,13, 14, 15 L. E. Bleem ,12, 7 F. R. Bouchet ,2
+L. Bryant,16 J. E. Carlstrom,7, 16, 8, 12, 6 C. L. Chang,12, 7, 6 P. Chaubal,11 G. Chen,17 P. M. Chichura ,8, 7
+A. Chokshi,17 T.-L. Chou ,6, 7 A. Coerver,5 T. M. Crawford ,7, 6 T. de Haan,18 K. R. Dibert,6, 7
+M. A. Dobbs,19, 20 M. Doohan,11 A. Doussot,2 D. Dutcher ,21 W. Everett,22 C. Feng,23 K. R. Ferguson ,24, 25
+K. Fichman,8, 7 A. Foster ,21 S. Galli,2 A. E. Gambrel,7 R. W. Gardner,16 N. Goeckner-Wald,14, 13
+R. Gualtieri ,26 F. Guidi ,2 S. Guns,5 N. W. Halverson,27, 28 E. Hivon ,2 G. P. Holder ,23 W. L. Holzapfel,5
+J. C. Hood,7 D. Howe,17 A. Hryciuk,8, 7 F. Kéruzoré,12 A. R. Khalife ,2 L. Knox,1 M. Korman,29
+K. Kornoelje,6, 7 C.-L. Kuo,13, 14, 15 A. T. Lee,5, 30 K. Levy,11 A. E. Lowitz,7 C. Lu,23 A. Maniyar,13, 14, 15
+E. S. Martsen,6, 7 F. Menanteau,3, 31 J. Montgomery,19 Y. Nakato,14 T. Natoli,7 G. I. Noble ,32, 33
+Z. Pan ,12, 7, 8 P. Paschos,16 K. A. Phadke ,3, 31 A. W. Pollak,17 K. Prabhu,1 M. Rahimi,11 A. Rahlin ,6, 7
+C. L. Reichardt ,11 D. Riebel,17 M. Rouble,19 J. E. Ruhl,29 E. Schiappucci,11 J. A. Sobrin ,10, 7 A. A. Stark,34
+J. Stephen,16 C. Tandoi,3 B. Thorne,1 C. Trendafilova,31 C. Umilta ,23 J. D. Vieira,3, 23, 31 A. Vitrier,2
+Y. Wan,3, 31 N. Whitehorn ,25 W. L. K. Wu ,13, 15 M. R. Young,10, 7 and J. A. Zebrowski7, 6, 10
+(SPT-3G Collaboration)
+1
+
+2
+
+Department of Physics & Astronomy, University of California, One Shields Avenue, Davis, CA 95616, USA
+Sorbonne Université, CNRS, UMR 7095, Institut d’Astrophysique de Paris, 98 bis bd Arago, 75014 Paris, France
+3
+Department of Astronomy, University of Illinois Urbana-Champaign,
+1002 West Green Street, Urbana, IL, 61801, USA
+4
+Université Paris-Saclay, Université Paris Cité, CEA, CNRS, AIM, 91191, Gif-sur-Yvette, France
+5
+Department of Physics, University of California, Berkeley, CA, 94720, USA
+6
+Department of Astronomy and Astrophysics, University of Chicago,
+5640 South Ellis Avenue, Chicago, IL, 60637, USA
+7
+Kavli Institute for Cosmological Physics, University of Chicago,
+5640 South Ellis Avenue, Chicago, IL, 60637, USA
+8
+Department of Physics, University of Chicago, 5640 South Ellis Avenue, Chicago, IL, 60637, USA
+9
+Department of Statistics, University of California, One Shields Avenue, Davis, CA 95616, USA
+10
+Fermi National Accelerator Laboratory, MS209, P.O. Box 500, Batavia, IL, 60510, USA
+11
+School of Physics, University of Melbourne, Parkville, VIC 3010, Australia
+12
+High-Energy Physics Division, Argonne National Laboratory,
+9700 South Cass Avenue., Lemont, IL, 60439, USA
+13
+Kavli Institute for Particle Astrophysics and Cosmology,
+Stanford University, 452 Lomita Mall, Stanford, CA, 94305, USA
+14
+Department of Physics, Stanford University, 382 Via Pueblo Mall, Stanford, CA, 94305, USA
+15
+SLAC National Accelerator Laboratory, 2575 Sand Hill Road, Menlo Park, CA, 94025, USA
+16
+Enrico Fermi Institute, University of Chicago, 5640 South Ellis Avenue, Chicago, IL, 60637, USA
+17
+University of Chicago, 5640 South Ellis Avenue, Chicago, IL, 60637, USA
+18
+High Energy Accelerator Research Organization (KEK), Tsukuba, Ibaraki 305-0801, Japan
+19
+Department of Physics and McGill Space Institute, McGill University,
+3600 Rue University, Montreal, Quebec H3A 2T8, Canada
+20
+Canadian Institute for Advanced Research, CIFAR Program in
+Gravity and the Extreme Universe, Toronto, ON, M5G 1Z8, Canada
+21
+Joseph Henry Laboratories of Physics, Jadwin Hall,
+Princeton University, Princeton, NJ 08544, USA
+22
+Department of Astrophysical and Planetary Sciences,
+University of Colorado, Boulder, CO, 80309, USA
+23
+Department of Physics, University of Illinois Urbana-Champaign,
+1110 West Green Street, Urbana, IL, 61801, USA
+24
+Department of Physics and Astronomy, University of California, Los Angeles, CA, 90095, USA
+25
+Department of Physics and Astronomy, Michigan State University, East Lansing, MI 48824, USA
+26
+Department of Physics and Astronomy, Northwestern University, 633 Clark St, Evanston, IL, 60208, USA
+27
+CASA, Department of Astrophysical and Planetary Sciences,
+University of Colorado, Boulder, CO, 80309, USA
+28
+Department of Physics, University of Colorado, Boulder, CO, 80309, USA
+29
+Department of Physics, Case Western Reserve University, Cleveland, OH, 44106, USA
+30
+Physics Division, Lawrence Berkeley National Laboratory, Berkeley, CA, 94720, USA
+
+2
+31
+
+Center for AstroPhysical Surveys, National Center for Supercomputing Applications, Urbana, IL, 61801, USA
+32
+Dunlap Institute for Astronomy & Astrophysics, University of Toronto,
+50 St. George Street, Toronto, ON, M5S 3H4, Canada
+33
+David A. Dunlap Department of Astronomy & Astrophysics,
+University of Toronto, 50 St. George Street, Toronto, ON, M5S 3H4, Canada
+34
+Harvard-Smithsonian Center for Astrophysics, 60 Garden Street, Cambridge, MA, 02138, USA
+(Dated: May 2, 2025)
+
+From CMB polarization data alone we reconstruct the CMB lensing power spectrum, comparable in overall constraining power to previous temperature-based reconstructions, and an unlensed
+E-mode power spectrum, with clear detections of the third through tenth acoustic peaks. The observations, taken in 2019 and 2020 with the South Pole Telescope (SPT) and the SPT-3G camera, cover
+1500 deg2 at 95, 150, and 220 GHz with arcminute resolution and roughly 4.9 µK-arcmin coadded
+noise in polarization. The power spectrum estimates, together with systematic parameter estimates
+and a joint covariance matrix, follow from a Bayesian analysis using the Marginal Unbiased Score
+Expansion (MUSE) method. The E-mode spectrum at ℓ > 2000 and lensing spectrum at L > 350
+are the most precise to date. Assuming the ΛCDM model, and using only these SPT data and
+priors on τ and absolute calibration from Planck, we find H0 = 66.81 ± 0.81 km/s/Mpc, comparable
+in precision to the Planck determination and in 5.4 σ tension with the most precise H0 inference
+derived via the distance ladder. We also find S8 ≡ σ8 (Ωm /0.3)0.5 = 0.850 ± 0.017, providing further
+independent evidence of a slight tension with low-redshift structure probes. The ΛCDM model
+provides a good simultaneous fit to the combined Planck, ACT, and SPT data, and thus passes a
+powerful test. Combining these CMB datasets with BAO observations, we explore extensions to
+the ΛCDM model. We find that the effective number of neutrino species, spatial curvature, and
+primordial helium fraction are consistent with standard model values, and that the 95% confidence
+upper limit on the neutrino mass sum is 0.075 eV, close to the minimum sum expected from observations of solar and atmospheric neutrino oscillations. The SPT data are consistent with the
+somewhat weak (< 3 σ) preference for excess lensing power seen in Planck and ACT data relative
+to predictions of the ΛCDM model given the combined Planck, ACT, and BAO data sets. We also
+detect at greater than 3 σ the influence of non-linear evolution in the CMB lensing power spectrum
+and discuss it in the context of the S8 tension. Forthcoming SPT-3G analyses will feature deeper
+and wider observations in temperature and polarization, providing even tighter constraints and more
+powerful tests of the ΛCDM model.
+
+Since the successful completion of the Planck satellite’s
+sky surveys [1], the frontier in the study of the cosmic
+microwave background (CMB) anisotropies has been its
+polarization. Here we present the strongest cosmological
+constraints to date derived from polarization data alone,
+constraints that are, by some measures, comparable to
+those from temperature data alone. Low-noise polarization measurements allow for new tests of the standard
+cosmological model, as the cosmological parameter inference relies on different signals, and they allow for additional robustness to many sources of potential systematic
+error.
+The data we use come from the SPT-3G camera [2]
+installed on the South Pole Telescope (SPT) in early
+2017. By October of 2024, SPT-3G had been used to
+survey 10,000 deg2 , with the bulk of the Austral winter
+observing time spent on a 1500 deg2 patch. The resulting
+
+data allow for powerful tests of the standard cosmological model, ΛCDM, via the primary and CMB lensing
+signals [3], improved constraints on primordial gravitational waves via de-lensing of the degree-scale observations of the BICEP/Keck Collaboration [4], and many
+other science applications [5–11].
+This paper is the first of a series of papers on CMB
+power spectra, the CMB lensing power spectrum, and
+cosmological parameter estimates inferred from the 2019
+and 2020 Austral winter observations of the 1500 deg2
+patch. The temperature and polarization maps used in
+these analyses are the result of four times as much observing time and twice as many detectors as were used
+for similar analyses that used a half season of data taken
+in 2018 with a partial SPT-3G focal plane [12–15].
+This paper is distinct from the others in the coming series by its focus on polarization data only, and by its use
+of a novel algorithm for optimally and simultaneously estimating the CMB lensing power spectrum, the unlensed1
+
+∗
+
+1
+
+I.
+
+fge@ucdavis.edu
+
+INTRODUCTION
+
+We note a subtle distinction between a de-lensed spectrum, which
+
+3
+CMB E-mode polarization power spectrum (EE), and
+systematics parameters. This algorithm, the Marginal
+Unbiased Score Expansion (MUSE), was developed by
+Millea & Seljak [16] and Millea [17], with its precursors
+discussed in [18, 19]. This is the first time the MUSE
+method has been applied to real data. We present the
+analysis in some detail and emphasize its advantages, including straightforward incorporation of systematic effects into a statistical model, a lensing potential map
+with lower noise than if it were produced by a quadratic
+estimator [e.g. 20], and an unlensed EE power spectrum
+with reduced sample variance relative to any inference of
+the lensed EE power spectrum [21].
+De-lensed power spectra from quadratic estimators
+have been estimated previously from data by Planck Collaboration et al. [22] and Han et al. [23]. The methodology for optimal lensing reconstruction has been principally developed in [16, 24–29]; and an application to
+SPTpol data was described in [30]. With the SPT-3G
+data we analyze here, we are crossing the threshold of polarization noise level below which optimal methods lead
+to significant improvements in lensing reconstruction.
+We focus solely on polarization anisotropies in order to
+avoid modeling extragalactic foregrounds and their nonGaussian properties. Such modeling would likely be necessary for a similar analysis which included temperature
+anisotropies, where the relative impact of foregrounds is
+larger. Due to the low noise and high angular resolution
+of the SPT-3G measurements, this initial conservative
+approach still leaves us with an inferred CMB lensing
+power spectrum with high signal-to-noise ratio. In the
+part of sky we observe, over the angular scales used in
+the analysis, galactic foregrounds are also negligibly small
+[12, 31].
+We compare with other CMB measurements in both
+temperature and polarization, including those from the
+Planck Collaboration [32] and the Atacama Cosmology
+Telescope (ACT) Collaboration [33–36]. We check for
+consistency of our results in the context of the ΛCDM
+model. We also determine cosmological parameters assuming the ΛCDM model and extensions from SPT data
+alone and in combination with these other datasets. Although the SPT observations we use here cover much
+less sky relative to Planck and ACT, the very low noise
+(4.9 µK-arcmin in coadded polarization maps) and arcminute angular resolution enable measurements of the
+EE power spectrum and CMB lensing potential power
+spectrum (ϕϕ) that are the most precise measurements
+ever made at ℓ > 2000 for EE and L > 350 for ϕϕ.
+We discuss how the signals in our data allow for the
+determination of cosmological parameters assuming the
+
+contains a residual lensing component which must be modeled,
+and our inference of an unlensed spectrum, which contains no
+such residual, independent of cosmological model. Although of
+minor impact, this explains our usage of “unlensed” throughout
+the text.
+
+ΛCDM model. The origins of these determinations have
+interesting differences compared to those from Planck
+CMB data. For example, the Hubble constant (H0 ) inference depends heavily on the lensing information; without
+it, the error increases by more than 10 times. Consistency
+between the Planck and SPT inferences of H0 places further constraints on attempts to solve the H0 tension [37]
+with changes to cosmological models [38, 39].
+We pay particular attention to the implications of our
+data for the “negative neutrino mass” problem and its relation to excess lensing power pointed out by Craig et al.
+[40], and to the suggestion from Amon & Efstathiou [41]
+that the σ8 tension is associated with non-linear evolution, either due to mismodeling the ΛCDM predictions
+or by neglect of some new physics that modifies evolution
+on non-linear scales.
+The rest of this paper is constructed as follows. In
+Sect. II we describe the process for making CMB maps
+from real and mock observations. We give an overview
+of MUSE and our data modeling in Sect. III. We present
+our pipeline and data validation processes, the blinding
+procedure, and results in Sect. IV. We show the resulting
+bandpowers and cosmological parameter constraints in
+Sect. V. We conclude in Sect. VI. Throughout this work
+we use a series of abbreviations for external datasets tabulated in Tab. III.
+
+II.
+
+DATA AND MAPMAKING
+
+We use data taken with the SPT-3G camera during the
+2019 and 2020 winter observing seasons. The 1500 deg2
+SPT-3G winter footprint extends from −42◦ to −70◦ in
+declination and −50◦ to 50◦ in right ascension. The
+footprint is divided into four subfields with declination
+centers of −44.75◦ , −52.25◦ , −59.75◦ , and −67.25◦ , and
+that allows for fitting different systematics parameters
+between patches that improve detector response consistency and linearity across the entire field. Observations
+are performed in two-hour periods and map a single
+sub-field at a time. During one observation, the telescope performs 72 constant-elevation (and thus constantdeclination) scans with a scan speed of 1 deg/s in right
+ascension and an elevation step of 12.5 arcmin between
+scans. The subfields are observed 1034, 902, 772, and 578
+times respectively across the two seasons, which produces
+approximately uniform map noise levels across subfields.
+Each of the ∼ 16,000 detectors in the SPT-3G camera samples the sky as the telescope scans, producing
+one-dimensional “timestreams” that record sky brightness as a function of right ascension. The timestreams
+used in this analysis have on-sky sample rates between
+0.3 arcmin/sample and 0.6 arcmin/sample depending on
+declination, corresponding to an effective Nyquist frequency well beyond our maximum multipole of interest.
+The timestreams are low-pass filtered to reduce aliasing when later binning into maps, and high-pass fil-
+
+4
+tered to remove large-scale instrumental and atmospheric
+noise. The high-pass filter is performed by deprojecting
+a set of Legendre polynomials up to 30th-order and a set
+of sines and cosines up to an equivalent angular scale of
+ℓ ≤ 300.
+The filtering described above can produce undesired
+“ringing” features in the maps around the locations of
+point sources (a term we will loosely use here to describe both emissive galaxies and the Sunyaev-Zeldovich
+effect from galaxy clusters, the latter which can be spatially extended). To reduce these features, when fitting
+the deprojection coefficients, we ignore regions around
+point sources, specifically around all emissive sources
+with 150 GHz flux > 6 mJy and all galaxy clusters with
+a signal-to-noise > 10, for a total of 2655 objects. This
+procedure reduces ringing but does not mask the point
+sources, which instead happens at the map level later in
+the pipeline.
+After filtering, we bin the timestream samples using
+inverse-variance weights into 0.5625′ pixels given a Lambert projection centered on a right ascension of 0◦ and
+a declination of −59.55◦ . Weights are determined from
+the detector noise in the range 320 < ℓ < 4000. The pixel
+size was chosen so that the 1500 deg2 patch fits into maps
+with a number of pixels on each side that are powers of
+two, which maximizes the efficiency of FFTs. For this
+resolution, this yields 4096 × 8192 maps.
+After maps have been made for each observation in the
+2019 and 2020 winter observing seasons, we sum these
+maps into a full-depth “coadd” with a small number of
+data cuts. In addition to full-depth coadds, we also construct 500 “sign-flip” noise realizations by summing the
+observations with a random half of them multiplied by
+−1, canceling the signal but leaving the statistical properties of the noise unchanged. We use these to quantify
+the noise covariance, and to directly add to simulated
+signal maps to produce highly realistic simulations of the
+full dataset. We estimate that the noise realizations are
+correlated with each other at the percent level due to the
+finite number of observations in the dataset, but this is
+below the level which can significantly impact this analysis.
+Next, we apply an isotropic anti-aliasing filter to the
+0.5625′ maps and rebin them to the final 2.25′ resolution, 1024 × 2048 pixel analysis maps. We note that
+the reason for not binning the timestreams directly into
+the final 2.25′ resolution is exactly to be able to apply
+this anti-aliasing filter, as otherwise nothing would prevent aliasing in the scan-perpendicular direction. The
+final Nyquist frequency for these maps corresponds to
+ℓ = 4800, high enough to accommodate the ℓmax = 4000
+of our analysis while at the same time minimizing the
+pixel count and hence the computational cost of MUSE.
+Finally, we apply the pipeline masks described in
+Sect. III C. These processed and masked 1024 × 2048pixel maps of Q and U stokes polarization at 95, 150,
+and 220 GHz are the basic data, d, which is input to our
+analysis pipeline.
+
+III.
+
+METHODOLOGY: BAYESIAN INFERENCE
+WITH MUSE
+A.
+
+Bandpower and systematics inference
+
+We perform a map-level simultaneous Bayesian inference of the gravitational lensing potential bandpowers,
+the unlensed CMB EE bandpowers and systematic parameters. This procedure is described in Millea & Seljak
+[16] and Millea [17], and summarized below with a few
+additions specific to this work. The central piece of the
+analysis is the joint posterior probability function,
+P(f, ϕ, θ | d)
+
+(1)
+
+where f refers to the unlensed CMB maps (here just polarization), ϕ to the gravitational lensing potential, θ to
+the bandpower and systematics parameter vector, and d
+to the maps described in the previous section. The exact
+details of our modeling and construction of this function
+are given in the next section. Here, we first discuss how
+we use it to perform inference.
+The goal of our analysis is to marginalize over the “latent” f and ϕ variables to produce the marginal posterior
+on just the parameters of interest, θ:
+Z
+P(θ | d) = df dϕ P(f, ϕ, θ | d)
+(2)
+The constraints on θ described by this function are formally optimal, satisfying our goal of an optimal analysis. This optimality is achieved because, implicitly, the
+marginalization sources information from moments of the
+data at all orders, unlike e.g. quadratic estimators, which
+only use second-order moments. In particular, this means
+our results use information from all combinations of the
+data such as EE, EB, BB, EEE, EEB, etc...
+Various techniques exist for performing the difficult
+high-dimensional integration in Eqn. (2). A popular but
+computationally expensive choice is to use Hamiltonian
+Monte Carlo to yield the exact answer, up to sampling errors. MUSE instead performs an approximate but much
+faster marginalization, which yields a multi-variate Gaussian approximation to the marginal posterior,
+−2 log P(θ | d) ≈ (θ − θ̂)† (ΣMUSE )−1 (θ − θ̂) + C
+
+(3)
+
+for posterior mean θ̂, covariance ΣMUSE , and unimportant constant, C. The Gaussian approximation is wellmotivated due to the central limit theorem as long as
+many modes of f and ϕ contribute to the constraint on
+each θ, which is well-satisfied here.
+The marginal posterior mean, θ̂, is given by solving the
+following equation for θ:
+D
+E
+sMAP
+(θ, d) = sMAP
+(θ, d′ )
+i
+i
+
+d′ ∼P(d′ | θ)
+
+,
+
+(4)
+
+5
+(θ, d) is the gradient of the joint posterior with
+where sMAP
+i
+respect to parameter θi , evaluated at the maximum a
+posteriori (“MAP”) estimate of z ≡ (f, ϕ), i.e.
+sMAP
+(θ, d) =
+i
+
+d
+log P(ẑ(d, θ), θ | d)
+dθi
+
+(5)
+θ
+
+with
+ẑ(d, θ) = arg max P(z, θ | d).
+
+(6)
+
+z
+
+One way to understand this definition is to consider
+sMAP
+as a data compression, which, for a given value of
+i
+θ, takes as input our ∼ million-dimensional data vector
+and returns another vector of the same dimensionality as
+θ, which in our case is around a hundred bandpower and
+systematics parameters. The MUSE algorithm then proceeds by picking a starting guess for θ and compressing
+the data according to this, generating a suite of data simulations given the same θ and compressing them as well,
+and finally iteratively searching for the value of θ which
+make the data and simulations most similar, as compared
+via this data compression (Eqn. 4). Intuitively, this yields
+the parameters θ which are most likely to have actually
+generated the real data.
+More formally, Millea & Seljak [16] show that following
+this procedure leads to an asymptotically unbiased estimate of parameters, θ̂, for any Gaussian or non-Gaussian
+latent space, z. For a Gaussian latent space, the data
+compression is a sufficient statistic, and therefore θ̂ gives
+the exact marginal posterior mean. For non-Gaussian latent spaces such as the one here, the data compression
+can be considered “lossy”, but this leads only to a possible loss of optimality, with the asymptotic bias remaining
+zero. For a lensing analysis similar to the one performed
+here, Millea & Seljak [16] bounds any loss of optimality
+to less than 10% of the statistical uncertainty.
+The covariance, ΣMUSE , is computed from:
+† −1
+Σ−1
+H + Σ−1
+prior
+MUSE = H J
+
+(7)
+
+where
+
+
+Jij = cov sMAP
+(θ̂, d), sMAP
+(θ̂, d)
+i
+j
+d∼P(d | θ̂)
+D
+
+E
+d
+Hij =
+sMAP
+(θ̂, d)
+,
+i
+dθj
+d∼P(d | θ) θ=θ̂
+
+(8)
+(9)
+
+and Σprior is the covariance of any assumed prior. Note
+that this is not a pure Monte Carlo covariance of the
+MUSE estimate, which would be prohibitive computationally, but rather a cheaper Monte Carlo covariance
+of just sMAP , with analytic propagation to the resulting covariance in parameters. All derivatives in practice
+are computed with automatic differentiation, and Monte
+Carlo error stemming from J is reduced using a method
+described in App. C.
+One aforementioned aspect of MUSE which is key for
+this analysis is that it is unbiased even for “lossy” data
+
+compressions. This holds as long as the simulationgenerating distribution, P(d | θ), is an accurate representation of the real data. There is not actually any requirefor MUSE to remain asympment on the form of sMAP
+i
+totically unbiased and for the covariance expressions to
+given in Eqn. (5)
+be valid. The default choice for sMAP
+i
+is simply the one which makes MUSE exact for Gaussian
+problems.
+Here, we keep this choice largely intact, but modify the joint posterior appearing in Eqns. (5) and (6),
+P(f, ϕ, θ | d), to be slightly different from the likelihood
+function used to generate the simulations, P(d | θ). Normally, the two distributions would be related by:
+P(d | θ) =
+
+P(d)
+P(θ)
+
+Z
+df dϕ P(f, ϕ, θ | d).
+
+(10)
+
+Instead, here we have one statistical model denoted as
+the posterior model, P(f, ϕ, θ | d), and another called the
+simulation model, P(d | θ).
+In the analysis, the posterior model is used in computationally costly high-dimensional maximizations, while
+the simulation model is only ever used to generate a few
+hundred samples from P(d | θ). This hints at the motivation for this choice of separate models, namely to
+allow defining a simulation model which fully meets our
+accuracy requirements, while keeping a simpler “surrogate” posterior model which is much faster to compute
+and makes the analysis more tractable. With an accurate simulation model, the MUSE analysis will remain
+unbiased, and we find little loss of optimality due to approximations in the posterior model.
+We note that our analysis can also be considered a
+form of “simulation-based inference” (SBI). This term is
+used to describe a class of algorithms which leverage the
+ability to generate samples from P(d | θ) directly into the
+ability to perform inference, and has been of increasing
+interest in various domains in cosmology [see e.g. 42–48].
+In typical high-dimensional SBI applications to-date, an
+important first step is to obtain a suitable data compression function to reduce the dimensionality of the problem, often by training a neural network on the generated
+samples themselves [49]. The compressed data is then
+used to infer parameters with something like Approximate Bayesian Computation (ABC) [50, 51], or by training a neural network surrogate model for the likelihood
+which can be inverted to obtain the posterior [see 52].
+MUSE is similar in that it also involves a data compression function, but rather than learned with a neural
+network, the generic and semi-analytic sMAP
+is used ini
+stead. Furthermore, rather than using something like
+ABC or training surrogate models for inference, we exploit our access to gradients and Jacobians through the
+posterior and simulation-generating function to derive
+semi-analytic expressions for the posterior mean and covariance. In this way, MUSE can be considered one of the
+possible augmentations of SBI suggested by [52] which
+use additional tractable quantities from the simulator.
+
+6
+B.
+
+Cosmological parameter inference
+
+The output of MUSE is a parameter mean, θ̂, and
+its covariance, ΣMUSE . The inferred parameters for
+this analysis include the ϕϕ and unlensed EE spectra binned into bandpowers, and systematics parameters. The systematics-marginalized CMB bandpowers
+and covariance can be obtained by simply dropping the
+systematics from the estimate and dropping the corresponding block from the covariance (which is equivalent
+to marginalizing them). That is, part of the output
+of MUSE is automatically a set of “CMB-compressed”
+bandpowers such as those which have been derived for
+other experiments [53–55]. We can then estimate cosmological parameters, γ, as usual, by forming a cosmological
+parameter likelihood,
+
+h
+
+−2 log P(θ̂ | γ) = θ(γ) − θ̂
+
+i†
+
+h
+
+i
+
+Σ−1
+MUSE θ(γ) − θ̂ ,
+
+(11)
+
+where θ(γ) is our theory ϕϕ and unlensed EE
+spectra binned according to our specified bandpower
+window functions (App. A 1).
+For our main results we sample P(θ̂ | γ) with Cobaya2 [56] and use
+CAMB3 [57] to compute theory spectra. To get the
+accurate theory CMB spectra at large ℓ, we set
+lens potential accuracy=4 and lens margin=1250 in
+CAMB. We also set halofit version=mead2020 for the
+non-linear correction in CAMB. The convergence criterion
+of MCMC is set to R − 1 < 0.01 of the Gelman-Rubin
+statistic.
+
+C.
+
+Map-level model summary
+
+The posterior and simulation models are specified in
+Eqns. (12-19), with a summary given below and full details given in Appendix A.
+
+Simulation model :
+sky
+f ∼ N (0, Ccurv
+(AEE
+b ))
+f
+
+(12)
+
+sky
+N (0, Ccurv
+(Aϕϕ
+ϕ
+b ))
+ν
+{nsignflips }
+
+(13)
+
+ϕ∼
+ν
+
+n ∼
+
+(14)
+
+ν
+ν
+dν,i = Mfourier · Mtrough · Mpix · PWF · TFν · R(ψpol
+) · Aν,i
+cal · B(βn , βpol ) · G · P · L(ϕ) · f
+ν,i
+ν
+ν
+ν
++ ϵν,i
+Q · tQ + ϵU · tU + n
+
+
+
+(15)
+
+Posterior model :
+sky
+f ∼ N (0, Cflat
+(AEE
+b ))
+f
+
+(16)
+
+sky
+N (0, Cflat
+(Aϕϕ
+ϕ
+b ))
+
+(17)
+
+ϕ∼
+µν,i
+ν
+
+
+ν,i
+ν,i
+ν
+ν
+ν
+ν
+= Mfourier · Mtrough · Mpix · PWF · TFν · R(ψpol
+) · Aν,i
+cal · B(βn , βpol ) · L(ϕ) · f + ϵQ · tQ + ϵU · tU
+ν
+
+d ∼ N (µ
+
+, Cνn )
+
+⇒ −2 log P(f, ϕ, θ | d) = f
+
+(18)
+(19)
+
+†
+
+C−1
+f f
+
++ϕ
+
+†
+
+C−1
+ϕ ϕ
+
+X
++
+(dν − µν )† (Cνn )−1 (dν − µν ) − 2 log P(ϕ)
+
+(20)
+
+ν
+
+where − 2 log P(ϕ) = Mpix ∇2 ϕ
+
+2
+
+/10−8
+
+Reading these models top-to-bottom describes how to
+produce a random sample from the model, with “∼” used
+to represent generation of a random sample from the distribution on the RHS and N (µ, Σ) a multi-variate Gaussian with mean and covariance µ and Σ.
+
+2
+3
+
+https://cobaya.readthedocs.io/en/latest/
+https://camb.info/
+
+(21)
+
+To summarize, in the simulation model, we generate
+curved-sky unlensed CMB maps (f ) and lensing potential maps (ϕ) from appropriate covariance operators (C),
+which are parameterized by the bandpower amplitudes
+ϕϕ
+which we will infer (AEE
+b and Ab ). We apply the lensing
+operation (L) to produce lensed CMB maps and project
+to the flat-sky Lambert pixelization of the data (P). We
+apply an additional small deflection (G) to account for
+relativistic aberration due to our proper motion relative
+to the CMB rest frame. We apply the beam convolu-
+
+7
+ν
+tion operator (B(βn , βpol
+)), which is parameterized by a
+set of beam eigenmode amplitudes (βn ) and the polarization fraction of the beam sidelobes at each frequency
+ν
+(βpol
+). We rotate the global polarization angle of the
+maps (R(ψpol )) by an angle ψpol to model systematic errors in the overall polarization angle of our detectors. In
+each subfield, i, we scale the maps by Aν,i
+cal , to model
+the uncertain absolute calibration of the instrument. We
+apply the model transfer function (TF), and apply the
+pixel window function (PWF). We add in temperature
+to polarization monopole leakage Q and U templates determined directly from our temperature observations (tQ
+and tU ) with subfield-dependent amplitudes (ϵiQ and ϵiU ),
+as well as add in a sample of the noise (nν ) from one of
+the sign-flip noise realizations. Finally, we apply our chosen pixel, “trough”, and Fourier masks (see App. A 9) to
+produce a simulated data vector, dν .
+The posterior model is nearly the same, with the only
+differences being that the covariances, C, assume flat-sky
+statistics, the noise is generated from a covariance and is
+unmasked, and aberration is ignored. For the posterior
+model, it is possible to calculate the posterior probability
+function, given in Eqn. (20). Here, we also choose to
+include a “super-sample” prior, P(ϕ), in order to reduce
+the lensing mean-field (before its impact is automatically
+removed entirely in the process of obtaining the MUSE
+estimate).
+The final inferred parameter vector is
+ν,i
+EE
+ν
+i
+i
+θ = {Aϕϕ
+b , Ab , βn , βpol , Acal , ψpol , ϵQ , ϵU },
+
+(22)
+
+containing 77 bandpower parameters and 47 systematics
+parameters. The MUSE estimate is a joint best-fit and a
+covariance between all of them.
+We note that the approximation of leaving the noise
+unmasked, while seemingly benign, is actually critical to
+obtaining a sufficiently fast posterior function since it
+avoids an additional large matrix inversion, while having little impact on the final results (see also Sec. 3.7 of
+[30]). We also note that the ability to directly use the
+sign-flip noise realizations in the simulation model is extremely advantageous. Without this, a Bayesian analysis
+would depend on an accurate statistical model of all moments of the noise (power spectrum, bispectrum, etc...),
+and would require both sampling and evaluating the likelihood of a noise map given such a model. Here, noise
+modeling is essentially a non-issue since MUSE requires
+only sampling the noise, and the sign-flip realizations provide these samples and empirically match the true noise
+distribution.
+There are a few effects which we considered but ultimately chose not to include the model. The first effect
+is polarized foregrounds. The dominant expected foreground comes from polarized point sources. For the same
+point source flux cut used here, Dutcher et al. [12] construct a set of priors on the foreground amplitudes based
+on measurements of temperature foregrounds scaled to
+polarization with very conservative priors on the polar-
+
+ization fraction. Based on this, we find that the maximum possible contamination has power two orders of
+magnitude lower than our noise spectra at all frequencies. That the foreground contribution is small is also
+consistent with [58], in which it is found that even for
+much deeper observations than ours, the bias to lensing
+from polarized foregrounds is fairly marginal. As mentioned, this finding that the foreground contribution is
+negligible in polarization for this analysis was key in our
+decision to focus only on polarization in this paper.
+The second effect we ignore is the bias due to spatial
+correlation between the lensing potential and the location
+of our masked point source holes [59]. Using the Agora
+simulations [60], which include a model for these spatial
+correlations, we find that for our point source masking
+threshold, the maximum bias to CLϕϕ would be ∼ 0.5%.
+However, Lembo et al. [59] also show that this maximum
+bias is highly suppressed in an optimally filtered ϕ map
+such as the MAP ϕ maps which enter our analysis. We
+thus conclude this effect is also negligible here.
+
+IV.
+
+VALIDATION OF PIPELINE AND DATA
+
+Before computing our main results, we conducted a set
+of validation tests which we present in this section. To
+mitigate and quantify confirmation bias, we performed
+these tests “blind”, that is, without comparison to data
+from other experiments or to theory models derived from
+these experiments. After unblinding, we allowed ourselves to make further changes to the pipeline before
+producing our final baseline results, but committed to
+reporting in this paper the parameters that we initially
+found before any such changes. This motivated and focused the validation work, and allows us to quantify any
+level of confirmation bias; the initial unblinded results
+could not be impacted by confirmation bias, only the
+shifts after unblinding could be. A full discussion of
+changes made after unblinding is at the end of this section (Sec. IV C).
+Our chosen set of rules for blinding were: 1) do not
+plot our bandpowers on the same plot as bandpowers or
+theory curves from any other previous analysis or experiment (including from SPT itself), or show bandpowers
+relative to any theory curves, 2) if we do plot bandpowers, remove all tick marks and tick labels and do not look
+at numerical values of bandpowers, 3) do not look at absolute cosmological parameters derived from bandpowers
+(internal null parameter differences, e.g. the parameters
+from 95 GHz minus parameters from 150 GHz were allowed).
+This procedure left us blind to all but very gross departures from ΛCDM and did not allow us to know if
+bandpowers were consistent with any other experiment
+before unblinding, while not being overly burdensome.
+We now describe the set of validation tests of our
+pipeline and data which we performed while blinded.
+
+8
+
+FIG. 1. Verification that our pipeline recovers unbiased bandpower and systematics parameters using 100 mock simulations.
+The colored lines are the average MUSE parameter estimates over simulations after subtracting the input simulation truth
+(in the final panel we also divide by the errorbars for one simulation due to the otherwise large dynamic range). The first
+two panels show ϕϕ and unlensed EE bandpower amplitude parameters (and also consider single-frequency runs) and the last
+panel groups together all the systematics parameters (see Sec. III C and App. A for description of the systematics considered).
+The PTEs of the colored lines relative to the expected scatter and 2-tailed numbers of σ are shown in the legends. To get the
+PTEs, we Monte Carlo sample the expected distribution of χ2 values, accounting both for the look-elsewhere effect of 4 tests
+(3 single-frequency runs and 1 all-frequency run) and the fact that we compute the expected scatter itself from 100 mocks. For
+reference, gray bands are the all-frequency 1 and 2 σ errors (note that this is not the expected scatter of any of the lines, rather
+is a way to judge the size of any potential bias).
+
+A.
+
+Pipeline tests
+
+1.
+
+Simulated Data
+
+To validate our full bandpower and cosmological parameter estimation pipeline, we use an ensemble of highly
+realistic simulations of the full dataset which we call
+“mock simulations”. The signal part of the mock simulations consists of a lensed CMB realization generated assuming a fiducial Planck ΛCDM cosmology and
+a Gaussian foreground model based on Agora simulations [60] that is calibrated against data at very
+high-ℓ. These maps are processed through a procedure called mock observation, which generates simulated
+timestreams and simulates the observation and processing of the timestreams into maps at each frequency, using the identical code which processes the real data.4
+The noise part of the mock simulations comes from signflipped noise realizations.
+
+2.
+
+End-to-end pipeline tests
+
+To check that our pipeline is unbiased, we start with
+an end-to-end test of the pipeline on a set of 100 mock
+simulations. First, we compute MUSE estimates of bandpowers and systematic parameters on each mock simulation using all three 95+150+220 GHz polarization maps
+(hereafter, “all-frequency”). Then we repeat the same
+procedures on single-frequency polarization maps with
+
+the corresponding systematic parameters fixed to the allfrequency results (this is how we handle systematics in
+the single-frequency runs on real data as well).
+In the left two panels of Fig. 1, we show the mean bandpowers over 100 mock simulations compared to the input
+truth. The PTE of the difference between the mean and
+input truth and its conversion to a number of σ is given in
+the legend.5 No bias is detected at 3 σ significance from
+the 100 mock simulations. The scatter of the mean bandpowers is at the level of 10% of the statistical uncertainty,
+as expected from a test with 100 realizations. In the right
+panel of Fig. 1, we also show the mean systematics parameters over 100 all-frequency mock simulations, here
+scaled by their 1 σ uncertainty. These are also recovered
+with no significant bias. Single-frequency runs do not
+vary systematics parameters, hence those estimates are
+not shown.
+We next compare the empirical covariance of the 100
+all-frequency estimates with the MUSE covariance given
+in Eqn. (7). The left column of Fig. 2 compares the
+square root of the diagonal covariance entries. We see
+good consistency between the two except for Acal . This
+is because the mock simulations were made without varying systematic parameters within their prior, while the
+MUSE covariance takes the prior uncertainty of all parameters into account. This difference is particularly evident for prior-dominated parameters such as Acal .
+In the right column of Fig. 2, we compare the first and
+second off-diagonal elements in the bandpower covariance matrices, this time fixing the systematics in ΣMUSE
+
+5
+4
+
+To reduce computational cost and because many observations
+have identical filtering, we use only 5% of the total observations
+in this step.
+
+All PTEs we quote are corrected for look-elsewhere in the case
+that there are multiple tests. We will specify if the conversion to
+number of σ is 2-tailed, in which case negative values correspond
+to a PTE better than the mean expectation; otherwise the quoted
+σ number is 1-tailed.
+
+9
+
+FIG. 2. Verification of the accuracy of the all-frequency
+MUSE covariance, ΣMUSE . (Top left) Comparison of the
+square root of the diagonal elements between the MUSE co√
+variance, σMUSE ≡ diag(ΣMUSE ), and the empirical covariance from running the estimate on mock simulations. (Bottom left) The ratio of the two curves in the upper panel. The
+shaded band shows the 1 and 2 σ standard error on σempirical
+from the 100 simulations used. These are expected to match
+for fully likelihood-dominated parameters, and do so for all
+parameters except the partially prior-dominated Acal parameters. (Top and bottom right) Comparisons of the first and
+second off-diagonal elements of the MUSE and empirical correlation matrices. In this case, systematics are assumed fixed
+in the MUSE covariance, since they are fixed in the simulations.
+
+for a more like-to-like comparison. We see good agreement between the empirical covariance and the MUSE
+covariance. The anti-correlation in the first off-diagonal
+elements is caused by projection effects, masking, delensing and the transfer function, where the projection effects
+explain about half of the anti-correlation. Here the projection effects refers to our use of the flat-sky approximation in the posterior model. This effect has been found
+in the previous SPT-3G analysis [31].
+In Fig. 3, we show the MUSE covariance with its diagonal entries rescaled to unity (i.e. the correlation matrix between all bandpowers and systematics parameters). We find no significant correlation between lensing
+bandpowers and any other parameter, except for Aϕϕ at
+the lowest L bin, which shows correlations with AEE at
+≲ 10% level and with βpol at ∼ 12% level. This suggests
+a robust determination of the lensing spectrum with little uncertainty from systematic effects. The correlations
+within the unlensed EE block are due to masking, delensing, projection and correlation with systematics parameters. The EE bandpowers are significantly correlated with both calibration uncertainty and the sidelobe
+polarization fraction, both of which add appreciable systematic uncertainty to our final EE estimates.
+We next obtain ΛCDM cosmological parameter estimates from the 100 all-frequency mock simulations. Unlike the main results which use Cobaya and CAMB to
+
+FIG. 3. The posterior correlation matrix of ϕϕ bandpowers,
+unlensed EE bandpowers, and systematics parameters, given
+all-frequency data.
+
+perform parameter estimation, here, for speed, we have
+trained and verified the accuracy of an emulator using Capse.jl [61], and sample using Hamiltonian Monte
+Carlo.
+The one-dimensional cosmological parameter posterior
+distributions inferred from each mock simulation and the
+product over all of these posteriors is shown in Fig. 4. It
+is expected that the product over all posteriors should
+cover the input truth, which is found to be the case. The
+non-detection of any bias with 100 sims suggests that, at
+68% confidence, we have bounded any possible pipelineinduced systematic error to be less than ≲ 0.1 σ for each
+cosmological parameter.
+To summarize, we have validated the pipeline using
+100 highly realistic mock simulations. With 100 simulations, we are able to detect biases at the level of 10% of
+the statistical uncertainty. We do not detect any such biases to within 3 σ of the expected scatter on the mean in
+either our estimates of ϕϕ lensing spectra, unlensed EE
+bandpowers, systematics, or in the cosmological parameters derived from them. We find good agreement of the
+bandpower covariance matrices between the one derived
+from mock simulations and the one calculated in MUSE
+using Eqn. (7).
+
+B.
+
+Data tests
+
+Next, we turn to tests of the data itself. These include intra-frequency null tests using different splits of
+the data, inter-frequency comparison of ϕϕ and unlensed
+EE bandpower results, pixel-level χ2 tests of our model
+fits, and internal comparison of our systematics estimates
+with those derived with more traditional methods. We
+report the results of these tests in this section.
+
+10
+
+FIG. 4. Verification that our pipeline recovers unbiased cosmological parameters using 100 mock simulations. We infer
+ΛCDM parameters from each simulated all-frequency dataset,
+and plot the one-dimensional marginalized posteriors above as
+different colored lines for each simulation. The shaded gray
+region in each panel is the product over all posteriors, which
+should cover the simulation truth, denoted as vertical black
+lines. Note that the smaller scatter for τ is because this parameter is mainly constrained by our prior. Across the other
+5 parameters, the shaded region is consistent with the input
+truth with significance equivalent to 1.1 σ, suggesting no detection of any bias at the level afforded by our 100 simulations.
+
+1.
+
+Intra-frequency null tests
+
+Null tests involve splitting the full dataset into two
+parts and differencing them such that the signal cancels, then checking whether the remaining portion is consistent with the expected statistical properties of noise.
+Finding something outside of this expectation could indicate the presence of a systematic, which might then also
+be present in the full dataset coadd at some level. By
+canceling the signal and thus the sample variance from
+the signal, these tests can probe systematics to levels well
+below even what could impact the final results, which are
+themselves limited by sample variance. Since temperature data does enter our analysis via leakage templates,
+we also present null TE spectra to more thoroughly vet
+the full temperature and polarization dataset. Further
+details of the null tests will be presented in a future work.
+We consider 6 types of data splits: sun, moon, azimuth, year, scan, and wafer. The sun and moon tests
+are designed to check whether a portion of the dataset
+is significantly contaminated by the radiation from the
+sun or moon. In these tests, one part of the dataset comprises the data we took when the sun or moon was above
+
+the horizon, and the other part below the horizon. The
+azimuth test is designed to check whether a portion of
+the dataset is contaminated by thermal radiation from
+a building near the telescope. One part of the dataset
+comprises the data we took when the telescope’s azimuth
+angle was within 90 degrees of that of the building, and
+the other part azimuth angles outside that range. The
+year test is designed to check whether the data we took
+during the 2019 season are significantly different from
+the data we took in 2020. The scan test is designed to
+check whether the data we took when the telescope was
+scanning in one direction are significantly different from
+the data we took when the scanning was in the opposite direction. Lastly, the wafer test is designed to check
+whether the data from one half of the full detector array
+are significantly different from the data from the other
+half.
+For the scan and wafer tests, we do not expect the null
+spectra to perfectly cancel the signal due to details of our
+mapmaking pipeline. For the wafer test, this is because
+we filter time-ordered data from different detector wafers
+differently. For the scan test, this is mainly because we
+do not correct for each individual detector’s time constant effect when converting its time-ordered data into
+map pixel values. The time constant effects refers to the
+fact that each detector does not respond to changing radiation from the sky instantaneously. As a result, a map
+made from left-going scans contain a version of the CMB
+shifted to the left, and vice-versa for right-going scans.
+For these two tests, we calculate the expected null spectra through simulations of the mapmaking pipeline and
+subtract it. This is computed assuming a fiducial cosmology, but because these expected null spectra are very
+small compared to the signal, it does not significantly
+imprint model-dependence to these null tests or degrade
+their usefulness.
+For each null test type, we divide each of the two halves
+of the data into 25 smaller parts and call them bundles.
+We create 25 null maps by differencing bundles from each
+half one-by-one, then compute all 300 cross-spectra from
+these 25 null maps and bin them into the same bandpowers as the analysis. The average of these is what we call
+a null spectrum, and the standard error is our estimate
+of the expected scatter of the null spectrum.
+The maps used for these tests are curved-sky projections of the same timestreams which enter the main analysis, with spectra computed with PolSpice [62]. For
+convenience, most of the tests have been computed using
+slightly different masks than the ones used to produce
+our main results. These tests, which we do not expect to
+depend significantly on the masking choice, use a pixel
+mask which includes slightly more sky, and a harmonic
+space mask which zeros all aℓm for ℓ ∈ [500, 680] and
+m ∈ [350, 425]. This harmonic mask removes contamination from a narrowband signal around 1.1 Hz, which is
+similar, but not exactly the same as the “trough” mask
+used to remove the contamination in the MUSE pipeline.
+As the 1.1 Hz signal presents itself mainly in detector
+
+11
+
+FIG. 5. Spectra of null maps computed from various data splits divided by the expected 1 σ scatter due to noise. Detector
+wafer and scan direction tests also have had a small expected contribution from signal leakage subtracted, and in EE and BB
+have been computed with the exact pixel and Fourier space masking used in the main results pipeline (indicated as “MUSE
+masking”; the other tests are not expected to depend significantly on masking). Legends give the PTE for each test without
+correcting for the look-elsewhere effect. The 2 σ threshold when considering the look-elsewhere effect is a PTE> 0.07 % on any
+individual test, which is passed in all cases.
+
+wafer and scan direction tests, we have recomputed these
+with the exact MUSE pixel and Fourier masking to verify
+the MUSE masking is sufficient to remove it.
+After masking, computing null spectra, and subtracting expected contributions as necessary, we calculate a χ2
+with respect to the expected scatter, assuming no correlation between neighboring bandpowers. To compute a
+threshold probability-to-exceed (PTE) for the observed
+χ2 , we Monte Carlo sample the expected distribution of
+χ2 values, accounting both for the look-elsewhere effect
+of 54 tests and the fact that we compute the expected
+scatter itself from a finite 300 simulations. We consider
+the test passed if the PTE is > 5% (corresponding to a
+< 2 σ deviation) with respect to this Monte Carlo distribution. This corresponds to a PTE > 0.07% on any
+single individual test amongst our suite (this is roughly
+5%/54 with an additional correction for the slightly noisy
+expected scatter).
+A summary of all tests and their PTEs is given in
+Fig. 5. All tests pass at our threshold of 0.07%, and
+no obvious features are otherwise visible.
+
+2.
+
+Inter-frequency agreement
+
+We next check for inter-frequency agreement of the
+ϕϕ and unlensed EE bandpowers inferred from singlefrequency maps. We follow the same procedure for inference as described in Sect. III, except that the data,
+d, includes only a single-frequency map and the systematic parameters are fixed to the value derived from the
+
+all-frequency run; only the bandpowers AEE
+and Aϕϕ
+b
+b are
+free parameters. To quantify the expected scatter, we
+run this identical procedure on 100 mock simulations.
+In Fig. 6, we show the ratios of bandpowers inferred
+from maps at different frequencies relative to the expected scatter. The blue lines show our result prior to
+unblinding, which showed good overall agreement. The
+legends give 2-tailed effective number of σ for the χ2 values, and all are consistent with statistical fluctuations to
+within ± 2 σ. We also note that with model changes after
+unblinding, shown as orange lines, agreement improved
+slightly, particularly in the comparison between 95 GHz
+and 150 GHz.
+
+3.
+
+Goodness-of-fit
+
+We next compare the pixel-level goodness-of-fit of
+our model to the observed data. To do so, we define
+χ2 = − 2 log P(ẑ(θ̂, d), θ̂ | d), that is, minus twice the posterior probability function evaluated at the MUSE estimate of parameters, θ̂, and the MAP given that θ̂. Because of our decoupling of the posterior and simulation
+models, we cannot compute the expected χ2 simply from
+counting degrees of freedom. Instead, we use the distribution of χ2 obtained from mock simulations to quantify
+the expected distribution.
+Tab. I gives the data χ2 values observed for singlefrequency and all-frequency runs before unblinding, as
+compared to this expectation. We see that the values are
+on the order of 108 , despite that the number of pixels
+
+12
+χ2obs /106 χ2expected /106 PTE nσ
+95+150+220
+95
+150
+220
+
+93.33
+108.21
+109.32
+100.97
+
+93.50 ± 0.12
+108.28 ± 0.18
+109.51 ± 0.19
+101.00 ± 0.04
+
+4.0%
+37.0%
+7.0%
+24.0%
+
+2.1
+0.9
+1.8
+1.2
+
+TABLE I. The χ2 of the best-fit pixel-level model against the
+data, as compared to the expectation computed from mock
+simulations, as described in Sec. IV B 3. The number of σ is
+1-tailed. We find values within 3 σ of the expectation for individual frequency fits, as well as for our baseline combination
+of all frequencies.
+
+FIG. 6. Tests of the inter-frequency bandpower agreement of
+our data. Each panel shows the ratio of ϕϕ or unlensed EE
+bandpowers from single-frequency MUSE runs at different frequencies, normalized by the 1 σ expected scatter as computed
+from simulations. Legends show the χ2 and 2-tailed effective
+number of σ fluctuation of this χ2 given the number of degrees
+of freedom. The blue line shows the result using our model
+before unblinding, which yielded acceptable χ2 in all cases.
+The orange line shows the result after the post-unblinding
+changes to our model, which notably slightly improves the
+agreement between 95 GHz and 150 GHz.
+
+in d is close to 107 for the all-frequency case, confirming the fact that the expectation is not given simply by
+counting degrees of freedom. That the single-frequency
+expected χ2 are larger than the all-frequencies case is
+due to the fixing of systematic parameters in those cases.
+Regardless, with the expected distribution mapped out
+by simulations, we find that our observed values in all
+cases are consistent with a statistical fluctuation within
+3 σ. This suggests our model is sufficient to describe the
+observed data.
+
+4.
+
+Agreement of systematics with alternative estimates
+
+Our analysis infers systematic parameters jointly with
+bandpowers by incorporating systematics into a maplevel model for the data. In this section, we compare
+our systematics estimates to independent determinations
+from alternate methods which have traditionally been
+used to estimate systematics in CMB analyses.
+
+In this comparison, we consider the global polarization rotation angle, ψpol , the amplitude of monopole
+temperature-to-polarization leakage, ϵiQ and ϵiU , and the
+calibration at each frequency, Aν,i
+cal . Details of how these
+are estimated with alternate methods are given in Appendix A. Briefly here, ψpol can be estimated by assuming the sky EB spectrum is zero, and searching for the
+angle correction which achieves this in the data. ϵiQ and
+ϵiU can be estimated by assuming that the sky T Q and
+T U spectra are zero and finding the deprojection of leakage templates which achieves this. Aν,i
+cal can be estimated
+taking ratios of power spectra to a known calibrated spectrum and averaging over very broad multipole ranges.
+Here, A150
+cal is fit via ratio to Planck, which performs
+220
+its own absolute calibration, and A95
+cal and Acal are fit
+from internal comparison to the Planck-calibrated SPT
+150 GHz spectrum.
+The source of MUSE estimates of these systematics is
+generally the same as described above, but happens implicitly and jointly inside the global MUSE fit, driven by
+our model definition (e.g. the model assumes the CMB
+EB spectrum is zero and allows a global rotation controlled by ψpol to absorb any EB power observed in the
+data during the fit).
+The best-fit systematic parameters inferred with
+MUSE from the SPT data are summarized in Tab. II.
+Broadly speaking, we find around 1% temperature to polarization leakage, a little less than half of a degree of
+global polarization angle miscalibration, and beam sidelobes (see Appendix A 4) which are polarized at around
+the 50% level.
+In Fig. 7, we compare to systematic parameters derived
+from the alternative methods. Up to small differences
+expected due to slightly different choices of masking and
+filtering made in these alternative estimates, we find good
+agreement between our two sets of estimates. We also
+note that in general the MUSE systematic estimate is
+slightly tighter, likely due to simultaneously fitting for
+all systematics and increased optimality of the Bayesian
+approach.
+
+13
+Posterior
+A1cal
+A2cal
+A3cal
+A4cal
+100 ϵ1Q
+100 ϵ2Q
+100 ϵ3Q
+100 ϵ4Q
+100 ϵ1U
+100 ϵ2U
+100 ϵ3U
+100 ϵ4U
+ψpol [◦ ]
+βpol
+
+95 GHz
+
+150 GHz
+
+220 GHz
+
+0.8977±0.0074
+0.8928±0.0072
+0.8861±0.0073
+0.8775±0.008
+0.291±0.025
+0.402±0.024
+0.555±0.025
+0.603±0.033
+0.584±0.027
+0.648±0.025
+0.851±0.027
+0.83±0.035
+0.393±0.024
+0.44±0.20
+
+0.9276±0.0074
+0.9133±0.0071
+0.9399±0.0075
+0.9272±0.0081
+0.319±0.021
+0.39±0.022
+0.838±0.021
+0.912±0.03
+0.74±0.025
+0.748±0.023
+1.238±0.023
+1.174±0.03
+0.419±0.021
+0.60±0.28
+
+0.8612±0.0084
+0.864±0.0079
+0.849±0.0083
+0.8405±0.0097
+0.492±0.059
+0.418±0.06
+2.096±0.066
+2.221±0.084
+0.735±0.064
+0.642±0.058
+1.33±0.063
+1.121±0.092
+-0.188±0.079
+0.51±0.26
+
+FIG. 8. No evidence for dipole, quadrupole, or octopole
+T→P leakage. These are MUSE posteriors from a run on allfrequency data that includes these extra leakage templates in
+addition to the other usual bandpower and systematics parameters. In our baseline run, we thus do not include such
+higher-order templates.
+5.
+
+Prior
+95 GHz
+A1cal
+A2cal
+A3cal
+A4cal
+βpol
+
+150 GHz
+
+220 GHz
+
+0.9275±0.0094
+0.9095±0.0089
+0.9386±0.0096
+0.927±0.011
+U(0, 1)
+U(0, 1)
+
+U(0, 1)
+
+TABLE II. Posteriors on systematics parameters given our
+all-frequency MUSE run (top section) and priors which were
+input (bottom section). Blank entries or parameters not listed
+under priors have uniform priors on (−∞, ∞). Superscripts
+denote each of the four subfields. Note that no cosmological
+model is assumed here.
+
+95 GHz
+
+ψpol
+
+0.01
+0.00
+0.01
+
+150 GHz
+
+Higher order T-to-P leakage
+
+In our baseline model, only monopole T-to-P leakage is
+modeled. However, it is possible that higher-order leakage exists. To verify our baseline choice, we add leakage
+templates up to octopole in the MUSE model and infer
+their leakage amplitudes. These templates corresponds
+to higher-order spatial gradients of the observed temperature maps. The results are shown in Fig. 8, where
+no higher-order T-to-P leakage amplitude parameters are
+detected at > 3 σ.
+
+6.
+
+MAPs
+
+We note that prior to unblinding we did look at MAP
+estimates of the lensing potential and of the lensed and
+unlensed CMB polarization, and thus present them in
+this section of the paper. These are shown in Fig. 9.
+
+220 GHz
+
+Alt
+MUSE
+
+C.
+
+²Q 0.02
+0.01
+0
+0.015
+²U 0.010
+0.005
+Acal 0.95
+0.90
+0.85
+s1
+
+s2
+
+s3
+
+s4 s1
+
+s2
+
+s3
+
+s4 s1
+
+s2
+
+s3
+
+s4
+
+FIG. 7. Agreement of polarization angle rotation angle (ψpol ),
+monopole T→P leakage (ϵQ and ϵU ) and calibration estimates
+(Acal ), between MUSE estimates and alternative methods
+which have been previously used. The groups of 4 points
+refer to the 4 different subfields in cases where those are estimated separately. Details of the alternative estimates are
+given in App. A.
+
+Post-unblinding changes
+
+With all of these validation tests passed, we unblinded
+results, fit cosmological models, and compared to data
+from other experiments. We found ΛCDM was a good fit
+to our own data and that our ϕϕ spectrum agreed very
+well with other experiments. However, the EE spectrum
+disagreed with the Planck theory prediction by a smooth
+slope (shown in the middle panel of Fig. 10), leading
+to an overall 3.5 σ disagreement across 5 ΛCDM parameters (excluding τ ) between Planck and SPT datasets.
+The slope was most significant at small scales and would
+have been undetectable by Planck, ACT, or previous SPT
+measurements, thus could have indicated a newly discovered departure from ΛCDM. We were thus motivated
+to exhaustively check the robustness of the slope. Doing so, however, we discovered that its likely origin was
+an overly strong assumption we had been making in our
+polarization beam modeling.
+Prior to unblinding, we had assumed the polarized
+and temperature beams were the same at the scales used
+
+14
+
+0.10
+
+0.00
+0.05
+
+[unitless]
+
+0.05
+
+0.10
+
+unlensed E
+
+10
+
+[µK]
+
+5
+0
+5
+10
+0.75
+0.50
+0.25
+0.00
+0.25
+0.50
+0.75
+
+[µK]
+
+lensed B
+
+FIG. 9. Maximum a posteriori (MAP) maps from 95+150+220 GHz data at the MUSE estimate of theory and systematics
+parameters, θ̂. MAPs correspond to a filtering of the data which maximizes signal relative to noise (akin to a linear Wiener
+filter, but in the case of the MAP κ, a non-linear filter). The statistical anisotropy visible particularly in the E map originates
+from this filtering. No other additional smoothing has been applied, although we have subtracted the simulation-mean of κ.
+Except for this subtraction, these MAPs correspond exactly to ẑ which enters the MUSE estimate in Eqn. (5). We have chosen
+to show only unlensed E and lensed B (derived from the κ and unlensed E in the top two panels), as lensed and unlensed E
+look nearly identical at the scale of this figure, and unlensed B is effectively zero by assumption.
+
+15
+
+FIG. 10. Changes to our results made after unblinding, and their origin in changes to beams. In the left two panels, blue
+and orange data points show ϕϕ and unlensed EE bandpowers relative to Planck ΛCDM theory for our final result and our
+initial unblinded result, respectively. Colored lines in the EE panel show ratios of temperature (dashed lines) and polarization
+beams (solid lines) between final and initial unblinded versions. For the polarized beam changes, we also show the posterior
+uncertainty from the final polarized beam fit with shaded bands indicating 1 σ. In the right panel, the same two colors show
+the corresponding changes to cosmological parameter results from the SPT dataset.
+
+in the analysis. While the temperature beam sidelobes
+are mapped with high signal-to-noise via observations
+of bright point sources and planets, we lack sufficiently
+bright polarized sources to similarly map the sidelobe response of the polarized beams. To check the robustness
+of the EE slope to this assumption, we devised a model
+of the polarized beams to realistically account for how
+much these might differ from the temperature beams.
+Appendix A 4 describes the model in more detail, but in
+summary, we took the polarized beams to be the sum of
+two components. The first is a central main lobe which
+can be modeled physically using the basic optics of the
+telescope, and is expected from physical modeling to be
+fully polarized and thus the same in polarization as in
+temperature. This model is fit to match temperature
+beams themselves at small scales where the model is a
+good description of the beam. The second component is
+a diffuse sidelobe stemming from effect such as scattering or reflection from of optical elements in the camera
+and scattering from panel gaps in the primary mirror,
+which is not necessarily expected to be fully polarized.
+We marginalize over the polarization fraction of the sidelobe component with a new parameter at each frequency,
+ν
+βpol
+. In this definition, our earlier assumption had corν
+responded to βpol
+= 1, which makes the polarized beam
+identical to the temperature beam.
+With these free parameters introduced, we re-ran the
+ν
+MUSE fit, finding βpol
+= [0.44 ± 0.20, 0.60 ± 0.28, 0.51 ±
+0.26] at [95, 150, 220] GHz. That is, our CMB data alone
+is able to internally constrain the sidelobe polarization
+fractions, and it constrains them away from our previously assumed value of unity with mild significance. The
+ability to constrain these parameters at all arises from
+ν
+inter-frequency differences, as changing the βpol
+changes
+the beam at each frequency differently. Indeed, if we reexamine the inter-frequency agreement of our data with
+ν
+the βpol
+marginalized, we find slightly improved agreement. This is shown as the orange line in Fig. 6. Thus,
+even though our original blind inter-frequency tests did
+not show any statistically significant evidence for disagreement, there was indeed some small systematic dis-
+
+agreement hidden below the noise, which is alleviated by
+this improved beam modeling.
+Regarding the slope in EE relative to Planck ΛCDM,
+ν
+the change from βpol
+= 1 to the new marginalized posterior values largely removes it. It also increases our EE
+uncertainties at ℓ > 2000 by as much as a factor of two
+for some bins, which, however, is highly correlated between bins, with the effect much like an additional relative calibration between high-ℓ and low-ℓ. The impact to
+our ϕϕ spectrum of this post-unblinding change is negligible, as optimal lensing estimation is largely insensitive to smooth changes to beams. Since much of our
+cosmological information is coming from lensing, it also
+means that our ΛCDM constraints from SPT data are not
+that strongly affected; for example we originally found
+H0 = 67.3 ± 0.77 with the sidelobe polarization fraction
+fixed to unity and H0 = 66.81 ± 0.81 with it marginalized. A larger impact occurs in the (ns , Ωb h2 ) plane,
+with both parameters shifting just over 1 σ and the posteriors broadening. These changes are all summarized in
+Fig. 10. Our final agreement with Planck across 5 ΛCDM
+parameters is 0.5 σ, with the change roughly coming from
+equal parts central value shifts and posterior broadening
+in the (ns , Ωb h2 ) plane.
+We consider this beam model sufficient to capture our
+polarized beam uncertainty because we find no significant shifts in results if we change the main lobe model
+to a simple Gaussian, suggesting the exact details of the
+main lobe modeling are not relevant. Additionally, allowing for a free linear dependence of the sidelobe polarization fraction as a function of angular distance from the
+peak response does not significantly shift results either,
+suggesting the model of a constant sidelobe polarization
+fraction is sufficient.
+With this improvement to the polarized beam modeling, some additional small tweaks mentioned in App. A
+which lead to insignificant changes, and all validation
+tests passing at the same or better levels than they were
+prior to unblinding, we adopted this as our final baseline
+model. All results we will now present in the following
+section utilize this baseline model.
+
+16
+
+a
+b
+c
+d
+e
+
+Name
+
+Data Set
+
+SPT
+SPTϕϕ
+PlanckT&E
+Planckϕϕ
+Planck
+ACTϕϕ
+ACT
+WMAP
+BAO
+
+This work, i.e. SPT-3G 2019/2020 a unlensed EE + optimal ϕϕ from 95+150+220 GHz
+Just the ϕϕ spectrum from the SPT dataset, with systematics and unlensed EE still marginalized over
+Planck 2018 high-ℓ T T, T E, EE + low-ℓ T T [64]
+Planck NPIPE PR4 ϕϕb [65]
+PlanckT&E + Planckϕϕ
+ACT DR6 ϕϕc [33, 34]
+ACT DR4 T T, T E, EE d [35, 36] + ACTϕϕ
+WMAP9e (ℓTE
+min = 24, i.e. no τ information) [66]
+6dF [67] + SDSS DR7 MGS [68] + SDSS DR12 LRG [69] + SDSS DR16 Lyα [70] + DESI [71–73]
+
+The likelihood can be found in https://pole.uchicago.edu/public/data/ge25/index.html [63]. We refer to this data in the figures
+as “2yr-main”; the “main” field is the 1500 deg2 field as defined in [3].
+https://github.com/carronj/planck_PR4_lensing
+https://github.com/ACTCollaboration/act_dr6_lenslike
+https://github.com/ACTCollaboration/pyactlike
+https://github.com/HTJense/pyWMAP
+
+TABLE III. Glossary of data set abbreviations used in the text and in figure captions. When combining SPT with WMAP
+and Planck data, we sum the likelihood directly assuming no correlation, an assumption justified by the small sky area of
+the SPT main field (1500 deg2 ). When combining ACT DR4 with WMAP and Planck data, we followed the procedure in
+[35]. When using both Planck NPIPE PR4 lensing and ACT DR6 lensing, we used the built-in likelihood implementation
+of act dr6 lenslike package with variant=actplanck baseline which accounts for correlations between ACT and Planck
+lensing due to overlapping sky coverage.f For the BAO dataset, we followed the proposal in Sect. 3.3 of Adame et al. [71] to
+replace the DESI BGS and lowest redshift LRG measurements with SDSS MGS (zeff ∼ 0.15) and two SDSS DR12 LRG points
+(zeff ∼ 0.38, 0.51), as well as replacing the DESI Lyα point with joint eBOSS+DESI Lyα BAO. With the exception of Sec. V I,
+any CMB dataset combinations we use includes a prior on τ of 0.051 ± 0.006 [74]. In Sec. V I, we instead drop the τ prior and
+PlanckT&E is to be understood as including the Planck low-ℓ EE likelihood.
+f
+
+When combining SPT with other CMB datasets, we ignore any error correlations. We expect these to be very small for two reasons.
+First, the relatively small area of the SPT-Main survey (at 3.5% of the full sky) means that the ACT and Planck errors predominantly
+arise from sources of fluctuation which are not in the SPT-Main survey region. Second, for the lensing likelihood specifically, SPT
+lensing bandpowers are reconstructed from CMB polarization only, while other CMB lensing reconstructions are predominantly
+informed by CMB temperature maps.
+
+V.
+
+RESULTS
+
+In this section we present our ϕϕ and unlensed EE
+bandpowers and resulting cosmological parameter constraints in various model spaces, with and without inclusion of some external datasets. Nomenclature for the
+external datasets, as well as our SPT-3G dataset, is described in Tab. III. We follow the convention of naming
+cosmological parameters in [75] (see Table. 1 there for
+detail). The setup for MCMC analysis is described in
+Sect. III B. For simplicity, we adopt a Gaussian prior,
+τ ∼ N (0.051, 0.006), using the result from the joint processing of Planck HFI and LFI data [74] as baseline unless otherwise specified, instead of using Planck low-ℓ EE
+likelihood or WMAP TE data at ℓ < 24. Unless otherwise
+specified, all uncertainties quoted in this paper represent
+the 68% confidence interval.
+
+A.
+
+Bandpowers
+
+In Fig. 11, we show our inference of ϕϕ and unlensed
+EE bandpowers. The ΛCDM model that best fits these
+data provides a good fit with χ2 = 75.8 given 71 degrees
+of freedom (76 bandpowers minus 5 cosmological parameters constrained beyond their prior), which corresponds
+
+to a PTE of 32.7%. By this test, the SPT data are consistent with the standard cosmological model. We also
+show as an orange band the 68% confidence level predictions of the ΛCDM model for the CMB lensing and
+unlensed EE power spectra given these SPT data.
+
+We can also check if the SPT data are consistent with
+the ΛCDM predictions given Planck data. The 68%
+confidence level predictions of the ΛCDM model given
+Planck data are shown as a gray band, with the best-fit
+ΛCDM model given Planck data shown as a black line.
+The χ2 of the SPT bandpowers given the Planck bestfit ΛCDM model is 80.7, which corresponds to a PTE of
+20.2%. Thus, the SPT bandpowers agree with the Planck
+ΛCDM best-fit prediction at the 1.3 σ level.
+
+In Fig. 12, we compare the SPT bandpowers to prior
+measurements. The SPT lensing bandpower measurements extend to L ∼ 3000 and are more precise than prior
+published measurements at L > 350. The unlensed EE
+bandpowers extend to ℓ ∼ 3500 and are more precise than
+prior published measurements at ℓ > 2000 where we have
+clear detections of the eighth, ninth and tenth acoustic
+peaks.
+
+17
+
+FIG. 11. Top panels: MUSE measurement of the CMB lensing ϕϕ bandpowers and the unlensed EE bandpowers using SPT-3G
+2019/20 CMB polarization data. The lensing bandpowers represent a 38 σ detection of lensing power. These are the most precise
+measurements to date at ℓ > 2000 for EE and L > 350 for ϕϕ. Bottom panels: Residual bandpowers with respect to the SPT
+best-fit cosmology. The gray and orange bands show the 68% confidence region of ΛCDM model spectra fit to Planck and SPT
+data, respectively.
+
+FIG. 12. Comparison of SPT bandpowers with existing measurements. Top panels: CMB ϕϕ and EE bandpowers. Bottom
+panels: Bandpowers divided by the Planck best-fit cosmology predictions. Note that the EE bandpowers have been further
+rebinned as compared to the top panel for clarity. As a reminder, the SPT EE points are inferences of unlensed EE. The
+dotted gray line shows the unlensed EE model prediction. The orange dashed and the solid gray lines are the same as Fig. 11.
+
+18
+
+SPT
+Planck
+ACT
+SH0ES
+
+Planck: EE+ (P) [Plik/PR4]
+ACT: EE+ (T&P) [DR4/DR6]
+SPT: EE+ (P) [2yr-main]
+
+0.125
+
+Ωc h 2
+
+0.120
+0.115
+0.110
+0.105
+
+Ωb h 2
+
+0.026
+0.024
+0.022
+
+1.05
+
+ns
+
+1.00
+0.95
+0.90
+0.85
+65
+
+70
+
+H0
+
+75
+
+0.11
+
+Ωc h 2
+
+0.12
+
+0.022 0.024 0.026
+Ωb h 2
+
+0.9
+
+1.0
+
+ns
+
+FIG. 13. Posterior distributions of ΛCDM cosmological parameters derived only from polarization EE spectra and polarizationbased lensing reconstruction, or in the case of ACTa , also including temperature in the lensing reconstruction. We see tighter
+constraints on Ωb h2 , Ωc h2 , and H0 from the SPT data. We show the SH0ES constraint on H0 for comparison. See also Tab. III
+for more details on dataset definitions.
+
+a
+
+For the ACT DR4 EE likelihood, we adopted their default prior for yp2 ∼ [0.5, 1.5].
+
+19
+B.
+
+Origins of ΛCDM parameter constraints
+
+The SPT bandpowers represent a significant advance
+in our capacity to constrain cosmological parameters with
+polarization data alone. In Fig. 13 we show constraints
+on four ΛCDM parameters from SPT, ACT, and Planck,
+assuming the ΛCDM model, and limiting to only EE
+spectra and polarization-based lensing reconstruction, or
+in the case of ACT, also including temperature in the
+lensing reconstruction. We see significantly tighter constraints on three of the parameters from SPT, while the
+higher dynamic range of the Planck EE data (which extends to lower ℓ than shown in Fig. 12) leads to a tighter
+constraint on ns for Planck.
+Constraints on ΛCDM parameters from SPT data and
+other dataset combinations, now including both temperature and polarization as detailed in Tab. III, are summarized in Tab. IV. The SPT constraints are comparable
+to full Planck results in the matter density, Ωm h2 , and
+angular scale of the sound-horizon, θ⋆ . The constraining power on Ωm h2 from SPT is mainly due to the CMB
+lensing bandpowers, which are sensitive to the amount
+of matter in the Universe. This is evidenced by the fact
+that adding just SPT lensing to WMAP data reduces the
+error on Ωm h2 by over a factor of 3 from 0.0045 [66] to
+0.0014, and that further adding SPT EE to this combination leaves the error unchanged.
+That the sensitivity to Ωm h2 primarily comes from the
+lensing reconstruction rather than primary power spectra
+(in this case unlensed EE) is a unique feature of these
+data compared to prior CMB datasets. The sensitivity
+of primary power spectra to matter density is weakened
+due to its weighting toward small scales that are sensitive to conditions at horizon crossing; at such early times
+the matter density is negligible compared to the radiation density. Conversely, the lensing power spectrum, if
+probed precisely enough, has high sensitivity to Ωm h2 .
+This comes mainly (but not solely) from how CMB lensing power depends on the scale of matter-radiation equality. Additionally, the sensitivity increases at the small
+scales probed here, with CLϕϕ ∝ (Ωm h2 )2 at L ∼ 200 and
+asymptoting to (Ωm h2 )3 by L ∼ 2000 [76].
+The SPT data are also sensitive to the angular scale of
+the sound horizon, θ⋆ . This sensitivity comes from the
+EE bandpowers, where the peak and trough locations
+of the EE spectrum are highly sensitive to θ⋆ . The importance of the EE bandpowers for this constraint, as
+opposed to the lensing bandpowers, can be seen in the
+comparison of θ⋆ constraints from SPT, WMAP+SPT
+and WMAP+SPTϕϕ; the exclusion of SPT EE significantly degrades the θ⋆ determination. We note that the
+constraint on θ⋆ is known to be improved by delensing
+[77], a result which applies to our unlensed spectra inferences here as well, although we do not explicitly attempt to quantify exactly how much improvement we
+have achieved.
+The constraints on τ from the SPT dataset are driven
+almost entirely by Planck low-ℓ polarization data, in-
+
+cluded here as a τ prior. Although lensing can, in theory,
+help constrain τ via degeneracy breaking, the contribution at current noise levels is negligible. The constraint
+on log 1010 As is similarly largely driven by Planck, since
+it is degenerate both with τ and the absolute calibration,
+the latter which also comes from Planck.
+The SPT constraints on Ωb h2 and ns are weaker than
+those inferred from Planck. Both ns and Ωb h2 cause tilts
+of the CMB EE spectrum, since Ωb h2 affects the photon
+diffusion damping at small angular scales and ns affects
+the shape of the primordial spectrum. Our observations
+lack the very largest scales probed by Planck, which,
+logarithmically, contain a significant range of scales useful for constraining a tilt. Additionally, at small scales
+our uncertainties are increased by polarized beam uncertainty, preventing what could otherwise be a slightly better constraint. Our final result is a 2.5% determination
+of the the baryon density.
+With the baryon density, matter density, and θ⋆ determined, one has everything necessary, in ΛCDM, for
+calculating both H0 and Ωm [e.g. 78]. Adding in As and
+ns one can also calculate σ8 and S8 . We show constraints
+on these four derived parameters in Tab. IV.
+
+C.
+
+Agreement with other CMB datasets in ΛCDM
+
+Before providing interpretations, it is useful to establish the consistency level of our ΛCDM parameter results
+with other CMB measurements. Such comparison provides tests of the ΛCDM model that are complementary
+to and stronger than the bandpower-level tests above.
+We perform a simple consistency check applicable to
+uncorrelated datasets by calculating the χ2 between the
+two sets of parameters,
+χ2 = (⃗x1 − ⃗x2 )T (C1 + C2 )−1 (⃗x1 − ⃗x2 ),
+
+(23)
+
+where ⃗x is a vector of parameter estimates, C are the
+parameter covariances from each, and the subscripts 1
+& 2 distinguish datasets. We then compute the PTE
+for the given χ2 and quote a 1-tailed conversion to number of σ. Since, as discussed, our estimates of τ and
+As are highly correlated to Planck, we consider only
+⃗x = (θ⋆ , Ωb h2 , Ωc h2 , ns ). For these parameters, the SPT
+results are very close to independent of both Planck
+and ACT due to non-overlapping sky area and multipole ranges. We find ΛCDM parameters from SPT and
+Planck datasets are consistent at 0.8 σ, and from SPT
+and ACT datasets at 0.8 σ.
+A triangle plot comparing marginal posterior distributions from SPT+WMAP, ACT+WMAP, and Planck is
+shown in Fig. 14.
+We now turn to estimates of three parameters of particular contemporary interest in cosmology: H0 , S8 , and
+Ωm .
+
+20
+
+Planck
+SPT+WMAP
+ACT+WMAP
+
+log(10 10 As )
+
+WMAP: TT+TE
+[9yr]
+Planck: TT+TE+EE+ (T&P) [Plik/PR4]
+ACT: TT+TE+EE+ (T&P) [DR4/DR6]
+SPT: EE+ (P)
+[2yr-main]
+
+3.08
+3.06
+3.04
+3.02
+
+ns
+
+0.98
+0.96
+0.94
+
+Ωb h 2
+
+0.0230
+0.0225
+0.0220
+
+Ωc h 2
+
+0.126
+0.123
+0.120
+
+τreio
+
+0.117
+0.07
+0.06
+0.05
+0.04
+66 67 68 69
+
+H0
+
+3.02 3.05 3.08 0.94 0.96 0.98
+
+log(10 10 As )
+
+ns
+
+0.022
+
+0.023
+
+Ωb h 2
+
+0.120
+
+Ωc h 2
+
+0.125
+
+0.04
+
+0.06
+
+τreio
+
+FIG. 14. Posterior distributions of ΛCDM cosmological parameters derived from SPT+WMAP, ACT+WMAP, and Planck.
+The details of the datasets are listed in Tab. III. We see that either ACT or SPT, when combined with WMAP for constraints
+on larger angular scales, achieve constraints on cosmological parameters with similar constraining power as the constraints from
+Planck.
+
+21
+Parameters
+
+log 1010 As
+ns
+100θMC
+Ωb h2
+Ω c h2
+τreio
+
+SPT
+
+Planck
+
+Planck+SPT
+
+WMAP+SPT
+
+WMAP+SPTϕϕ
+
+3.045 ± 0.024
+0.944 ± 0.027
+1.04162 ± 0.00066
+0.02255 ± 0.00057
+0.1227 ± 0.0018
+0.052 ± 0.006
+
+3.042 ± 0.011
+0.965 ± 0.004
+1.04092 ± 0.00031
+0.02237 ± 0.00014
+0.1199 ± 0.0011
+0.0532 ± 0.0056
+
+3.046 ± 0.011
+0.9647 ± 0.0037
+1.04104 ± 0.00028
+0.02239 ± 0.00013
+0.12039 ± 0.00094
+0.0547 ± 0.0058
+
+3.047 ± 0.012
+0.9637 ± 0.0076
+1.04154 ± 0.00057
+0.02248 ± 0.00027
+0.1215 ± 0.0014
+0.052 ± 0.006
+
+3.042 ± 0.013
+0.961 ± 0.011
+1.0394 ± 0.0022
+0.02226 ± 0.00045
+0.1210 ± 0.0014
+0.0515 ± 0.0059
+
+H0 [km/s/Mpc]
+66.81 ± 0.81
+67.4 ± 0.5
+67.28 ± 0.42
+100θ⋆
+1.04181 ± 0.00069 1.0411 ± 0.0003 1.04125 ± 0.00027
+Ω m h2
+0.1459 ± 0.0019
+0.143 ± 0.001 0.14340 ± 0.00089
+Ωm
+0.327 ± 0.011
+0.3147 ± 0.0068 0.3169 ± 0.0058
+0.8143 ± 0.0088 0.8104 ± 0.0051 0.8137 ± 0.0046
+σp
+8
+S8 = σ8 Ωm /0.3
+0.850 ± 0.017
+0.830 ± 0.012
+0.8363 ± 0.0097
+
+67.1 ± 0.6
+66.4 ± 1.1
+1.04173 ± 0.00057 1.0396 ± 0.0022
+0.1446 ± 0.0015 0.1439 ± 0.0015
+0.3211 ± 0.0085
+0.326 ± 0.011
+0.8177 ± 0.0065 0.8118 ± 0.0086
+0.846 ± 0.016
+0.847 ± 0.016
+
+TABLE IV. Parameter estimates for various datasets assuming ΛCDM. The datasets are defined in Tab. III.
+
+D.
+
+The Hubble constant, H0
+
+WMAP:
+Planck:
+ACT:
+SPT:
+
+WMAP+ACT+SPT
+Planck+ACT+SPT
+Planck+ACT
+Planck+SPT
+Planck
+ACT
+SPT
+
+67.18 ± 0.45
+67.33 ± 0.37
+67.40 ± 0.42
+67.28 ± 0.42
+67.4 ± 0.5
+66.75 ± 0.72
+66.81 ± 0.81
+
+66
+
+68
+
+TT+TE
+[9yr]
+TT+TE+EE+ (T&P) [Plik/PR4]
+TT+TE+EE+ (T&P) [DR4/DR6]
+EE+ (P)
+[2yr-main]
+
+SH0ES
+
+H0 = 67.33 ± 0.37 km/s/Mpc,
+
+70
+
+72
+
+H0 [km/s/Mpc]
+
+74
+
+FIG. 15. Comparison of the ΛCDM constraints on H0 inferred
+from different CMB observations with the Cepheid-calibrated
+SNe Ia observations of the SH0ES collaboration [79, 80]. All
+CMB ΛCDM constraints are significantly lower.
+
+The Hubble constant inferred from Planck data, assuming the ΛCDM model, has been found to be in tension with the most precise “distance ladder” measurement [79, 80], which uses Cepheid-calibrated SNe Ia, at
+the 5.8 σ level.6 In Fig. 15, we show the Hubble constant
+inferred from various observations. Using the SPT data
+alone, we report
+H0 = 66.81 ± 0.81 km/s/Mpc.
+
+(25)
+
+which results in tension with the H0 reported in [79] at
+6.2 σ. This is the tightest constraint on H0 inferred from
+CMB observations assuming the ΛCDM model. We also
+note that the combination WMAP+ACT+SPT achieves
+H0 = 67.18 ± 0.45 km/s/Mpc, a result with precision
+nearly the same as that of the Planck result and nearly
+independent of Planck data. Overall, inferences of the
+Hubble constant from a wide range of CMB observations
+are in good agreement. While the potential for confirmation bias to drive this agreement could be a concern,
+we highlight that both the unlensed EE and ϕϕ spectra
+which enter our SPT result here were obtained blindly,
+and while there were some changes to H0 after we unblinded, these changes were small compared to the magnitude of the tension.
+
+(24)
+
+This is consistent with the Hubble constant inferred from
+Planck, and is in 5.4 σ tension with [79]. This confirms
+previous hints of a tension given only CMB polarization data, where Planck, ACTpol, and SPTpol yielded
+
+6
+
+H0 = 68.7 ± 1.3 [84], but almost halves the error bar and
+increases the significance of the tension from less than
+3 σ to greater than 5 σ.
+The agreement with previous CMB constraints, that
+rely heavily on temperature data, is also significant as a
+passed test of ΛCDM. Of course, the continued disagreement with distance ladder methods remains a mystery.
+We expect that these new SPT data will be a significant
+hurdle for many of the proposed models [37], and models
+yet to come, that address the Hubble tension.
+Combining Planck, ACT, and SPT, we report
+
+See also, e.g. Freedman & Madore [81], Freedman et al. [82],
+Riess et al. [83] for comparison of alternative “rung 2” methods
+with the Cepheid method.
+
+E.
+
+The matter density, Ωm
+
+There has recently emerged some degree of tension between Ωm as inferred from BAO, and values inferred from
+supernova surveys [71]. We summarize the situation in
+Fig. 16. The biggest discrepancy is between DESI BAO
+and the DES-Y5 determination of Ωm which yields a 2.5 σ
+difference. Inferences from CMB data, with consistency
+among different observations, are more precise than those
+from the supernovae and BAO, lying in between the low
+
+22
+WMAP:
+Planck:
+ACT:
+SPT:
+
+BAO value and the higher supernova values. From SPT
+data alone we infer
+Ωm = 0.327 ± 0.011.
+
+(26)
+
+This is the highest central value of the inferences from
+different choices of CMB dataset, though consistent with
+all of them, and with an uncertainty only 65% greater
+than the Planck uncertainty.
+WMAP:
+Planck:
+ACT:
+SPT:
+
+DESI
+Union 3
+DES-Y5
+Pantheon+
+WMAP+ACT+SPT
+Planck+ACT+SPT
+Planck+ACT
+Planck+SPT
+Planck
+ACT
+SPT
+
+TT+TE
+[9yr]
+TT+TE+EE+ (T&P) [Plik/PR4]
+TT+TE+EE+ (T&P) [DR4/DR6]
+EE+ (P)
+[2yr-main]
+
+0.295 ± 0.015
+
+0.28
+
+028
+0.356 −+ 00..026
+0.352 ± 0.017
+0.334 ± 0.018
+0.3195 ± 0.0065
+0.3161 ± 0.0052
+0.3147 ± 0.0058
+0.3169 ± 0.0058
+0.3147 ± 0.0068
+0.32 ± 0.01
+0.327 ± 0.011
+
+0.30
+
+0.32
+
+0.34
+
+Ωm
+
+0.36
+
+0.38
+
+The structure amplitude parameter, S8
+
+The amplitude of structure measured from galaxy weak
+lensing surveys also shows mild tension with the ΛCDM
+inference using
+p CMB data. In Fig. 17, we show the value
+of S8 ≡ σ8 Ωm /0.3 inferred from various observations.
+From SPT, we find
+S8 = 0.850 ± 0.017,
+
+(27)
+
+which is in agreement with the result from Planck at
+a similar level of precision. Our result is in 2 σ, 3.2 σ,
+and 3 σ disagreement with HSC-Y3 [88], KiDs-1000 [89]
+and DES-Y3 [90], respectively. From the joint fit of
+Planck+ACT+SPT, we get
+S8 = 0.8380 ± 0.0084,
+
++0.04
+
+0.763 −0.036
+HSC Y3 3×2
+02
+0.766 −+00..014
+KiDS-1000
+0
+.
+776
+± 0.017
+DES Y3 3×2
+0.847 ± 0.011
+WMAP+ACT+SPT
+0.8380 ± 0.0084
+Planck+ACT+SPT
+0.83 ± 0.01
+Planck+ACT
+0.8363 ± 0.0097
+Planck+SPT
+0.830 ± 0.012
+Planck
+0.855 ± 0.018
+ACT
+0.850 ± 0.017
+SPT
+0.725 0.750 0.775 0.800
+0.825 0.850 0.875
+p
+S8 = σ8 Ω m /0.3
+FIG. 17. Comparison of the ΛCDM constraints on S8 inferred from different CMB observations (blue) with those from
+galaxy surveys of HSC Y3 , KiDs-1000 and DES-Y3 (orange).
+The estimate from Planck+ACT+SPT differs with the one
+from HSC-Y3 at 2 σ, the one from KiDs at 3.3 σ, and with
+the one from DES-Y3 at 3 σ.
+
+FIG. 16. Comparison of the ΛCDM constraints on Ωm inferred from different CMB observations (blue) with those from
+SNe observations (orange) and DESI BAO (green). The SNe
+observations include Pantheon+ [85], DES-Y5 [86] and Union
+3 [87]. The biggest discrepancy is between DESI BAO and
+the DES-Y5 determination of Ωm , a 2.5 σ difference.
+
+F.
+
+TT+TE
+[9yr]
+TT+TE+EE+ (T&P) [Plik/PR4]
+TT+TE+EE+ (T&P) [DR4/DR6]
+EE+ (P)
+[2yr-main]
+
+(28)
+
+which is at 1.8 σ, 3.3 σ, and 3.3 σ tension with HSC-Y3,
+KiDs and DES-Y3 results. We also note that the constraint on S8 from a combination of WMAP+ACT+SPT
+is consistent with the S8 inferred from Planck alone,
+which provides a nearly-independent check of the Planck
+result.
+
+G.
+
+Amplitude of nonlinear structure growth
+
+One proposed phenomenological resolution to the S8
+tension is a suppression of the matter power spectrum at
+non-linear scales, potentially due to baryonic feedback or
+dark matter structure growth which differs from the standard picture [41, 91]. The CMB lensing reconstruction we
+present in this paper is the most precise measurement of
+the CMB lensing spectrum at the smaller angular scales
+where non-linear effects are more important, and can be
+used to further constrain the space of possible models
+which resolve this tension. To do so, we introduce a new
+parameter, ACMB
+mod , equivalent to the Amod parameter of
+[41] under the Limber approximation, but here measured
+at CMB lensing scales and redshifts. We implement this
+by directly scaling the non-linear correction to the lineartheory CMB lensing spectrum,
+ϕϕ
+ϕϕ
+ϕϕ
+CLϕϕ = CL,lin
++ ACMB
+mod (CL,nonlin − CL,lin ),
+
+(29)
+
+ϕϕ
+ϕϕ
+where CL,lin
+and CL,nonlin
+are the linear and non-linear
+CMB lensing spectra, the latter computed via our default
+Halofit. This modified lensing spectrum is then also
+propagated to changes in the lensed primary spectra.
+As a small aside, we have verified that constraints on
+ACMB
+mod are insensitive to the choice of nonlinear and baryonic feedback models. Given that ACMB
+mod is the parameter most sensitive to the non-linear prediction, our constraints on other cosmological parameters in this paper
+are insensitive as well.
+Fig. 18 shows results of fitting the ΛCDM+ACMB
+mod
+model to various CMB datasets. We take the Planck
+primary CMB measurements as a baseline, which tightly
+limit the linear contribution to lensing, then explore
+the impact to constraints on the non-linear contribution,
+ACMB
+mod , from adding lensing measurements from Planck,
+
+23
+
+H.
+
+Massive neutrinos
+
+The ΛCDM model, as usually understood, includes
+a strong assumption about the spectrum of neutrino
+masses, namely that the sum is 0.058 eV. This particular value follows from assuming that the lightest neutrino mass is effectively zero, that normal ordering applies, and that the usual interpretation of atmospheric
+and solar neutrino oscillations is correct. Here we relax
+this assumption and study constraints on the sum of neutrino masses, Σmν . For a review of neutrino physics and
+its cosmological significance see [92].
+Relative to the case of massless neutrinos, neutrino
+rest masses increase the mean energy density and therefore the expansion rate. To keep the angular size of the
+sound horizon fixed, the cosmological constant must then
+decrease, with a result that the expansion rate is boosted
+at z > 1 and decreased at z < 1 [93]. The increased expansion rate at z > 1 reduces growth on scales below
+the neutrino free-streaming length. Increasing mass also
+decreases the neutrino free-streaming length. On scales
+above the free-streaming length, neutrinos can cluster,
+approximately canceling the impact on growth of the in-
+
+103
+
+SPT-3G 2yr-main EE+ (P) sensitivity to:
+Total lensing power
+Non-linear contribution
+
+Redshift, z
+
+102
+
+L = 4000
+
+101
+100
+10
+
+1
+
+10 102
+
+L=
+
+10
+
+2
+
+DES + KiDs
+30
+
+100
+
+1
+
+Wavenumber, k [Mpc −1 ]
+1.9 ± 0.9
+
+PlanckT&E+ACT
+PlanckT&E+SPT
+PlanckT&E+Planck
++ACT +SPT
+
+101
+2.3 ± 1.4
+
+PlanckT&E+Planck
+
+0.0
+
+0.5
+
+DES-Y3+KIDS
+Standard value
+
+ACT, or the SPT results from this work. As expected
+from the spectra shown in Fig. 12, there are significant
+improvements in constraining the non-linear contribution
+from Planck to ACT, and again from ACT to SPT. The
+Planck primary CMB together with SPT detect a nonzero ACMB
+mod at > 3 σ for the first time.
+All measurements are consistent with the standard
+value ACMB
+mod = 1, and the tightest combination of all lensing measurements yields ACMB
+mod = 1.60 ± 0.39. The Amod
+inferred from DES-Y3 and KiDs is Amod = 0.820 ± 0.042
+[91]. This latter result measures the amplitude of nonlinear structure growth at redshift z ∼ 0.3 and scales of
+k ∼ 1 Mpc−1 , whereas our CMB lensing measurements
+are sensitive to higher redshifts and larger scales. Using
+a Fisher calculation based on our actual achieved errorbars, in the top panel of Fig. 18 we have computed the
+range of (k, z) which contribute most to our constraints
+on total lensing power, as well as to just the non-linear
+contribution to the lensing power, i.e. to Amod .
+This plot, taken together with our Amod constraints,
+suggests (at ∼ 2 σ) that if the S8 tension is to be explained by some non-standard physics suppressing the
+non-linear matter power spectrum, these effects have not
+started at the higher redshift and larger scales of CMB
+lensing as compared to galaxy lensing, and evolve in
+the decade of separation in (k, z) before suppressing the
+galaxy lensing power by ∼ 20% at later times and smaller
+scales. We note that with even better future measurements of small-scale CMB lensing, sensitivity to ACMB
+mod
+will push to smaller scales; e.g., significantly tightening
+up measurement of lensing power in a broad band centered on L = 4000 will lead to sensitivity to galaxy weak
+lensing scales, although at z ≃ 1 to 2 rather than z = 0.3.
+
+1.0
+
+1.61 ± 0.42
+1.60 ± 0.39
+
+1.5
+
+CMB
+Amod
+
+2.0
+
+2.5
+
+3.0
+
+FIG. 18. Top panel: Redshifts and scales to which our lensing
+measurements are sensitive. Colored regions are iso-contours
+in the contribution to the square root of the Fisher information from logarithmic bins in k and z. The outermost contour
+corresponds to 10% of the peak. Red is for the Fisher information in the total lensing power, whereas blue is for the Fisher
+information just in ACMB
+mod (and is weighted more towards
+higher L). Under the Limber approximation, a given (k, z)
+contributes to a single CMB lensing multipole, L, and dashed
+lines denote this mapping for scales of L = 30 and L = 4000.
+Bottom panel: Constraints on ACMB
+mod , defined as the amplitude of non-linear contributions to the CMB lensing spectrum
+(Eqn. 29), from Planck primary CMB measurements (labeled
+PlanckT&E) in combination with lensing measurements from
+Planck, ACT DR6, and the SPT dataset presented here. The
+orange band shows the 68% and 95% constraints of Amod inferred from DES-Y3 and KiDs datasets in [91].
+
+creased expansion rate. For neutrino masses consistent
+with the data we consider, the free-streaming lengths
+are on very large scales so that the clustering of neutrinos only impacts the CMB lensing power spectrum at
+L ≲ 200 [94]. For this reason, nearly all of the constraining power of CMB data on neutrino masses comes
+from the changes to the expansion rate, rather than the
+changed free-streaming scale [95]. This is not to say that
+CMB lensing does not contribute to the constraints, as it
+is indeed sensitive to the reduction in growth that occurs
+as a result of the increased expansion rate.
+In Table V, we show the constraints on Σmν from
+various datasets. Combining the CMB observations of
+Planck, SPT, and ACT, we report the following con-
+
+24
+
+(30)
+
+Additionally including BAO measurements yields
+Σmν < 0.075 eV (95% C.L.),
+
+(31)
+
+which puts extreme pressure on the inverted hierarchy
+minimal mass sum of about 0.098 eV.
+These constraints on Σmν should be interpreted with
+some caution. The need for that caution is wellillustrated by Figure 3 in Loverde & Weiner [94]. Here
+they show that, due to constraints from primary CMB
+data on θs , ωbc , and rd (where ωbc = ωb + ωc ), and constraints from BAO data on Ωm and ωm rd2 (where here
+ωm = ωb + ωc + ων and likewise for Ωm ), the preference of the combined constraints is for Ωm < Ωbc ; i.e.,
+for an (unphysical) negative neutrino mass. Further, the
+Pantheon+SH0ES constraint in this plane is completely
+at odds with both the CMB and BAO (either DESI or
+SDSS) constraints. Loverde & Weiner [94] argue that the
+main cause of DESI BAO data leading to tighter constraints on Σmν is the central value of their constraints
+in the Ωm - ωm rd2 plane, rather than a decrease in the
+uncertainty in this plane.
+Similar reason for caution is given by Craig et al. [40]
+and Green & Meyers [96]. They point out that there
+is some weak (2.5σ) evidence for an excess in lensing
+power present in CMB data, relative to ΛCDM predictions given CMB and BAO data. This is, again, opposite the expected influence of an increase to Σmν from
+its minimal (ΛCDM) value of 0.058 eV. We turn to this
+question of excess lensing power in the next subsection.
+I.
+
+CLϕϕ (AX , θ) = AX CLϕϕ (θ),
+
+(32)
+
+where X = recon, 2pt, or lens and CLϕϕ (θ) on the right
+hand side is the ΛCDM model evaluated at θ.7 To assist
+in comparison with [40, 96], in this subsection only we
+take “PlanckT&E” to include the Planck low-ℓ EE likelihood and remove the τ prior, and we restrict our use of
+ACT data to ACT DR6 lensing only. Our choice of BAO
+data can be found in Table III.
+
+3.3
+3.4
+3.2
+3.1
+P
+
+Σmν < 0.20 eV (95% C.L.).
+
+Note that what we call A2pt has often been called AL .
+We consider four model spaces, each an extension
+of ΛCDM. They are ΛCDM+Arecon , ΛCDM+A2pt ,
+ΛCDM+Alens , and ΛCDM+Arecon +A2pt . Taking θ to
+be the ΛCDM parameters, the extensions to the model
+spaces that include these template parameters are done
+via
+
+PlanckT&E+BAO
++Planck
++ACT +SPT
++ACT
++SPT
++Planck
+ΛCDM + A2pt + Arecon
+ΛCDM + A2pt
+ΛCDM + Arecon
+
+2.6
+2.2
+2.3
+1.8
+
+1.2
+
+Arecon
+
+straint on neutrino mass
+
+1.1
+1.0
+
+Excess lensing power?
+
+0.9
+As mentioned, Craig et al. [40] pointed out that the
+lensing power inferred from the Planck lensing reconstruction and from the ACT DR6 lensing reconstruction
+are somewhat in excess of ΛCDM predictions given DESI
+BAO and primary CMB data. Here we investigate this
+claim, first with L-independent lensing template parameters and then with the phenomenological “negative neutrino mass” parameter used in [40], Σm̃ν , which can be
+thought of as an L-dependent lensing template parameter.
+To conduct our analysis, we define three L-independent
+lensing template parameters:
+1. Arecon scales the ΛCDM model lensing power used
+to predict the reconstructed lensing power,
+2. A2pt scales the model lensing power used to compute any lensed power spectra (2-point correlation
+functions), and
+3. Alens scales both of these model power spectra; i.e.,
+it is what we call Arecon and A2pt when we force
+them to be equal to each other.
+
+A2pt = Arecon
+
+1.0
+
+1.2
+
+A2pt
+
+1.4
+
+1.0
+
+1.1
+
+1.2
+
+Arecon
+
+FIG. 19. Posteriors of the lensing power phenomenological scaling parameters A2pt and Arecon . Different combinations of CMB lensing data added to the Planck primary
+CMB and BAO are shown in different colors. The 2D contours and solid lines show the marginal posterior from the
+ΛCDM+A2pt +Arecon model; the dot-dashed and dashed lines
+show the results from ΛCDM+A2pt and ΛCDM+Arecon respectively. The σ values give the level at which Arecon (A2pt )
+values less than 1 are excluded, for the case of marginalization
+over A2pt (Arecon ); i.e., for the solid curves.
+
+In the dash-dotted curves of the top panel of Fig. 19
+we see the well-known “A lens” or “AL ” anomaly, which
+in our language is an A2pt anomaly driven by Planck
+
+7
+
+Recall that in this paper the ΛCDM model has Σmν fixed to
+0.058 eV.
+
+25
+PR3 T T data [97]. This is a preference, in the lensed
+T T , T E, and EE spectra, for excess lensing power beyond what one gets from the ΛCDM model. In the lower
+left panel we can see that if both Arecon and A2pt are
+allowed to vary freely, the 95% confidence regions for the
+four considered data combinations have central values
+greater than 1 in both dimensions and no overlap with
+the ΛCDM point of Arecon = A2pt = 1.
+Turning to the question of an excess of reconstructed
+lensing power, we see in the solid lines of the right panel
+that if we marginalize over A2pt (solid lines) then there
+is some preference for Arecon > 1. The significances of
+these preferences are shown as ranging from 1.8 σ to 2.6 σ.
+From these significance levels and from the blue, orange,
+and green curves we see that we get a very similar result
+whether we use Planck, ACT DR6, or SPT lensing reconstructions, with the ACT DR6 and SPT curves nearly
+overlapping. If we remove DESI BAO data8 (a case not
+shown in the figure), the preferences for Arecon > 1 persist, although with somewhat reduced significance ranging from 1.4 σ to 2.2 σ. The preference for Arecon > 1
+is weakened much more if we fix A2pt to 1 rather than
+marginalize over it (dashed curves); any evidence for excess reconstructed lensing power is then quite weak.
+This dependence of the Arecon posteriors on the treatment of A2pt (fixing to 1 or marginalizing) makes sense
+given the correlation we see in the lower left panel. The
+lower the assumed A2pt , the lower the distribution of
+Arecon values. Physically, this correlation emerges because as A2pt is increased, the ΛCDM parameters used
+to fit the Planck T&E data adjust in a way that decreases
+lensing power (both Ωm h2 and As decrease). With the
+ΛCDM lensing power decreased, a given level of reconstructed CMB lensing power needs a larger Arecon to fit
+it.
+Readers who are familiar with [96] may be surprised
+at this sensitivity of Arecon to choice of treatment of
+A2pt (marginalizing it or fixing it to 1), given arguments made in that paper about the unimportance of
+the 2-point lensing anomaly to their conclusion of excess lensing power. But these two different results do
+not contradict each other. Green & Meyers [96] define a slightly L-dependent lensing template parameter,
+AL (Σm̃ν ), and an L-independent template parameter,
+Blens , which are approximately related to our parameters by Arecon = AL (Σm̃ν ) and A2pt = AL (Σm̃ν )Blens .9
+The resulting correlation between Blens and Σm̃ν is much
+smaller than the correlation we see in Fig. 19, which explains why they see the posterior for Σm̃ν not change
+much if they switch from fixing Blens = 1 to marginalizing over it.
+
+8
+
+9
+
+When removing DESI we also add back in BAO data we had
+removed (see Tab. III), namely the SDSS DR16 LRG, ELG, and
+QSO BAO [70] and the DR12 BAO bin with zeff = 0.61 [69].
+This is approximate because 1) we have ignored the slight Ldependence of AL (Σm̃ν ) and 2) their template is defined with
+respect to ΛCDM models with Σmν = 0 eV.
+
+Plik PR3
+PlanckT&E+SPT +BAO
+PlanckT&E+ACT +BAO
+PlanckT&E+Planck +BAO
+PlanckT&E+Planck
++ACT +SPT +BAO
+PlanckT&E+SPT
+PlanckT&E+ACT
+PlanckT&E+Planck
+PlanckT&E+Planck
++ACT +SPT
+
+CamSpec PR4
+
+1.090 ± 0.036
+1.110 ± 0.037
+1.085 ± 0.038
+1.099 ± 0.039
+1.056 ± 0.032
+1.064 ± 0.033
+1.076 ± 0.031
+1.083 ± 0.032
+1.073 ± 0.041
+1.099 ± 0.044
+1.070 ± 0.041
+1.091 ± 0.044
+1.042 ± 0.036
+1.055 ± 0.038
+1.060 ± 0.036
+1.071 ± 0.038
+
+1.00 1.02 1.04 1.06 1.08 1.10 1.12 1.14
+
+Alens
+
+FIG. 20. Constraints on the lensing power phenomenological
+scaling parameter Alens (68% C.L.) using Planck PR3 Plik
+T&E likelihood (in blue) and CamSpec PR4 T&E likelihood
+(in orange).
+
+We have a strong theoretical prior that the lensing
+power one would infer from lensed CMB spectra (given
+the right cosmological model) should be equal, within
+the expected uncertainties, to what one would infer in a
+CMB lensing reconstruction.10 So, even though the bulk
+of the probability lies to one side of the Arecon = A2pt
+line, it is worth exploring what we find if we force these
+two parameters to be equal. This is the model space we
+explore with an even greater variety of dataset combinations in Fig. 20, and it is also very similar to the model
+space chiefly studied by Green & Meyers [96] (with their
+Blens = 1).
+One of the dataset variations we consider throughout
+Fig. 20 is the replacement of the Planck PR3 Plik T&E
+likelihood with the Camspec PR4 T&E likelihood [98].11
+The Planck PR4 maps use more timestream data than
+does PR3 and the Camspec PR4 T&E likelihood uses
+more sky than does the Plik PR3 T&E likelihood. If the
+A2pt anomaly is driven by some fluctuations that drive
+the spectra away from the mean (in a manner similar to
+enhanced lensing) then we would expect the support for
+it to go down as we add in more data. For Plick PR3
+we have, from T T ,T E,EE+lowE, AL = 1.180 ± 0.065
+[97]. With the additional PR4 data, we instead have
+AL = 1.095 ± 0.056 [98]. Note that there is one other
+PR4 T&E likelihood [99], in which they find an even
+lower AL = 1.039 ± 0.052.
+The lower half of the entries in Fig. 20 do not include
+any BAO data. We see that without the BAO data any
+
+10
+11
+
+Although there are models in which this is violated too; see Craig
+et al. [40].
+This replacement does not change the low-ℓ T T and EE likelihood, which remain PR3.
+
+26
+conclusion of Alens > 1 by more than 2 σ is not very robust, occurring only for one of the dataset combinations.
+With the addition of BAO data (top half of the figure),
+such a conclusion becomes much more robust. The combinations that include Planck T&E, BAO, and all three
+lensing reconstructions become robust to the difference
+between PR3 and PR4. With PR3 specifically we find
+PlanckT&E+BAO+Planckϕϕ+ACTϕϕ+SPTϕϕ yields
+Alens = 1.083 ± 0.032
+
+(33)
+
+and a 2.7 σ exclusion of Alens < 1. Note that the constraints are weakened by removing DESI from the BAO
+data set. Also, if one does so, the results become dependent again on the choice of Planck T&E. Removing
+DESI (in the same manner as done above) and switching from Planck PR3 T&E to Planck PR4 T&E we find
+Alens = 1.064 ± 0.032.
+We have checked that switching to the L-dependent
+lensing template used in [40, 96] in place of Alens
+delivers a similar result.
+Their template depends
+on their neutrino-mass-like parameter Σm̃ν .
+For
+PlanckT&E(PR3)+BAO+Planckϕϕ+ACTϕϕ+SPTϕϕ,
+we find
+Σm̃ν = −0.122 ± 0.072 eV
+
+(34)
+
+and a 2.7 σ exclusion of Σm̃ν > 0.058 eV.
+We note that this evidence for excess lensing power
+arises from 3 types of constraints: 1) lensing power measurements, 2) inferences of ΛCDM parameters (other
+than τ ) from the combination of CMB and BAO data,
+and 3) inference of τ from large angular-scale CMB polarization. We have seen that the preference for Alens > 1
+is robust to selection of different datasets for (1). Of particular relevance for this paper, the preference is present
+when the Planck and ACT lensing measurements are replaced with the SPT one. The SPT lensing is inferred
+entirely from polarization, making it much less susceptible to possible biases from extragalactic foregrounds.
+Regarding (2), we see that a more than 2 σ preference
+for Alens > 1 requires either BAO data (including DESI)
+or PR3 T&E. The next release of BAO data from DESI
+should be informative, as will the forthcoming lensed T T ,
+T E, and EE spectra from SPT-3G. Note that τ (item
+3 above) is inferred from Planck low-ℓ EE data. The
+importance of τ comes from its implications for As as
+the combination As e−2τ is very well determined by CMB
+data: a higher τ would lead to higher As and hence a
+higher lensing power prediction. Independent and competitive constraints on τ may come via the kinematic SZ
+effect [11, 100].
+The conclusion that there is an excess of lensing power
+also relies on assumption of the ΛCDM model. Craig
+et al. [40] introduced a number of changes to the model
+that could possibly restore concordance. Lynch et al.
+[101] noted that non-standard recombination can simultaneously reduce the H0 tension and lead to a higher
+predicted lensing power. The DESI collaboration points
+
+out that with free w0 and wa the constraints on Σmν are
+significantly relaxed [71].
+
+J.
+
+Other ΛCDM extensions
+
+We also explore ΛCDM extensions with curvature, the
+density of light relics, primordial abundance of helium,
+and a time-varying dark energy equation of state. Constraints on additional parameters are summarized in Table V.
+For the ΛCDM extension with free curvature and for
+the ones with changing dark energy equation of state, we
+find that all CMB datasets are consistent within 2 σ with
+the fiducial values of the ΛCDM model. The constraints
+from different CMB datasets are consistent. Adding the
+BAO data significantly tightens the constraints. This is
+due to the BAO sensitivity to the expansion rate and the
+distance-redshift relation over redshifts when the dark
+energy begins to dominate the density.
+The energy density of additional relativistic particles
+other than photons is parameterized by the effective number of neutrino species, Neff , defined via
+"
+ 4/3 #
+7 4
+ρrad = ργ 1 + Neff
+,
+(35)
+8 11
+where ργ is the photon energy density. Assuming the
+standard cosmological model, Neff = 3.044 [103–105].
+The CMB power spectrum is sensitive to Neff [106–110].
+By increasing the density of light relics, one increases
+the expansion rate during the radiation-dominated era.
+To keep the precisely measured angular scale of the sound
+horizon unchanged, the expansion rate after last scattering also increases [e.g. 111]. Therefore, there is a positive
+correlation between H0 and Neff . The marginal posterior
+distribution of Neff and H0 is shown in the left panel of
+Fig. 21. Combining Planck, SPT, ACT, and BAO, we
+get
+Neff = 2.83 ± 0.13
+H0 = 66.52 ± 0.87 km/s/Mpc
+
+(36)
+(37)
+
+where Neff is consistent with 3.044 from the standard
+model prediction, but H0 is still in 5.4 σ tension with the
+SH0ES [79] measurement.
+One can further extend the model to allow for a free
+Σmν as well. The marginal posterior of Neff and Σmν
+is shown in the middle panel of Fig. 21. There is nearly
+no degeneracy between Neff and Σmν . Adding SPT data
+to Planck improves the constraints on Neff slightly and
+Σmν by about a factor of 2 as discussed in Sect. V H. The
+lensing information in SPT data is useful for constraining
+the neutrino mass sum, as discussed in Sect. V H, and
+the improvement of the Neff constraint is mostly from
+the more precisely measured EE bandpowers.
+The density of light relics is also partially degenerate
+with the primordial fraction of baryonic mass in helium,
+
+27
+Ext. Parameter WMAP+SPT
+
+Planck
+
+Planck+SPT
+
+−0.021+0.014
+−0.011
+−1.42+0.29
+−0.47
+−1.10+0.50
+−0.69
+−1.1+0.6
+−1.9
+
+−0.0070 ± 0.0056 −0.0098 ± 0.0052
+−1.48+0.20
+−1.52+0.18
+−0.37
+−0.35
++0.46
+−1.18−0.62
+−1.16+0.48
+−0.60
+−1.06+0.61
+−1.18+0.52
+−1.94
+−1.82
+2.95 ± 0.33
+2.89 ± 0.18
+2.85 ± 0.16
+< 0.38 eV
+< 0.31 eV
+< 0.17 eV
+2.95 ± 0.32
+2.89 ± 0.19
+2.84 ± 0.17
+< 0.38 eV
+< 0.31 eV
+< 0.17 eV
+2.79 ± 0.52
+2.8 ± 0.3
+2.77 ± 0.26
+0.256 ± 0.028
+0.248 ± 0.018
+0.250 ± 0.016
+
+Ωk
+w0
+w0
+wa
+Neff
+Σmν
+Neff
+Σmν
+Neff
+YP
+
+Planck+ACT+SPT Planck+ACT+SPT+BAO
+−0.0076+0.0053
+−0.0047
+−1.52+0.19
+−0.35
+−1.18+0.48
+−0.58
+−1.21+0.57
+−1.79
+2.66 ± 0.14
+< 0.20 eV
+2.67 ± 0.14
+< 0.21 eV
+2.60 ± 0.23
+0.246 ± 0.014
+
+0.0014 ± 0.0014
+−1.075 ± 0.046
+−0.65 ± 0.23
+−1.15+0.71
+−0.59
+2.86 ± 0.13
+< 0.075 eV
+2.83 ± 0.13
+< 0.061 eV
+2.89 ± 0.23
+0.241 ± 0.015
+
+TABLE V. Summary of constraints on selected extensions to the ΛCDM model. The errors indicate the 68% confidence region,
+and the upper limits on the sum of neutrino masses are 95% upper limits.
+
+ΛCDM + Neff
+
+WMAP+SPT
+WMAP: TT+TE
+[9yr]
+Planck
+Planck: TT+TE+EE+ (T&P) [Plik/PR4]
+ACT: TT+TE+EE+ (T&P) [DR4/DR6]
+Planck+SPT
+SPT: EE+ (P)
+[2yr-main]
+Planck+ACT+SPT
+BAO:
+6dF+SDSS+DESI
+[see Table 1]
+Planck+ACT+SPT+BAO
+ΛCDM + Neff + Σmν
+ΛCDM + Neff + YP
+
+Standard BBN
+Aver et al
+
+SH0ES
+
+Neff
+
+4
+3
+2
+
+62
+
+66
+
+70
+
+H0 [km/s/Mpc]
+
+74
+
+0.0
+
+0.1
+
+0.2
+0.3
+Σmν [eV]
+
+0.4
+
+0.20
+
+0.25
+
+YP
+
+0.30
+
+0.35
+
+FIG. 21. Marginal posterior distributions of the ΛCDM extension models involving Neff . The horizontal red dashed line shows
+Neff = 3.044. The yellow vertical band in the left panel shows the constraint on H0 from Breuval et al. [79]. The vertical brown
+dashed line shows Σmν = 0.058 eV. The purple vertical band shows the inference of the primordial helium fraction from Aver
+et al. [102].
+
+YP . Both Neff and YP affect the photon diffusion damping of the CMB power spectra at small angular scales. In
+the right panel of Fig. 21, we show the marginal posterior of Neff and YP . Compared to the constraints using
+only Planck data, the uncertainty is reduced by ∼ 41%
+with the addition of SPT data.12 When we fit jointly for
+Neff and YP using Planck, ACT, SPT, and BAO measurements, we find values of Neff that are consistent with
+the standard model prediction of 3.044, Neff − YP contours that are consistent with BBN predictions, and YP
+constraints that are consistent with direct measurements
+of HII regions in metal-poor galaxies [102].
+
+12
+
+Although prior work has shown that de-lensing can improve constraints on Neff and YP [77, 112], we suspect that the improvement we see here is largely unrelated to the unlensed nature of
+our bandpowers; i.e., it would be quite similar even if our bandpowers were lensed bandpowers.
+
+VI.
+
+CONCLUSIONS
+
+In this paper, we presented an optimal joint inference
+of the CMB lensing potential power spectrum and the unlensed CMB EE power spectrum, derived entirely from
+CMB polarization maps. These maps were made from
+observations of 1500 deg2 taken during the SPT-3G 2019
+and 2020 Austral winter observing seasons. The inference
+was performed using a Bayesian framework called the
+Marginal Unbiased Score Expansion (MUSE) method,
+which also enables propagation of systematic uncertainties into the estimated bandpower uncertainties. The
+inferred bandpowers have smaller uncertainties than previously published results at ℓ > 2000 for the EE spectrum
+and at L > 350 for the lensing spectrum, with a 38 σ detection of lensing power.
+After checking that the ΛCDM model provides a good
+fit to the SPT data (combined with a prior on τ ), we re-
+
+28
+ported constraints on the ΛCDM parameters. We found
+H0 = 66.81 ± 0.81 km/s/Mpc, a significantly tighter constraint than from prior polarization-only measurements.
+It is consistent with the Planck T T /T E/EE plus Planck
+lensing constraints assuming ΛCDM, and in 5.4 σ tension with the most precise distance ladder measurement
+[79]. The SPT constraints on Ωc h2 and Ωb h2 are also
+tighter than from prior polarization-only or polarization plus CMB lensing measurements. We also found
+S8 = 0.850±0.017, consistent with the result from Planck
+data and with comparable uncertainty.
+We estimated ΛCDM parameters for several other
+CMB datasets and checked for consistency between these
+estimates. These consistency tests are stringent tests
+of the ΛCDM model. All differences investigated were
+within expectations given the measurement uncertainties and the ΛCDM model. The comparison between
+SPT and Planck provides a particularly interesting test of
+the ΛCDM model, because the SPT constraints are more
+heavily weighted toward small-scale polarization power,
+and especially lensing power, than is the case for Planck.
+We estimated ΛCDM parameters from SPT data in
+combination with other CMB datasets. When combined
+with primary CMB and lensing from Planck and ACT,
+we find H0 = 67.33 ± 0.37 km/s/Mpc, a 6.2 σ tension
+with the distance ladder [79], and S8 = 0.8380 ± 0.0084,
+in 3.3 σ tension with S8 from the 3 x 2pt analysis of KiDs1000 [89] and also from the 3 x 2pt analysis of DES-Y3
+[90].
+Motivated by the work of Amon & Efstathiou [41] and
+Preston et al. [91] regarding the S8 tension, we investigated the sensitivity of our lensing measurement to nonlinear corrections. By introducing the ACMB
+mod parameter
+that scales the amplitude of non-linear corrections to the
+CMB lensing spectrum, we found ACMB
+mod = 1.60 ± 0.39.
+This is the first > 3 σ “detection” of the non-linear correction for CMB lensing, and is ∼ 2 σ higher than the
+value needed for resolving the S8 tension between galaxy
+lensing and CMB measurements. Our data clearly do
+not favor any suppression of the non-linear contribution,
+though the uncertainties are still large. A suppressed S8
+could arise at lower redshifts and from slightly smaller
+scales than the ones we are probing.
+The CMB lensing potential is also sensitive to the
+neutrino mass sum, Σmν . We investigated constraints
+on Σmν with the SPT lensing spectrum.
+In the
+ΛCDM+Σmν model, we find Σmν < 0.20 eV (95% C.L.)
+from the joint fit to Planck, ACT, and SPT data.
+Adding BAO data, the constraint is further tightened
+to Σmν < 0.075 eV (95% C.L.), placing pressure on the
+inverted hierarchy minimal mass sum of 0.098 eV.
+With the addition of BAO data to the CMB datasets,
+the strongest challenge to the standard model we see
+in our results comes from an investigation of lensing
+power amplitudes. We introduced A2pt to scale the
+ΛCDM model CMB lensing spectrum used to calculate
+lensed model T T /T E/EE spectra and Arecon to scale
+that same ΛCDM model CMB lensing spectrum, but for
+
+comparison to the reconstructed CMB lensing spectrum
+instead. With both of these parameters free, the ΛCDM
+point in the Arecon , A2pt plane is outside the 95% confidence region for a variety of dataset combinations. After marginalization over A2pt , Planck lensing, ACT DR6
+lensing, and SPT lensing all favor Arecon > 1 at ∼ 2 σ.
+We also set Arecon = A2pt and called the single template parameter Alens . We investigated the posterior
+distribution of Alens for a variety of datasets. For our
+most comprehensive combination of datasets we find
+Alens = 1.083 ± 0.032 and a 2.7 σ exclusion of Alens < 1.
+Following Craig et al. [40] and Green & Meyers [96], we
+found a similar constraint on their neutrino-mass-like Ldependent lensing template parameter, Σm̃ν . For the
+same dataset we found a 2.7 σ exclusion of Σm̃ν > 0.058
+eV. We also saw that these constraints are weakened by
+dropping DESI BAO, or by switching from Planck PR3
+T&E data to Planck PR4 T&E data. Doing both we find
+Alens = 1.064 ± 0.032.
+We also discussed the cosmological inference with SPT
+CMB lensing potential bandpowers and the unlensed EE
+bandpowers on other one- and two-parameter extensions
+of the ΛCDM model. These model extensions include
+varying the amount of spatial curvature, the dark energy
+equation of state and its evolution, the density of light
+relics, and the primordial fraction of baryonic mass in
+helium. The constraints on the extended parameters are
+summarized in Tab. V. Combining the SPT results with
+Planck, ACT, and BAO, we saw no significant preference
+for any of these extensions.
+Although the 2019-2020 SPT-3G CMB polarization
+data analyzed here primarily constrain H0 and S8 , SPT3G constraints on other ΛCDM parameters and extensions will be improved significantly in the near future.
+The addition of temperature information to both the
+power spectrum and lensing analyses will significantly
+improve the constraints on the inferred cosmological parameters, in particular the effective number of neutrino
+species, Σmν , and curvature [3]. With polarized beam
+uncertainties identified as an important contribution to
+our systematic error budget, we have planned additional
+deep observations of polarized point sources to better
+map out the polarized beam response and reduce this
+source of uncertainty in future analyses. The 1500 deg2
+field has since been observed for three more seasons. The
+noise level of the full 2019-2023 1500 deg2 data is expected to be 1.7 times lower than the 2019-20 observations, and the figure of merit for ΛCDM parameters
+is expected to be 2 times better [3]. The addition of
+∼ 8500 deg2 more sky mapped with SPT-3G by the end
+of 2024 will strengthen constraints even further, eventually surpassing those from Planck [3]. The analysis of
+these data, particularly the ultra-deep 1500 deg2 data,
+will benefit even more from optimal analyses such as
+the MUSE method demonstrated here. This work has
+demonstrated the strength of joint Bayesian CMB lensing
+potential bandpower reconstruction and unlensed CMB
+EE bandpower estimation, in particular its ability to
+
+29
+
+The South Pole Telescope program is supported by
+the National Science Foundation (NSF) through awards
+OPP-1852617 and OPP-2332483. Partial support is
+also provided by the Kavli Institute of Cosmological
+Physics at the University of Chicago. This research
+used resources of the National Energy Research Scientific Computing Center (NERSC), a DOE Office of Science User Facility supported by the Office of Science of
+the U.S. Department of Energy under Contract No. DEAC02-05CH11231, the Infinity Cluster hosted by Institut
+
+d’Astrophysique de Paris and the Peloton Cluster of the
+High Performance Computing Core Facility at the University of California, Davis. We acknowledge the computing resources provided on Swing and Crossover, highperformance computing clusters operated by the Laboratory Computing Resource Center at Argonne National
+Laboratory. The UC Davis group acknowledges support
+from Michael and Ester Vaida. Argonne National Laboratory’s work was supported by the U.S. Department of
+Energy, Office of High Energy Physics, under contract
+DE-AC02-06CH11357. The Paris group has received
+funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (grant agreement No 101001897), and
+funding from the Centre National d’Etudes Spatiales.
+The Melbourne authors acknowledge support from the
+Australian Research Council’s Discovery Project scheme
+(No. DP210102386). Work at Fermi National Accelerator Laboratory, a DOE-OS, HEP User Facility managed
+by the Fermi Research Alliance, LLC, was supported under Contract No. DE-AC02-07CH11359. The SLAC
+group is supported in part by the Department of Energy at SLAC National Accelerator Laboratory, under
+contract DE-AC02-76SF00515.
+
+[1] Aghanim, N., et al. Planck 2018 results. I. Overview and
+the cosmological legacy of Planck. 2020, Astron. Astrophys., 641, A1, doi: 10.1051/0004-6361/201833880
+[2] Sobrin, J. A., Anderson, A. J., Bender, A. N., et al. The
+Design and Integrated Performance of SPT-3G. 2022,
+Ap. J. Suppl. , 258, 42, doi: 10.3847/1538-4365/ac374f
+[3] Prabhu, K., et al. Testing the ΛCDM Cosmological
+Model with Forthcoming Measurements of the Cosmic
+Microwave Background with SPT-3G. 2024. https://
+arxiv.org/abs/2403.17925
+[4] Ade, P. A. R., Ahmed, Z., Amiri, M., et al. Improved Constraints on Primordial Gravitational Waves
+using Planck, WMAP, and BICEP/Keck Observations
+through the 2018 Observing Season. 2021, Phys. Rev.
+Lett., 127, 151301, doi: 10.1103/PhysRevLett.127.
+151301
+[5] Guns, S., Foster, A., Daley, C., et al. Detection of
+Galactic and Extragalactic Millimeter-wavelength Transient Sources with SPT-3G. 2021, Astrophys. J., 916, 98,
+doi: 10.3847/1538-4357/ac06a3
+[6] Chaubal, P. S., Reichardt, C. L., Gupta, N., et al. Improving Cosmological Constraints from Galaxy Cluster
+Number Counts with CMB-cluster-lensing Data: Results from the SPT-SZ Survey and Forecasts for the
+Future. 2022, Astrophys. J., 931, 139, doi: 10.3847/
+1538-4357/ac6a55
+[7] Ferguson, K. R., Anderson, A. J., Whitehorn, N., et al.
+Searching for axionlike time-dependent cosmic birefringence with data from SPT-3G. 2022, Phys. Rev. D, 106,
+042011, doi: 10.1103/PhysRevD.106.042011
+[8] Schiappucci, E., Bianchini, F., Aguena, M., et al. Measurement of the mean central optical depth of galaxy
+clusters via the pairwise kinematic Sunyaev-Zel’dovich
+
+effect with SPT-3G and DES. 2023, Phys. Rev. D, 107,
+042004, doi: 10.1103/PhysRevD.107.042004
+Ansarinejad, B., Raghunathan, S., Abbott, T. M. C.,
+et al. Mass calibration of DES Year-3 clusters via SPT3G CMB cluster lensing. 2024, J. of Cosm. & Astropart.
+Phys., 2024, 024, doi: 10.1088/1475-7516/2024/07/
+024
+Tandoi, C., Guns, S., Foster, A., et al. Flaring Stars in
+a Nontargeted Millimeter-wave Survey with SPT-3G.
+2024, Astrophys. J., 972, 6, doi: 10.3847/1538-4357/
+ad58db
+Raghunathan, S., Ade, P. A. R., Anderson, A. J.,
+et al. 2024, First Constraints on the Epoch of Reionization Using the Non-Gaussianity of the Kinematic
+Sunyaev-Zel{’}dovich Effect from the South Pole Telescope and {\it Herschel}-SPIRE Observations, arXiv,
+doi: 10.48550/arXiv.2403.02337
+Dutcher, D., et al. Measurements of the E-mode polarization and temperature-E-mode correlation of the
+CMB from SPT-3G 2018 data. 2021, Phys. Rev. D, 104,
+022003, doi: 10.1103/PhysRevD.104.022003
+Balkenhol, L., et al. Constraints on ΛCDM extensions
+from the SPT-3G 2018 EE and TE power spectra. 2021,
+Phys. Rev. D, 104, 083509, doi: 10.1103/PhysRevD.
+104.083509
+—. Measurement of the CMB temperature power spectrum and constraints on cosmology from the SPT-3G
+2018 TT, TE, and EE dataset. 2023, Phys. Rev. D, 108,
+023510, doi: 10.1103/PhysRevD.108.023510
+Pan, Z., et al. Measurement of gravitational lensing of
+the cosmic microwave background using SPT-3G 2018
+data. 2023, Phys. Rev. D, 108, 122005, doi: 10.1103/
+PhysRevD.108.122005
+
+propagate systematic uncertainties, and paves the way
+for future analyses of SPT-3G observations and similarly
+deep datasets in the future.
+
+ACKNOWLEDGMENTS
+
+[9]
+
+[10]
+
+[11]
+
+[12]
+
+[13]
+
+[14]
+
+[15]
+
+30
+[16] Millea, M., & Seljak, U. Marginal unbiased score expansion and application to CMB lensing. 2022, Phys. Rev.
+D, 105, 103531, doi: 10.1103/PhysRevD.105.103531
+[17] Millea, M. 2022, Improved Marginal Unbiased Score
+Expansion (MUSE) via Implicit Differentiation, arXiv,
+doi: 10.48550/arXiv.2209.10512
+[18] Seljak, U., Aslanyan, G., Feng, Y., & Modi, C. Towards optimal extraction of cosmological information
+from nonlinear data. 2017, JCAP, 12, 009, doi: 10.1088/
+1475-7516/2017/12/009
+[19] Horowitz, B., Seljak, U., & Aslanyan, G. Efficient
+Optimal Reconstruction of Linear Fields and Bandpowers from Cosmological Data. 2019, JCAP, 10, 035,
+doi: 10.1088/1475-7516/2019/10/035
+[20] Hu, W., & Okamoto, T. Mass reconstruction with cmb
+polarization. 2002, Astrophys. J., 574, 566, doi: 10.
+1086/341110
+[21] Hotinli, S. C., Meyers, J., Trendafilova, C., Green, D., &
+van Engelen, A. The benefits of CMB delensing. 2022,
+JCAP, 04, 020, doi: 10.1088/1475-7516/2022/04/020
+[22] Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 Results. VIII. Gravitational Lensing. 2018,
+arXiv:1807.06210 [astro-ph]. https://arxiv.org/abs/
+1807.06210
+[23] Han, D., et al. The Atacama Cosmology Telescope:
+delensed power spectra and parameters. 2021, JCAP,
+01, 031, doi: 10.1088/1475-7516/2021/01/031
+[24] Hirata, C. M., & Seljak, U. Analyzing Weak Lensing
+of the Cosmic Microwave Background Using the Likelihood Function. 2003, Physical Review D, 67, doi: 10.
+1103/PhysRevD.67.043001
+[25] Carron, J., & Lewis, A. Maximum a Posteriori CMB
+Lensing Reconstruction. 2017, Physical Review D, 96,
+063510, doi: 10.1103/PhysRevD.96.063510
+[26] Legrand, L., & Carron, J. Lensing power spectrum
+of the cosmic microwave background with deep polarization experiments. 2022, Phys. Rev. D, 105, 123519,
+doi: 10.1103/PhysRevD.105.123519
+[27] —. Robust and efficient CMB lensing power spectrum
+from polarization surveys. 2023, Phys. Rev. D, 108,
+103516, doi: 10.1103/PhysRevD.108.103516
+[28] Millea, M., Anderes, E., & Wandelt, B. D. Bayesian
+Delensing of CMB Temperature and Polarization.
+2019, Physical Review D, 100, 023509, doi: 10.1103/
+PhysRevD.100.023509
+[29] —. Sampling-based inference of the primordial CMB
+and gravitational lensing. 2020, Phys. Rev. D, 102,
+123542, doi: 10.1103/PhysRevD.102.123542
+[30] Millea, M., Daley, C. M., Chou, T. L., et al. Optimal
+Cosmic Microwave Background Lensing Reconstruction
+and Parameter Estimation with SPTpol Data. 2021, Astrophys. J., 922, 259, doi: 10.3847/1538-4357/ac02bb
+[31] Balkenhol, L., et al. Measurement of the CMB temperature power spectrum and constraints on cosmology
+from the SPT-3G 2018 TT, TE, and EE dataset. 2023,
+Phys. Rev. D, 108, 023510, doi: 10.1103/PhysRevD.
+108.023510
+[32] Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 results. I. Overview and the cosmological
+legacy of Planck. 2020, A&A, 641, A1, doi: 10.1051/
+0004-6361/201833880
+[33] Madhavacheril, M. S., et al. The Atacama Cosmology
+Telescope: DR6 Gravitational Lensing Map and Cosmological Parameters. 2024, Astrophys. J., 962, 113,
+
+doi: 10.3847/1538-4357/acff5f
+[34] Qu, F. J., et al. The Atacama Cosmology Telescope: A Measurement of the DR6 CMB Lensing Power
+Spectrum and Its Implications for Structure Growth.
+2024, Astrophys. J., 962, 112, doi: 10.3847/1538-4357/
+acfe06
+[35] Aiola, S., Calabrese, E., Maurin, L., et al. The Atacama Cosmology Telescope: DR4 Maps and Cosmological Parameters. 2020, arXiv e-prints, 2007,
+arXiv:2007.07288. http://adsabs.harvard.edu/abs/
+2020arXiv200707288A
+[36] Choi, S. K., et al. The Atacama Cosmology Telescope:
+a measurement of the Cosmic Microwave Background
+power spectra at 98 and 150 GHz. 2020, JCAP, 12, 045,
+doi: 10.1088/1475-7516/2020/12/045
+[37] Di Valentino, E., Mena, O., Pan, S., Visinelli, L.,
+Yang, W., Melchiorri, A., Mota, D. F., Riess, A. G.,
+& Silk, J. In the realm of the Hubble tension—a review of solutions. 2021, Class. Quant. Grav., 38, 153001,
+doi: 10.1088/1361-6382/ac086d
+[38] Schöneberg, N., Franco Abellán, G., Pérez Sánchez, A.,
+Witte, S. J., Poulin, V., & Lesgourgues, J. The H0
+Olympics: A fair ranking of proposed models. 2022,
+Phys. Rept., 984, 1, doi: 10.1016/j.physrep.2022.07.
+001
+[39] Khalife, A. R., Zanjani, M. B., Galli, S., Günther, S.,
+Lesgourgues, J., & Benabed, K. Review of Hubble tension solutions with new SH0ES and SPT-3G data. 2024,
+JCAP, 04, 059, doi: 10.1088/1475-7516/2024/04/059
+[40] Craig, N., Green, D., Meyers, J., & Rajendran, S. No
+νs is Good News. 2024. https://arxiv.org/abs/2405.
+00836
+[41] Amon, A., & Efstathiou, G. A non-linear solution to
+the S8 tension? 2022, Mon. Not. Roy. Astron. Soc.,
+516, 5355, doi: 10.1093/mnras/stac2429
+[42] Hahn, C., Vakili, M., Walsh, K., Hearin, A. P., Hogg,
+D. W., & Campbell, D. 2017, Approximate Bayesian
+Computation in Large Scale Structure: Constraining the Galaxy-Halo Connection, doi: 10.1093/mnras/
+stx894
+[43] Levasseur, L. P., Hezaveh, Y. D., & Wechsler, R. H.
+2017, Uncertainties in Parameters Estimated with Neural Networks: Application to Strong Gravitational Lensing, doi: 10.3847/2041-8213/aa9704
+[44] Coogan, A., Karchev, K., & Weniger, C. 2020, Targeted Likelihood-Free Inference of Dark Matter Substructure in Strongly-Lensed Galaxies, arXiv, doi: 10.
+48550/arXiv.2010.07032
+[45] Legin, R., Hezaveh, Y., Levasseur, L. P., & Wandelt,
+B. 2022, Simulation-Based Inference of Strong Gravitational Lensing Parameters, arXiv, doi: 10.48550/
+arXiv.2112.05278
+[46] Lin, K., von wietersheim-Kramsta, M., Joachimi, B.,
+& Feeney, S. A Simulation-Based Inference Pipeline
+for Cosmic Shear with the Kilo-Degree Survey. 2023,
+Monthly Notices of the Royal Astronomical Society, 524,
+6167, doi: 10.1093/mnras/stad2262
+[47] Lemos, P., Parker, L. H., Hahn, C., Ho, S., Eickenberg,
+M., Hou, J., Massara, E., Modi, C., Moradinezhad Dizgah, A., Régaldo-Saint Blancard, B., & Spergel, D.
+2023, SimBIG: Field-level Simulation-based Inference
+of Large-scale Structure (eprint: arXiv:2310.15256), 18,
+doi: 10.48550/arXiv.2310.15256
+[48] Karchev, K., Trotta, R., & Weniger, C. SICRET: Su-
+
+31
+
+[49]
+
+[50]
+
+[51]
+
+[52]
+
+[53]
+
+[54]
+
+[55]
+
+[56]
+
+[57]
+
+[58]
+
+[59]
+
+[60]
+
+[61]
+
+[62]
+
+[63]
+
+[64]
+
+pernova Ia Cosmology with Truncated Marginal Neural
+Ratio EsTimation. 2023, Monthly Notices of the Royal
+Astronomical Society, 520, 1056, doi: 10.1093/mnras/
+stac3785
+Charnock, T., Lavaux, G., & Wandelt, B. D. Automatic
+Physical Inference with Information Maximizing Neural
+Networks. 2018, Physical Review D, 97, 083004, doi: 10.
+1103/PhysRevD.97.083004
+Rubin, D. B. Bayesianly Justifiable and Relevant Frequency Calculations for the Applied Statistician. 1984,
+The Annals of Statistics, 12, 1151, doi: 10.1214/aos/
+1176346785
+Beaumont, M. A., Zhang, W., & Balding, D. J. Approximate Bayesian Computation in Population Genetics. 2002, Genetics, 162, 2025
+Cranmer, K., Brehmer, J., & Louppe, G. The frontier
+of simulation-based inference. 2020, Proceedings of the
+National Academy of Science, 117, 30055, doi: 10.1073/
+pnas.1912789117
+Dunkley, J., Calabrese, E., Sievers, J., et al. The Atacama Cosmology Telescope: Likelihood for Small-Scale
+CMB Data. 2013, Journal of Cosmology and Astroparticle Physics, 2013, 025, doi: 10.1088/1475-7516/2013/
+07/025
+Prince, H., & Dunkley, J. Data Compression in Cosmology: A Compressed Likelihood for Planck Data.
+2019, Physical Review D, 100, 083502, doi: 10.1103/
+PhysRevD.100.083502
+Prince, H., Calabrese, E., & Dunkley, J. 2024, A
+Foreground-Marginalized ’BK-lite’ Likelihood for the
+Tensor-to-Scalar Ratio, arXiv, doi: 10.48550/arXiv.
+2403.00085
+Torrado, J., & Lewis, A. Cobaya: Code for Bayesian
+Analysis of hierarchical physical models. 2021, JCAP,
+05, 057, doi: 10.1088/1475-7516/2021/05/057
+Lewis, A., Challinor, A., & Lasenby, A. Efficient computation of CMB anisotropies in closed FRW models.
+2000, Astrophys. J., 538, 473, doi: 10.1086/309179
+Qu, F. J., Millea, M., & Schaan, E. 2024, Impact
+& Mitigation of Polarized Extragalactic Foregrounds
+on Bayesian Cosmic Microwave Background Lensing,
+doi: 10.48550/arXiv.2406.15351
+Lembo, M., Fabbian, G., Carron, J., & Lewis, A. CMB
+Lensing Reconstruction Biases from Masking Extragalactic Sources. 2022, Physical Review D, 106, 023525,
+doi: 10.1103/PhysRevD.106.023525
+Omori, Y. AGORA: Multicomponent Simulation for
+Cross-Survey Science. 2024, Monthly Notices of the
+Royal Astronomical Society, 530, 5030, doi: 10.1093/
+mnras/stae1031
+Bonici, M., Bianchini, F., & Ruiz-Zapatero, J. Capse.jl:
+efficient and auto-differentiable CMB power spectra emulation. 2023. https://arxiv.org/abs/2307.14339
+Chon, G., Challinor, A., Prunet, S., Hivon, E., & Szapudi, I. Fast estimation of polarization power spectra
+using correlation functions. 2004, Mon. Not. Roy. Astron. Soc., 350, 914, doi: 10.1111/j.1365-2966.2004.
+07737.x
+SPT-3G. 2025, Bandpower and likelihood from SPT-3G
+2019-2020 CMB polarization maps using MUSE. https:
+//pole.uchicago.edu/public/data/ge25/index.html
+Aghanim, N., et al. Planck 2018 results. V. CMB power
+spectra and likelihoods. 2020, Astron. Astrophys., 641,
+A5, doi: 10.1051/0004-6361/201936386
+
+[65] Carron, J., Mirmelstein, M., & Lewis, A. CMB lensing
+from Planck PR4 maps. 2022, JCAP, 09, 039, doi: 10.
+1088/1475-7516/2022/09/039
+[66] Hinshaw, G., Larson, D., Komatsu, E., et al. Nineyear Wilkinson Microwave Anisotropy Probe (WMAP)
+Observations: Cosmological Parameter Results. 2013,
+Ap. J. Suppl. , 208, 19, doi: 10.1088/0067-0049/208/
+2/19
+[67] Beutler, F., Blake, C., Colless, M., Jones, D. H.,
+Staveley-Smith, L., Campbell, L., Parker, Q., Saunders, W., & Watson, F. The 6dF Galaxy Survey:
+baryon acoustic oscillations and the local Hubble constant. 2011, Monthly Notices of the Royal Astronomical
+Society, 416, 3017
+[68] Ross, A. J., Samushia, L., Howlett, C., Percival, W. J.,
+Burden, A., & Manera, M. The clustering of the SDSS
+DR7 main Galaxy sample – I. A 4 per cent distance
+measure at z = 0.15. 2015, Mon. Not. Roy. Astron. Soc.,
+449, 835, doi: 10.1093/mnras/stv154
+[69] Alam, S., et al. The clustering of galaxies in the completed SDSS-III Baryon Oscillation Spectroscopic Survey: cosmological analysis of the DR12 galaxy sample. 2017, Mon. Not. Roy. Astron. Soc., 470, 2617,
+doi: 10.1093/mnras/stx721
+[70] —. Completed SDSS-IV extended Baryon Oscillation
+Spectroscopic Survey: Cosmological implications from
+two decades of spectroscopic surveys at the Apache
+Point Observatory. 2021, Phys. Rev. D, 103, 083533,
+doi: 10.1103/PhysRevD.103.083533
+[71] Adame, A. G., et al. DESI 2024 VI: Cosmological Constraints from the Measurements of Baryon Acoustic Oscillations. 2024. https://arxiv.org/abs/2404.03002
+[72] —. DESI 2024 IV: Baryon Acoustic Oscillations from
+the Lyman Alpha Forest. 2024. https://arxiv.org/
+abs/2404.03001
+[73] —. DESI 2024 III: Baryon Acoustic Oscillations from
+Galaxies and Quasars. 2024. https://arxiv.org/abs/
+2404.03000
+[74] Akrami, Y., et al. P lanck intermediate results. LVII.
+Joint Planck LFI and HFI data processing. 2020, Astron. Astrophys., 643, A42, doi: 10.1051/0004-6361/
+202038073
+[75] Ade, P. A. R., et al. Planck 2013 results. XVI. Cosmological parameters. 2014, Astron. Astrophys., 571, A16,
+doi: 10.1051/0004-6361/201321591
+[76] Pan, Z., Knox, L., & White, M. Dependence of the Cosmic Microwave Background Lensing Power Spectrum on
+the Matter Density. 2014, Mon. Not. Roy. Astron. Soc.,
+445, 2941, doi: 10.1093/mnras/stu1971
+[77] Green, D., Meyers, J., & van Engelen, A. CMB Delensing Beyond the B Modes. 2016, arXiv:1609.08143 [astroph, physics:hep-ph, physics:hep-th]. https://arxiv.
+org/abs/1609.08143
+[78] Knox, L., & Millea, M. Hubble constant hunter’s
+guide. 2020, Phys. Rev. D, 101, 043533, doi: 10.1103/
+PhysRevD.101.043533
+[79] Breuval, L., Riess, A. G., Casertano, S., Yuan, W.,
+Macri, L. M., Romaniello, M., Murakami, Y. S., Scolnic, D., Anand, G. S., & Soszyński, I. Small Magellanic Cloud Cepheids Observed with the Hubble Space
+Telescope Provide a New Anchor for the SH0ES Distance Ladder. 2024, Astrophys. J., 973, 30, doi: 10.
+3847/1538-4357/ad630e
+[80] Riess, A. G., et al. A Comprehensive Measurement of
+
+32
+
+[81]
+
+[82]
+
+[83]
+
+[84]
+
+[85]
+
+[86]
+
+[87]
+
+[88]
+
+[89]
+
+[90]
+
+[91]
+
+[92]
+
+[93]
+
+[94]
+
+[95]
+
+[96]
+
+the Local Value of the Hubble Constant with 1 km s−1
+Mpc−1 Uncertainty from the Hubble Space Telescope
+and the SH0ES Team. 2022, Astrophys. J. Lett., 934,
+L7, doi: 10.3847/2041-8213/ac5c5b
+Freedman, W. L., & Madore, B. F. Progress in direct
+measurements of the Hubble constant. 2023, JCAP, 11,
+050, doi: 10.1088/1475-7516/2023/11/050
+Freedman, W. L., Madore, B. F., Jang, I. S., Hoyt,
+T. J., Lee, A. J., & Owens, K. A. Status Report on
+the Chicago-Carnegie Hubble Program (CCHP): Three
+Independent Astrophysical Determinations of the Hubble Constant Using the James Webb Space Telescope.
+2024. https://arxiv.org/abs/2408.06153
+Riess, A. G., et al. JWST Validates HST Distance
+Measurements: Selection of Supernova Subsample Explains Differences in JWST Estimates of Local H0. 2024.
+https://arxiv.org/abs/2408.11770
+Addison, G. E. 2021, High $H 0$ Values from CMB Emode Data: A Clue for Resolving the Hubble Tension?,
+arXiv, doi: 10.48550/arXiv.2102.00028
+Brout, D., et al. The Pantheon+ Analysis: Cosmological Constraints. 2022, Astrophys. J., 938, 110,
+doi: 10.3847/1538-4357/ac8e04
+Abbott, T. M. C., et al. The Dark Energy Survey: Cosmology Results with ∼1500 New High-redshift Type Ia
+Supernovae Using the Full 5 yr Data Set. 2024, Astrophys. J. Lett., 973, L14, doi: 10.3847/2041-8213/
+ad6f9f
+Rubin, D., et al. Union Through UNITY: Cosmology
+with 2,000 SNe Using a Unified Bayesian Framework.
+2023. https://arxiv.org/abs/2311.12098
+Miyatake, H., et al. Hyper Suprime-Cam Year 3 results: Cosmology from galaxy clustering and weak lensing with HSC and SDSS using the emulator based halo
+model. 2023, Phys. Rev. D, 108, 123517, doi: 10.1103/
+PhysRevD.108.123517
+Heymans, C., et al. KiDS-1000 Cosmology: Multi-probe
+weak gravitational lensing and spectroscopic galaxy
+clustering constraints. 2021, Astron. Astrophys., 646,
+A140, doi: 10.1051/0004-6361/202039063
+Abbott, T. M. C., et al. Dark Energy Survey Year 3
+results: Cosmological constraints from galaxy clustering and weak lensing. 2022, Phys. Rev. D, 105, 023520,
+doi: 10.1103/PhysRevD.105.023520
+Preston, C., Amon, A., & Efstathiou, G. A non-linear
+solution to the S8 tension – II. Analysis of DES Year 3
+cosmic shear. 2023, Mon. Not. Roy. Astron. Soc., 525,
+5554, doi: 10.1093/mnras/stad2573
+Lesgourgues, J., Mangano, G., Miele, G., & Pastor,
+S. 2013, Neutrino Cosmology (Cambridge University
+Press)
+Pan, Z., & Knox, L. Constraints on neutrino mass from
+Cosmic Microwave Background and Large Scale Structure. 2015, Mon. Not. Roy. Astron. Soc., 454, 3200,
+doi: 10.1093/mnras/stv2164
+Loverde, M., & Weiner, Z. J. Massive neutrinos and cosmic composition. 2024. https://arxiv.org/abs/2410.
+00090
+Bertólez-Martı́nez, T., Esteban, I., Hajjar, R., Mena,
+O., & Salvado, J. Origin of cosmological neutrino mass
+bounds: background versus perturbations. 2024. https:
+//arxiv.org/abs/2411.14524
+Green, D., & Meyers, J. The Cosmological Preference
+for Negative Neutrino Mass. 2024. https://arxiv.org/
+
+abs/2407.07878
+[97] Aghanim, N., et al. Planck 2018 results. VI. Cosmological parameters. 2020, Astron. Astrophys., 641, A6,
+doi: 10.1051/0004-6361/201833910
+[98] Rosenberg, E., Gratton, S., & Efstathiou, G. CMB
+power spectra and cosmological parameters from Planck
+PR4 with CamSpec. 2022, Mon. Not. Roy. Astron. Soc.,
+517, 4620, doi: 10.1093/mnras/stac2744
+[99] Tristram, M., et al. Cosmological parameters derived
+from the final Planck data release (PR4). 2024, Astron. Astrophys., 682, A37, doi: 10.1051/0004-6361/
+202348015
+[100] Alvarez, M. A., Ferraro, S., Hill, J. C., Hložek, R., &
+Ikape, M. Mitigating the optical depth degeneracy using the kinematic Sunyaev-Zel’dovich effect with CMBS4. 2021, Phys. Rev. D, 103, 063518, doi: 10.1103/
+PhysRevD.103.063518
+[101] Lynch, G. P., Knox, L., & Chluba, J. DESI and the
+Hubble tension in light of modified recombination. 2024.
+https://arxiv.org/abs/2406.10202
+[102] Aver, E., Berg, D. A., Olive, K. A., Pogge, R. W.,
+Salzer, J. J., & Skillman, E. D. Improving helium abundance determinations with Leo P as a case study. 2021,
+JCAP, 03, 027, doi: 10.1088/1475-7516/2021/03/027
+[103] Bennett, J. J., Buldgen, G., De Salas, P. F., Drewes, M.,
+Gariazzo, S., Pastor, S., & Wong, Y. Y. Y. Towards a
+precision calculation of Neff in the Standard Model II:
+Neutrino decoupling in the presence of flavour oscillations and finite-temperature QED. 2021, JCAP, 04, 073,
+doi: 10.1088/1475-7516/2021/04/073
+[104] Akita, K., & Yamaguchi, M. A precision calculation of
+relic neutrino decoupling. 2020, JCAP, 08, 012, doi: 10.
+1088/1475-7516/2020/08/012
+[105] Froustey, J., Pitrou, C., & Volpe, M. C. Neutrino decoupling including flavour oscillations and primordial
+nucleosynthesis. 2020, JCAP, 12, 015, doi: 10.1088/
+1475-7516/2020/12/015
+[106] Bashinsky, S., & Seljak, U. Neutrino perturbations
+in CMB anisotropy and matter clustering. 2004, Phys.
+Rev. D, 69, 083002, doi: 10.1103/PhysRevD.69.083002
+[107] Baumann, D., Green, D., Meyers, J., & Wallisch, B.
+Phases of New Physics in the CMB. 2016, JCAP, 01,
+007, doi: 10.1088/1475-7516/2016/01/007
+[108] Follin, B., Knox, L., Millea, M., & Pan, Z. First Detection of the Acoustic Oscillation Phase Shift Expected
+from the Cosmic Neutrino Background. 2015, Phys.
+Rev. Lett., 115, 091301, doi: 10.1103/PhysRevLett.
+115.091301
+[109] Ge, F., Cyr-Racine, F.-Y., & Knox, L. Scaling transformations and the origins of light relics constraints
+from cosmic microwave background observations. 2023,
+Phys. Rev. D, 107, 023517, doi: 10.1103/PhysRevD.
+107.023517
+[110] Shao, H., Givans, J. J., Dunkley, J., Madhavacheril, M.,
+Qu, F., Farren, G., & Sherwin, B. Cosmological limits
+on the neutrino mass sum for beyond-ΛCDM models.
+2024. https://arxiv.org/abs/2409.02295
+[111] Hou, Z., Keisler, R., Knox, L., Millea, M., & Reichardt,
+C. How Massless Neutrinos Affect the Cosmic Microwave Background Damping Tail. 2013, Phys. Rev.
+D, 87, 083008, doi: 10.1103/PhysRevD.87.083008
+[112] Abazajian, K. N., Adshead, P., Ahmed, Z., et al. CMBS4 Science Book, First Edition. 2016, ArXiv e-prints,
+1610, arXiv:1610.02743. http://adsabs.harvard.edu/
+
+33
+abs/2016arXiv161002743A
+[113] Górski, K. M., Hivon, E., Banday, A. J., Wandelt,
+B. D., Hansen, F. K., Reinecke, M., & Bartelman, M.
+HEALPix - A Framework for high resolution discretization, and fast analysis of data distributed on the sphere.
+2005, Astrophys. J., 622, 759, doi: 10.1086/427976
+[114] Zonca, A., Singer, L., Lenz, D., Reinecke, M., Rosset,
+C., Hivon, E., & Gorski, K. healpy: equal area pixelization and spherical harmonics transforms for data
+on the sphere in Python. 2019, Journal of Open Source
+Software, 4, 1298, doi: 10.21105/joss.01298
+[115] Reinecke, M., Belkner, S., & Carron, J. Improved
+cosmic microwave background (de-)lensing using general spherical harmonic transforms. 2023, Astron. Astrophys., 678, A165, doi: 10.1051/0004-6361/202346717
+[116] Millea, M., Anderes, E., & Wandelt, B. D. Bayesian
+delensing of CMB temperature and polarization. 2019,
+Phys. Rev. D, 100, 023509, doi: 10.1103/PhysRevD.
+100.023509
+[117] Knopp, T., Boberg, M., & Grosser, M.
+NFFT.
+jl: Generic and Fast Julia Implementation of the
+Nonequidistant Fast Fourier Transform. 2023, SIAM
+Journal on Scientific Computing, 45, C179
+[118] Jeong, D., Chluba, J., Dai, L., Kamionkowski, M., &
+Wang, X. The effect of aberration on partial-sky measurements of the cosmic microwave background temperature power spectrum. 2014, Phys. Rev. D, 89, 023003,
+
+doi: 10.1103/PhysRevD.89.023003
+[119] Hu, W., Hedman, M. M., & Zaldarriaga, M. Benchmark
+parameters for CMB polarization experiments. 2003,
+Phys. Rev. D, 67, 043004, doi: 10.1103/PhysRevD.67.
+043004
+[120] Henning, J. W., Sayre, J. T., Reichardt, C. L., et al.
+Measurements of the Temperature and E-mode Polarization of the CMB from 500 Square Degrees of SPTpol Data. 2018, Astrophys. J., 852, 97, doi: 10.3847/
+1538-4357/aa9ff4
+[121] Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Planck 2018 results. V. CMB power spectra and likelihoods. 2019, A&A, 641, A5, doi: 10.1051/0004-6361/
+201936386
+[122] Aghanim, N., et al. Planck 2018 results. III. High
+Frequency Instrument data processing and frequency
+maps. 2020, Astron. Astrophys., 641, A3, doi: 10.1051/
+0004-6361/201832909
+[123] Dutcher, D., et al. Measurements of the E-mode polarization and temperature-E-mode correlation of the
+CMB from SPT-3G 2018 data. 2021, Phys. Rev. D, 104,
+022003, doi: 10.1103/PhysRevD.104.022003
+[124] Mancini, A. S., Piras, D., Alsing, J., Joachimi, B., &
+Hobson, M. P. COSMOPOWER: emulating cosmological power spectra for accelerated Bayesian inference
+from next-generation surveys. 2021, MNRAS, 511, 1771,
+doi: 10.1093/mnras/stac064
+
+Appendix A: Modeling details
+
+In this appendix, we give full details about our simulation and posterior models, proceeding in the order in which
+each piece is used to generate a simulation. In cases where the posterior model is different from the simulation model,
+each is described individually.
+1.
+
+Lensed CMB
+
+Simulation model In the simulation model, the lensed CMB is computed on the curved sky. Spherical harmonic
+coefficients for the unlensed CMB and for the lensing potential are sampled from a normal distribution with variance
+given by the appropriate Cℓ values. We use the Ducc library to perform an inverse spherical harmonic transform
+of the coefficients to obtain simulated HEALpix13 [113, 114] Nside = 2048 maps. The lensing operation is computed
+with Lenspyx [115], taking as input the unlensed CMB maps, f , and the gravitational lensing potential maps, ϕ.
+The lensed map is then projected to the Lambert projection using Non-Uniform FFTs (NFFTs), as described in the
+next section.
+For the MUSE covariance calculation, we also require the Jacobian of the lensed map with respect to bandpower
+parameters. Since here we use external libraries for SHTs and curved-sky lensing, we must define the Jacobians
+for these operations for the autodifferentiation (AD) system. The Jacobian of a spherical harmonic transformation
+(SHT), f = Ya and the Jacobian with respect to f of the lensing operation, f˜ = L(ϕ)f , are trivially just Y and L
+themselves since they are linear operators. The Jacobian of lensing with respect to ϕ is derived from
+f (x + ∇(ϕ + ϵ)) = f (x + ∇ϕ) + ∇f (x + ∇ϕ) · ∇ϵ + O(ϵ2 ),
+
+(A1)
+
+where x is a pixel location and ϵ is a small perturbation to the lensing potential. The second term demonstrates
+that the Jacobian is the operator ∇f (x + ∇ϕ) · ∇, and involves the spatial gradient of a lensed map, which itself is
+computed with Lenspyx. With these AD rules implemented, our curved-sky lensing model is fully compatible with
+the MUSE covariance calculation.
+
+13
+
+http://healpix.sourceforge.net
+
+34
+Posterior model In the posterior model, we assume the flat-sky approximation, so simulated maps are generated
+from white-noise maps FFT-convolved with appropriate kernels. We implement lensing with LenseFlow [116], which
+is GPU-compatible and automatically differentiable up to second-order as needed by the MUSE covariance calculation.
+Bandpower parameters Both simulation and posterior models take as input a theory unlensed CMB spectrum and
+gravitational lensing potential spectrum. We introduce free parameters which we will infer, AEE
+and Aϕϕ
+b
+b , which
+control the amplitude of these spectra relative to a fiducial model within each bin. Our EE bandpowers have linearly
+spaced bins with ∆ℓ = 50 between 350 and 3500, and our ϕϕ bandpowers have 12 logarithmically spaced bins between
+20 and 3000. We take the fiducial model to be the Planck best-fit spectrum, but this introduces no dependence on
+Planck, rather is just a choice of definition of the bandpower amplitude parameters. Within a bin, the parameters
+scale the theory spectrum uniformly across ℓ’s. One can show that with this choice, our inferred AEE
+and Aϕϕ
+b
+b
+parameters correspond to a constraint on an inverse-variance weighted average of the theory spectrum across the bin.
+Since this inverse-variance weighting arises only implicitly, we also construct explicit bandpower window functions
+(used in parameter estimation) from an interpolation of the diagonal of the MUSE covariance, ΣMUSE , to every ℓ.
+The tests on simulations in Sec. IV A 2, which demonstrate no bias and correct scatter of cosmological parameters
+derived from simulations, provide verification of this procedure.
+
+2.
+
+NFFT-based projections
+
+Within our model, we perform interpolation between maps in different projections in four different places: 1) as
+mentioned, in the simulation model, the lensed CMB is projected from HEALpix Nside = 2048 to a Lambert pixelization, 2) in both simulation and posterior models, the transfer function model involves projecting from a Lambert to an
+Equirectangular pixelization, applying some weights, then projecting back to Lambert, 3) when computing the transfer function, a set of end-to-end pipeline simulations are compared to a direct projection of the HEALpix Nside = 8192
+maps which are input to the end-to-end simulations, and 4) to model deflections due to relativistic aberration.
+To ensure easy differentiability, GPU compatibility, and the best possible accuracy, we perform these interpolations
+using Non-Uniform FFTs (NFFTs). NFFT interpolation implicitly uses information from all pixels to compute the
+interpolated value at a given location, as opposed to other typically-used interpolations such as bilinear interpolation,
+which uses only the nearest pixel neighbors. It is exact for a band-limited signal (i.e. when there is no power beyond
+the Nyquist frequency), and remains very accurate for nearly band-limited signals such as ours, where power beyond
+the Nyquist frequency is highly suppressed by the beam.
+We use the CPU and GPU compatible NFFT library NFFT.jl [117]. An interpolation is performed by a pair of
+forward and adjoint NFFTs, F, with appropriate grid-points, γ, which describe the relative location of the pixel
+centers in the map projections being interpolated between,
+f1 = F(γ1 )F(γ2 )† f2 .
+
+(A2)
+
+The adjoint of the projection operator, which arises in automatic differentiation, is then simply
+F(γ1 )F(γ2 )†
+
+†
+
+= F(γ2 )F(γ1 )† .
+
+(A3)
+
+We verify these projections are accurate enough in Fig. 22. For use cases (1) and (2), in the left panel, we generate a
+simulated lensed CMB map in the Lambert pixelization. We then project to equirectangular and back to Lambert, as
+well as to HEALpix Nside = 2048 and back to Lambert. We then examine the change to the spectrum of the original
+map. Fig. 22 demonstrates this change is ≲ 0.3% up to the maximum multipole used in the analysis, ℓ < 3500. For
+use case (3), in the right panel, we compare the spectrum of the projected HEALpix Nside = 8192 maps to the input
+theory spectrum, again finding ≲ 0.5% changes up to the maximum multipole. These differences are well below our
+uncertainties; for example typical EE bandpower errors are at the 5 to 10% level.
+
+3.
+
+Relativistic aberration
+
+Relativistic aberration distorts the CMB maps due to our proper motion relative to the CMB rest frame [118]. This
+is a small but non-negligible effect, which we expect could bias θs by as much as ∼ 0.3 σθs if unaccounted for. One
+method for modeling aberration is to apply a first-order correction to the power spectrum [118],
+Cℓ → Cℓ + Cℓ
+
+d log Cℓ
+β⟨cos ψ⟩,
+d log ℓ
+
+(A4)
+
+35
+
+FIG. 22. (Left) Change to the EE (solid) and BB (dashed) power spectrum of a lensed CMB simulation when using NFFTs
+to project a pair of Q/U maps to Equirectangular or HEALpix Nside = 2048 pixelizations and back. This demonstrates
+negligible modeling error in our simulation and posterior models due to these projections. (Right) Comparison of the pseudopowerspectra of NFFT Lambert 2.25′ projections of the HEALpix Nside = 8192 maps which are input to mock observation
+(labeled “projskies”) vs. the input theory which generated those HEALpix maps. Blue bands represent 1 and 2 σ Monte Carlo
+error from the finite number of simulations used to compute the blue curve. This confirms the “projskies” sufficiently recover
+the input theory so as not to bias the transfer function calculation, where they are used. For reference, this plot also shows the
+expected change to the power spectra if bilinear interpolation was instead used, which shows much worse performance than
+NFFT interpolation.
+
+where β is our peculiar Lorentz factor and ⟨cos ψ⟩ measures the average angle to the direction of proper motion for
+pixels in the field. We note that this correction applies to a lensed spectrum, and does not apply to the unlensed
+spectra inferred here. In particular, some a priori unknown part of the aberration deflection is interpreted in the
+posterior as very long wavelength gravitational lensing deflection, and then is automatically removed when producing
+inferences of the unlensed spectrum. Eqn. (A4) is thus an upper bound on the impact aberration might have on our
+particular analysis, but it could be much smaller. Without knowing the exact magnitude, we choose to simply include
+the aberration effect directly in the map-level model. Since the effect is small, it is sufficient to only include it in the
+simulation model to prevent biases.
+The deflection angle, ∆ψ, is given by
+
+
+cos ψ − β
+−1
+(A5)
+∆ψ = ψ − cos
+1 − β cos ψ
+where ψ is the angle on the sphere to the direction of proper motion. We assume a fixed velocity of β = 0.00128 and
+a direction of (l, b) = (264◦ , 48◦ ) [1], ignoring next-order effects from uncertainties on these values. The deflection is
+performed via NFFTs.
+We note that we do not model the CMB dipole also induced by our proper motion, as this is filtered out by
+timestream and map-level high-pass filters.
+
+4.
+
+Beams
+
+ν
+Next, the CMB maps are convolved with a model for the polarized instrument beams at each frequency, BνP (βn , βpol
+).
+We assume a rotationally symmetric convolution kernel, performed on the Lambert maps with FFTs in both simulation
+and posterior models. The shape of the convolution kernel in real space, B(θ), or in multipole space, Bℓ , is controlled
+by free parameters which are marginalized over in the analysis. These parameters include a set of temperature beam
+ν
+eigenmode amplitudes, βn , and the polarization fraction of the beam sidelobes at each frequency, βpol
+. We first
+describe the temperature beams, then how we derive the polarization beams from them. More detail on the beam
+determination will be presented in Huang et al., (in prep).
+
+a.
+
+Temperature beams
+
+The first step in determining our polarized beams is to determine the temperature beams. At low radii (≲ 2 arcmin),
+temperature beams are determined from observations of several bright AGN in our observing field. The AGN, however,
+
+36
+do not have sufficient brightness to fully map out the beam at larger scales (referred to as the beam “sidelobes”),
+where instead we use observations of Saturn. In turn, observations of Saturn cannot be used at small scales, since
+its intensity saturates detectors and changes the response as compared to typical CMB observations. Therefore, we
+stitch the AGN and Saturn maps into a composite beam map, which uses the AGN measurements at low radii, and
+Saturn for the sidelobes.
+To create the composite map, we must account for several systematic effects. First, Saturn is very slightly extended.
+Before stitching, we convolve the AGN maps with a disk of 8.55 arcsec (the average angular diameter of Saturn during
+our observations). We later deconvolve the same disk from the final beam. The SPT-3G detectors have a finite
+response time, which spreads signals along the scan direction. While the response time is constant, the on-sky scan
+speed varies with declination. Therefore, we deconvolve the map-space effect of the time constants from each map
+(both for individual AGN and Saturn), and then reconvolve with the mean effect of the time constant over the SPT-3G
+winter field footprint. We also attempt to remove background signals (primarily the CMB) from both the Saturn maps
+and AGN maps. Since Saturn moves across the sky, we are able to subtract direct observations of the backgrounds
+from the Saturn maps. To do this, we mock observe Planck maps for each of our Saturn observations, and subtract
+the mock-observed maps from our Saturn maps. For the AGN maps, we are unable to do this. However, we are only
+concerned with small scale (≲ 7 arcmin) information in the AGN maps. On these scales, the CMB varies very little,
+and can be modeled with only low-order modes. Therefore, we fit a simple background model to each AGN consisting
+of a slope in radius and an offset. We fit these parameters (using the Saturn maps as a reference for the beam) at
+95 and 150 GHz, since the CMB is expected to be common between bands, and the 220 GHz maps are significantly
+noisier (both from instrumental noise, and higher astrophysical backgrounds). We subtract the background model
+from all three bands.
+Finally, we apply a very basic model of intra-band frequency dependence to the beam. We model the beam at each
+band as a Gaussian made of two components, one which is fixed across the band, and one which scales with frequency.
+We model the frequency scaling as σ(ν) ∝ 1/ν, which is the expected behavior for a diffraction-limited beam. We
+use the same constant of proportionality across all three bands. In order to fit these parameters, we assume that
+the 95 GHz beam is diffraction limited (i.e. the frequency independent component is non-existent). We approximate
+the “effective beam frequency” for each band using the SPT-3G mean bandpass functions, and the source spectrum.
+Then, we fit the three remaining parameters (the constant of proportionality in the frequency dependent portion, and
+the two frequency independent portions of the 150 and 220 GHz beams) using observations of the brightest AGN.
+This simple model allows us to approximate the change in the beam by calculating the effective beam frequency for
+different source spectra, and convolving the beam maps (or multiplying their spectra) with the appropriate Gaussian.
+We apply this model to transform the final beam from the mean AGN spectrum to the CMB spectrum, and to
+transform the Saturn maps to match the AGN spectrum before stitching.
+With the systematic effects accounted for, the stitching process is relatively simple. For each pair of AGN and
+Saturn maps, we fit for an amplitude to account for the difference in intensity between the sources. As discussed
+above, we cannot use the innermost portion of the Saturn maps. The AGN maps also become noise-dominated at
+large distances from the source, so we perform this fit over an annulus with inner radii of (2.25, 1.5, 1.0) arcmin, and
+outer radii of (3.5, 3.0, 2.5) arcmin at (95, 150, 220) GHz. Finally, each composite map is constructed by linearly
+transitioning from the AGN map to the Saturn map over the same annulus.
+We make composite maps from all pairs of AGN and Saturn maps. We also vary several systematic parameters:
+the choice of stitching radii, uncertainty in the time constants, the choice of the background fitting region. For each of
+these variations, we create the full set of composite maps. Then, we construct cross spectra of composite maps such
+that none of the component maps are the same. If we included the same component map more than once, we would
+incur a noise bias in the beam. To measure the final beam, we take the mean of these cross spectra, and apply the
+two final effects described above (specifically, deconvolving the Saturn disk, and converting from the AGN spectrum
+to the CMB spectrum).
+The beam uncertainty is measured from the cross spectra. By including both different Saturn and AGN maps, as
+well as the systematic variations, we capture both the map noise, systematic uncertainty from our analysis choices, and
+systematic differences between the AGN. Using the Monte-Carlo method, this uncertainty is propagated to a covariance
+between temperature Bℓν ’s at each frequency, ν, and multipole, ℓ. Finally, we add one additional uncertainty directly
+to the covariance matrix, which accounts for uncertainty in the detector bandpasses and the AGN spectral index.
+This covariance is decomposed into eigenmodes, and in the analysis the amplitude of 5 eigenmodes, βn is free to
+vary jointly with the bandpower and other systematics parameters. We note that these are eigenmodes of the joint
+covariance between frequencies and multipoles, so each βn changes the beam simultaneously at each frequency (in
+different ways at each frequency). The total uncertainty in the determination of the temperature beams is 0.2% at
+ℓ = 3000, and is sub-dominant to the uncertainty on polarized beams which we now describe.
+
+37
+
+FIG. 23. Beams used in this analysis, in real space (top row) and multipole space (bottom row), at each frequency (each
+column). Black lines show the temperature beams. Blue and orange lines show our best fits to the main beam, where the
+fitting region is denoted by the gray shaded region. We used the physical main beam for our final result, but we also verified that
+using the Gaussian main beam leads to no significant shifts in results (see Sect. IV C). Green lines and green bands represent
+the posterior mean and 1 σ uncertainty on the polarized beams from the MUSE analysis, which includes marginalization over
+βn , βpol , and all other systematics and bandpower parameters.
+
+b.
+
+Polarization beams
+
+While the temperature beams are mapped out to very high signal-to-noise at angular scales relevant to this analysis
+via observations of bright point sources, we lack sufficiently bright polarized sources to similarly map the sidelobe
+response of the polarized beams. Prior to unblinding, we had assumed the polarized and temperature beams were
+identical at the scales used in the analysis. However, the temperature beam has significant diffuse sidelobes due to
+diffraction and scattering that may not be fully polarized. To account for this, we devised a model of the beams which
+allows the polarization of the beam sidelobes to vary. This model assumes the beams are made up of a fully polarized
+main central beam, and a diffuse beam sidelobe which may be partially unpolarized.
+We consider four components in the model for the main beam 1) Gaussian illumination pattern of the primary by
+the detector lenslets, 2) truncation of that illumination pattern by the Lyot stop, 3) averaging the frequency dependent
+beam over the detector bandpass weighted by a CMB spectrum, and finally 4) Gaussian broadening of the diffracted
+beam due to a frequency independent geometric aberration.
+We model the electric field illumination pattern on the primary mirror as a truncated Gaussian:
+(
+!)
+−r2
+Π(R)
+(A6)
+V (r, ν) = exp
+2
+2 σ0 νν0
+where σ0 is the width of the Gaussian beam from the lenslets at some arbitrary fiducial frequency ν0 , and Π(R) is a
+disk of radius R:
+(
+1 r≤R
+Π(R) =
+(A7)
+0 r>R
+For SPT-3G, R ≈ 3.75 m. The illumination on the sky can then be computed from the Fraunhofer diffraction equation,
+
+
+Z ∞
+2πrρ
+U (ρ, z, ν) = 2π
+V (r, ν)J0
+rdr
+(A8)
+c/νz
+0
+
+
+Z ∞
+2πrθ
+rdr
+(A9)
+U (θ, ν) = 2π
+V (r, ν)J0
+c/ν
+0
+
+38
+where z is the distance to the image plane, ρ is the distance from the origin on the image plane, and J0 is the zero-th
+order Bessel function. In the second line, we have taken the small angle approximation ρ/z = θ to put this in terms
+of angle on the sky. The beam on the sky is the intensity which is the square of the electric field pattern,
+B(θ, ν)ideal = U (θ, ν)2
+
+(A10)
+
+The beam for our wide frequency bands is then integrated over the bandpass and source spectrum. We integrate
+over the beam intensity, since the electric field phases will decohere at any significant frequency separation. Adjacent
+frequencies where phase coherence matters have very nearly the same illumination pattern, because both the spectra
+of our sources and bandpasses vary slowly. Thus we have,
+R
+I(ν)t(ν)B(θ, ν)dν
+bandpass
+R
+,
+(A11)
+B(θ)ideal =
+I(ν)t(ν)dν
+bandpass
+where t(ν) is the bandpass function, and I(ν) = dB
+dT |T =TCMB is the observed spectrum.
+Finally, we need to account for the effect of geometric aberrations. This is simply a matter of convolving B(θ)ideal
+with a Gaussian, a representation of geometric aberrations, so the final beam is,
+
+
+θ2
+B(θ) = B(θ)ideal ⊗ exp − 2
+(A12)
+2σgeom
+In principle, we expect σgeom to be the same for all three bands.
+This model for the main beam has five free parameters, σ0 , σgeom , and an overall amplitude at each frequency, Aν ,
+and predicts the main beam simultaneously in each of our bands. We fit this model to the observed temperature
+beams as determined in the previous section, limiting to an inner radius of θ < 0.75 arcmin where we observe a good
+fit, suggesting the main beam dominates
+is not biased by the presence of temperature beam sidelobes. For
+R the fit
+P and
+ν
+ν
+this fit, we construct a χ2 of the form ν dθ (Bmodel
+(θ, A, σ0 , σgeom ) − Bobserved
+(θ))2 which ignores uncertainties in
+the temperature beams, since we expect the systematic uncertainty from our choice of physical model to dominate to
+the total uncertainties in fit.
+With this fiducial main beam determined, we denote the difference between this and the temperature beam as the
+sidelobes, and model the polarized beams as the sum of the fixed main beam and the sidelobes, the latter scaled by
+ν
+some unknown scale-independent polarization fractions, βpol
+. That is, the polarized beams used in our analysis are,
+ν
+ν
+BνP (βn , βpol
+) = Bνmain + βpol
+(BνT (βn ) − Bνmain )
+
+(A13)
+
+where the temperature beam at each frequency is
+BνT (βn ) = Bν0 + β1 Bν1 + β2 Bν2 + ...,
+
+(A14)
+
+where B0 is the best-fit beam and Bn is the n-th eigenmode of the beam covariance. The βn is the amplitude of the
+n-th eigenmode, which is the free parameter. The Bn is normalized such that βi has a unit normal prior.
+
+5.
+
+Absolute calibration
+
+In the analysis, we apply calibration factors, Aν,i
+cal , to each frequency map, ν, and subfield, i, independently. We
+assume a Gaussian prior on the A150,i
+based
+on
+calibrating
+our maps to Planck, and leave uniform priors for A95,i
+cal
+cal
+and A220,i
+.
+App.
+B
+describes
+our
+choice
+of
+prior
+for
+the
+150
+GHz
+calibration.
+cal
+6.
+
+Global polarization angle
+
+To model a systematic error on the global polarization angle calibration, we rotate the global polarization angle of
+ν
+the entire field by an angle, ψpol
+, at each frequency, ν. The rotation is given by,
+  
+ 
+Q
+cos(2ψ) − sin(2ψ)
+Q
+R(ψ)
+=
+.
+U
+sin(2ψ) cos(2ψ)
+U
+
+(A15)
+
+39
+
+FIG. 24. Left panel: The filtering applied in the scan direction as part of the transfer function model. This function is fit
+on simulations at the spline interpolation points denoted with markers. Note the non-linear y-axis scaling. Right two panels:
+Comparison of the EE and BB power spectra of an end-to-end pipeline simulation of the CMB as compared to the model
+transfer function applied to the same input sky which generated the simulation. Across the multipole range used for the
+analysis, the model is accurate to ≲0.2% in EE and ≲2% in BB, both less than 10% of our uncertainties (denoted as gray
+bands).
+
+7.
+
+Transfer function
+
+The transfer function accounts for the filtering of the timestreams during mapmaking described in Sec. II. In our
+transfer function model TF, we must approximate the impact of this filtering directly to a Lambert-projected map,
+since our model is not at the level of timestreams. The non-trivial procedure of sequentially deprojecting templates
+while masking point sources still corresponds to a linear operator, but not one which is diagonal in any easily accessible
+basis.
+Our model begins by first reprojecting the map to an Equirectangular projection using NFFTs, such that individual
+scans are straight lines in the horizontal direction. We then create a single map-level deprojection template by
+multiplying the point source mask assumed in mapmaking and applying a 1D filtering in the horizontal direction
+using FFTs where the 1D filter is a free function which we will fit for using simulations. This template is subtracted
+from the entire map (including the masked regions), before projecting back to Lambert. The operation can be
+represented as:
+TF = P−1 · [1 − (1 − TF(ℓx )) · Mptsrc ] · P
+
+(A16)
+
+where P is the NFFT projection from Lambert to Equirectangular, Mptsrc is the point source mask and TF(ℓx ) is the
+fitted FFT kernel in the horizontal direction.
+To fit for the appropriate function, TF(ℓx ), we compare 1) mock observations of the signal, m, which simulate the
+entire timestream filtering and mapmaking process, and 2) direct projections of the simulated signal maps which were
+fed into the mock observations, p. The relation between these maps are
+m = PWF2.25′ · TF · PWF28192 · p.
+
+(A17)
+
+The factor of the HEALpix Nside = 8192 pixel window function is due to the interpolation of p onto mock timestreams
+during the simulation process, and does not arise in the real data. The factor of Lambert 2.25′ pixel window function,
+PWF2.25′ arises from the binning of these timestreams into 2.25′ resolution maps. We then minimize the function
+∥mtrue − mmodel ∥2 by fitting TF(ℓx ) at a set of spline points. We find that a single pair of m and p simulations is
+sufficient to obtain a stable estimate, and have verified the result changes negligibly between a few different simulations.
+The left panel of Fig. 24 shows the fitted TF(ℓx ). As expected, it is roughly zero until around ℓx = 300, then
+transitions to unity at higher multipoles. We choose to allow some small negative values as it gives a better overall
+fit with no other observed impact. The right two panels of the figure then show the comparison of EE and BB
+spectra of the mock observations with those computed by applying the best-fit model transfer function to p. Across
+the multipole range used for the analysis, the model is accurate to ≲0.2% in EE and ≲2% in BB, both less than 10%
+of our uncertainties (which are denoted as gray bands).
+8.
+
+Temperature-to-polarization leakage
+
+T-to-P leakage can be caused by a variety of sources. Gain mismatch between detector pairs leaks a scaled copy
+of the temperature map into polarization (“monopole” leakage), whereas differential detector pointing and beam
+
+40
+ellipticity introduce copies of the first and second derivatives of the temperature map [“dipole” and “quadrupole”
+leakage; 119, 120]. We find no evidence of dipole or quadrupole leakage in the SPT-3G data (Figure 8), so we only
+correct for monopole leakage.
+In the MUSE simulation and posterior model, we construct the T-to-P leakage as tνQ = (T ν , 0) and tνU = (0, T ν ),
+where T ν is the temperature map at frequency ν. The temperature maps are made following the same map-making
+procedure in Sect. II. The amplitudes of the T-to-P templates, ϵνQ and ϵνU , are free parameters. Note that we used
+independent leakage parameters per frequency per subfield to be consistent with the choice of calibration parameters.
+
+9.
+
+Masking
+
+We apply a pixel mask (Mpix ) in the model, which includes a border mask and a point source mask. The border
+mask is set by zeroing out the areas with weights less than 30% of the median, padding the border of the mask with
+zero within the radius of 120 arcmin and apodizing with a cosine apodization function of 60 arcmin radius. The point
+source mask contains emissive sources with brightness greater than 50 mJy and clusters with signal-to-noise ratio
+greater than 15 at 150GHz.
+We also apply a trough mask (Mtrough ) to exclude specific modes from analysis. As discussed in Sect. A 7, the pixel
+mask aliases the power to higher ℓx modes in Equirectangular projection due to the TOD filtering, and smears out the
+power when the maps are projected to Lambert. Therefore, we cut out the modes with ℓx < 400 in Equirectangular
+projection to avoid this aliasing power. We also masked out the region that has been contaminated in the observation
+by a narrow-band signal around 1.1 Hz.
+The mid-pass filter in the Fourier space (Mfourier ) constrains the modes used in the analysis. We include modes
+between 350 ≤ ℓ ≤ 4000.
+The total mask used in the analysis is M = Mfourier · Mtrough · Mpix , that is, Mpix is applied first. The mask is also
+applied to the real data map before passed down into the analysis.
+
+10.
+
+Monte-carlo correction
+
+With the aforementioned modeling ingredients specified, we can compare the pseudo power spectrum of the signal
+part of dν between simulation-model simulations, as in Eqn. (15), and mock observations. We find a remaining 0.3%
+discrepancy at ℓ ≲ 1250 in the EE spectrum between mock observations and MUSE simulations. We believe this is
+due to residual transfer function modeling errors. Before unblinding, we implement this as an empirical multiplicative
+Monte Carlo (MC) correction to the AEE
+parameters, with a shape fit from these simulations. We note that this
+b
+correction is small relative to our uncertainties and corresponds to a 0.01 σ shift in H0 or a 0.07 σ shift in Ωb h2 .
+11.
+
+Noise modeling
+
+Simulation model In the simulation model, we use sign-flip noise realizations generated empirically from the real
+data. This guarantees the noise in the simulation model has the same statistical properties at the true data noise,
+up to the small correlation between sign-flip realizations, which is not large enough to appreciably impact our final
+results.
+Posterior model In the posterior model, we must be able to compute the posterior probability function, thus must
+explicitly specify a random distribution for the noise. We chose a Gaussian model with a covariance derived from the
+sign-flip noise realizations themselves. We model the noise as diagonal in Fourier space with isotropic noise spectra,
+Nℓ = A(ℓ/3000)α ,
+
+(A18)
+
+where A and α are parameters to fit to 20 sign-flip noise realizations across the region 500 ≤ ℓ ≤ 3000, separately
+at each frequency. We find this gives an acceptable fit, and note that any deviations of this model from true noise
+distribution will only lead to slight loss of optimality, not any bias.
+
+Appendix B: Calibration priors and alternative systematics estimates
+220,i
+Here, we describe the priors on A150,i
+which enter the MUSE analysis, and the alternative estimates of A95,i
+cal
+cal , Acal ,
+ϵQ , ϵU , and ψpol which are compared against the MUSE results.
+
+41
+In practice, calibrating to Planck is performed as two steps. First, we determine a calibration factor for temperature
+i
+maps in each subfield, Tcal
+. Then, we determine a correction on top of this for polarization maps, Pcal , which is assumed
+the same across all subfields. By our convention, these factors multiply the SPT data, rather than multiplying the
+theory model like the MUSE definition of Aν,i
+cal . The relation is thus
+150,i 150
+A150,i
+= 1/(Tcal
+Pcal ),
+cal
+
+(B1)
+
+The temperature calibration is determined by computing the cross-spectrum of the full-depth 150 GHz SPT-3G
+data with the full-depth 143 GHz Planck map passed through the SPT-3G observing pipeline normalized by the
+cross-spectrum of two half-depth SPT-3G maps,
+150
+Tcal,
+external =
+
+143
+SPT150
+full × Planckfull
+150
+150 .
+SPThalf1 × SPThalf2
+
+(B2)
+
+The uncertainty on Tcal, external is computed from the scatter in the quantity when it is computed using 100 different
+subsets of SPT observations entering the SPT maps. After unblinding, we also realized we had neglected to fold in a
+0.25% uncertainty [121] on the Planck absolute calibration [122], which leads so insignificant changes, but is fixed in
+our final results.
+Although not used in MUSE, we also obtain temperature calibrations of 95 and 220GHz SPT-3G maps by crosscorrelating against the 150GHz map (this yields tighter constraints than calibrating these against Planck). The
+calibrations are
+95
+Tcal,
+internal =
+
+150
+SPT150
+half1 × SPThalf2
+150
+Tcal,
+external ,
+95
+SPThalf1 × SPT150
+half2
+
+220
+Tcal,
+internal =
+
+150
+SPT150
+half1 × SPThalf2
+150
+150 Tcal, external .
+×
+SPT
+SPT220
+half2
+half1
+
+(B3)
+
+We recalibrate the Q and U maps by this factor, then correct them for temperature-to-polarization leakage and
+150
+polarization angle calibration as described below. Then, we determine Pcal
+by cross-correlating the SPT 150 GHz
+polarization maps to Planck 143 GHz polarization maps in a manner analogous √
+to the absolute temperature calibration
+150
+in Eqn. (B3). The estimated Pcal
+is then corrected by an additional factor of 0.966 to match the final recalibration
+factor applied to the 143 GHz Planck polarization bandpowers [Eqn. 45, 121], and additionally has a 0.5% uncertainty
+folded in corresponding to the uncertainty on the Planck polarization calibration. Similarly used only for comparison,
+95
+220
+we then determine Pcal
+and Pcal
+by internally cross-correlating the SPT maps.
+Next, we describe the alternative estimate of temperature-to-polarization leakage and global polarization angle
+correction which is used above in determining the calibration factors and is compared against the MUSE results in
+Fig. 7. The main difference from the MUSE estimate is that these are performed at the power spectrum rather than
+at the map level, and are done with an iterative procedure which assumes a theory cosmological model rather than
+simultaneously and jointly with all systematics and bandpower parameters.
+Independent estimates of the monopole leakage coefficients, ϵQ,T T ,ϵQ,T Q ,ϵU,T T , are formed by fitting a template to
+the CℓT Q and CℓT U cross-spectra using cross-spectra of the half-depth data maps and cross-spectra from simulations
+that have no monopole leakage:
+TQ
+TQ
+TT
+Cℓ,template
+= ϵQ,T T Cℓ,data
++ ϵQ,T Q Cℓ,sim
+,
+
+(B4)
+
+TU
+Cℓ,template
+
+(B5)
+
+=ϵ
+
+U,T T
+
+TT
+Cℓ,data
+
++ϵ
+
+U,T U
+
+TU
+Cℓ,sim
+.
+
+TU
+In practice, Cℓ,sim
+scatters around null, and therefore ϵU,T U can take arbitrary values. For this reason, the second
+term is assumed to be 0 and only fits to ϵQ,T T ,ϵQ,T Q ,ϵU,T T are carried out [123].
+The observed (and possibly rotated) Q and U are related to the primordial (and lensed) Q̃ and Ũ by:
+
+(Q + iU ) = (Q̃ + iŨ )ei2ψpol ,
+
+(B6)
+
+which introduces artificial T B and EB correlations:
+TE
+
+CℓT B = − sin(2ψpol )C̃ℓ
+1
+BB
+EE
+CℓEB = sin (4ψpol )(C̃ℓ
+− C̃ℓ ),
+2
+
+(B7)
+(B8)
+
+42
+where ψpol is an rotation angle between 0 and 2π.
+A joint fit to the T-to-P and polarization rotation parameters is performed by generating 100 (ϵQ,T T , ϵQ,T Q ,
+U,T T
+ϵ
+, ψpol ) Latin hypercube training points, which are applied to the data maps (first T-to-P deprojection, then
+polarization rotation), before computing the resulting T B and EB data spectra. An emulator is then trained using
+TQ
+TU
+the CosmoPower [124] package, which allows us to predict Cℓ,template
+, Cℓ,template
+, CℓT B , and CℓEB at arbitrary points
+in the full parameter space. An MCMC chain is then run to find the best-fit parameters that produces CℓT Q and CℓT U
+spectra that match with data as well as ψpol that results in the CℓT E and CℓEB that is consistent with null.
+Appendix C: Covariance shrinkage
+
+We develop and use a new procedure to reduce Monte Carlo error in the MUSE covariance. As a reminder, the
+covariance is given by
+Σ = H −1 J H −1
+
+†
+
+= H −1 ⟨s s† ⟩ H −1
+
+†
+
+,
+
+(C1)
+
+where s ≡ sMAP − ⟨sMAP ⟩ [see also Eqns. (7-9)]. The H matrix originates from second order derivatives of the posterior
+function and hence contains very little MC error. The J matrix, however, is a pure covariance of some finite set of
+samples of s and can contain significant MC error.
+Under a singular value decomposition of H = U SV † , the covariance, Σ, can be rewritten as,
+D
+E
+V S −1 U † s s† ⟩U S −1 V † = V S −1/2 (S −1/2 U † s) (s† U S −1/2 ) S −1/2 V †
+(C2)
+Note that in the case of a Gaussian latent space, H = J, hence the quantity in angle brackets in Eqn. (C2) is the
+identity matrix. Even for the non-Gaussian latent space of the lensing problem, we have verified on simplified cases
+with thousands of samples of s, and for our exact problem with hundreds of samples, that this matrix remains
+extremely close to diagonal. This motivates a method of reducing MC error by applying a shrinkage estimator to
+compute the covariance in angle brackets in Eqn. (C2). Specifically, we shrink towards a diagonal target covariance
+with arbitrary diagonal entries. We find that this drastically reduces MC error of the covariance, and importantly,
+of its inverse, which is much more prone to MC error. Note that naively applying a diagonal shrinkage estimator
+to J = ⟨s s† ⟩ directly would not work, since nothing guarantees the J matrix is close to diagonal nor would there be
+any a priori known shrinkage target. Instead, we are essentially applying the shrinkage estimator to a preconditioned
+version of J, where the preconditioning is based on H, which itself contains almost no MC error and provides excellent
+preconditioning.
+
+

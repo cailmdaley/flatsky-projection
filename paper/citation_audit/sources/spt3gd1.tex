@@ -1,0 +1,179 @@
+
+\section{Sky maps}
+\label{sec:maps}
+
+There are several steps between observations of the microwave sky and cosmological analysis of the CMB. 
+In this section, we discuss the steps to produce CMB maps from the raw observations.
+The observations themselves and the processing of the data are described in great detail in~Q25; in this work we highlight characteristics of the data that we need to take into account in our power spectrum modeling. 
+
+\subsection{Data and map-making approach}
+\label{sec:map-making}
+The maps used in this work were constructed using SPT-3G data from the austral winter observing seasons of 2019 and 2020. 
+The $1500\,\degsq$ SPT-3G Main field footprint spans declinations from $-42$ to $-70$ degrees and right ascensions from 20h40m0s to 3h20m0s, see \cref{fig:footprints}.
+In the same figure, we also display the footprints of the \summerfield{} and \extfield{} fields. 
+The combination of these \sptnew{} fields will constitute the total \allspt{} field, 
+which will probe 25\% of the sky with low noise and high resolution (see~\citep{prabhu24}). 
+Additionally, \cref{fig:footprints} includes survey masks from other CMB experiments, such as ACT and \planck{}, which are used in the cosmological analysis of this work in combination with the \mainfield{} field data.
+
+The SPT-3G Main field that this work is based on is split into four subfields in declination (equivalent to elevation at the South Pole) to avoid detector nonlinearity from large changes in airmass without retuning the detectors.
+The data are acquired in the form of timestreams for each detector following an observing strategy that raster scans each subfield many times.
+We call one two-hour raster scan of each subfield an {observation}, and there were roughly 3000 total observations of the four subfields over the two years.
+
+Following previous SPT analyses (see for example~\citep{dutcher21}), we use the filter-and-bin approach of map-making~\citep{hivon02}. 
+The timestreams are first low-pass filtered 
+(to remove high frequency noise and reduce aliasing) and high-pass filtered 
+(to remove low frequency sources of noise).
+The low-pass filtering is performed in Fourier space, while the high-pass filtering is achieved through fitting the individual detector timestreams to a set of low-order polynomials and low-frequency sinusoids.
+The filtered timestreams are combined and projected into sky maps of the temperature (\T{}) and linear polarization Stokes parameters (\Q{} and \U{}) in each frequency band for each individual observation of a \mainfield{} subfield.
+Alongside the sky maps, we also build a weight map, which is a measure of the inverse variance of the observation map in each pixel. 
+Some details of the data set and timestream processing are discussed in Section II of \citep{ge24}, and additional details are discussed in Q25. 
+We note that \citep{ge24} and this work are based on the same data and timestream processing but use maps with different pixelization schemes (see below).
+
+In the following paragraphs, we highlight two important differences between the maps used here and those used in previous SPT analyses.
+
+In previous SPT \T\&\E{} power spectrum analyses, we pixelized the maps on a two-dimensional grid using a projection of the sphere, and we used two-dimensional Fourier transforms to substitute for spherical harmonic transforms (SHTs) under the flat-sky approximation. 
+In particular, \citep{ge24} used a map in the 
+Lambert azimuthal equal-area projection (ZEA) with $0.56'$ pixels.
+In this new analysis (and the BB analysis in~\citep{zebrowski25}), we pixelize the maps using \healpix{}\footnote{\url{https://healpix.sourceforge.io/}}~\citep{gorski05}. 
+We choose an \Nside{} parameter of 8192, which is equivalent to $0.4'$ resolution. 
+With the size of the \mainfield field and the sensitivity levels achieved in this work, the non-idealities caused by the flat-sky approximation are no longer negligible or trivial to account for. 
+In particular, we found that projection effects were causing excess correlation between power spectrum bins at high $\ell$, in a manner that is difficult to compute analytically. 
+For this reason, the current analysis is performed with full SHTs, and we take advantage of the many tools that have been developed for fast estimation of SHTs and resulting power spectra from \healpix{} maps.
+
+The filtering scheme is broadly similar to previous work. 
+In particular, as a result of the high-pass filtering, information at multipoles below 300 along the scan direction is absent from our maps, which results in a power spectrum bias that we evaluate and discuss in \cref{sec:tf}. 
+An important difference involves a newly identified systematic effect from timestream filtering, one that only appears at the level of sensitivity of the data in this work.
+As in most previous SPT analyses, we do not include timestream samples near bright emissive sources or strong Sunyaev-Zel'dovich-effect decrements from galaxy clusters when estimating the amplitudes of the polynomials and sinusoids to remove.
+This avoids creating extended features along the scan direction near strong sources, which are often referred to as ``filtering wings.''\footnote{An illustration of those can be found in Fig. 3 of \citep{archipley_2025}. \RR{Discussion of the effect of filtering wings on the power spectrum can be found in \citep{rvhm-fsdc}.}}
+We refer to this procedure of avoiding strong sources in the timestream filtering as ``map-making masking'' in the rest of this work.
+We mask all sources above $6\,$mJy at 150\ghz{} and any galaxy cluster detected at more than $10\,\sigma$ in a separate set of maps optimized for cluster detection, for a total of 2655 objects.
+While eliminating filtering wings is advantageous, in this work we detect small and previously undiagnosed side effects of this masking process. We refer to these as ``filtering artifacts' which we describe in detail---along with our method for mitigating and accounting for them in our power spectrum estimation pipeline---in \cref{sec:filtering-artifacts}.
+
+\subsection{Coadds}
+\label{sec:coadd}
+We produce different weighted averages of single observation maps, in order to produce the different data products that are the baseline of the power spectrum pipeline. 
+These are: the full depth coadd, the bundles, and the noise realizations or sign-flips. For each of these, we use the {observation} weight maps to weight the observation maps in the coadd.
+
+We call the maps produced by the inverse-variance weighting of all of the observation maps at each frequency the full-depth coadds. 
+Those maps are shown in~Q25. 
+We use them in the construction of the noise maps described below, as well as for inpainting emissive sources and galaxy clusters (\cref{sec:inpainting}).
+
+The main product that is used in the power spectrum estimation are the {bundles}. 
+We randomly group all of our observation maps at each frequency into 30 bundles, ensuring that the maps formed by the inverse-variance-weighted coaddition of all the maps of each bundle have a similar signal-to-noise. 
+All bundles have similar noise levels but no noise correlation between them. 
+We use the cross-spectra of these bundle maps to form the noise-unbiased spectra that are used in the rest of this analysis. 
+This strategy is similar to that used in other CMB power spectrum analyses, which use various data split strategies to produce noise-unbiased power spectra (\cite{planck18-5,dutcher21,louis25}). 
+In contrast to most other CMB experiments, the highly redundant SPT observing strategy allows us, as in previous SPT analyses, to use a higher number of splits in order to allow for a more precise estimation of the noise covariance (see~\citep{lueker10,dutcher21}).
+While the depth of the 2019-2020 Main field data would allow us to produce more than 30 bundles to improve the  noise covariance estimate, we find that this number is a good compromise between accuracy and efficiency as the computing cost of increasing the number of bundles grows quadratically.
+
+Finally, we call {noise realizations}, or {sign-flips}, the noise estimates formed by the difference between random selections of the observations:
+\begin{equation}
+	N^i \equiv w_C^{-1} \sum_o \epsilon^i_o w_o (M_o - C),
+\end{equation}
+where $\epsilon^i_o \in \{-1, 1\}$, $M_o$ and $w_o$ are the map and weight map for observation $o$, $C$ is the {full-depth coadd}, $w_C$ is the weight map of the {full-depth coadd}, and $N^i$ is the $i$th noise realization. 
+We form 500 of these noise realizations which are used in our simulations described in \cref{sec:simulations}. 
+More details on the noise realization procedure are given in~Q25.
+
+\subsection{Masks and point sources}
+\label{sec:mask}
+
+For power spectrum analysis of the \mainfield{} field, we use two different masks: a {sky mask} and a {point source mask}.
+The \mainfield{} field binary sky mask is obtained by applying a threshold to the weight map, excluding regions where the weights are below 10\% of the median across the map.
+The resulting footprint is shown in \cref{fig:footprints}. 
+
+For power spectrum estimation, we further apodize the \mainfield field mask using a $0.4^\circ$ Gaussian taper.
+To produce the binary point source mask, we mask the 2655 emissive sources and clusters which have already been masked during map-making, using a radius where the signal-to-noise of beam-convolved sources falls to 1 (the same radius used in masking these objects during map-making), ranging from 2 to 15 arcmin.
+The point source mask removes 0.06\% of the sky.
+We apodize this point source mask using a Gaussian taper with $\sigma=0.03^\circ$. 
+An important distinction from previous SPT analyses (and CMB analyses more generally) is that, 
+when estimating signal power spectra from the maps, we do not use this point source mask; 
+instead we replace the pixels where the sources are localized with a Gaussian constrained realization of the CMB informed by the rest of the map, in a process generally known as inpainting. 
+The reason for this choice is the effect of the large number of point-source holes on the power spectrum covariance (\cref{sec:inpainting}).
+
+The total apodized mask is the product of the apodized border mask and the apodized point source mask. 
+This mask is used for computing the noise band powers, as our analysis and map inpainting rely on accurate knowledge of the noise within this region. 
+While the sum of the weights in the apodized border mask corresponds to 4.0\% of the sky, the sum of the weights in the total apodized mask is reduced to 3.8\% as a result of point source masking and apodization.
+
+\begin{figure*}
+	\includegraphics[width=\textwidth]{figures/figures/all_footprints.png}
+	\caption{
+	Footprints of the \sptnew surveys---Main (green filled area), Summer (orange filled area), and Wide (red filled area)---shown alongside the \ACTDR{} survey mask (blue solid line).
+	We show Galactic dust as measured by \planck{} in the background~\citep{planck15-10} and indicate the most contaminated region with the \planck{} GAL080 mask\footnote{\url{https://pla.esac.esa.int/}} shown in gray shading with a white border.
+	This work is based on observations of the \mainfield field.
+	The combination of the \mainfield{}, \summerfield{}, and \extfield{} fields will constitute the \allspt{} field, which will probe 25\% of the sky with low noise and high resolution.
+	}
+	\label{fig:footprints}
+\end{figure*}
+
+\subsection{Calibration and cleaning}
+\label{sec:calibration}
+As discussed in~Q25, the signal and noise maps at each frequency need to be recalibrated and cleaned to account for inaccuracies in the gain, polarization efficiency, and polarization angle of each detector. 
+This process consists of four different operations, applied in the order listed below.
+\begin{enumerate}
+	\item \emph{Gain calibration}: We multiply all the T, Q, and U coadds by a common scaling factor to correct for the overall miscalibration of detector gains.
+	\item \emph{Leakage from differential gain calibration}: We subtract small copies of a T coadd from the corresponding Q and U coadds to correct for the monopole temperature-to-polarization leakage due to differential gain miscalibration between detectors with different polarization angles.
+	\item \emph{Polarization angle calibration}: 
+	We apply small rotations to the \Q{} and \U{} coadds to correct for the overall miscalibration of the detector polarization angles.
+	The calibration angle is determined by nulling the correlation between E and B modes in each frequency channel.
+	\item \emph{Polarization efficiency calibration}: We multiply the Q and U coadds by a common scaling factor to correct for the overall miscalibration of the detector polarization efficiencies.
+\end{enumerate}
+
+Note that in the case of gain and polarization efficiency calibration, the correction is done in two steps.
+First, we perform an external recalibration of the SPT-3G $150\ghz$ maps by cross-correlating them with the \planck{} PR3 $143\ghz$ maps within the \mainfield{} field mask, using the multipole range from 800 to 1200 for gain recalibration and from 400 to 1300 for polarization efficiency.
+To account for the filtering of the SPT map, the \planck{} map is mock observed through our data processing pipeline, in the same manner as the sky simulations used for transfer function modeling (see \cref{sec:simulations}). 
+We note that this comparison uses only a small portion ($\sim$4\%) of the total \planck{} PR3 $143\ghz$ map and thus does not compromise our blindness to the \planck{} data in the cosmological analysis.
+After the external recalibration of the SPT-3G $150\ghz$ map, we perform an internal recalibration of the SPT-3G 95 and $220\ghz$ maps by comparing them to the recalibrated $150\ghz$ map. 
+The four steps summarized above are what \citep{ge24} refers to as the alternative systematics estimates and discusses in some detail in its Appendix B. 
+Additional information on these steps is presented in Q25.
+
+We propagate the gain calibration and polarization efficiency calibration uncertainties in the likelihood analysis as described in \cref{sec:data_model}. Note that in most cases (except when using the polarization data alone), we ignore the external polarization efficiency priors and let this calibration be determined from the data within a given cosmological model. 
+Similarly, we only use the internal gain calibration priors and internal polarization efficiency priors in specific validation tests and only explore the residual uncertainty of the internal recalibration under flat priors.
+
+The polarization angle calibration and differential gain calibration do not correct for all of the sources of polarization leakage. We discuss in \cref{sec:quadrupolar} how we model and correct for quadrupolar leakage induced by beam ellipticity correlated with detector polarization angle.
+
+\subsection{Map-level null tests}
+\label{sec:null}
+In addition to mitigating biases from known systematic effects, we search for potential unmodeled systematic errors in our maps through null tests, \RR{described in Q25}. In a null test, we split the full set of individual-observation maps into two halves in a way that maximizes sensitivity 
+to the suspected systematic error. We then subtract one half of the data from the other and check whether the difference is consistent with expectation spectra calculated from simulations to within noise fluctuations \RR{using a $\chi^2$ test}.
+The tests performed for this analysis include splits of the data based on the following: scan direction, detector wafer, date of observation, moon position, sun position, and observation azimuth. 
+\RR{In total, we perform 54 independent null tests, yielding a threshold of $0.05/54=0.00093$ for a single test to fail.
+This is due to the different spectra and frequency combinations among the six null splits.}
+
+The initial scan direction and wafer null tests failed our predetermined threshold for consistency with noise, and we traced both failures to excess power localized in spherical harmonic space.
+We choose to remove this excess power by applying a harmonic-space mask, defined as
+\begin{equation}
+	\label{eq:notch}
+	W^{\rm notch}_{\ell m} = \begin{cases}
+		0 & \text{if } \ell \in [500, 680] \text{ and } m \in [350, 425], \\
+		1 & \text{otherwise}.
+	\end{cases}
+\end{equation}
+This masking is applied to the \alm{} coefficients of the data maps, as described in \cref{sec:filtering-artifacts}, and we account for it in the transfer function and covariance matrix estimations. 
+
+After applying this correction, all the \TE{} and \EE{} null spectra are consistent with expectations (see Section IV.B.1 of \citep{ge24} for those spectra and more information on the null tests). 
+\RR{While most of the \TT{} null spectra are also consistent with expectations, which can be non-zero due to instrumental effects such as time constants, we find that s}everal \TT{} null spectra formally fail our pre-determined threshold. 
+\RR{This is the case for azimuth test at 95\ghz{} and 150\ghz{}, and for the year test at 95\ghz{}.}
+\RR{However, the detected contaminations have amplitudes that are a smaller than $1\%$ of the sample variance error bars on the signal band powers, such that if we add $10^{-4}$ times the sample variance to the null spectrum covariance, all tests pass (see Q25).} 
+\replace{We consider this acceptable, as the potential systematic errors are too small to affect the cosmological analysis.}{As those tests are designed to maximize the sensitivity to systematic errors, we interpret these failures as indications of small unmodeled systematic errors in the \TT{} data. We verified that these are too small to affect the cosmological analysis, and consider this acceptable.}
+
+\subsection{Simulations}
+\label{sec:simulations}
+
+In this analysis, we rely on simulations to propagate the effect of the data processing pipeline to our power-spectrum estimation and to validate our pipeline. When possible, we use analytical models to compute data products, which we validate with simulations.
+
+All simulations are generated based on the \planck{}-\lcdm{} cosmology, with added Gaussian realizations of extragalactic foreground components based on \agora{} simulations~\citep{omori22} which have been calibrated to match the mid to high-$\ell$ portion of the measured spectra from data.
+Note that \agora{} does not contain the reionization kSZ signal.
+We do not include Galactic foregrounds.
+We discuss in \cref{sec:filtering} how we process these simulated skies to reproduce the effect of the data processing.
+
+We also generate some simulations with an alternative underlying cosmological model to test our pipeline, which we describe in more detail in \cref{sec:altcosmo}.
+
+In most cases, we only simulate the signal part of the data. When needed (for inpainting in \cref{sec:inpainting} or for the validation of our pipeline in \cref{sec:pipesims}), we add a simulation of the noise contribution using the noise realizations (see \cref{sec:coadd}).
+
+As an improvement over previous SPT analyses, we have developed a tool for fast modeling of the effects of the data processing on the power spectrum signal and covariance. This results in two types of simulations used in this analysis:
+\begin{enumerate}
+	\item \fullmock{}: a set of 500 full-sky simulations that we use to calibrate the transfer function and validate the pipeline. This simulation set is similar to the one used in previous SPT analyses and described in Section~IV.D.1 of~\citep{dutcher21} and in~Q25. In this simulation set, the input skies are projected into individual-detector timestreams using the exact pointing and weights stored in the observation data files. These timestreams are then processed into maps with the same map-making pipeline used for the data, including the map-making masking procedure described in \cref{sec:map-making} even though there are no point sources in the simulations.
+	\item \quickmock{}: a set of \replace{2000}{4000} fast simulations that we use to compute the covariance matrix and the transfer function. The \quickmock{} simulations use a lighter and faster simulation pipeline that implements several approximations to the scanning strategy to reduce computation while preserving accuracy (E. Hivon et al., in preparation). We typically achieve percent-level accuracy or better with \quickmock{}. 
+\end{enumerate}
+Furthermore, inspired by the \texttt{CarPool} approach of~\citep{chartier_carpool_2021}, we use common CMB input skies for both \fullmock{} and \quickmock{} and can correct for any discrepancy between the two methods to obtain higher accuracy while limiting the impact of the Monte Carlo (MC) noise. We discuss in \cref{app:transferfunction} a particular application of this method for the calibration of the power spectrum transfer function model and the propagation of the residual MC variance.
+

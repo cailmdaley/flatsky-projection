@@ -1,0 +1,2595 @@
+Astronomy & Astrophysics manuscript no. MassMapping_Euclid_final
+June 30, 2020
+
+c ESO 2020
+
+arXiv:1910.03106v2 [astro-ph.CO] 29 Jun 2020
+
+Euclid: Reconstruction of weak-lensing mass maps for
+non-Gaussianity studies?
+S. Pires1?? , V. Vandenbussche1 , V. Kansal1 , R. Bender2,3 , L. Blot4 , D. Bonino5 , A. Boucaud6 ,
+J. Brinchmann7 , V. Capobianco5 , J. Carretero8 , M. Castellano9 , S. Cavuoti10,11,12 , R. Clédassou13 ,
+G. Congedo14 , L. Conversi15 , L. Corcione5 , F. Dubath16 , P. Fosalba17,18 , M. Frailis19 , E. Franceschi20 ,
+M. Fumana21 , F. Grupp3 , F. Hormuth22 , S. Kermiche23 , M. Knabenhans24 , R. Kohley15 , B. Kubik25 ,
+M. Kunz26 , S. Ligori5 , P.B. Lilje27 , I. Lloro17,18 , E. Maiorano20 , O. Marggraf28 , R. Massey29 , G. Meylan30 ,
+C. Padilla8 , S. Paltani16 , F. Pasian19 , M. Poncet13 , D. Potter24 , F. Raison3 , J. Rhodes31 , M. Roncarelli20,32 ,
+R. Saglia2,3 , P. Schneider28 , A. Secroun23 , S. Serrano17,33 , J. Stadel24 , P. Tallada Crespí34 , I. Tereno35,36 , R.
+Toledo-Moreo37 , and Y. Wang38
+List of institutions given in Appendix.
+
+June 30, 2020
+ABSTRACT
+Weak lensing, which is the deflection of light by matter along the line of sight, has proven to be an efficient method for
+constraining models of structure formation and reveal the nature of dark energy. So far, most weak-lensing studies have
+focused on the shear field that can be measured directly from the ellipticity of background galaxies. However, within the
+context of forthcoming full-sky weak-lensing surveys such as Euclid , convergence maps (mass maps) offer an important
+advantage over shear fields in terms of cosmological exploitation. While it carry the same information, the lensing signal
+is more compressed in the convergence maps than in the shear field. This simplifies otherwise computationally expensive
+analyses, for instance, non-Gaussianity studies. However, the inversion of the non-local shear field requires accurate
+control of systematic effects caused by holes in the data field, field borders, shape noise, and the fact that the shear is
+not a direct observable (reduced shear). We present the two mass-inversion methods that are included in the official
+Euclid data-processing pipeline: the standard Kaiser & Squires method (KS), and a new mass-inversion method (KS+)
+that aims to reduce the information loss during the mass inversion. This new method is based on the KS method and
+includes corrections for mass-mapping systematic effects. The results of the KS+ method are compared to the original
+implementation of the KS method in its simplest form, using the Euclid Flagship mock galaxy catalogue. In particular,
+we estimate the quality of the reconstruction by comparing the two-point correlation functions and third- and fourthorder moments obtained from shear and convergence maps, and we analyse each systematic effect independently and
+simultaneously. We show that the KS+ method substantially reduces the errors on the two-point correlation function
+and moments compared to the KS method. In particular, we show that the errors introduced by the mass inversion on
+the two-point correlation of the convergence maps are reduced by a factor of about 5, while the errors on the thirdand fourth-order moments are reduced by factors of about 2 and 10, respectively.
+Key words. Cosmology: Weak Lensing, Methods: Data Analysis
+
+1. Introduction
+Gravitational lensing is the process in which light from
+background galaxies is deflected as it travels towards us.
+The deflection is a result of the gravitation of the intervening mass. Measuring the deformations in a large sample
+of galaxies offers a direct probe of the matter distribution
+in the Universe (including dark matter) and can thus be
+directly compared to theoretical models of structure formation. The statistical properties of the weak-lensing field
+can be assessed by a statistical analysis of either the shear
+field or the convergence field. On the one hand, convergence
+is a direct tracer of the total matter distribution integrated
+along the line of sight, and is therefore directly linked with
+the theory. On the other hand, the shear (or more exactly,
+?
+??
+
+This paper is published on behalf of the Euclid Consortium
+e-mail: sandrine.pires@cea.fr
+
+the reduced shear) is a direct observable and usually preferred for simplicity reasons.
+Accordingly, the most common method for characterising the weak-lensing field distribution is the shear two-point
+correlation function. It is followed very closely by the massaperture two-point correlation functions, which are the result of convolving the shear two-point correlation functions
+by a compensated filter (Schneider et al. 2002) that is able
+to separate the E and B modes of the two-point correlation
+functions (Crittenden et al. 2002). However, gravitational
+clustering is a non-linear process, and in particular, the
+mass distribution is highly non-Gaussian at small scales.
+For this reason, several estimators of the three-point correlation functions have been proposed, either in the shear field
+(Bernardeau et al. 2002b; Benabed & Scoccimarro 2006) or
+using the mass-aperture filter (Kilbinger & Schneider 2005).
+The three-point correlation functions are the lowest order
+Article number, page 1 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+
+statistics to quantify non-Gaussianity in the weak-lensing
+field and thus provide additional information on structure
+formation models.
+The convergence field can also be used to measure the
+two- and three-point correlation functions and other higherorder statistics. When we assume that the mass inversion
+(the computation of the convergence map from the measured shear field) is properly conducted, the shear field contains the same information as the convergence maps (e.g.
+Schneider et al. 2002; Shi et al. 2011). While it carries the
+same information, the lensing signal is more compressed in
+the convergence maps than in the shear field, which makes
+it easier to extract and computationally less expensive. The
+convergence maps becomes a new tool that might bring additional constraints complementary to those that we can obtain from the shear field. However, the weak-lensing signal
+being highly non-Gaussian at small scales, mass-inversion
+methods using smoothing or de-noising to regularise the
+problem are not optimal.
+Reconstructing convergence maps from weak lensing is
+a difficult task because of shape noise, irregular sampling,
+complex survey geometry, and the fact that the shear is not
+a direct observable. This is an ill-posed inverse problem and
+requires regularisation to avoid pollution from spurious B
+modes. Several methods have been derived to reconstruct
+the projected mass distribution from the observed shear
+field. The first non-parametric mass reconstruction was proposed by Kaiser & Squires (1993) and was further improved
+by Bartelmann (1995), Kaiser (1995), Schneider (1995), and
+Squires & Kaiser (1996). These linear inversion methods are
+based on smoothing with a fixed kernel, which acts as a regularisation of the inverse problem. Non-linear reconstruction methods were also proposed using different sets of priors and noise-regularisation techniques (Bridle et al. 1998;
+Seitz et al. 1998; Marshall et al. 2002; Pires et al. 2009b;
+Jullo et al. 2014; Lanusse et al. 2016). Convergence mass
+maps have been built from many surveys, including the
+COSMOS Survey (Massey et al. 2007), the Canada France
+Hawaï Telescope Lensing Survey CFHTLenS (Van Waerbeke et al. 2013), the CFHT/MegaCam Stripe-82 Survey
+(Shan et al. 2014), the Dark Energy Survey Science Verification DES SV (Chang et al. 2015; Vikram et al. 2015; Jeffrey
+et al. 2018), the Red Cluster Sequence Lensing Survey RCSLenS (Hildebrandt et al. 2016), and the Hyper SuprimeCam Survey (Oguri et al. 2018). With the exception of Jeffrey et al. (2018), who used the non-linear reconstruction
+proposed by Lanusse et al. (2016), all these methods are
+based on the standard Kaiser & Squires method.
+In the near future, several wide and deep weak-lensing
+surveys are planned: Euclid (Laureijs et al. 2011), Large
+Synoptic Survey Telescope LSST (LSST Science Collaboration et al. 2009), and Wide Field Infrared Survey Telescope
+WFIRST (Green et al. 2012). In particular, the Euclid
+satellite will survey 15 000 deg2 of the sky to map the geometry of the dark Universe. One of the goals of the Euclid
+mission is to produce convergence maps for non-Gaussianity
+studies and constrain cosmological parameters. To do this,
+two different mass inversion methods are being included
+into the official Euclid data processing pipeline. The first
+method is the standard Kaiser & Squires method (hereafter
+KS). Although it is well known that the KS method has
+several shortcomings, it is taken as the reference for crosschecking the results. The second method is a new non-linear
+mass-inversion method (hereafter KS+) based on the forArticle number, page 2 of 17
+
+malism developed in Pires et al. (2009b). The KS+ method
+aims at performing the mass inversion with minimum information loss. This is done by performing the mass inversion
+with no other regularisation than binning while controlling
+systematic effects.
+In this paper, the performance of these two massinversion methods is investigated using the Euclid Flagship mock galaxy catalogue (version 1.3.3, Castander F. et
+al. in prep) with realistic observational effects (i.e. shape
+noise, missing data, and the reduced shear). The effect of
+intrinsic alignments is not studied in this paper because we
+lack simulations that would properly model intrinsic alignments. However, intrinsic alignments also need to be considered seriously because they affect second- and higher-order
+statistics. A contribution of several percent is expected to
+two-point statistics (see e.g. Joachimi et al. 2013).
+We compare the results obtained with the KS+ method
+to those obtained with a version of the KS method in
+which no smoothing step is performed other than binning.
+We quantify the quality of the reconstruction using twopoint correlation functions and moments of the convergence. Our tests illustrate the efficacy of the different massinversion methods in preserving the second-order statistics
+and higher-order moments.
+The paper is organised as follows. In Sect. 2 we present
+the weak-lensing mass-inversion problem and the standard
+KS method. Section 3 presents the KS+ method we used
+to correct for the different systematic effects. In Sect. 4
+we explain the method with which we compared these two
+mass-inversion methods. In Sect. 5 we use the Euclid Flagship mock galaxy catalogue with realistic observational effects such as shape noise and complex survey geometry and
+consider the reduced shear to investigate the performance
+of the two mass-inversion methods. First, we derive simulations including only one issue at a time to test each
+systematic effect independently. Then we derive realistic
+simulations that include them all and study the systematic
+effects simultaneously. We conclude in Sect. 6.
+
+2. Weak-lensing mass inversion
+2.1. Weak gravitational lensing formalism
+In weak-lensing surveys, the shear field γ(θ) is derived from
+the ellipticities of the background galaxies at position θ in
+the image. The two components of the shear can be written
+in terms of the lensing potential ψ(θ) as (see e.g. Bartelmann & Schneider 2001)
+
+1 2
+γ1 =
+∂1 − ∂22 ψ,
+2
+γ2 = ∂1 ∂2 ψ,
+(1)
+where the partial derivatives ∂i are with respect to the angular coordinates θi , i = 1, 2 representing the two dimensions of sky coordinates. The convergence κ(θ) can also be
+expressed in terms of the lensing potential as
+
+1 2
+κ=
+∂ + ∂22 ψ.
+(2)
+2 1
+For large-scale structure lensing, assuming a spatially flat
+Universe, the convergence at a sky position θ from sources
+at comoving distance r is defined by
+Z
+3H02 Ωm r 0 r0 (r − r0 ) δ(θ, r0 )
+κ(θ, r) =
+dr
+,
+(3)
+2c2
+r
+a(r0 )
+0
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+
+where H0 is the Hubble constant, Ωm is the matter density,
+a is the scale factor, and δ ≡ (ρ − ρ̄)/ρ̄ is the density contrast (where ρ and ρ̄ are the 3D density and the mean 3D
+density, respectively). In practice, the expression for κ can
+be generalised to sources with a distribution in redshift, or
+equivalently, in comoving distance f (r), yielding
+Z
+3H02 Ωm rH 0 0 0 δ(θ, r0 )
+κ(θ) =
+dr p(r )r
+,
+(4)
+2c2
+a(r0 )
+0
+
+Because the weak lensing arises from a scalar potential (the
+lensing potential ψ), it can be shown that weak lensing
+only produces E modes. However, intrinsic alignments and
+imperfect corrections of the point spread function (PSF)
+generally generate both E and B modes. The presence of
+B modes can thus be used to test for residual systematic
+effects in current weak-lensing surveys.
+
+where rH is the comoving distance to the horizon. The convergence map reconstructed over a region on the sky gives
+us the integrated mass-density fluctuation weighted by the
+lensing-weight function p(r0 ),
+Z rH
+r − r0
+drf (r)
+p(r0 ) =
+.
+(5)
+r
+r0
+2.2. Kaiser & Squires method (KS)
+
+The shear is only sampled at the discrete positions of the
+galaxies where the ellipticity is measured. The first step
+of the mass map-inversion method therefore is to bin the
+observed ellipticities of galaxies on a regular pixel grid to
+create what we refer to as the observed shear maps γ obs .
+Some regions remain empty because various masks were
+applied to the data, such as the masking-out of bright stars
+or camera CCD defects. In such cases, the shear is set to
+zero in the original KS method,
+
+2.2.1. KS mass-inversion problem
+
+γ obs
+
+The weak lensing mass inversion problem consists of reconstructing the convergence κ from the measured shear
+field γ. We can use complex notation to represent the shear
+field, γ = γ1 + iγ2 , and the convergence field, κ = κE + iκB ,
+with κE corresponding to the curl-free component and κB
+to the gradient-free component of the field, called E and
+B modes by analogy with the electromagnetic field. Then,
+from Eq. (1) and Eq. (2), we can derive the relation between the shear field γ and the convergence field κ. For this
+purpose, we take the Fourier transform of these equations
+and obtain
+
+with M the binary mask (i.e. M = 1 when we have information at the pixel, M = 0 otherwise) and γ n the noisy shear
+maps. As the shear at any sky position is non-zero in general, this introduces errors in the reconstructed convergence
+maps. Some specific methods address this problem by discarding masked pixels at the noise-regularisation step (e.g.
+Van Waerbeke et al. 2013). However, as explained previously, this intrinsic filtering results in subtantial signal loss
+at small scales. Instead, inpainting techniques are used in
+the KS+ method to fill the masked regions (see Appendix
+A).
+
+γ̂ = P̂ κ̂,
+
+2.2.3. Weak-lensing shape noise
+
+(6)
+
+where the hat symbol denotes Fourier transforms, P̂ = P̂1 +
+iP̂2 ,
+Pˆ1 (`)
+
+=
+
+Pˆ2 (`)
+
+=
+
+`21 − `22
+,
+`2
+2`1 `2
+,
+`2
+
+(7)
+
+with `2 ≡ `21 + `22 and `i the wave numbers corresponding
+to the angular coordinates θi .
+P̂ is a unitary operator. The inverse operator is its complex conjuguate P̂ ∗ = P̂1 − iP̂2 , as shown by Kaiser &
+Squires (1993),
+κ̂ = P̂ ∗ γ̂.
+
+(8)
+
+We note that to recover κ from γ, there is a degeneracy
+when `1 = `2 = 0. Therefore the mean value of κ cannot
+be recovered if only shear information is available. This is
+the so-called mass-sheet degeneracy (see e.g. Bartelmann
+1995, for a discussion). In practice, we impose that the
+mean convergence vanishes across the survey by setting the
+reconstructed ` = 0 mode to zero. This is a reasonable assumption for large-field reconstruction (e.g. Seljak 1998).
+We can easily derive an estimator of the E-mode and
+B-mode convergence in the Fourier domain,
+ˆE
+κ̃
+ˆB
+κ̃
+
+= P̂1 γ̂1 + P̂2 γ̂2 ,
+= −P̂2 γ̂1 + P̂1 γ̂2 .
+
+(9)
+
+2.2.2. Missing-data problem in weak lensing
+
+= M γn,
+
+(10)
+
+The gravitational shear is derived from the ellipticities of
+the background galaxies. However, the galaxies are not intrinsically circular, therefore their measured ellipticity is
+a combination of their intrinsic ellipticity and the gravitational lensing shear. The shear is also subject to measurement noise and uncertainties in the PSF correction.
+All these effects can be modelled as an additive noise,
+N = N1 + iN2 ,
+γn
+
+=
+
+γ+N
+
+(11)
+
+The noise terms N1 and N2 are assumed to be Gaussian
+and uncorrelated with zero mean and standard deviation,
+σ
+σni = q ,
+(12)
+Ngi
+where Ngi is the number of galaxies in pixel i. The rootmean-square shear dispersion per galaxy, σ , arises both
+from the measurement uncertainties and the intrinsic shape
+dispersion of galaxies. The Gaussian assumption is a reasonable assumption, and σ is set to 0.3 for each component as
+is generally found in weak-lensing surveys (e.g. Leauthaud
+et al. 2007; Schrabback et al. 2015, 2018). The surface density of usable galaxies is expected to be around ng = 30
+gal. arcmin−2 for the Euclid Wide survey (Cropper et al.
+2013).
+The derived convergence map is also subject to an additive noise,
+ˆ n = P̂ ∗ γ̂ n = κ̂ + P̂ ∗ N̂ .
+κ̃
+(13)
+Article number, page 3 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+
+In particular, the E component of the convergence noise is
+NE = N1 ∗ P1 + N2 ∗ P2 ,
+
+(14)
+
+where the asterisk denotes the convolution operator, and
+P1 and P2 are the inverse Fourier transforms of Pˆ1 and Pˆ2 .
+When the shear noise terms N1 and N2 are Gaussian, uncorrelated, and with a constant standard deviation across
+the field, the convergence noise is also Gaussian and uncorrelated. In practice, the number of galaxies varies slightly
+across the field. The variances of N1 and N2 might also be
+slightly different, which can be modelled by different values of σ for each component. These effects introduce noise
+correlations in the convergence noise maps, but they were
+found to remain negligible compared to other effects studied
+in this paper.
+In the KS method, a smoothing by a Gaussian filter
+is frequently applied to the background ellipticities before
+mass inversion to regularise the solution. Although performed in most applications of the KS method, this noise
+regularisation step is not mandatory. It was introduced to
+avoid infinite noise and divergence at very small scales.
+However, the pixelisation already provides an intrinsic regularisation. This means that there is no need for an additional noise regularisation prior to the inversion. Nonetheless, for specific applications that require denoising in any
+case, the filtering step can be performed before or after the
+mass inversion.
+
+3. Improved Kaiser & Squires method (KS+)
+Systematic effects in mass-inversion techniques must be
+fully controlled in order to use convergence maps as cosmological probes for future wide-field weak-lensing experiments such as Euclid . We introduce the KS+ method based
+on the formalism developed in Pires et al. (2009b) and Jullo
+et al. (2014), which integrates the necessary corrections for
+imperfect and realistic measurements. We summarise its
+improvements over KS in this section and evaluate its performance in Sect. 5.
+In this paper, the mass-mapping formalism is developed
+in the plane. The mass inversion can also be performed on
+the sphere, as proposed in Pichon et al. (2010) and Chang
+et al. (2018), and the extension of the KS+ method to the
+curved sky is being investigated. However, the computation time and memory required to process the spherical
+mass inversion means limitations in terms of convergence
+maps resolution and/or complexity of the algorithm. Thus,
+planar mass inversions remain important for reconstructing convergence maps with a good resolution and probing
+the non-Gaussian features of the weak-lensing field (e.g. for
+peak-count studies).
+3.1. Missing data
+When the weak-lensing shear field γ is sampled on a grid
+of N × N pixels, we can describe the complex shear and
+convergence fields by their respective matrices. In the remaining paper, the notations γ and κ stand for the matrix
+quantities.
+In the standard version of the KS method, the pixels
+with no galaxies are set to zero. Fig. 1 shows an example of simulated shear maps without shape noise derived
+from the Euclid Flagship mock galaxy catalogue (see Sect.
+Article number, page 4 of 17
+
+4.3 for more details). The upper panels of Fig. 1 show the
+two components of the shear with zero values (displayed in
+black) corresponding to the mask of the missing data. These
+zero values generate an important leakage during the mass
+inversion.
+With KS+, the problem is reformulated by including additional assumptions to regularise the problem. The convergence κ can be analysed using a transformation Φ, which
+yields a set of coefficients α = ΦT κ (Φ is an orthogonal
+matrix operator, and ΦT represents the transpose matrix
+of Φ). In the case of the Fourier transformation, ΦT would
+correspond to the discrete Fourier transform (DFT) matrix, and α would be the Fourier coefficients of κ. The
+KS+ method uses a prior of sparsity, that is, it assumes
+that there is a transformation Φ where the convergence κ
+can be decomposed into a set of coefficients α, where most
+of its coefficients are close to zero. In this paper, Φ was
+chosen to be the discrete cosine transform (DCT) following
+Pires et al. (2009b). The DCT expresses a signal in terms
+of a sum of cosine functions with different frequencies and
+amplitudes. It is similar to the DFT, but uses smoother
+boundary conditions. This provides a sparser representation. Hence the use of the DCT for JPEG compression.
+We can rewrite the relation between the observed shear
+γ obs and the noisy convergence κn as
+γ obs = MPκn ,
+
+(15)
+
+with M being the mask operator and P the KS massinversion operator. There is an infinite number of convergence κn that can fit the observed shear γ obs . With KS+,
+we first impose that the mean convergence vanishes across
+the survey, as in the KS method. Then, among all possible solutions, KS+ searches for the sparsest solution κ̃n in
+the DCT Φ (i.e. the convergence κn that can be represented with the fewest large coefficients). The solution of
+this mass-inversion problem is obtained by solving
+min
+kΦT κ̃n k0 subject to k γ obs − MPκ̃n k2 ≤ σ 2 ,
+n
+κ̃
+
+(16)
+
+where ||z||0 the pseudo-norm, that is, the number of nonzero
+pP entries in z, ||z|| the classical l2 norm (i.e. ||z|| =
+2
+k (zk ) ), and σ stands for the standard deviation of the
+input shear map measured outside the mask. The solution
+of this optimisation task can be obtained through an iterative thresholding algorithm called morphological component analysis (MCA), which was introduced by Elad et al.
+(2005) and was adapted to the weak-lensing problem in
+Pires et al. (2009b).
+Pires et al. (2009b) used an additional constraint to
+force the B modes to zero. This is optimal when the shear
+maps have no B modes. However, any real observation
+has some residual B modes as a result of intrinsic alignments, imperfect PSF correction, etc. The B-mode power
+is then transferred to the E modes, which degrades the Emode convergence reconstruction. We here instead let the
+B modes free, and an additional constraint was set on the
+power spectrum of the convergence map. To this end, we
+used a wavelet transform to decompose the convergence
+maps into a set of aperture mass maps using the starlet
+transform algorithm (Starck et al. 1998; Starck & Murtagh
+2002). Then, the constraint consists of renormalising the
+standard deviation (or equivalently, the variance) of each
+aperture mass map inside the mask regions to the values
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+0.10
+
+500
+
+0.10
+
+500
+
+0.08
+
+0.08
+
+0.06
+
+400
+
+0.06
+
+400
+
+0.02
+
+300
+
+0.00
+−0.02
+
+200
+
+0.04
+y [pixels]
+
+y [pixels]
+
+0.04
+
+0.02
+
+300
+
+0.00
+−0.02
+
+200
+
+−0.04
+
+−0.04
+
+−0.06
+
+100
+
+−0.06
+
+100
+
+−0.08
+0
+0
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.08
+0
+0
+
+−0.10
+
+0.10
+
+500
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+0.10
+
+500
+
+0.08
+
+0.08
+
+0.06
+
+400
+
+0.06
+
+400
+
+0.02
+0.00
+−0.02
+
+200
+
+0.04
+y [pixels]
+
+y [pixels]
+
+0.04
+300
+
+0.02
+
+300
+
+0.00
+−0.02
+
+200
+
+−0.04
+−0.06
+
+100
+
+−0.04
+−0.06
+
+100
+
+−0.08
+0
+0
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.10
+
+−0.10
+
+−0.08
+0
+0
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.10
+
+Fig. 1: Simulated shear maps with missing data covering a field of 5◦ × 5◦ . The left panels show the first component of
+the shear γ1 , and the right panels present the second component of the shear γ2 . The upper panels show the incomplete
+shear maps, where the pixels with no galaxies are set to zero (displayed in black). The lower panels show the result of
+the inpainting method that allows us to fill the gaps judiciously.
+measured in the data, outside the masks, and then reconstructing the convergence through the inverse wavelet
+transform. The variance per scale corresponding to the
+power spectrum at these scales allows us to constrain a
+broadband power spectrum of the convergence κ inside the
+gaps.
+Adding the power spectrum constraints yields the final
+sparse optimisation problem,
+kΦT κ̃n k0 s.t. k γ obs − MPWT QWκ̃n k2 ≤ σ 2 ,
+min
+n
+κ̃
+
+(17)
+
+where W is the forward wavelet transform and WT its
+inverse transform, and Q is the linear operator used to impose the power spectrum constraint. More details about the
+KS+ algorithm are given in Appendix A.
+The KS+ method allows us to reconstruct the in-painted
+convergence maps and the corresponding in-painted shear
+maps, where the empty pixels are replaced by non-zero values. These interpolated values preserve the continuity of the
+signal and reduce the signal leakage during the mass inversion (see lower panels of Fig. 1). The quality of the convergence maps reconstruction with respect to missing data is
+evaluated in Sect. 5. Additionally, the new constraint allows
+us to use the residual B modes of the reconstructed maps
+to test for the presence of residual systematic effects and
+possibly validate the shear measurement processing chain.
+
+3.2. Field border effects
+The KS and KS+ mass-inversion methods relate the convergence and the shear fields in Fourier space. However, the
+discrete Fourier transform implicitly assumes that the image is periodic along both dimensions. Because there is no
+reason for opposite borders to be alike, the periodic image
+generally presents strong discontinuities across the frame
+border. These discontinuities cause several artefacts at the
+borders of the reconstructed convergence maps. The field
+border effects can be addressed by removing the image borders, which throws away a large fraction of the data. Direct
+finite-field mass-inversion methods have also been proposed
+(e.g. Seitz & Schneider 1996, 2001). Although unbiased,
+convergence maps reconstructed using these methods are
+noisier than those obtained with the KS method. In the
+KS+ method, the problem of borders is solved by taking
+larger support for the image and by considering the borders as masked regions to be in-painted. The upper panels
+of Fig. 2 show the two components of a shear map covering
+5◦ × 5◦ degrees and extending to a field of 10◦ × 10◦ . The
+inpainting method is then used to recover the shear at the
+field boundaries, as shown in the lower panels of Fig. 2. After the mass inversion is performed, the additional borders
+are removed. This technique reduces the field border effects
+by pushing the border discontinuities farther away.
+Article number, page 5 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+0.10
+
+1000
+
+0.10
+
+1000
+
+0.08
+
+0.08
+
+0.06
+
+800
+
+0.06
+
+800
+
+0.02
+
+600
+
+0.00
+−0.02
+
+400
+
+0.04
+y [pixels]
+
+y [pixels]
+
+0.04
+
+0.02
+
+600
+
+0.00
+−0.02
+
+400
+
+−0.04
+
+−0.04
+
+−0.06
+
+200
+
+−0.06
+
+200
+
+−0.08
+0
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+−0.08
+0
+0
+
+−0.10
+
+0.10
+
+1000
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+0.10
+
+1000
+
+0.08
+
+0.08
+
+0.06
+
+800
+
+0.06
+
+800
+
+0.02
+0.00
+−0.02
+
+400
+
+0.04
+y [pixels]
+
+y [pixels]
+
+0.04
+600
+
+0.02
+
+600
+
+0.00
+−0.02
+
+400
+
+−0.04
+−0.06
+
+200
+
+−0.04
+−0.06
+
+200
+
+−0.08
+0
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+−0.10
+
+−0.10
+
+−0.08
+0
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+−0.10
+
+Fig. 2: Upper panels: Simulated shear maps covering a field of 5◦ × 5◦ , extended to a field of 10◦ × 10◦ by zero padding
+(zero values are displayed in black). Lower panels: Result of the inpainting method that allows us to extrapolate the
+shear on the borders. The left panels show the first component of the shear γ1 , and the right panels present the second
+component of the shear γ2 .
+3.3. Reduced shear
+In Sect. 2.2 we assumed knowledge of the shear, in which
+case the mass inversion is linear. In practice, the observed
+galaxy ellipticity is not induced by the shear γ, but by the
+reduced shear g that depends on the convergence κ corresponding to that particular line of sight,
+g≡
+
+γ
+.
+1−κ
+
+3.4. Shape noise
+(18)
+
+While the difference between the shear γ and the reduced
+shear g is small in the regime of cosmic shear (κ  1),
+neglecting it might nevertheless cause a measurable bias at
+small angular scales (see e.g. White 2005; Shapiro 2009).
+In the standard version of KS, the Fourier estimators are
+only valid when the convergence is small (κ  1), and they
+no longer hold near the centre of massive galaxy clusters.
+The mass-inversion problem becomes non-linear, and it is
+therefore important to properly account for reduced shear.
+In the KS+ method, an iterative scheme is used to recover the E-mode convergence map, as proposed in Seitz &
+Schneider (1995). The method consists of solving the linear inverse problem iteratively (see Eq. 9), using at each
+iteration the previous estimate of the E-mode convergence
+to correct the reduced shear using Eq. (18). Each iteration
+then provides a better estimate of the shear. This iteraArticle number, page 6 of 17
+
+tive algorithm was found in Jullo et al. (2014) to quickly
+converge to the solution (about three iterations). The KS+
+method uses the same iterative scheme to correct for reduced shear, and we find that it is a reasonable assumption
+in the case of large-scale structure lensing.
+
+In the original implementation of KS, the shear maps are
+first regularised with a smoothing window (i.e. a low-pass
+filter) to obtain a smoothed version of the shear field. Then,
+Eq. (9) is applied to derive the convergence maps. In contrast, the KS+ method aims at producing very general convergence maps for many applications. In particular, it produces noisy maps with minimum information loss.
+However, for specific applications (e.g. galaxy cluster
+detection and characterisation), it can be useful to add an
+additional de-noising step, using any of the many regularisation techniques that have been proposed (Bridle et al.
+1998; Seitz et al. 1998; Marshall et al. 2002; Starck et al.
+2006; Lanusse et al. 2016). To compare the results of the KS
+and KS+ methods on noisy maps, we used a linear Gaussian and the non-linear MRLens filter (Starck et al. 2006)
+for noise suppression. Fig. 3 illustrates the effect of shape
+noise on reconstructing the convergence map. The upper
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+0.40
+
+500
+
+0.40
+
+500
+
+0.32
+
+0.35
+400
+
+0.24
+
+400
+
+0.30
+
+0.16
+
+300
+
+0.20
+0.15
+
+200
+
+y [pixels]
+
+y [pixels]
+
+0.25
+
+0.08
+
+300
+
+0.00
+−0.08
+
+200
+
+0.10
+
+−0.16
+
+0.05
+
+100
+
+−0.24
+
+100
+
+0.00
+0
+0
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.32
+0
+0
+
+−0.05
+
+0.40
+
+500
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+0.40
+
+500
+
+0.35
+400
+
+0.35
+400
+
+0.30
+
+0.30
+
+0.20
+0.15
+
+200
+
+0.25
+y [pixels]
+
+y [pixels]
+
+0.25
+300
+
+300
+
+0.20
+0.15
+
+200
+
+0.10
+
+0.10
+
+0.05
+
+100
+
+0.05
+
+100
+
+0.00
+0
+0
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.40
+
+0.00
+0
+0
+
+−0.05
+
+100
+
+200
+300
+x [pixels]
+
+400
+
+500
+
+−0.05
+
+Fig. 3: Shape-noise effect. The upper panels show the original E-mode convergence κ map (left) and the noisy convergence
+map with ng = 30 gal. arcmin−2 (right). The lower panels show the reconstructed maps using a linear Gaussian filter
+with a kernel size of σ = 30 (left) and the non-linear MRLens filtering using αFDR = 0.05 (right). The field is 5◦ × 5◦
+downsampled to 512 × 512 pixels.
+panels show one E-mode convergence map reconstructed
+from noise-free (left) and noisy (right) shear data. The convergence map is dominated by the noise. The lower panels
+show the results of the Gaussian filter (left) and MRLens
+filter (right). The Gaussian filter gives a smoothed version
+of the noisy convergence map, whose level of smoothness is
+set by the width of the Gaussian (σ). Thus, the amplitude
+of the over-densities (in blue) are systematically lowered
+by the Gaussian filter. In contrast, the MRLens filter uses
+a prior of sparsity to better recover the amplitude of the
+structures and uses a parameter, the false-discovery rate
+(αFDR ), to control the average fraction of false detections
+(i.e. the number of pixels that is truly inactive, declared
+positive) made over the total number of detections (Benjamini & Hochberg 1995). For some other applications (e.g.
+two- or three-point correlation), the integrity of the reconstructed noisy convergence maps might be essential and this
+denoising step can be avoided.
+
+4. Method
+4.1. Comparing second-order statistics
+The most common tools for constraining cosmological parameters in weak-lensing studies are the shear two-point
+correlation functions. Following Bartelmann & Schneider
+
+(2001), they are defined by considering pairs of positions ϑ
+and θ+ϑ, and defining the tangential and cross-component
+of the shear γt and γ× at position ϑ for this pair as
+γt
+
+=
+
+− Re(γ e−2iϕ ),
+
+(19)
+
+γ×
+
+=
+
+− Im(γ e−2iϕ ),
+
+(20)
+
+where ϕ is the polar angle of the separation vector θ. Then
+we define the two independent shear correlation functions
+ξ± (θ)
+
+0
+:= hγt γt0 i ± hγ× γ×
+i
+Z ∞
+1
+=
+d` ` Pκ (`) J0,4 (`θ),
+2π 0
+
+(21)
+(22)
+
+where the Bessel function J0 (J4 ) corresponds to the plus
+(minus) correlation function, Pκ (`) is the power spectrum
+of the projected matter density, and ` is the Fourier variable
+on the sky. We can also compute the two-point correlation
+functions of the convergence (κ = κE + iκB ), defined as
+ξκE (θ) = hκE κ0E i,
+ξκB (θ) = hκB κ0B i.
+
+(23)
+
+We can verify that these two quantities agree (Schneider
+et al. 2002):
+ξ+ (θ) = ξκE (θ) + ξκB (θ).
+
+(24)
+Article number, page 7 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+
+When the B modes in the shear field are consistent with
+zero, the two-point correlation of the shear (ξ+ ) is equal to
+the two-point correlation of the convergence (ξκE ). Then the
+differences between the two are due to the errors introduced
+by the mass inversion to go from shear to convergence.
+We computed these two-point correlation functions using the tree code athena (Kilbinger et al. 2014). The shear
+two-point correlation functions were computed by averaging
+over pairs of galaxies of the mock galaxy catalogue, whereas
+the convergence two-point correlation functions were computed by averaging over pairs of pixels in the convergence
+map. The convergence two-point correlation functions can
+only be computed for separation vectors θ allowed by the
+binning of the convergence map.
+4.2. Comparing higher-order statistics
+Two-point statistics cannot fully characterise the weaklensing field at small scales where it becomes non-Gaussian
+(e.g. Bernardeau et al. 2002a). Because the small-scale features carry important cosmological information, we computed the third-order moment, hκ3E i, and the fourth-order
+moment, hκ4E i, of the convergence. Computations were performed on the original convergence maps provided by the
+Flagship simulation, as well as on the convergence maps
+reconstructed from the shear field with the KS and KS+
+methods. We evaluated the moments of convergence at various scales by computing aperture mass maps (Schneider
+1996; Schneider et al. 1998). Aperture mass maps are typically obtained by convolving the convergence maps with
+a filter function of a specific scale (i.e. aperture radii). We
+performed this here by means of a wavelet transform using the starlet transform algorithm (Starck et al. 1998;
+Starck & Murtagh 2002), which simultaneously produces
+a set of aperture mass maps on dyadic (powers of two)
+scales (see Appendix A for more details). Leonard et al.
+(2012) demonstrated that the aperture mass is formally
+identical to a wavelet transform at a specific scale and the
+aperture mass filter corresponding to this transform is derived. The wavelet transform offers significant advantages
+over the usual aperture mass algorithm in terms of computation time, providing speed-up factors of about 5 to 1200
+depending on the scale.
+4.3. Numerical simulations
+We used the Euclid Flagship mock galaxy catalogue version 1.3.3 (Castander F. et al., in prep) derived from Nbody cosmological simulation (Potter et al. 2017) with parameters Ωm = 0.319, Ωb = 0.049, ΩΛ = 0.681, σ8 =
+0.83, ns = 0.96, h = 0.67, and the particle mass was
+mp ∼ 2.398 × 109 M h−1 . The galaxy light-cone catalogue
+contains 2.6 billion galaxies over 5000 deg2 , and it extends up to z = 2.3. It has been built using a hybrid
+halo occupation distribution and halo abundance matching
+(HOD+HAM) technique, whose galaxy-clustering properties were discussed in detail in Crocce et al. (2015). The
+lensing properties were computed using the Born approximation and projected mass density maps (in HEALPix format with Nside = 8192) generated from the particle lightcone of the Flagship simulation. More details on the lensing
+properties of the Flagship mock galaxy catalogue can be
+found in Fosalba et al. (2015, 2008).
+Article number, page 8 of 17
+
+In order to evaluate the errors introduced by the massmapping methods, we extracted ten contiguous shear and
+convergence fields of 10◦ × 10◦ from the Flagship mock
+galaxy catalogue, yielding a total area of 1000 deg2 . The
+fields correspond to galaxies that lie in the range of
+15◦ < α < 75◦ and 15◦ < δ < 35◦ , where α and δ are the
+right ascension and declination, respectively. In order to
+obtain the density of 30 galaxies per arcmin2 foreseen for
+the Euclid Wide survey, we randomly selected one quarter
+of all galaxies in the catalogue. Then projected shear and
+convergence maps were constructed by combining all the
+redshifts of the selected galaxies. More sophisticated selection methods based on galaxy magnitude would produce
+slightly different maps. However, they would not change
+the performances of the two methods we studied here. The
+fields were down-sampled to 1024 × 1024 pixels, which corresponds to a pixel size of about 0.06. Throughout all the
+paper, the shaded regions stand for the uncertainties on
+the mean estimated from the total 1000 deg2 of the ten
+fields. Because the Euclid Wide survey is expected to be 15
+000 deg2 , the sky coverage will be 15 times larger than the
+current mock. Thus, the uncertainties will be smaller by a
+factor of about 4.
+4.4. Shear field projection
+We considered fields of 10◦ × 10◦ . The fields were taken to
+be sufficiently small to be approximated by a tangent plane.
+We used a gnomonic projection to project the points of the
+celestial sphere onto a tangent plane, following Pires et al.
+(2012b), who found that this preserves the two-point statistics. We note, however, that higher-order statistics may behave differently under different projections.
+The shear field projection is obtained by projecting the
+galaxy positions from the sphere (α, δ) in the catalogue onto
+a tangent plane (x, y). The projection of a non-zero spin
+field such as the shear field requires a projection of both the
+galaxy positions and their orientations. Projections of the
+shear do not preserve the spin orientation, which can generate substantial B modes (depending on the declination) if
+not corrected for. Two problems must be considered because
+of the orientation. First, the projection of the meridians are
+not parallel, so that north is not the same everywhere in
+the same projected field of view. Second, the projection
+of the meridians and great circles is not perpendicular, so
+that the system is locally non-Cartesian. Because we properly correct for the other effects (e.g. shape noise, missing
+data, or border effects) and consider large fields of view
+(10◦ × 10◦ ) possibly at high latitudes, these effects need to
+be considered. The first effect is dominant and generates
+substantial B modes (increasing with latitude) if not corrected for. This can be easily corrected for by measuring
+the shear orientation with respect to local north. We find
+that this correction is sufficient for the residual errors due
+to projection to become negligible compared to errors due
+to other effects.
+
+5. Systematic effects on the mass-map inversion
+In this section, we quantify the effect of field borders, missing data, shape noise, and the approximation of shear by
+reduced shear on the KS and KS+ mass-inversion methods.
+The quality of the reconstruction is assessed by comparing
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+
+Fig. 4: Missing data effects: Pixel difference outside the mask between the original E-mode convergence κ map and the
+map reconstructed from the incomplete simulated noise-free shear maps using the KS method (left) and the KS+ method
+(right). The field is 10◦ × 10◦ downsampled to 1024 × 1024 pixels. The missing data represent roughly 20% of the data.
+90
+
+KS
+KS+
+
+80
+70
+
+PDF
+
+60
+50
+40
+
+tially localised around the gaps. Because the mass inversion
+operator P is intrinsically non-local, it generates artefacts
+around the gaps. In order to quantify the average errors,
+Fig. 5 shows the probability distribution function (PDF) of
+the residual maps, estimated outside the mask. The standard deviation is 0.0080 with KS and 0.0062 with KS+.
+The residual errors obtained with KS are then 30% larger
+than those obtained with KS+.
+
+10
+0
+0.03
+
+0.02
+
+0.01
+
+0.00
+Residuals
+
+0.01
+
+0.02
+
+0.03
+
+Fig. 5: Missing data effects: PDF of the residual errors between the original E-mode convergence map and the reconstructed maps using KS (blue) and KS+ (red), measured
+outside the mask.
+
+the two-point correlation functions, third- and fourth-order
+moments.
+5.1. Missing data effects
+We used the ten noise-free shear fields of 10◦ ×10◦ described
+in Sect. 4.3 and the corresponding noise-free convergence
+maps. We converted the shear fields into planar convergence
+maps using the KS and KS+ methods, masking 20% of
+the data as expected for the Euclid survey. The mask was
+derived from the Data Challenge 2 catalogues produced by
+the Euclid collaboration using the code FLASK (Xavier et al.
+2016).
+Fig. 4 compares the results of the KS and KS+ methods
+in presence of missing data. The figure shows the residual
+maps, that is, the pixel difference between the original Emode convergence map and the reconstructed maps. The
+amplitude of the residuals is larger with the KS method.
+Detailed investigation shows that the excess error is essen-
+
+Relative error
+
+20
+
+Two-point correlation functions
+
+30
+
+Original
+KS
+KS+
+
+10-4
+
+10-5
+
+10-6
+100
+10-1
+10-2
+
+101
+
+θ [arcmin]
+
+102
+
+Fig. 6: Missing data effects: Mean shear two-point correlation function ξ+ (black) and corresponding mean convergence two-point correlation function ξκE reconstructed using the KS method (blue) and using the KS+ method (red)
+from incomplete shear maps. The estimation is only made
+outside the mask M . The shaded area represents the uncertainties on the mean estimated on 1000 deg2 . The lower
+panel shows the relative two-point correlation errors introduced by missing data effects, that is, the normalised difference between the upper curves.
+The quality of the mass inversion at different scales can
+be estimated using the two-point correlation function and
+higher-order moments computed at different scales. Fig. 6
+compares the two-point correlation functions computed on
+Article number, page 9 of 17
+
+< E3 >
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+10
+
+6
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+
+Relative error
+
+10
+10
+
+Original
+KS
+KS+
+
+10
+
+1
+
+10
+
+8
+
+10
+
+9
+
+10
+
+10
+
+10
+
+11
+
+10
+
+12
+
+Relative error
+
+< E4 >
+
+101
+
+10
+
+[arcmin]
+
+102
+
+Original
+KS
+KS+
+
+1
+
+101
+
+[arcmin]
+
+102
+
+Fig. 7: Missing data effects: Third-order (upper panel) and
+fourth-order (lower panel) moments estimated on seven
+wavelet bands of the original E-mode convergence map
+(black) compared to the moments estimated on the KS
+(blue) and KS+ (red) convergence maps at the same scales.
+The KS and KS+ convergence maps are reconstructed from
+incomplete noise-free shear maps. The estimation of the
+third- and fourth-order moments is made outside the mask.
+The shaded area represents the uncertainties on the mean
+estimated on 1000 deg2 . The lower panel shows the relative
+higher-order moment errors introduced by missing data effects, that is, the normalised difference between the upper
+curves.
+
+the convergence and shear maps outside the mask. Because
+the B mode is consistent with zero in the simulations, we expect that these two quantities are equal within the precision
+of the simulations (see Sect. 4.1). The KS method systematically underestimates the original two-point correlation
+function by a factor of about 2 on arcminute scales, but
+can reach factors of 5 at larger scales. The mass-inversion
+operator P being unitary, the
+energyP
+is conserved
+P signal
+by the transformation (i.e.
+(γ12 + γ22 ) =
+(κ2E + κ2B ),
+where the summation is performed over all the pixels of
+the maps). We found that about 10% of the total energy
+leaks into the gaps and about 15% into the B-mode component. In contrast, the errors of the KS+ method are of
+Article number, page 10 of 17
+
+the order of a few percent at scales smaller than 1◦ . At any
+scale, the KS+ errors are about 5-10 times smaller than the
+KS errors, remaining in the 1σ uncertainty of the original
+two-point correlation function.
+Fig. 7 shows the third-order (upper panel) and fourthorder (lower panel) moments estimated at six different
+wavelet scales ( 2.034, 4.068, 9.037, 18.075, 37.05, and 75.00) using the KS and KS+methods. For this purpose, the pixels
+inside the mask were set to zero in the reconstructed convergence maps. The aperture mass maps corresponding to
+each wavelet scale were computed, and the moments were
+calculated outside the masks.
+The KS method systematically underestimates the
+third- and fourth-order moments at all scales. Below 100 ,
+the errors on the moments remain smaller than 50%, and
+they increase with scale up to a factor 3. In comparison, the
+KS+ errors remain much smaller at all scales, and remain
+within the 1σ uncertainty.
+5.2. Field border effects
+Fig. 8 compares the results of the KS (left) and KS+ (right)
+methods for border effects. It shows the residual error maps
+corresponding to the pixel difference between the original Emode convergence map and the reconstructed maps. With
+KS, as expected, the pixel difference shows errors at the
+border of the field. With KS+, there are also some lowlevel boundary effects, but these errors are considerably reduced and do not show any significant structure at the field
+border. In KS+, the image is extended to reduce the border effects. The effect of borders decreases when the size of
+the borders increases. A border size of 512 pixels has been
+selected for Euclid as a good compromise between precision and computational speed. It corresponds to extending
+the image to be in-painted to 2048 × 2048 pixels. Again,
+the PDF of these residuals can be compared to quantify
+the errors. For the two methods, Fig. 9 shows the residuals PDFs computed at the boundaries (as dotted lines) and
+in the remaining central part of the image (as solid lines).
+The border width used to compute the residual PDF is
+100 pixels, which corresponds to about one degree. With
+the KS method, the standard deviation of the residuals in
+the centre of the field is 0.0062. In the outer regions, the
+border effect causes errors of 0.0076 (i.e. 25% larger than
+at the centre). Away from the borders, the KS+ method
+gives results similar to the KS method (0.0060). However,
+it performs much better at the border, where the error only
+reaches 0.0061. The small and uniform residuals of the KS+
+method show how efficiently it corrects for borders effects.
+As before, the scale dependence of the errors can be estimated using the two-point correlation function and higherorder moments computed at different scales. Fig. 10 shows
+the two-point correlation functions. For both methods, the
+errors increase with angular scale because the fraction of
+pairs of pixels that include boundaries increase with scale.
+The loss of amplitude at the image border is responsible
+for significant errors in the two-point correlation function
+of the KS convergence maps. In contrast, the errors are
+about five to ten times smaller with the KS+ method and
+remain in the 1σ uncertainty range of the original two-point
+correlation function.
+Fig. 11 shows field borders effects on the third-order (upper panel) and fourth-order (lower panel) moments of the
+convergence maps at different scales. As was observed ear-
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+
+KS [Centre]
+KS+ [Centre]
+KS [Borders]
+KS+ [Borders]
+
+80
+
+PDF
+
+60
+40
+
+Two-point correlation functions
+
+Fig. 8: Field border effects: Pixel difference between the original E-mode convergence κ map and the map reconstructed
+from the corresponding simulated shear maps using the KS method (left) and the KS+ method (right). The field is
+10◦ × 10◦ downsampled to 1024 × 1024 pixels.
+
+Original
+KS
+KS+
+
+10-4
+
+10-5
+
+10-6
+
+0
+0.03
+
+0.02
+
+0.01
+
+0.00
+Residuals
+
+0.01
+
+0.02
+
+0.03
+
+Fig. 9: Field border effects: PDF of the residual errors between the original E-mode convergence map and the convergence maps reconstructed using KS (blue) and KS+ (red).
+The dotted lines correspond to the PDF of the residual errors measured at the boundaries of the field, and the solid
+lines show the PDF of the residual errors measured in the
+centre of the field. The borders are 100 pixels wide.
+
+lier for the two-point correlation estimation, the KS method
+introduces errors at large scales on the third- and fourthorder moment estimation. With KS+, the discrepancy is
+about 1% and within the 1σ uncertainty.
+When the two-point correlation functions and higherorder moments are computed far from the borders, the errors of the KS method decrease, as expected. In contrast,
+we observe no significant improvement when the statistics
+are computed similarly on the KS+ maps, indicating that
+KS+ corrects for borders properly.
+5.3. Reduced shear
+In this section we quantify the errors due to the approximation of shear (γ) by the reduced shear (g). To this end,
+we used the noise-free shear fields described in Sect. 4.3
+
+Relative error
+
+20
+
+100
+10-1
+10-2
+
+101
+
+θ [arcmin]
+
+102
+
+Fig. 10: Field border effects: Mean shear two-point correlation function ξ+ (black) compared to the corresponding
+mean convergence two-point correlation function ξκE reconstructed using the KS method (blue) and the KS+ method
+(red). The shaded area represents the uncertainties on the
+mean estimated on 1000 deg2 . The lower panel shows the
+relative two-point correlation error introduced by border
+effects.
+
+and computed the reduced shear fields using Eq. (18) and
+the convergence provided by the catalogue. We then derived
+the reconstructed convergence maps using the KS and KS+
+methods.
+For both methods, the errors on the convergence maps
+are dominated by field border effects. We did not find any
+estimator able to separate these two effects and then identify the reduced shear effect in the convergence maps. The
+errors introduced by the reduced shear can be assessed by
+comparing the shear and reduced shear two-point correlation functions (see Fig. 12), however. While the differences
+are negligible at large scales, they reach the percent level
+on arcminute scales (in agreement with White 2005), where
+Article number, page 11 of 17
+
+10
+
+6
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+
+10
+10
+
+1
+
+10
+
+3
+
+Original
+KS
+KS+
+
+Fig. 12: Reduced shear effects: Relative two-point correlation error between the mean two-point correlation functions
+γ
+ξ+
+estimated from the shear fields and corresponding mean
+g
+two-point correlation function ξ+
+estimated from the reduced shear fields without any correction.
+
+2
+
+10
+
+8
+
+10
+
+9
+
+10
+
+Relative error
+
+10
+
+[arcmin]
+
+102
+
+Original
+KS
+KS+
+
+10
+
+Relative error
+
+< E4 >
+
+101
+
+11
+
+10
+
+1
+
+10
+
+2
+
+Two-point correlation functions
+
+Relative error
+
+< E3 >
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+
+101
+
+[arcmin]
+
+102
+
+Fig. 11: Field border effects: Third-order (upper panel)
+and fourth-order (lower panel) moments estimated on seven
+wavelet bands of the original convergence (black) compared
+to the moments estimated on the KS (blue) and KS+
+(red) convergence maps reconstructed from noise-free shear
+maps. The shaded area represents the uncertainties on the
+mean estimated on 1000 deg2 . The lower panel shows the
+relative higher-order moment errors introduced by border
+effects.
+
+they become comparable or larger than the KS+ errors due
+to border effects.
+5.4. Shape noise
+In this section we study the effect of the shape noise on
+convergence maps. We derived noisy shear maps, assuming a Gaussian noise (σ = 0.3). Then, we compared the
+two mass-inversion methods. The pixel difference cannot be
+used in this case because the convergence maps are noise
+dominated (see Fig. 3, upper right panel). However, we can
+still assess the quality of the convergence maps using twopoint correlation functions because the ellipticity correlation is an unbiased estimate of the shear correlation, and
+similarly, the convergence two-point correlation functions is
+unbiased by the shape noise.
+Article number, page 12 of 17
+
+Original
+KS
+KS+
+
+10-4
+
+10-5
+
+10-6
+100
+10-1
+10-2
+
+101
+
+θ [arcmin]
+
+102
+
+Fig. 13: Shape noise effects: Mean shear two-point correlation function ξ+ (black) and corresponding mean convergence two-point correlation function ξκE estimated from
+complete noisy shear fields. The convergence maps have
+been estimated using the KS method (blue) and using the
+KS+ method (red). The shaded area represents the uncertainties on the mean estimated on 1000 deg2 . The lower
+panel shows the relative two-point correlation error introduced by shape noise.
+
+Fig. 13 compares the results of the KS and KS+ methods when shape noise is included. Compared to Fig. 10,
+the two-point correlation of the noisy maps is less smooth
+because the noise fluctuations do not completely average
+out. However, the amplitude of the errors introduced by
+the mass inversion remain remarkably similar to the errors
+computed without shape noise for the KS and KS+ methods. The same conclusions then hold: the errors are about
+five times smaller with the KS+ method.
+Moments of noisy maps are biased and potentially dominated by the shape noise contribution. For instance, the total variance in the noisy convergence map is expected to be
+the sum of the variance in the noise-free convergence map
+and the noise variance. Therefore moments of the noisy KS
+and KS+ convergence maps cannot be directly compared
+to moments of the original noise-free convergence maps. Instead, Fig. 14 compares them to the moments of the original
+convergence maps where noise was added with properties
+similar to the noise expected in the convergence maps. For
+this purpose, we generated noise maps N1 and N2 for each
+
+< E3 >
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+10
+
+6
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+
+Relative error
+
+10
+10
+
+Original
+KS
+KS+
+
+10
+
+1
+
+< E4 >
+
+101
+
+10
+
+6
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+10
+
+10
+
+11
+
+10
+
+12
+
+Relative error
+
+10
+
+10
+
+1
+
+10
+
+2
+
+[arcmin]
+
+102
+
+Original
+KS
+KS+
+
+101
+
+[arcmin]
+
+102
+
+Fig. 14: Shape noise effects: Third-order (upper panel) and
+fourth-order (lower panel) moments estimated on seven
+wavelet bands of the original convergence with realistic
+shape noise (black) compared to the moments estimated
+on the KS (blue) and KS+ (red) convergence reconstructed
+from noisy shear maps. The shaded area represents the uncertainties on the mean estimated on 1000 deg2 . The lower
+panel shows the relative higher-order moment errors introduced by shape noise.
+field using Eq. (11) and (12), and we derived the noise to
+be added in the convergence using Eq. (14).
+The comparison of Fig. 14 to Fig. 11 shows that the
+third-order moment of the convergence is not affected by
+shape noise. In contrast, the fourth-order moment is biased
+for scales smaller than 100 . The two methods slightly underestimate the third- and fourth-order moments at large
+scales. However, with KS+, the errors are reduced by a
+factor of 2 and remain roughly within the 1σ uncertainty.
+5.5. All systematic effects taken into account simultaneously
+In this section, we assess the performance of KS and KS+
+for realistic data sets by combining the effects of shape
+noise, reduced shear, borders, and missing data.
+Fig. 15 compares the results of the KS method and the
+KS+ method combined with a filtering step to correct for all
+
+systematic effects in one field. We used the nonlinear MRLens filter to reduce the noise in the KS and KS+ convergence maps because it is particularly well suited for the detection of isotropic structures (Pires et al. 2009a, 2012a; Lin
+et al. 2016). Again, KS+ better recovers the over-densities
+because it reduces the signal leakage during the mass inversion compared to KS.
+Fig. 16 shows the two-point correlation computed with
+the two methods. The masked regions were excluded from
+the two-point correlation computation, resulting in fewer
+pairs and higher noise than in Fig. 13. Again, the strong
+leakage due to missing data is clearly observed with the
+KS method. The results obtained with the KS+ method
+reduce the errors in the mean convergence two-point correlation function by a factor of about 5, and the errors remain
+roughly within the 1σ uncertainty.
+In Fig. 17 we test the efficacy of the mass-inversion
+methods in preserving higher-order moments of the convergence maps in a realistic setting. As before, realistic noise
+was added to the original convergence maps for comparison. As was observed earlier in the noise-free case, the
+KS method systematically underestimates the third- and
+fourth-order moments at all scales. With KS+, the errors
+are significantly reduced, by a factor of about 2 in the thirdorder moment and by a factor of about 10 in the fourthorder moment estimation, at all scales. Although reduced,
+the errors of the KS+ method on the third-order moment
+cannot be neglected. These errors might result from noise
+correlations introduced by the inpainting method in the
+shear maps. Inside the gaps, the noise is indeed correlated
+because it is interpolated from the remaining data. These
+noise correlations propagate into the convergence maps and
+can explain the bias in the moment estimation.
+We note that the two-point correlation functions and
+higher-order moments are here only used to probe the accuracy of the reconstruction methods. For specific applications, the small residuals of the KS+ method can be reduced even more using additional treatment such as downweighting the region around the mask when the moments
+are computed (e.g. Van Waerbeke et al. 2013).
+
+6. Conclusion
+This paper was motivated by the use of convergence maps in
+Euclid to constrain cosmological parameters and to assess
+other physical constraints. Convergence maps encode the
+lensing information in a different manner, allowing more
+optimised computations than shear. However, the massinversion process is subject to field border effects, missing data, reduced shear, intrinsic alignments, and shape
+noise. This requires accurate control of the systematic effects during the mass inversion to reduce the information
+loss as much as possible. We presented and compared the
+two mass-inversion methods that are included in the official Euclid data-processing pipeline: the standard Kaiser &
+Squires (KS) method, and an improved Kaiser & Squires
+(KS+) mass-inversion technique that integrates corrections
+for the mass-mapping systematic effects. The systematic effects on the reconstructed convergence maps were studied
+using the Euclid Flagship mock galaxy catalogue.
+In a first step, we analysed and quantified one by one
+the systematic effects on reconstructed convergence maps
+using two-point correlation functions and moments of the
+convergence. In this manner, we quantified the contribution
+Article number, page 13 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+0.40
+
+1000
+
+1.0
+
+1000
+
+0.9
+
+0.35
+800
+
+0.8
+
+800
+
+0.30
+
+0.7
+
+600
+
+0.20
+
+y [pixels]
+
+y [pixels]
+
+0.25
+
+0.15
+
+400
+
+0.6
+
+600
+
+0.5
+0.4
+
+400
+
+0.10
+
+0.3
+
+0.05
+
+200
+
+0.2
+
+200
+
+0.00
+0
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+0.1
+0
+0
+
+−0.05
+
+0.40
+
+1000
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+0.40
+
+1000
+
+0.35
+800
+
+0.35
+800
+
+0.30
+
+0.30
+
+0.20
+0.15
+
+400
+
+0.10
+0.05
+
+200
+
+0.25
+y [pixels]
+
+y [pixels]
+
+0.25
+600
+
+600
+
+0.20
+0.15
+
+400
+
+0.10
+0.05
+
+200
+
+0.00
+0
+
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+−0.05
+
+0.0
+
+0.00
+0
+
+0
+
+200
+
+400
+600
+x [pixels]
+
+800
+
+1000
+
+−0.05
+
+Fig. 15: All systematic effects: The upper panels show the original E-mode convergence κ map (left) and the mask that
+is applied to the shear maps (right). The lower panels show the convergence map reconstructed from an incomplete noisy
+shear field using the KS method (left) and using the KS+ method (right) applying a nonlinear MRLens filtering with
+αFDR = 0.05. The field is 10◦ × 10◦ downsampled to 1024 × 1024 pixels.
+of each effect to the error budget to better understand the
+error distribution in the convergence maps. With KS, missing data are the dominant effect at all scales. Field border
+effects also have a strong effect, but only at the map borders. These two effects are significantly reduced with KS+.
+The reduced shear is the smallest effect in terms of contribution and only affects small angular scales. The study
+also showed that pixellisation provides an intrinsic regularisation and that no additional smoothing step is required
+to avoid infinite noise in the convergence maps.
+In a second step, we quantified the errors introduced by
+the KS and KS+ methods in a realistic setting that included
+the systematic effects. We showed that the KS+ method
+reduces the errors on the two-point correlation functions
+and on the moments of the convergence compared to the
+KS method. The errors introduced by the mass inversion
+on the two-point correlation of the convergence maps are
+reduced by a factor of about 5. The errors on the third-order
+and fourth-order moment estimates are reduced by factors
+of about 2 and 10, respectively. Some errors remain in the
+third-order moment that remain within the 2σ uncertainty.
+They might result from noise correlations introduced by the
+inpainting method inside the gaps.
+Our study was conducted on a mock of 1000 deg2 divided into ten fields of 10◦ × 10◦ to remain in the flat-sky
+Article number, page 14 of 17
+
+approximation. Euclid will observe a field of 15 000 deg2 .
+As long as KS+ has not been extended to the curved sky,
+it is not possible to apply the method to larger fields without introducing significant projection effects. However, the
+Euclid survey can be divided into small fields, which allows
+reducing the uncertainties in the statistics that are estimated on the convergence maps. Moreover, we can expect
+that part of the errors will average out.
+Recent studies have shown that combining the shear
+two-point statistics with higher-order statistics of the convergence such as higher-order moments (Vicinanza et al.
+2018), Minkowski functionals (Vicinanza et al. 2019), or
+peak counts (Liu et al. 2015; Martinet et al. 2018) allows breaking common degeneracies. The precision of the
+KS+ mass inversion makes the E-mode convergence maps
+a promising tool for such cosmological studies. In future
+work, we plan to propagate these errors into cosmological parameter constraints using higher-order moments and
+peak counts.
+
+Acknowledgments
+This study has been carried inside the Mass Mapping Work
+Package of the Weak Lensing Science Working Group of
+the Euclid project to better understand the impact of the
+
+Original
+KS
+KS+
+
+10-4
+
+< E3 >
+
+10-5
+
+10-6
+
+Relative error
+
+10-1
+101
+
+6
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+
+θ [arcmin]
+
+10
+
+Fig. 16: All systematic effects: Mean shear two-point correlation function ξ+ (black) and corresponding mean convergence two-point correlation function ξκE estimated from
+incomplete noisy shear fields. The convergence maps have
+been estimated using KS (blue) and KS+ (red). The convergence two-point correlations were estimated outside the
+mask. The shaded area represents the uncertainties on the
+mean estimated on 1000 deg2 . The lower panel shows the
+normalised difference between the two upper curves.
+mass inversion systematic effects on the convergence maps.
+The authors would like to thank the referees and editors
+for their valuable comments, which helped to improve the
+manuscript. S. Pires thanks F. Sureau, J. Bobin, M. Kilbinger, A. Peel and J.-L. Starck for useful discussions.
+The Euclid Consortium acknowledges the European Space
+Agency and the support of a number of agencies and institutes that have supported the development of Euclid . A
+detailed complete list is available on the Euclid web site
+(http://www.euclid-ec.org). In particular the Academy
+of Finland, the Agenzia Spaziale Italiana, the Belgian Science Policy, the Canadian Euclid Consortium, the Centre
+National d’Etudes Spatiales, the Deutsches Zentrum für
+Luft- and Raumfahrt, the Danish Space Research Institute,
+the Fundação para a Ciênca e a Tecnologia, the Ministerio de Economia y Competitividad, the National Aeronautics and Space Administration, the Netherlandse Onderzoekschool Voor Astronomie, the Norvegian Space Center,
+the Romanian Space Agency, the State Secretariat for Education, Research and Innovation (SERI) at the Swiss Space
+Office (SSO), and the United Kingdom Space Agency.
+
+Appendix A: KS+ inpainting algorithm
+This appendix describes the KS+ method presented in
+Sect. 3 in more detail. The solution of the KS+ mass inversion is obtained through the iterative algorithm described
+in Algorithm 1.
+The outer loop starting at step 5 is used to correct for
+the reduced shear using the iterative scheme described in
+Sect. 3.3. The inner loop starting at step 7 is used to solve
+the optimisation problem defined by Eq. (17). Φ is the discrete cosine transform operator matrix. If the convergence
+κ is sparse in Φ, most of the signal is contained in the
+
+Original
+KS
+KS+
+
+10
+
+1
+
+101
+
+102
+
+< E4 >
+
+10-2
+
+10
+
+10
+
+100
+
+10
+
+7
+
+10
+
+8
+
+10
+
+9
+
+10
+
+10
+
+10
+
+11
+
+10
+
+12
+
+Relative error
+
+Relative error
+
+Two-point correlation functions
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+
+10
+
+1
+
+10
+
+2
+
+[arcmin]
+
+102
+
+Original
+KS
+KS+
+
+101
+
+[arcmin]
+
+102
+
+Fig. 17: All systematic effects: Third-order (upper panel)
+and fourth-order (lower panel) moments estimated on seven
+wavelet bands of the original convergence with realistic
+noise (black) compared to the moments estimated using KS
+(blue) and KS+ (red) obtained from incomplete noisy shear
+maps. The third- and fourth-order moments are estimated
+outside the mask. The shaded area represents the uncertainties on the mean estimated on 1000 deg2 . The lower
+panel shows the relative higher-order moment errors.
+
+strongest DCT coefficients. The smallest coefficients result
+from missing data, border effects, and shape noise. Thus,
+the algorithm is based on an iterative algorithm with a
+threshold that decreases exponentially (at each iteration)
+from a maximum value to zero, following the decreasing
+law F described in Pires et al. (2009b). By accumulating
+increasingly more high DCT coefficients through each iteration, the gaps in γ̃ fill up steadily, and the power of the
+spurious B modes due to the gaps decreases. The algorithm
+uses the fast Fourier transform at each iteration to compute
+the shear maps γ from the convergence maps κ (step 14)
+and the inverse relation (step 16).
+A data-driven power spectrum prior is introduced at
+steps 11-13. To do so, the KS+ algorithm uses the undecimated isotropic wavelet transform that decomposes an image κ into a set of coefficients {w1 , w2 , ..., wJ , cJ }, as a
+Article number, page 15 of 17
+
+A&A proofs: manuscript no. MassMapping_Euclid_final
+
+Appendix B: Institutions
+
+superposition of the form
+
+1
+
+κ[i1 , i2 ] = cJ [i1 , i2 ] +
+
+J
+X
+
+wj [i1 , i2 ],
+
+(25)
+
+j=1
+
+where cJ is a smoothed version of the image, and κ and
+wj are a set of aperture mass maps (usually called wavelet
+bands) at scale θ = 2j . Then, we estimate the variance on
+each wavelet band wj . The variance per scale estimated in
+this way can be directly compared to the power spectrum.
+This provides a way to estimate a broadband power spectrum of the convergence κ from incomplete data. The power
+spectrum is then enforced by multiplying each wavelet coefficient by the factor σjout /σjin inside the gaps, where σjin and
+σjout are the standard deviation estimated in the wavelet
+band wj inside and outside the mask, respectively. This
+normalisation can be described by a linear operator Q as
+used in Eq. (17). The constraint is applied on the E- and
+B-mode components before reconstructing the convergence
+κ by backward wavelet transform.
+
+Algorithm 1 KS+ algorithm
+1. Project the shear from the celestial sphere onto a tangent plane by projecting the galaxy positions and applying a local rotation to the shear field.
+2. Bin the projected shear onto a grid and define γ̃ as the
+average shear in each pixel.
+3. Set the mask M: M [i1 , i2 ] = 1 for pixels where we
+have information and M [i1 , i2 ] = 0 for pixels with no
+galaxies, and take a support twice larger for the shear
+maps and include the borders in the masked region (see
+Fig. 1).
+4. Set the maximum number of iterations to Imax = 100,
+the maximum threshold λmax = max(| ΦT P∗ γ̃ |), and
+the minimum threshold λmin = 0.
+5. Set k = 0, κkE = 0 and iterate:
+6. Update the shear γ̃ k = γ̃ (1 − κkE ) and initialise the
+solution to κk = P∗ γ̃ k .
+7. Set i = 0, λ0 = λmax , κi = κk and iterate:
+8. Compute the forward transform: α = ΦT κi .
+9. Compute α̃ by setting to zero the coefficients α
+below the threshold λi .
+10. Reconstruct κi from α̃: κi = Φα̃.
+11. Decompose κi into its wavelet coefficients
+{w1 , w2 , ..., wJ , cJ }.
+12. Renormalise the wavelet coefficients wj by a factor σjout /σjin inside the gaps.
+13. Reconstruct κi by performing the backward
+wavelet transform from the normalised coefficients.
+14. Perform the inverse mass relation: γ i = Pκi .
+15. Enforce the observed shear γ̃ outside the gaps:
+γ i = (1 − M) γ i + Mγ̃ k .
+16. Perform the direct mass inversion: κi = P∗ γ i .
+17. Update the threshold: λi = F (i, λmin , λmax ).
+18. Set i = i + 1. If i < Imax , return to step 8.
+19. Set k = k + 1, κk = κi . If k < 3, return to step 6.
+
+Article number, page 16 of 17
+
+Université Paris Diderot, AIM, Sorbonne Paris Cité,
+CEA, CNRS F-91191 Gif-sur-Yvette Cedex, France
+2
+Universitäts-Sternwarte München, Fakultät für Physik,
+Ludwig-Maximilians-Universität München, Scheinerstrasse
+1, 81679 München, Germany
+3
+Max Planck Institute for Extraterrestrial Physics,
+Giessenbachstr. 1, D-85748 Garching, Germany
+4
+INAF-Osservatorio Astrofisico di Torino, Via Osservatorio 20, I-10025 Pino Torinese (TO), Italy
+5
+INAF-Osservatorio Astrofisico di Torino, Via Osservatorio 20, I-10025 Pino Torinese (TO), Italy
+6
+APC, AstroParticule et Cosmologie, Université Paris
+Diderot, CNRS/IN2P3, CEA/lrfu, Observatoire de Paris,
+Sorbonne Paris Cité, 10 rue Alice Domon et Léonie
+Duquet, 75205, Paris Cedex 13, France
+7
+Instituto de Astrofísica e Ciências do Espaço, Universidade do Porto, CAUP, Rua das Estrelas, PT4150-762
+Porto, Portugal
+8
+Institut de Física d’Altes Energies IFAE, 08193 Bellaterra, Barcelona, Spain
+9
+INAF-Osservatorio Astronomico di Roma, Via Frascati
+33, I-00078 Monteporzio Catone, Italy
+10
+Department of Physics "E. Pancini", University Federico
+II, Via Cinthia 6, I-80126, Napoli, Italy
+11
+INFN section of Naples, Via Cinthia 6, I-80126, Napoli,
+Italy
+12
+INAF-Osservatorio Astronomico di Capodimonte, Via
+Moiariello 16, I-80131 Napoli, Italy
+13
+Centre National d’Etudes Spatiales, Toulouse, France
+14
+Institute for Astronomy, University of Edinburgh, Royal
+Observatory, Blackford Hill, Edinburgh EH9 3HJ, UK
+15
+ESAC/ESA, Camino Bajo del Castillo, s/n., Urb.
+Villafranca del Castillo, 28692 Villanueva de la Cañada,
+Madrid, Spain
+16
+Department of Astronomy, University of Geneva, ch.
+d’Écogia 16, CH-1290 Versoix, Switzerland
+17
+Institute of Space Sciences (ICE, CSIC), Campus UAB,
+Carrer de Can Magrans, s/n, 08193 Barcelona, Spain
+18
+Institut d’Estudis Espacials de Catalunya (IEEC), 08034
+Barcelona, Spain
+19
+INAF-Osservatorio Astronomico di Trieste, Via G. B.
+Tiepolo 11, I-34131 Trieste, Italy
+20
+INAF-Osservatorio di Astrofisica e Scienza dello Spazio
+di Bologna, Via Piero Gobetti 93/3, I-40129 Bologna, Italy
+21
+INAF-IASF Milano, Via Alfonso Corti 12, I-20133
+Milano, Italy
+22
+von Hoerner & Sulger GmbH, SchloßPlatz 8, D-68723
+Schwetzingen, Germany
+23
+Aix-Marseille Univ, CNRS/IN2P3, CPPM, Marseille,
+France
+24
+Institute for Computational Science, University of
+Zurich, Winterthurerstrasse 190, 8057 Zurich, Switzerland
+25
+Institut de Physique Nucléaire de Lyon, 4, rue Enrico
+Fermi, 69622, Villeurbanne cedex, France
+26
+Université de Genève, Département de Physique
+Théorique and Centre for Astroparticle Physics, 24 quai
+Ernest-Ansermet, CH-1211 Genève 4, Switzerland
+27
+Institute of Theoretical Astrophysics, University of Oslo,
+P.O. Box 1029 Blindern, N-0315 Oslo, Norway
+28
+Argelander-Institut für Astronomie, Universität Bonn,
+Auf dem Hügel 71, 53121 Bonn, Germany
+29
+Centre for Extragalactic Astronomy, Department of
+
+S. Pires et al.: Euclid : Reconstruction of weak-lensing mass maps for non-Gaussianity studies
+
+Physics, Durham University, South Road, Durham, DH1
+3LE, UK
+30
+Observatoire de Sauverny, Ecole Polytechnique Fédérale
+de Lau- sanne, CH-1290 Versoix, Switzerland
+31
+Jet Propulsion Laboratory, California Institute of
+Technology, 4800 Oak Grove Drive, Pasadena, CA, 91109,
+USA
+32
+Dipartimento di Fisica e Astronomia, Universitá di
+Bologna, Via Gobetti 93/2, I-40129 Bologna, Italy
+33
+Institute of Space Sciences (IEEC-CSIC), c/Can Magrans s/n, 08193 Cerdanyola del Vallés, Barcelona, Spain
+34
+Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas (CIEMAT), Avenida Complutense 40,
+28040 Madrid, Spain
+35
+Instituto de Astrofísica e Ciências do Espaço, Faculdade
+de Ciências, Universidade de Lisboa, Tapada da Ajuda,
+PT-1349-018 Lisboa, Portugal
+36
+Departamento de Física, Faculdade de Ciências, Universidade de Lisboa, Edifício C8, Campo Grande, PT1749-016
+Lisboa, Portugal
+37
+Universidad Politécnica de Cartagena, Departamento
+de Electrónica y Tecnología de Computadoras, 30202
+Cartagena, Spain
+38
+Infrared Processing and Analysis Center, California
+Institute of Technology, Pasadena, CA 91125, USA
+
+References
+Bartelmann, M. 1995, A&A, 303, 643
+Bartelmann, M. & Schneider, P. 2001, Phys. Rep., 340, 291
+Benabed, K. & Scoccimarro, R. 2006, A&A, 456, 421
+Benjamini, Y. & Hochberg, Y. 1995, J. R. Stat. Soc. B, 57, 289
+Bernardeau, F., Colombi, S., Gaztañaga, E., & Scoccimarro, R. 2002a,
+Phys. Rep., 367, 1
+Bernardeau, F., Mellier, Y., & van Waerbeke, L. 2002b, A&A, 389,
+L28
+Bridle, S. L., Hobson, M. P., Lasenby, A. N., & Saunders, R. 1998,
+MNRAS, 299, 895
+Chang, C., Pujol, A., Mawdsley, B., et al. 2018, MNRAS, 475, 3165
+Chang, C., Vikram, V., Jain, B., et al. 2015, Physical Review Letters,
+115, 051301
+Crittenden, R. G., Natarajan, P., Pen, U.-L., & Theuns, T. 2002, ApJ,
+568, 20
+Crocce, M., Castander, F. J., Gaztañaga, E., Fosalba, P., & Carretero,
+J. 2015, MNRAS, 453, 1513
+Cropper, M., Hoekstra, H., Kitching, T., et al. 2013, MNRAS, 431,
+3103
+Elad, M., Starck, J.-L., Querre, P., & Donoho, D. 2005, J. on Applied
+and Computational Harmonic Analysis, 19, 340
+Fosalba, P., Gaztañaga, E., Castander, F. J., & Crocce, M. 2015,
+MNRAS, 447, 1319
+Fosalba, P., Gaztañaga, E., Castander, F. J., & Manera, M. 2008,
+MNRAS, 391, 435
+Green, J., Schechter, P., Baltay, C., et al. 2012, arXiv e-prints
+[arXiv:1208.4012]
+Hildebrandt, H., Choi, A., Heymans, C., et al. 2016, MNRAS, 463,
+635
+Jeffrey, N., Abdalla, F. B., Lahav, O., et al. 2018, ArXiv e-prints
+[arXiv:1801.08945]
+Joachimi, B., Semboloni, E., Hilbert, S., et al. 2013, MNRAS, 436,
+819
+Jullo, E., Pires, S., Jauzac, M., & Kneib, J.-P. 2014, MNRAS, 437,
+3969
+Kaiser, N. 1995, ApJ, 439, L1
+Kaiser, N. & Squires, G. 1993, ApJ, 404, 441
+Kilbinger, M., Bonnett, C., & Coupon, J. 2014, athena: Tree code
+for second-order correlation functions, Astrophysics Source Code
+Library
+Kilbinger, M. & Schneider, P. 2005, A&A, 442, 69
+Lanusse, F., Starck, J.-L., Leonard, A., & Pires, S. 2016, A&A, 591,
+A2
+
+Laureijs, R., Amiaux, J., Arduini, S., et al. 2011, arXiv e-prints
+[arXiv:1110.3193]
+Leauthaud, A., Massey, R., Kneib, J.-P., et al. 2007, ApJS, 172, 219
+Lin, C.-A., Kilbinger, M., & Pires, S. 2016, A&A, 593, A88
+Liu, J., Petri, A., Haiman, Z., et al. 2015, Phys. Rev. D, 91, 063507
+LSST Science Collaboration, Abell, P. A., Allison, J., et al. 2009,
+arXiv e-prints [arXiv:0912.0201]
+Marshall, P. J., Hobson, M. P., Gull, S. F., & Bridle, S. L. 2002,
+MNRAS, 335, 1037
+Martinet, N., Schneider, P., Hildebrandt, H., et al. 2018, MNRAS,
+474, 712
+Massey, R., Rhodes, J., Ellis, R., et al. 2007, Nature, 445, 286
+Oguri, M., Miyazaki, S., Hikage, C., et al. 2018, PASJ, 70, S26
+Pichon, C., Thiébaut, E., Prunet, S., et al. 2010, MNRAS, 401, 705
+Pires, S., Leonard, A., & Starck, J.-L. 2012a, MNRAS, 423, 983
+Pires, S., Plaszczynski, S., & Lavabre, A. 2012b, Statistical Methodology, 9, 71
+Pires, S., Starck, J.-L., Amara, A., Réfrégier, A., & Teyssier, R. 2009a,
+A&A, 505, 969
+Pires, S., Starck, J.-L., Amara, A., et al. 2009b, MNRAS, 395, 1265
+Potter, D., Stadel, J., & Teyssier, R. 2017, Computational Astrophysics and Cosmology, 4, 2
+Schneider, P. 1995, A&A, 302, 639
+Schneider, P. 1996, MNRAS, 283, 837
+Schneider, P., van Waerbeke, L., Kilbinger, M., & Mellier, Y. 2002,
+A&A, 396, 1
+Schneider, P., van Waerbeke, L., Mellier, Y., et al. 1998, A&A, 333,
+767
+Schrabback, T., Hilbert, S., Hoekstra, H., et al. 2015, MNRAS, 454,
+1432
+Schrabback, T., Schirmer, M., van der Burg, R. F. J., et al. 2018,
+A&A, 610, A85
+Seitz, C. & Schneider, P. 1995, A&A, 297, 287
+Seitz, S. & Schneider, P. 1996, A&A, 305, 383
+Seitz, S. & Schneider, P. 2001, A&A, 374, 740
+Seitz, S., Schneider, P., & Bartelmann, M. 1998, A&A, 337, 325
+Seljak, U. 1998, ApJ, 506, 64
+Shan, H. Y., Kneib, J.-P., Comparat, J., et al. 2014, MNRAS, 442,
+2534
+Shapiro, C. 2009, ApJ, 696, 775
+Shi, X., Schneider, P., & Joachimi, B. 2011, A&A, 533, A48
+Squires, G. & Kaiser, N. 1996, ApJ, 473, 65
+Starck, J.-L. & Murtagh, F. 2002, Astronomical Image and Data Analysis (Springer-Verlag)
+Starck, J.-L., Murtagh, F., & Bijaoui, A. 1998, Image Processing and
+Data Analysis: The Multiscale Approach (Cambridge University
+Press)
+Starck, J.-L., Pires, S., & Réfrégier, A. 2006, A&A, 451, 1139
+Van Waerbeke, L., Benjamin, J., Erben, T., et al. 2013, MNRAS, 433,
+3373
+Vicinanza, M., Cardone, V. F., Maoli, R., Scaramella, R., & Er, X.
+2018, Phys. Rev. D, 97, 023519
+Vicinanza, M., Cardone, V. F., Maoli, R., et al. 2019, Phys. Rev. D,
+99, 043534
+Vikram, V., Chang, C., Jain, B., et al. 2015, Phys. Rev. D, 92, 022006
+White, M. 2005, Astroparticle Physics, 23, 349
+Xavier, H. S., Abdalla, F. B., & Joachimi, B. 2016, MNRAS, 459,
+3693
+
+Article number, page 17 of 17
+
+
