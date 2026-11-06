@@ -102,6 +102,15 @@ inputs:
     label: Shared spherical TT lensing simulation implementation
     source: src/stages/lensing_qe_sims.py
 
+  - id: lensing_qe_sky_injection
+    type: data
+    label: Analytic shared spherical lens potential
+    source: analysis/lensing_sky_injection.py
+  - id: lensing_qe_sky_simulator
+    type: data
+    label: Shared spherical-lens TT response implementation
+    source: src/stages/lensing_qe_sky_sims.py
+
   - id: unlensed_sims
     type: data
     label: "Unlensed TQU realizations"
@@ -873,6 +882,32 @@ outputs:
       resources:
         cpus: 4
         memory: 12Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: lensing_qe_sky_response
+    type: data
+    label: TT response to shared physical spherical gradient and curl lenses
+    description: |
+      Four independent spherical TT and smooth scalar-potential seeds shared
+      across all four charts. Analytic gradient/curl deflections are applied
+      through the sphere's exponential map before projection. The potential
+      varies with seed; it is not a cosmological lensing realization. Flat
+      controls use the identical chart-projected tangent displacement.
+    inputs: [lensing_qe_theory, lensing_qe_estimator, lensing_qe_geometry, lensing_qe_sky_injection, lensing_qe_sky_simulator]
+    units:
+      seed: 0..4
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/lensing_qe_sky_sims.py
+        --seed {units.seed} --projection {units.projection}
+        --theory {inputs.lensing_qe_theory}
+        --nside 2048 --sky-lmax 4000 --res-arcmin 4
+        --lmin 300 --lmax 1200 --out {output}
+      resources:
+        cpus: 4
+        memory: 8Gi
         disk: 4Gi
         time_limit: 1h
 

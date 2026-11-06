@@ -91,7 +91,10 @@ These are controlled **grid-potential** injections; they are not realizations of
 An independent flat Gaussian TT ensemble uses the identical grid, mask and estimator.
 Its signed perturbations are computed from the Fourier derivatives of the flat field, avoiding interpolation error in the normalization control.
 The reported diagonal response ratio is the spherical injection response divided by the flat diagonal for the same injected channel.
+Its error covers TT skies only, conditional on the fixed grid-potential seed 904.
+The result depends on the potential's spatial weighting as well as on the chosen filter; it is not an intrinsic number for the chart.
 Off-diagonals are not fully matrix-calibrated leakage measurements; the flat off-diagonals are reported separately.
+A small signed overlap can cancel by symmetry even when substantial mode-by-mode gradient/curl mixing remains, so these overlaps do not establish negligible mixing.
 
 The projection-only mean field is the spherical ensemble mean minus the flat-control ensemble mean.
 For each Fourier band its squared amplitude is estimated by the cross-seed U-statistic
@@ -117,7 +120,8 @@ The twenty-seed diagonal response ratios at $30\le L<60$ are:
 | ZEA | $0.960\pm0.016$ | $0.978\pm0.020$ |
 | BICEP | $0.564\pm0.014$ | $0.741\pm0.017$ |
 
-These are measured response changes in this estimator with its unprojected isotropic filters, not biases in an SPT analysis.
+These are measured response changes in this estimator with its unprojected isotropic 300–1200 filters and fixed grid injection, not biases in an SPT analysis.
+A different filter or injected lens can change both their magnitude and the chart ranking; the local covariance formula, rather than this table, is the general result.
 A Nside4096/two-arcminute control uses four matched seeds, the same spherical harmonic realization, and the same continuous grid potential and flat Gaussian control.
 The coarse-grid Fourier coefficients are embedded with their pixel-centre phases; the stored injection coefficients agree across all sixteen matched pairs to $6.1\times10^{-20}$ after this phase conversion.
 Across all four charts and three injection bands, the diagonal response ratios increase by 0.2–2.6% on refinement.
@@ -136,6 +140,8 @@ Numerical sampling therefore contributes to the discrepancy; the remaining offse
 The gradient template amplitudes change by up to five percent.
 These comparisons fit each grid's reconstruction to the same phase-adjusted template; they are not full-map residual tests or independent fine-grid predictions.
 The predictor also approximates finite-$L$ leg support and filtering near the mask boundary; exact normalization alone does not make it an exact mean-field calculation.
+The few-percent agreement is restricted to $L<30$.
+At higher $L$ the measured SFL curl amplitude falls below the local/squeezed prediction; it must not be extrapolated to the science bands as an accurate template.
 STG's curl mean field is consistent with zero.
 
 The curl mean field is concentrated at low $L$, but there is no cutoff at ten or thirty.
