@@ -71,6 +71,26 @@ A cosmological B analysis needs that response calibration as well as a residual-
 The blanket assertion that Wiener filtering never increases leakage is supported here only for the tested noise model and isotropic weight.
 No statement about optimal mask-edge reconstruction, a cosmological B error bar, source-hole masks, anisotropic noise or real SPT data follows from these runs.
 
+## Generated numbers and suggested wording
+
+`analysis/masked_template_numbers.py:numbers()` returns a dictionary for the sole central writer, `analysis/paper_numbers.py`.
+Neither the paper nor that shared writer was edited by this thread.
+A compact addition after the unmasked operator test could read as follows, using those exported macros:
+
+> We also estimate E solely from the masked, noisy Q/U on the 1500d field, using pure-E multipoles with a narrower taper on the same observed support, followed by Wiener filtering and Q/U subtraction before B purification.
+> Over ell=900--1100, the operator-isolated residual is `\maskedTemplateResidualPercent` of the original leakage, compared with `\maskedTemplateOracleResidualPercent` for E from the full grid.
+> In two independent white-noise splits, each at 5 microkelvin-arcmin, the standard deviation of their BB cross-spectrum falls by `\maskedTemplateVarianceGain`, with paired-seed 95% bootstrap interval `\maskedTemplateVarianceGainInterval`, relative to subtracting a perfectly known ensemble leakage power.
+> This E-only, uniform-noise test does not calibrate a spherical B response; the gain disappears on the damping tail, where the remaining Wiener bias must also be removed.
+
+The standard-deviation comparison assumes the mean residual is calibrated in both arms.
+At the reference band the result also holds without residual debiasing, through `maskedTemplateRMSGain`; it does not hold without residual debiasing at high ell, through `maskedTemplateHighRMSGain`.
+A supplementary EE-amplitude-conditioned comparison gives `maskedTemplateConditionedGain`, but should not be described as the full non-diagonal R estimator.
+
+The report figure's left panel is raw projection leakage and operator-isolated noisy-template autos, not total observed-data BB.
+Its oracle, masked and local-prediction curves nearly coincide; the broad E-taper control shows the avoidable attenuation penalty.
+The right panel is the measured split-cross standard-deviation ratio, with paired-seed 95% bootstrap bars in the four summary bands.
+The first two bands overlap and their plotted points are not independent.
+
 ## Reproduction
 
 Production is the additive `masked_template_realistic` ASTRA output in the highell universe.
