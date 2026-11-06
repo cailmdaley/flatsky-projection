@@ -4,10 +4,10 @@ relative to ZEA -- this is the single-projection Jacobian of Eq. scalar_remap,
 the invariants introduced right after the itemization in sec:law).
 
 Layout: 2 rows (g, mu) x 4 columns (SFL, STG, ZEA, BICEP), one shared
-colorbar per row. The 10% mask's W=0.5 contour (contoured from the projected
-mask image cached by plot_masks_figure.py) is overlaid on every panel so the
-reader sees what the analysis footprint actually samples, versus the wider
-field shown for context.
+colorbar per row. The 1500d field's edge (RA +-50 deg, dec -70 to -42 deg) is
+drawn on every panel so the reader sees what the analysis footprint samples,
+with the W=0.5 contour of the 10% disk (contoured from the projected mask image
+cached by plot_masks_figure.py) thin and dashed behind it.
 
 Reachable sky. A grid pixel is drawn only if the sky point it names projects
 back onto it. That one test covers the cylindrical pair's pole and SFL's
@@ -74,6 +74,8 @@ TRIVIAL = {
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
 
+FIELD_HALF_RA_DEG = 50.0
+FIELD_DEC_DEG = (-70.0, -42.0)
 POLE_DEG = 0.5  # sky-frame differencing is replaced this close to the pole
 
 
@@ -185,6 +187,19 @@ def footprint(proj, cache):
     return x, y, np.where(ok, w, 0.0)
 
 
+def field_edge(proj):
+    """(dx, dy) in degrees of the 1500d field's edge on this projection's grid."""
+    a0, d0 = G.ALPHA_CENTER_DEG, G.DELTA_CENTER_DEG
+    alpha = np.linspace(-FIELD_HALF_RA_DEG, FIELD_HALF_RA_DEG, 400)
+    delta = np.linspace(*FIELD_DEC_DEG, 200)
+    ra = a0 + np.r_[alpha, np.full(200, alpha[-1]), alpha[::-1], np.full(200, alpha[0])]
+    dec = np.r_[np.full(400, delta[0]), delta, np.full(400, delta[-1]), delta[::-1]]
+    deg = core.G3Units.deg
+    px, py = flat_map(proj).angle_to_xy(core.DoubleVector(ra * deg),
+                                        core.DoubleVector(dec * deg))
+    return (np.asarray(px) - N // 2) * RES_DEG, (np.asarray(py) - N // 2) * RES_DEG
+
+
 def main():
     plt.rcParams.update(PS.rc())
     plt.rcParams.update({
@@ -245,8 +260,9 @@ def main():
                         ha="center", va="top", color=INK_SOFT,
                         fontsize=PS.LEGEND_SIZE, zorder=6)
             if cache is not None:
-                ax.contour(*fp, levels=[0.5], colors=INK, linewidths=0.6,
-                           zorder=5)
+                ax.contour(*fp, levels=[0.5], colors=INK, linewidths=0.4,
+                           linestyles=[(0, (3, 2))], zorder=5)
+            ax.plot(*field_edge(proj), color=INK, lw=0.9, zorder=5.5)
             ax.set_xlim(-LIM_DEG, LIM_DEG)
             ax.set_ylim(-LIM_DEG, LIM_DEG)
             ax.set_aspect("equal")

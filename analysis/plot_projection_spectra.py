@@ -9,12 +9,14 @@ model is compared with these spectra in `plot_model_residuals`.
           standard plot of a CMB spectrum, with the sims' input, the binned
           unlensed CAMB spectrum, as a thin line over them. The sims are
           unlensed, so the input BB is zero, and the BB panel carries the
-          lensed BB for scale.
+          lensed BB for scale. A dotted line marks white noise of 5 uK-arcmin
+          in polarization and 5/sqrt(2) in temperature, with no beam, so a
+          reader sees which scales an experiment of that depth can reach.
   bottom  TT / input, EE / input, BB / EE. The two scalar ratios share a y
           axis, because they share a shape: both track the local slope of C(l)
           and, for the sheared projections, rise above l = 3000. BB/EE is pure
           leakage, since the true B is zero, and the lensed BB/EE of the real
-          sky is drawn for scale.
+          sky is drawn for scale, with the noise over EE dotted.
 
 With zero shear STG's BB is the pipeline's own E-to-B floor, not a leakage. It
 is drawn in the BB spectrum panel, where the log axis reaches it, and left out
@@ -57,6 +59,14 @@ REF_Z = 1.0
 INPUT_Z = 3.0           # over the data, which would otherwise hide it
 DATA_Z = {"ProjSFL": 2.0, "ProjBICEP": 2.1, "ProjSTG": 2.2, "ProjZEA": 2.3}
 FIG_H = 3.5
+NOISE_P_UK_ARCMIN = 5.0
+NOISE_LS = (0, (1, 1.5))
+
+
+def noise_cl(spec):
+    """White noise power for a spectrum, in uK^2 sr."""
+    depth = NOISE_P_UK_ARCMIN / (np.sqrt(2.0) if spec == "TT" else 1.0)
+    return np.radians(depth / 60.0) ** 2
 
 
 def measured_tt():
@@ -112,6 +122,8 @@ def plot(plt, d):
         else:
             top.plot(x, (dl * cl_in)[keep], color=INPUT_COLOR, lw=REF_LW,
                      zorder=INPUT_Z)
+        top.plot(x, (dl * noise_cl(spec))[keep], color=PS.SECONDARY[1],
+                 lw=PS.LW_REF, ls=NOISE_LS, zorder=REF_Z)
         top.set_ylabel(rf"$D_\ell^{{{spec}}}$ [$\mu{{\rm K}}^2$]")
         top.set_yscale("log")
         if measured is not None:
@@ -126,6 +138,10 @@ def plot(plt, d):
                 if proj != SL.FLOOR_PROJ:
                     data_line(bottom, proj,
                               d["measured"]["BB"][j] / d["measured"]["EE"][j])
+            bottom.plot(x, (noise_cl("BB") / d["input"]["EE"])[keep],
+                        color=PS.SECONDARY[1], lw=PS.LW_REF, ls=NOISE_LS,
+                        zorder=REF_Z)
+            bottom.set_ylim(1e-4, 1.0)
             bottom.set_ylabel(r"$C_\ell^{BB} / C_\ell^{EE}$")
         else:
             bottom.axhline(1.0, color=REF_COLOR, lw=REF_LW, zorder=REF_Z)
@@ -155,7 +171,8 @@ def plot(plt, d):
     labels = [S.PROJ_LABEL[p] for p in S.PROJS]
     handles += [Line2D([], [], color=INPUT_COLOR, lw=REF_LW),
                 Line2D([], [], color=PS.SECONDARY[1], lw=PS.LW_REF, ls="--")]
-    labels += ["input", "lensed"]
+    handles.append(Line2D([], [], color=PS.SECONDARY[1], lw=PS.LW_REF, ls=NOISE_LS))
+    labels += ["input", "lensed", "noise"]
     fig.legend(handles, labels, ncol=len(labels), loc="outside upper center")
 
     FIGURE.parent.mkdir(exist_ok=True)

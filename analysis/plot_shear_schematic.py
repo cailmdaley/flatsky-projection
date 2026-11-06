@@ -1,9 +1,10 @@
 """How a map projection becomes a shear, and what the shear does to a spectrum.
 
 The paper's first figure, drawn with real numbers throughout: the
-SFL Jacobian at one sky position in SPT's 1500d field, chosen so that its g
-equals the rms shear of SFL on that field, and the unlensed EE spectrum of the
-simulations.
+SFL Jacobian at one sky position in SPT's 1500d field, chosen so that its shear
+equals the rms shear of SFL on that field, and the unlensed TT spectrum of the
+simulations. The Jacobian varies across the field, so every panel is local:
+it holds for a patch small enough that J is constant.
 
   (a) The grid's square pixels are parallelograms on the sky: the same lattice
       drawn both ways, with a sky circle and the ellipse J makes of it.
@@ -109,7 +110,7 @@ def lattice(n, pitch, T):
 def panel_sky_to_grid(ax, d):
     """(a): the grid's pixels and one sky circle, on the sky and on the grid."""
     ax.set_xlim(-1.45, 4.05)
-    ax.set_ylim(-2.45, 1.87)
+    ax.set_ylim(-1.75, 1.87)
     ax.set_aspect("equal")
     ax.axis("off")
 
@@ -130,11 +131,6 @@ def panel_sky_to_grid(ax, d):
     bottom = -1.1
     ax.text(0, bottom, "sky", ha="center", va="top")
     ax.text(cx, bottom, "grid", ha="center", va="top")
-
-    rows = [rf"$s_1 = {d['s1']:.2f}$, $s_2 = {d['s2']:.2f}$",
-            rf"$g = (s_1 - s_2)/(s_1 + s_2) = {d['g']:.2f}$"]
-    for i, row in enumerate(rows):
-        ax.text(-1.3, -1.82 - 0.38 * i, row, ha="left", va="center")
 
 
 def panel_fourier(ax, d):
@@ -204,7 +200,7 @@ def panel_spectrum(plt, ax, d, ell_th, cl):
     ax.set_yscale("log")
     ax.grid(False)
     ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(r"$D_\ell^{EE}$ [$\mu{\rm K}^2$]")
+    ax.set_ylabel(r"$D_\ell^{TT}$ [$\mu{\rm K}^2$]")
     ax.set_xticks([500, 1000, 2000, 4000])
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
     ax.xaxis.set_minor_formatter(plt.NullFormatter())
@@ -230,7 +226,7 @@ def main():
     plt.rcParams.update(PS.rc())
     th = T.load()
     ell_th = th["ell"].astype(float)
-    cl = th["unlensed_EE"]
+    cl = th["unlensed_TT"]
 
     W, H = PS.TEXT_W, 2.3
     fig = plt.figure(figsize=(W, H))

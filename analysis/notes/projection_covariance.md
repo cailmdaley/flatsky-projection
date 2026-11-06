@@ -151,7 +151,7 @@ All gathered and unit content hashes passed direct verification against their ma
 `bin_covariance_flat_controls` contains256 independent homogeneous Gaussian skies per chart.
 Their radial TT/EE/BB input means come from the production20, keeping the native sampling window; T, E and B are independent in each control.
 The masks, pure-B estimator, unit-width pseudos and mask-response decoupling match the projected ensemble.
-NaMaster1.5.1 initializes OpenMP workers with base-seed+thread, so consecutive base seeds reuse Fourier streams; `control_seed` separates bases by1024, and an executable four-thread gate rejects shared Fourier rows.
+NaMaster 2.0 initializes OpenMP workers with base-seed+thread, so consecutive base seeds reuse Fourier streams; `control_seed` separates bases by1024, and an executable four-thread gate rejects shared Fourier rows.
 No grid control was drawn with the invalid adjacent-base-seed scheme.
 
 `analysis/compare_bin_covariance.py` retains both coupled and mask-decoupled widths30/50/100 and lag separations of one, two and four bins.

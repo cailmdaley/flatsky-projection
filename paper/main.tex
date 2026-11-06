@@ -74,12 +74,11 @@ An $E$-mode template from the Jacobian and masked, noisy data lowers the scatter
 
 \section{Introduction} \label{sec:intro}
 
-Analyses across cosmology work on flat maps: they project a patch of the celestial sphere onto a Cartesian grid and replace spherical harmonics with two-dimensional Fourier modes.
-A flat map is quick to transform, simple to work with, and ready for image-based methods, and it distorts the field, because no map of the sphere onto a plane preserves both angles and areas \citep{snyder87}.
+Analyses across cosmology often make use of the flat-sky approximation, projecting a patch of the celestial sphere onto a Cartesian grid and replacing spherical harmonics with two-dimensional Fourier modes.
+Flat-sky maps are quick to transform, simple to work with, and ready for image-based methods.
 Fast Fourier transforms (FFTs) have historically been faster than spherical harmonic transforms (SHTs): an SHT band-limited at $\ell_{\rm max}$ costs $\order{\ell_{\rm max}^3}$ operations \citep{reinecke13}, against $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ for an FFT at the same resolution.
-On small fields that gap can close: \citet{carron26} report partial-sky SHTs with ``comparable or sometimes lower cost than the 2D FFT at the same resolution'' on the \SI{57}{deg\squared} SPT map of the Euclid Deep Field South, at a tolerance of $10^{-7}$.
 The plane also has simpler mathematics: harmonic modes are plane waves, a filter is a multiplication in Fourier space, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
-Images are the natural input of convolutional neural networks, although networks built on the sphere now exist \citep{cohen18, krachmalnicoff19, perraudin19, mcewen26, williamson26so3}.
+Images are the natural input of convolutional neural networks.
 
 Scalar fields have been analysed on flat maps since the early ground-based measurements.
 The quadratic estimators of CMB lensing were derived on the flat sky \citep{huokamoto02}, and the first measurements of the lensing power spectrum used them there \citep{das11, vanengelen12}.
@@ -101,6 +100,11 @@ Field-level shear inference assumes the flat sky \citep{porqueres23, zhou24}, an
 Because simulations and data pass through the same projection, this distortion does not bias the inference, but it ``makes the compression potentially suboptimal'' \citep{jeffrey25}.
 Other recent analyses of the same data work in spherical geometry \citep{fluri22, thomsen26, prat26}.
 
+These advantages come with caveats.
+On small fields the cost gap can close: \citet{carron26} report partial-sky SHTs with ``comparable or sometimes lower cost than the 2D FFT at the same resolution'' on the \SI{57}{deg\squared} SPT map of the Euclid Deep Field South, at a tolerance of $10^{-7}$.
+Convolutional networks built on the sphere now exist \citep{cohen18, krachmalnicoff19, perraudin19, mcewen26, williamson26so3}.
+And every flat map distorts the field, because no map of the sphere onto a plane preserves both angles and areas \citep{snyder87}.
+
 The distortion has measurable consequences.
 The Lambert projection ``does not preserve angles and leads to increasing bin-to-bin correlations at high $\ell$'' in SPT-3G's 2018 spectra \citep{balkenhol23}.
 In the SPT-3G D1 analysis, ``projection effects were causing excess correlation between power spectrum bins at high $\ell$, in a manner that is difficult to compute analytically'', and the analysis uses full SHTs for that reason \citep{spt3gd1}.
@@ -118,11 +122,12 @@ The CMB is our worked example, with no free parameters and a test against simula
 \begin{figure*}
   \includegraphics[width=\textwidth]{shear_schematic.pdf}
   \caption{
-    One local distortion, drawn in teal on the sky and black on the grid, for the equal-area Sanson--Flamsteed projection at a point of the SPT 1500d footprint (Sect.~\ref{subsec:sims}) where the shear equals its rms over the footprint.
-    (a) The local linear map from sky to grid, the Jacobian $J$, takes a circle to an ellipse with semi-axes $s_1 \geq s_2$ and shear $g$; the lattice is the grid's square pixels, drawn on both.
+    One local distortion, drawn in teal on the sky and black on the grid, for the equal-area Sanson--Flamsteed projection at a point of the SPT 1500d footprint (Sect.~\ref{subsec:sims}) with the footprint's rms shear.
+    The distortion varies across a footprint, so each panel holds only for a patch small enough that the distortion is constant.
+    (a) The local linear map from sky to grid, the Jacobian $J$, takes a circle to an ellipse with semi-axes $s_1 \geq s_2$; the lattice is the grid's square pixels, drawn on both.
     (b) In Fourier space with the local rotation removed, a grid ring of constant $\abs{\vbell}$ reads the sky on an ellipse of radius $\ell\rho(\chi)$.
     A grid mode at angle $\chi$ from the major axis reads a sky mode whose direction differs by $\delta\psi$.
-    (c) The input $D_\ell^{EE}$, where $D_\ell = \ell(\ell+1)C_\ell/2\pi$, and its average over mode direction at this Jacobian; at the open circle, $\ell = 2000$, that average covers the shaded band.
+    (c) The input $D_\ell^{TT}$, where $D_\ell = \ell(\ell+1)C_\ell/2\pi$, and its average over mode direction at this Jacobian; at the open circle, $\ell = 2000$, that average covers the shaded band.
   }
   \label{fig:schematic}
 \end{figure*}
@@ -163,7 +168,7 @@ The $T$ leg projects $T$ as a scalar.
 A second set of 20 skies with a white spectrum, $C_\ell = 1$, passes through the $T$ leg alone.
 A separate ensemble of \covNumProjected\ independent skies, with no BICEP maps, passes through the same pipeline for SFL, STG and ZEA; it sets band means and covariances in Sect.~\ref{sec:results}.
 
-We estimate spectra with NaMaster 1.5.1 \citep{alonso19}, in its flat-sky mode.
+We estimate spectra with NaMaster \citep{alonso19}, in its flat-sky mode.
 Flattened $Q$ and $U$ enter as a spin-two field with $B$-mode purification, and the maps of the $E/B$ and $T$ legs as spin-zero fields.
 NaMaster decouples each mask into bandpowers of width $\Delta\ell = 50$ up to $\ell = \lmaxrun$.
 The input maps carry no HEALPix pixel window, and we divide the bandpowers by the \SI{2}{\arcminute} flat-sky top-hat pixel window.
@@ -193,7 +198,8 @@ Every line comes from the same skies, so the differences between lines come from
   \caption{
     Simulated spectra on the SPT 1500d field, the mean of 20 realizations in bands of $\Delta\ell = 50$, one line per projection.
     Top row: $D_\ell$ for $TT$, $EE$ and $BB$, with the unlensed input as a thin black line and lensed $BB$ dashed for scale; the input $BB$ is zero.
-    Bottom row: $TT$ and $EE$ over the input, and $BB/EE$ with lensed $BB/EE$ dashed.
+    The dotted line is white noise of \SI{5}{\micro\kelvin}-arcmin in polarization, and \SI{5}{\micro\kelvin}-arcmin over $\sqrt{2}$ in temperature, with no beam.
+    Bottom row: $TT$ and $EE$ over the input, and $BB/EE$ with lensed $BB/EE$ dashed and the noise over $EE$ dotted.
     STG's $BB$ is the pipeline floor of Sect.~\ref{subsec:spectra} and is omitted from $BB/EE$.
   }
   \label{fig:spectra}
@@ -267,7 +273,7 @@ Figure~\ref{fig:invariants} maps $g$ and $\mu$ over our grid.
   \includegraphics[width=\textwidth]{jacobian_invariants.pdf}
   \caption{
     Local shear $g$ (top) and magnification $\mu$ (bottom) of the four projections, on a common grid centred at $(\alpha,\delta)=(\ang{0},\ang{-56})$.
-    The black contour is $W=0.5$ of the 10\% disk mask of Sect.~\ref{subsec:sims}, and hatching marks grid pixels that no point of the sky projects onto: beyond the pole or past SFL's boundary meridian.
+    The solid outline is the 1500d field and the thin dashed contour $W=0.5$ of the 10\% disk mask of Sect.~\ref{subsec:sims}; hatching marks grid pixels that no point of the sky projects onto: beyond the pole or past SFL's boundary meridian.
     The $\mu$ scale is logarithmic about $\mu=1$.
   }
   \label{fig:invariants}

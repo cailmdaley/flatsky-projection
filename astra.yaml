@@ -12,7 +12,7 @@
 # recipes to the grid unchanged. NB env-shell.sh word-splits quoted args, so
 # recipes pass scripts by path, never `python -c "..."`.
 # The environment puts the spt3g source build on PYTHONPATH and selects the
-# cvmfs py3-v5 interpreter (pymaster 1.5.1, healpy 1.16.6). Verified
+# cvmfs py3-v5 interpreter (pymaster 2.0, healpy 1.16.6). Verified
 # 2026-07-25 by running
 # `env-shell.sh python <script>`: `from spt3g import core, maps` imports,
 # maps.FlattenPol is present, and spt3g.mapspectra.pixel_window.pixwin_flatsky
