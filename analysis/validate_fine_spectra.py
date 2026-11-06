@@ -168,9 +168,8 @@ def field_scan(out):
             dl = ell*(ell+1)/(2*np.pi)*cls['bb'].mean(axis=0)
             ax.plot(ell, dl, color=color, lw=.7 if width == chosen else 1.8,
                     alpha=.7 if width == chosen else 1,
-                    label=f'{sp.PROJ_LABEL[proj]}, Δℓ={width}')
-    ax.set(xlim=(100, 6000), yscale='log', xlabel=r'$\ell$', ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]',
-           title=f'1500d field: mean of {sp.NSIMS} seeds; fine and width-50 decoupling')
+                    label=rf'{sp.PROJ_LABEL[proj]}, $\Delta\ell={width}$')
+    ax.set(xlim=(100, 6000), yscale='log', xlabel=r'$\ell$', ylabel=r'$D_\ell^{BB}$ [$\mu$K$^2$]')
     ax.legend(ncol=2, fontsize=8)
     fig.savefig(out/'field_fine_vs_50.png', dpi=180)
     plt.close(fig)
