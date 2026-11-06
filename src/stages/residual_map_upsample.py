@@ -21,7 +21,7 @@ def main():
     set_threads(2)
     import numpy as np
     import pymaster as nmt
-    from spt3g import core
+    from spt3g import core, maps  # maps registers FlatSkyMap deserialization
     from scipy.ndimage import map_coordinates
     from namaster_spectra import load_mask, atomic_save, finite_in_mask
 
