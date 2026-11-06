@@ -475,6 +475,7 @@ def main():
     M.add("DeltamaxSFL", f"\\ang{{{np.degrees(tetb['1500d', 'ProjSFL']['delta_max']):.1f}}}")
 
     prose_numbers(M, mom)
+    local_source_numbers(M)
 
     OUT.write_text(M.tex())
     print(M.tex())
@@ -1007,6 +1008,18 @@ def beam_numbers():
     print(f'Wrote {path}')
 
 
+def covariance_numbers():
+    """Write final matched-ensemble macros; partial comparisons fail closed."""
+    from bin_covariance_numbers import numbers
+
+    M = Macros()
+    for name, value in numbers().items():
+        M.add(name, value)
+    path = ROOT / 'paper' / 'covariance_numbers.tex'
+    path.write_text(M.tex())
+    print(f'Wrote {path}')
+
+
 def section5_numbers():
     """Compute Section 5 geometry macros from specified footprint charts."""
     import section5_geometry as G5
@@ -1068,11 +1081,46 @@ def spherical_numbers(M):
           pct(max(abs(r['amplitude'] - r['prediction']) for r in data['car_windows']), 1))
 
 
+def local_source_numbers(M=None):
+    """Exact spherical compact-source response at the 15 sampled field points.
+
+    These are fixed-location template-mismatch responses, not measured biases
+    of an SPT catalogue or maxima over its whole footprint.
+    """
+    import json
+    path=ROOT/'results/highell/local_source_geometry/geometry.json'
+    rows=json.loads(path.read_text())['rows']
+    own=M is None
+    if own:
+        M=Macros()
+    for proj in ('SFL','ZEA'):
+        for kind in ('point','cluster'):
+            rs=[r for r in rows if r['projection']=='Proj'+proj and r['profile']==kind and r['noise']=='cmb_white']
+            M.add('source'+proj+kind.title()+'Loss',pct(max(1-r['amplitude'] for r in rs),2))
+            central=next(r for r in rs if r['ra']==0 and r['dec']==-56)
+            relative_snr=[r['amplitude']/r['sigma_uK']*central['sigma_uK']/central['amplitude'] for r in rs]
+            M.add('source'+proj+kind.title()+'SnrLoss',pct(1-min(relative_snr),1))
+    rs=[r for r in rows if r['projection']=='ProjBICEP' and r['profile']=='point' and r['noise']=='cmb_white']
+    M.add('sourceBICEPPointLow',pct(min(r['amplitude']-1 for r in rs),1))
+    M.add('sourceBICEPPointHigh',pct(max(r['amplitude']-1 for r in rs),1))
+    M.add('sourceMetricError',sci(max(abs(r['metric_template_amplitude']-1) for r in rows),1))
+    M.add('sourcePositionArcsec',f(60*max(np.linalg.norm(r['position_arcmin']) for r in rows),3))
+    if own:
+        output=ROOT/'paper/local_source_numbers.tex'
+        output.write_text(M.tex())
+        print(M.tex())
+        print(f'Wrote {output}')
+
+
 if __name__ == "__main__":
-    if "--check-scalar-forward" in sys.argv:
+    if "--local-source-only" in sys.argv:
+        local_source_numbers()
+    elif "--check-scalar-forward" in sys.argv:
         check_scalar_forward()
     elif "--scalar-only" in sys.argv:
         scalar_numbers()
+    elif "--covariance-only" in sys.argv:
+        covariance_numbers()
     elif "--section5-only" in sys.argv:
         section5_numbers()
     elif "--window-only" in sys.argv:
