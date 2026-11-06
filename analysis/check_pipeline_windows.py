@@ -12,32 +12,37 @@ import healpy as hp
 from pipeline_windows import interpolation_power, grid_power
 
 
-def run(n=1024, nside=8192, dec_deg=-56.):
+def run(n=512, nside=8192, dec_deg=-56.):
+    from scipy.stats import qmc
     dec0 = np.deg2rad(dec_deg)
-    rng = np.random.default_rng(123)
-    # Sample many subpixel phases at the field centre. Populate only the
-    # interpolation stencil, so this test never allocates a full Nside8192 map.
-    ra = rng.uniform(-.004, .004, n*n)
-    dec = dec0 + rng.uniform(-.004, .004, n*n)
+    # Average complete longitude phases and one complete between-ring phase.
+    # A tiny random patch leaves a boundary-dependent coherent bias, especially
+    # on polar rings. Integer azimuthal modes are periodic on the full ring.
+    stencil,_=hp.get_interp_weights(nside,np.pi/2-dec0,0.)
+    ring_dec=np.pi/2-hp.pix2ang(nside,stencil)[0]
+    zlo,zhi=np.sin(ring_dec).min(),np.sin(ring_dec).max()
+    uv=qmc.Sobol(2,scramble=True,seed=123).random_base2(int(np.log2(n*n)))
+    ra=2*np.pi*uv[:,0]
+    dec=np.arcsin(zlo+(zhi-zlo)*uv[:,1])
     pixels, _ = hp.get_interp_weights(nside, np.pi/2-dec, ra)
     ids = np.unique(pixels)
     th, ph = hp.pix2ang(nside, ids)
-    east = ((ph + np.pi) % (2*np.pi) - np.pi) * np.cos(dec0)
     north = np.pi / 2 - th - dec0
     a = core.DoubleVector(ra)
     d = core.DoubleVector(dec)
     rows = []
     for ell in (1000., 3000., 4800., 6000.):
         for angle in (0., np.pi / 4, np.pi / 2):
-            qe, qn = ell * np.cos(angle), ell * np.sin(angle)
-            phase = qe * east + qn * north
+            m=round(ell*np.cos(angle)*np.cos(dec0))
+            qe, qn = m/np.cos(dec0), ell * np.sin(angle)
+            phase = m * ph + qn * north
             real = maps.HealpixSkyMap(ids, np.cos(phase), nside, False, False)
             imag = maps.HealpixSkyMap(ids, np.sin(phase), nside, False, False)
             value = np.asarray(real.get_interp_values(a, d)) + 1j*np.asarray(imag.get_interp_values(a, d))
             amp = value * np.exp(-1j*(qe*ra*np.cos(dec0) + qn*(dec-dec0)))
             measured = abs(amp.mean())**2
             predicted = float(interpolation_power(qe, qn, dec0, nside))
-            rows.append(dict(dec=dec_deg, ell=ell, angle=float(angle), actual=measured,
+            rows.append(dict(dec=dec_deg, ell=ell, angle=float(angle), qe=float(qe), qn=float(qn), actual=measured,
                              predicted=predicted, residual=measured/predicted-1))
             print(rows[-1], flush=True)
     # Rebin alone: apply the actual sample-centre offsets of an 8x8 pixel.
@@ -57,5 +62,6 @@ if __name__ == '__main__':
     p=argparse.ArgumentParser()
     p.add_argument('--out', default='/sptlocal/user/cailmdaley/pol_project/pipeline_window_control.json')
     args=p.parse_args()
+    rows=[r for dec in (-70., -56., -42., -35.) for r in run(dec_deg=dec)]
     with open(args.out,'w') as f:
-        json.dump([r for dec in (-70., -56., -42.) for r in run(dec_deg=dec)],f,indent=2)
+        json.dump(rows,f,indent=2)

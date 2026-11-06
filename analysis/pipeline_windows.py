@@ -65,6 +65,17 @@ def footprint_samples(field=True, mask=5, nside=64):
     return ra, dec, w[ids]
 
 
+def flattened_rotation(jac):
+    """Sky-to-eastward-map polarization angle after production COSMO FlattenPol.
+
+    The residual returned by shear_leakage is in the unflipped pixel frame;
+    it enters with a minus sign here. Gated against actual Q/U reprojection.
+    """
+    import shear_leakage as SL
+    phi=np.arctan2(jac[:,1,0]-jac[:,0,1],jac[:,0,0]+jac[:,1,1])
+    return phi-SL.flattening_residual(jac)
+
+
 def response(proj, ell, ell_sky, cl, spec='TT', field=True, mask=5,
              nside=64, nchi=64, band_limit=6000, aliases=False):
     """Unwindowed and windowed forward spectra using the full local Jacobian.
@@ -75,25 +86,20 @@ def response(proj, ell, ell_sky, cl, spec='TT', field=True, mask=5,
     """
     import geometry as G
     import spectra as S
-    import shear_leakage as SL
     ra, dec, w = footprint_samples(field, mask, nside)
     jac = G.jacobian(proj, ra, dec)
     det = np.linalg.det(jac)
     scale = w * det**2 / np.sum(w * det)
     chi = (np.arange(nchi) + .5) * 2 * np.pi / nchi
     u = np.stack([np.cos(chi), np.sin(chi)], -1)
-    # Plane principal axes differ from the sky axes by the polar rotation.
-    polar_angle = np.arctan2(jac[:, 1, 0] - jac[:, 0, 1], jac[:, 0, 0] + jac[:, 1, 1])
-    residual = SL.flattening_residual(jac)
+    rotation = flattened_rotation(jac)
     def evaluate(k, out_angle):
         q = np.einsum('pji,cj->pci', jac, k)
         qnorm = np.linalg.norm(q, axis=-1)
         power = np.interp(qnorm, ell_sky, cl, left=0, right=0)
         power *= qnorm <= band_limit
         if spec != 'TT':
-            # COSMO Stokes convention and eastward plane x: FlattenPol's
-            # residual enters with the opposite sign to flattening_residual.
-            angle = np.arctan2(q[..., 1], q[..., 0]) + polar_angle[:, None] - out_angle[None, :] - residual[:, None]
+            angle = np.arctan2(q[..., 1], q[..., 0]) + rotation[:, None] - out_angle[None, :]
             spin = np.sin(2 * angle)**2
             power *= spin if spec == 'BB' else 1 - spin
         win = interpolation_power(q[..., 0], q[..., 1], np.deg2rad(dec)[:, None])

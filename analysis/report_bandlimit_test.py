@@ -34,6 +34,7 @@ def main():
     plt.rcParams.update(PS.rc())
     data=records()
     alias=np.load('/sptlocal/user/cailmdaley/pol_project/pipeline_aliases.npz')
+    summary={}
     fig,axes=plt.subplots(2,4,figsize=(11,5),sharex=True,layout='constrained')
     for j,proj in enumerate(S.PROJS):
         if proj not in data: continue
@@ -48,6 +49,19 @@ def main():
                 for lo,hi in ((4000,4500),(4500,4800),(4800,5400),(5400,5800)):
                     sel=(ell>=lo)&(ell<hi)
                     print(proj,spec,cutoff,lo,hi,'mean/input_EE',float(np.mean(d[f'{spec.lower()}_{cutoff}'][sel]/S.theory('unlensed_EE')[sel])),flush=True)
+            for lo,hi in ((4000,4500),(4500,4800),(4800,5400)):
+                sel=(ell>=lo)&(ell<hi)
+                upper=d[f'{spec.lower()}_6000'][sel]
+                lower=d[f'{spec.lower()}_5000'][sel]
+                model_delta=np.interp(ell[sel],alias['ell'],
+                    alias[f'6000_{proj}_{spec}_windowed']+alias[f'6000_{proj}_{spec}_alias']
+                    -alias[f'5000_{proj}_{spec}_windowed']-alias[f'5000_{proj}_{spec}_alias'])
+                rec=dict(retained=float(lower.mean()/upper.mean()),
+                         delta_over_upper=float((upper-lower).mean()/upper.mean()),
+                         predicted_delta_over_upper=float(model_delta.mean()/upper.mean()))
+                summary[f'{proj}_{spec}_{lo}_{hi}']=rec
+                print('paired cutoff change',proj,spec,lo,hi,rec,flush=True)
+            ax.axvspan(5400,6000,color='.5',alpha=.08,lw=0)
             ax.set_xlim(3500,6000)
             ax.set_yscale('log')
             ax.set_ylabel(rf'$C^{{{spec}}}/C^{{EE,\rm sky}}$ ({S.PROJ_LABEL[proj]})')
@@ -56,9 +70,12 @@ def main():
             else: ax.set_ylim(1e-6,2)
     from matplotlib.lines import Line2D
     fig.legend([Line2D([],[],color='#b13c4e'),Line2D([],[],color='#276f9c'),Line2D([],[],color='.3',ls='--')],
-               ['Sky cutoff 6000','Sky cutoff 5000','Local-affine alias model'],ncol=3,loc='outside upper center')
+               ['Sky cutoff 6000','Sky cutoff 5000',r'Local-affine alias model ($\ell<5400$)'],ncol=3,loc='outside upper center')
     for ext in ('png','pdf'):
         fig.savefig(f'/sptlocal/user/cailmdaley/pol_project/pipeline_bandlimit_test.{ext}',dpi=160)
     plt.close(fig)
+    import json
+    Path('/sptlocal/user/cailmdaley/pol_project/pipeline_bandlimit_summary.json').write_text(
+        json.dumps(summary,indent=2))
 
 if __name__=='__main__': main()
