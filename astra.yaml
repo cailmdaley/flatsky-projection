@@ -1115,6 +1115,30 @@ outputs:
 # DECISIONS
 # ---------------------------------------------------------------------------
 # Additive paired band-limit intervention; existing outputs are unchanged.
+  - id: residual_pure_e_test
+    type: data
+    label: Pure-E estimator sampling and mask-product controls
+    description: |
+      Identical periodic pure-E fields sampled at native or twice-finer
+      resolution before the production mask and pure-B estimator. Separate
+      cutoff4000/6000 interventions isolate additive estimator contamination
+      from spherical reprojection. The production workspace is a diagnostic
+      normalization only for the fine-grid leg.
+    inputs: [field_flatsky_masks, field_coupling]
+    units:
+      seed: [0, 1, 2, 3]
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_pure_e_test.py
+        --masks {inputs.field_flatsky_masks} --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 3Gi
+        time_limit: 1h
+
   - id: window_bandlimit_test
     type: data
     label: Paired sky-bandlimit test of grid aliasing
