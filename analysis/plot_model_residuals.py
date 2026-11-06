@@ -61,7 +61,7 @@ FIGURE = ROOT / "figures" / "model_residuals.pdf"
 SPECTRA = PPS.SPECTRA
 ELL_MIN, ELL_MAX = PPS.ELL_MIN, PPS.ELL_MAX
 BAND_LIMIT = S.LMAX     # 6000: the run's own harmonic band limit
-Y_LIM = {'TT': (0.98, 1.02), 'EE': (0.98, 1.02), 'BB': (0.97, 1.16)}
+Y_LIM = {'TT': (0.98, 1.02), 'EE': (0.98, 1.02), 'BB': (0.97, 1.24)}
 BAND_ALPHA = 0.25
 FIG_H = 2.2
 

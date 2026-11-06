@@ -10,7 +10,7 @@ import healpy as hp
 from spt3g import core, maps
 import geometry as G
 import spectra as S
-from pipeline_windows import interpolation_power, grid_power, flattened_rotation
+from pipeline_windows import interpolation_power, grid_power, flattened_rotation, spin_angle
 
 
 def check(proj, ell=4800., angle=.37, n=32, ra0=35., dec0=-60.):
@@ -93,9 +93,10 @@ def check_spin(proj='ProjSFL', ra0=38., dec0=-62., angle=.37, ell=3000., n=24):
     jc=G.jacobian(proj,[ra0],[dec0])
     qc=jc[0].T@k
     delta=SL.flattening_residual(jc)[0]
-    predicted=np.arctan2(qc[1],qc[0])+flattened_rotation(jc)[0]
+    predicted=spin_angle(qc[None,None,:],flattened_rotation(jc),np.array([angle]))[0,0]
+    # Gate the exact relative-angle expression used by response().
     # Polarization axes are modulo pi/2 when inferred from U/Q.
-    error=(measured-predicted+np.pi/4)%(np.pi/2)-np.pi/4
+    error=(measured-angle-predicted+np.pi/4)%(np.pi/2)-np.pi/4
     row=dict(proj=proj,ra=ra0,dec=dec0,ell=ell,angle=angle,
              spin_error_deg=float(np.rad2deg(error)),delta_deg=float(np.rad2deg(delta)))
     print(row,flush=True)
@@ -112,7 +113,8 @@ if __name__=='__main__':
     rows += check('ProjZEA',ra0=20.,dec0=-35.,n=64)
     spin=[check_spin(ra0=ra,dec0=dec,angle=angle)
           for ra,dec in ((38.,-62.),(45.,-48.)) for angle in (.37,.8)]
-    spin += [check_spin('ProjBICEP')]
+    spin += [check_spin('ProjBICEP'),check_spin(ra0=-38.,dec0=-62.),
+             check_spin('ProjZEA',ra0=40.,dec0=-70.),check_spin('ProjSTG')]
     directory='/sptlocal/user/cailmdaley/pol_project/'
     with open(directory+'pipeline_projector_control.json','w') as f:
         json.dump(rows,f,indent=2)

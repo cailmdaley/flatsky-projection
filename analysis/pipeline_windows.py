@@ -76,6 +76,15 @@ def flattened_rotation(jac):
     return phi-SL.flattening_residual(jac)
 
 
+def spin_angle(q, rotation, out_angle):
+    """Flattened polarization angle relative to the observed Fourier direction.
+
+    q has shape (position, mode, 2); a folded image keeps the observed
+    out_angle, not the direction of its unsampled source mode.
+    """
+    return np.arctan2(q[...,1],q[...,0])+rotation[:,None]-out_angle[None,:]
+
+
 def response(proj, ell, ell_sky, cl, spec='TT', field=True, mask=5,
              nside=64, nchi=64, band_limit=6000, aliases=False):
     """Unwindowed and windowed forward spectra using the full local Jacobian.
@@ -99,7 +108,7 @@ def response(proj, ell, ell_sky, cl, spec='TT', field=True, mask=5,
         power = np.interp(qnorm, ell_sky, cl, left=0, right=0)
         power *= qnorm <= band_limit
         if spec != 'TT':
-            angle = np.arctan2(q[..., 1], q[..., 0]) + rotation[:, None] - out_angle[None, :]
+            angle = spin_angle(q, rotation, out_angle)
             spin = np.sin(2 * angle)**2
             power *= spin if spec == 'BB' else 1 - spin
         win = interpolation_power(q[..., 0], q[..., 1], np.deg2rad(dec)[:, None])
@@ -132,7 +141,9 @@ def effective_window(spec='EE', field=False, leg=0):
     This is R_window C_input / R C_input, not a universal transfer function for
     an unknown sky. Aliases are intentionally not deconvolved. STG's B is an
     estimator floor with no nonzero geometric BB model; its EE window is used
-    as a plotting convention, not claimed to calibrate the floor.
+    as a plotting convention, not claimed to calibrate the floor. Above the
+    axis Nyquist (5400) the full-circle model is invalid; correction=1 leaves
+    those production bins unchanged rather than applying an invalid response.
     """
     import hashlib
     import os
@@ -171,6 +182,7 @@ def effective_window(spec='EE', field=False, leg=0):
             # rather than dividing the integrand before averaging the bin.
             w = (w * old_fine).reshape(S.NBINS, -1).mean(-1) / old_bin
             out[mask, j] = np.divide(w, b, out=np.ones_like(w), where=b != 0)
+    out[..., S.ELL >= 5400] = 1.
     if field:
         out = out[0]
     directory.mkdir(parents=True, exist_ok=True)

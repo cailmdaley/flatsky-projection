@@ -84,12 +84,14 @@ def main():
                 outputs[f'{name}_{spec}_{proj}_ratio_total']=ratio_total
                 if spec=='BB' and not stg_floor:
                     floor=measured[S.PROJS.index('ProjSTG')]
-                    # Above 4800 STG itself contains aliases, not a shared floor.
+                    # This is a partial diagnostic subtraction, not a calibrated
+                    # floor model: ZEA's additive floor is larger than STG's.
+                    # Above 4800 STG itself contains aliases.
                     sub=np.where(S.ELL[None,:]<4800,(measured[j]-floor)/total,np.nan)
                     outputs[f'{name}_{spec}_{proj}_ratio_floor_subtracted']=sub
                     for lo,hi in ((3000,4000),(4000,4500),(4500,4800)):
                         r=sub[:,(S.ELL>=lo)&(S.ELL<hi)].mean(-1)
-                        print(f' paired STG subtraction {lo}-{hi}: {r.mean():.6f} +/- {r.std(ddof=1)/np.sqrt(len(r)):.6f}',flush=True)
+                        print(f' partial paired STG subtraction {lo}-{hi}: {r.mean():.6f} +/- {r.std(ddof=1)/np.sqrt(len(r)):.6f}',flush=True)
             outputs[f'{name}_{spec}_correction']=np.array(correction)
         np.savez(args.out,**outputs)
     for name in ('field','disk5'):

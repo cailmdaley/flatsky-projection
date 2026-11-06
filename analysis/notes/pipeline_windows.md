@@ -60,6 +60,8 @@ It is not a transferable diagonal response for an arbitrary unknown sky.
 STG has no nonzero geometric BB spectrum against which to define this ratio.
 Its BB loader uses its EE window only as a presentation convention; neither its estimator floor nor aliased B is claimed to be calibrated by that operation.
 The EB leg uses a scalar response with the simulated E spectrum.
+Bins above the axis Nyquist are left unchanged by the loader (correction factor 1), because a full-circle response is invalid for Fourier annuli sampling only square corners.
+They are not claimed to be calibrated.
 
 ## Aliasing
 
@@ -78,7 +80,9 @@ Only complete Fourier circles, \(\ell<5400\), are predicted by the current angul
 For comparison with production, both windowed and aliased local spectra are normalized together as \(R_{\rm reference}(C_{\rm local,window}+C_{\rm local,alias})/C_{\rm local,base}\).
 Aliasing remains an additive prediction in this diagnostic, never part of the multiplicative loader correction.
 For conformal STG, the BB base is exactly zero and the alias term uses the normalization of its EE base.
-A paired STG-floor subtraction is reported only below4800; subtracting STG above that limit would remove its own alias signal and double-count the correction.
+A partial paired STG subtraction is reported only below 4800; subtracting STG above that limit would remove its own alias signal and double-count the correction.
+STG's additive floor is not a calibrated common floor: ZEA retains a positive excess after this partial subtraction, so its BB validation range remains below 4000.
+At 4800–5400 the paired cutoff difference, rather than the absolute BB/(window+alias) ratio, is the cleaner alias test, because the floor contributes a few percent of the latter's denominator.
 
 An isotropic pre-deconvolution of the alms would invert neither the direction-dependent ring response nor the map-frame average exactly.
 It would also increase the high-frequency power available to alias.
@@ -88,7 +92,7 @@ It offers no precision gain over this known-input effective correction; direct e
 
 Run scientific scripts with `~/code/python/spt3g_software/build/env-shell.sh python <script>` and bounded OpenMP/BLAS threads.
 
-- `analysis/check_pipeline_windows.py` synthesizes periodic azimuthal sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator at declinations−70, −56, −42 and−35degrees.
+- `analysis/check_pipeline_windows.py` synthesizes periodic azimuthal sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator at declinations of −70, −56, −42 and −35 degrees.
   It phase-averages full longitude rings and one interval between adjacent rings using a deterministic low-discrepancy quadrature; the eastward wavenumber is rounded to an integer azimuthal mode so that the sky is periodic.
   A small random patch is unsuitable because incomplete longitudinal phases bias the coherent mean, even at large sample count.
 - `analysis/check_projected_windows.py` passes known plane-wave spectra through actual `maps.reproj_map` in every paper projection at two off-centre positions, varying interpolation and rebin independently.

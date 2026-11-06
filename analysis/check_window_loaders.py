@@ -16,6 +16,7 @@ if __name__=='__main__':
             broadcast=window[:,None,:] if field else window[:,:,None,:]
             np.testing.assert_allclose(corrected*broadcast,raw,rtol=2e-15,atol=0)
             assert np.isfinite(window).all() and (window>0).all()
+            assert (window[...,S.ELL>=5400]==1).all(), 'Do not correct square-corner bins'
             print(field,spec,'roundtrip passed',raw.shape,flush=True)
     w=S.simulation_window('EE',field=True)
     k=np.argmin(abs(S.ELL-4775))
