@@ -1177,7 +1177,7 @@ outputs:
         time_limit: 2h
         per_unit:
           - when: {nside: 8192}
-            memory: 12Gi
+            memory: 8Gi
 
   - id: local_source_sims
     type: data
