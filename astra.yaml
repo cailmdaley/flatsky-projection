@@ -1133,6 +1133,38 @@ outputs:
         disk: 12Gi
         time_limit: 3h
 
+  - id: local_source_geometry
+    type: data
+    label: Local compact-source matched-filter geometry and affine noise controls
+    recipe:
+      command: >-
+        mkdir -p {output} &&
+        bash env.sh python3 analysis/local_measurements.py --out {output}/geometry.json
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 1h
+
+  - id: local_source_sims
+    type: data
+    label: Spherical CMB compact-source matched-filter injections on the 1500d field
+    description: |
+      Exact spherical beam-sized and beta-model source profiles on SFL, ZEA,
+      BICEP, plus a common beam-smoothed HEALPix CMB and 18 uK arcmin noise.
+      Source profiles bypass intermediate HEALPix pixelization intentionally.
+    units:
+      seed: 0..16
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/local_source_sims.py
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 2Gi
+        time_limit: 2h
+
   - id: spherical_grid_alias_test
     type: data
     label: Paired out-of-band spherical grid injection
