@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from paper_style import PROJ_COLORS, PROJ_MARKERS
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT/'results/highell'
@@ -133,7 +134,8 @@ def figure(summary):
     plt.rcParams.update({'font.size': 10, 'axes.labelsize': 11,
                          'xtick.labelsize': 10, 'ytick.labelsize': 10,
                          'legend.fontsize': 10, 'text.usetex': False})
-    colors = dict(TAN='#bd544a', STG='#687ba5', ZEA='#7b9b65')
+    colors = dict(TAN='#bd544a', STG=PROJ_COLORS['ProjSTG'], ZEA=PROJ_COLORS['ProjZEA'])
+    markers = dict(TAN='o', STG=PROJ_MARKERS['ProjSTG'], ZEA=PROJ_MARKERS['ProjZEA'])
     fig, axes = plt.subplots(2, 2, figsize=(9, 6), sharex=True)
     for ax, key, label in zip(axes.flat,
             ('smooth_third', 'reduced_skewness', 'wavelet_l1', 'peaks_gt_2sigma'),
@@ -144,7 +146,7 @@ def figure(summary):
             ax.errorbar([r['diameter'] for r in rows],
                         [100*r['statistics'][key]['bias'] for r in rows],
                         yerr=[100*r['statistics'][key]['se'] for r in rows],
-                        color=color, marker='o', ms=4, lw=1, capsize=2, label=chart)
+                        color=color, marker=markers[chart], ms=4, lw=1, capsize=2, label=chart)
         ax.axhline(0, color='.7', lw=.7)
         ax.set_ylabel(label)
         ax.spines[['top', 'right']].set_visible(False)
