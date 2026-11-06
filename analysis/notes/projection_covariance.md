@@ -95,6 +95,41 @@ A broad mean response therefore does not, by itself, imply broad bin correlation
 The remapping does change the diagonal variance through its angular anisotropy; the variance uses an angular average of **squared** directional power, not the square of its average.
 Spatially varying geometry and the survey window can introduce off-diagonal covariance, which requires their retained position and directional dependence.
 
+## A leading local, finite-annulus prediction
+
+The full amplitude operator is not needed to obtain a controlled leading approximation that retains more information than $R$.
+Write the position- and direction-dependent native map power as $P(\boldsymbol{x},\boldsymbol{k})$.
+It includes the full local Jacobian, the signed polarization rotation, HEALPix interpolation at $J^T\boldsymbol{k}$, and pixel averaging in the map frame.
+For locally stationary covariance and nearby Fourier modes,
+
+$$
+K(\boldsymbol{k},\boldsymbol{k}')\simeq
+\mathcal F_{\boldsymbol{x}}\!\left[W^2(\boldsymbol{x})
+P\!\left(\boldsymbol{x},\frac{\boldsymbol{k}+\boldsymbol{k}'}2\right)\right]
+(\boldsymbol{k}-\boldsymbol{k}').
+$$
+
+Wick's theorem squares this Fourier kernel before the annular sums.
+For narrow bins of common width $\Delta$, locally straight annulus boundaries reduce the radial pair-overlap factor to
+
+$$
+T_\Delta(d_\parallel-s)=\max\!\left(0,1-\frac{|d_\parallel-s|}{\Delta}\right),
+$$
+
+where $s$ is the separation of bin centres and $d_\parallel=\boldsymbol d\cdot\widehat{\boldsymbol k}$.
+Thus the relevant pair sum is the direction average of $|\mathcal F[W^2P]|^2 T_\Delta$, not an average of $P$ propagated through $R$.
+The wide-bin limit recovers $W^4\langle P^2\rangle$, while finite bins retain the redistribution of that variance among neighbouring annuli.
+`analysis/local_bin_covariance.py` implements the pair sums and their ratios to a homogeneous control with the same radial mean.
+Its spatial arrays are reflected from native westward pixel indices into the eastward coordinates used by the analytical Jacobian before their Fourier transform.
+Missing that reflection changes the finite-bin answer even though the wide-bin limit is unchanged.
+
+This is a **leading approximation for coupled spectra**, not an exact Gaussian covariance for the purified, mask-decoupled estimator.
+It omits pure-B boundary terms, reciprocal-grid alias images, higher local-stationarity corrections and annulus curvature.
+The control uses the locally constant radial spectrum approximation over a mode-coupling width.
+STG BB has no geometrical signal in this model and is excluded.
+`analysis/check_local_bin_covariance.py` tests its finite-bin overlap against exact discrete Wick annulus-pair counts for an amplitude-modulated white Gaussian field, and checks that uniform-mask anisotropic power enlarges diagonal variance without correlating disjoint annuli.
+Projected-sky validation and the final numerical comparison remain pending; the test alone does not validate these approximations for the physical pipeline.
+
 ## Existing field measurement
 
 `analysis/projection_covariance.py` reads the finest-spectrum thread's exact rebinnings of the production 20 skies.
@@ -153,7 +188,9 @@ The covariance revisions broaden cosmological parameter uncertainties by up to 1
 Section IV.A says projection-induced correlations fall to at most 20% only for separations of at least $\Delta\ell=100$; it uses wider bins for the null tests.
 Figure8's caption also states that the minimum-variance TT/TE/EE data bandpowers are correlated by **up to40% for neighboring bins**.
 This provides a quantitative comparison target within its multipole range, not a universal amplitude for every bin, and does not identify $R$ as its source.
-`analysis/compare_bin_covariance.py` explicitly includes2000–3000 alongside the extension to4800.
+Table III uses bins of width100 above2000, whereas its lower-multipole bins have width50.
+Thus the matched-binning comparison over2000–3000 uses our width100 results; our width50 extension to4800 is a separate diagnostic.
+`analysis/compare_bin_covariance.py` explicitly includes2000–3000 alongside the extension to4800, with both widths retained.
 
 Camphuis et al., arXiv:2506.20707, Section III.B, explicitly says excess high-$\ell$ bin correlations that were difficult to compute analytically motivated the move to full spherical harmonic transforms.
 It does not provide a quantitative excess-correlation curve in that discussion.
