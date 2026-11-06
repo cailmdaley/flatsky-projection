@@ -88,7 +88,8 @@ def measure(out, extra=None):
         from validate_fine_spectra import read_matrix, decouple_many
         import spectra as sp
         for proj in PROJS:
-            paths = sorted(extra.glob(f'pseudo_{proj}_seed*_mask0.npz'))
+            paths = sorted(path for directory in extra
+                           for path in directory.glob(f'pseudo_{proj}_seed*_mask0.npz'))
             raw = [np.load(path) for path in paths]
             counts = raw[0]['counts']
             for width in (30, 50, 100):
@@ -162,9 +163,14 @@ def invalid_radial_propagation(out):
                     for spec in ('TT', 'EE')}
     rows, arrays = [], {}
     ell = np.arange(25, 6000, 50.)
+    # Average response rows over the output annulus before propagating.
+    # A single ell has quadrature spikes that are irrelevant to a bandpower.
+    fine_ell = np.arange(2.5, 6000, 5.)
     for proj in PROJS:
-        r = sl.coupling_matrix(mom, 0, sp.PROJS.index(proj), ell, sky_ell,
-                               band_limit=6000)
+        fine_r = sl.coupling_matrix(mom, 0, sp.PROJS.index(proj), fine_ell, sky_ell,
+                                    band_limit=6000, n_chi=256)
+        r = {key: val.reshape(120, 10, -1).mean(axis=1) for key, val in fine_r.items()}
+        del fine_r
         for spec, block, source in [('tt', 'TT<-TT', 'TT'), ('ee', 'EE<-EE', 'EE'), ('bb', 'BB<-EE', 'EE')]:
             matrix = r[block]
             cov = (matrix*sky_variance[source][None, :]) @ matrix.T
@@ -185,7 +191,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out', type=Path, default=ROOT/'results/highell/bin_correlation_diagnostic')
     p.add_argument('--radial', action='store_true')
-    p.add_argument('--extra', type=Path)
+    p.add_argument('--extra', type=Path, nargs='+',
+                   help='Unit-width MC directories to pool (replaces the 20-sky ensemble)')
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out/'counterexample.json').write_text(json.dumps(counterexample(), indent=2)+'\n')

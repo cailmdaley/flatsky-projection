@@ -31,6 +31,17 @@ R_{b\lambda}=\operatorname{Tr}(Q_b A P_\lambda A^T).
 $$
 
 Those traces do not specify $K$ or the quadratic traces needed for the covariance.
+For an exact amplitude-derived response and full-sky sample powers $\widehat C_\lambda$, isotropy gives $\mathbb E[p\mid\widehat C]=R\widehat C$.
+The law of total covariance then makes the omitted term explicit:
+
+$$
+\operatorname{Cov}(p)=R\operatorname{Cov}(\widehat C)R^T
++\mathbb E[\operatorname{Cov}(p\mid\widehat C)].
+$$
+
+The conditional covariance matrix is positive semidefinite, but its **off-diagonal entries can be negative** and cancel correlations in the first term.
+Thus the propagated radial sample variance is a real contribution in this exact construction, not the complete answer; a broad $R$ does not establish the sign or size of the net bin correlation.
+The counterexample below demonstrates both this incompleteness and the cancellation.
 The paper's local-Jacobian $R$ makes further averages over footprint position and Fourier direction, so it contains still less information.
 Composing this mean response with a mask mean-coupling matrix cannot reconstruct what was averaged out.
 The actual mask must be included in the amplitude operator, or its equivalent two-point function, **before** the Wick contractions.
@@ -104,6 +115,12 @@ These numbers are preliminary, generated in `results/highell/bin_correlation_dia
 STG's BB lies at the numerical floor and does not measure shear-induced B covariance.
 The SFL BB trend is visible, but these decoupled TT/EE products do not reproduce the large positive ZEA correlations described by SPT.
 Neither an all-off-diagonal average nor this preliminary table settles agreement with SPT's different estimator and mask.
+An average over **all** off-diagonal entries is particularly unsuitable for excluding local band correlations: with $N$ bins and correlation $r$ only between immediate neighbours, that average is just $2r/N$.
+For 86 bins, even adjacent correlation 0.2 contributes only 0.0047 to the all-off-diagonal average.
+
+`analysis/check_coupled_correlations.py` checks the estimator distinction on the same 20 skies.
+Without mask decoupling, ZEA's high-$\ell$ adjacent correlation is $0.092\pm0.060$ for EE and $0.213\pm0.053$ for pure BB; SFL gives $0.134\pm0.045$ and $0.261\pm0.058$.
+Mask decoupling thus matters numerically, but these coupled products still do not establish a large positive ZEA EE excess over a matched Gaussian control.
 
 ## The SPT references
 
@@ -121,6 +138,7 @@ The downloaded PDFs and searchable text are under `/sptlocal/user/cailmdaley/pol
 
 Replace the sentence expecting the wide rows of $R$ to contribute to correlations with the distinction between a mean-spectrum response and a mode-amplitude response.
 The quoted ordinary-sky conclusion from a disk-averaged off-diagonal statistic should not be read as an isotropic Gaussian covariance prescription for the 1500d field.
+The all-off-diagonal average can be small even when adjacent bands are substantially correlated, so it should not support the phrase "no more correlated than those of an ordinary sky" without a matched control.
 A defensible replacement is:
 
 > Linear reprojection preserves the Gaussianity of the unlensed input, but its covariance on the plane need not be statistically homogeneous.

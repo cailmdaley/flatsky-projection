@@ -663,6 +663,74 @@ outputs:
         disk: 4Gi
         time_limit: 4h
 
+  - id: bin_covariance_sims
+    type: data
+    label: "Independent projected field covariance skies"
+    description: |
+      256 independent skies in addition to the four pilot skies, with identical
+      production geometry and unit-width spectra. No maps are retained.
+      Auto-spectrum covariance only: T and E are independent and true B is zero.
+    inputs: [field_flatsky_masks]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    units:
+      seed: 4..260
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_sims.py
+        --masks {inputs.field_flatsky_masks} --seed {units.seed}
+        --nside {decisions.intermediate_nside}
+        --interpolation {decisions.interpolation}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 8
+        memory: 24Gi
+        disk: 4Gi
+        time_limit: 4h
+
+  - id: bin_covariance_control_spectra
+    type: data
+    label: "Matched homogeneous covariance control spectra"
+    description: |
+      The mean TT/EE/BB spectra of the production 20 field skies, mask-decoupled
+      at width50, retaining their native sampling window. Used only to draw
+      homogeneous Gaussian controls with matched radial spectra.
+    inputs: [fine_field_pseudo_spectra, field_coupling]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_controls.py prepare
+        --pseudos {inputs.fine_field_pseudo_spectra}
+        --workspaces {inputs.field_coupling}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
+  - id: bin_covariance_flat_controls
+    type: data
+    label: "Matched homogeneous field covariance ensemble"
+    description: |
+      256 independent homogeneous Gaussian flat-sky skies per projection,
+      matched to the observed radial TT/EE/BB powers, through identical
+      field masks and pure-B unit-width estimators. This control separates
+      ordinary mask covariance from projection-induced inhomogeneity/anisotropy.
+    inputs: [bin_covariance_control_spectra, field_flatsky_masks]
+    units:
+      batch: 0..16
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/bin_covariance_controls.py simulate
+        --spectra {inputs.bin_covariance_control_spectra}
+        --masks {inputs.field_flatsky_masks} --batch {units.batch}
+        --batch-size 16 --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 4
+        memory: 4Gi
+        disk: 4Gi
+        time_limit: 1h
+
   # Scalar measurements share geometry and binning with the polarization suite.
   - id: scalar_white_alms
     type: data
