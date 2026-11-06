@@ -1,0 +1,73 @@
+{
+  "ell_response": 2950.0,
+  "response": {
+    "disk5": {
+      "fractional_difference": -0.00020455467245927839,
+      "prediction": -0.0007480540585427242,
+      "sfl_mean": 0.8761798866308389,
+      "sphere_mean": 0.8763591499897218,
+      "sfl_sector_min": 0.8591287135604967,
+      "sfl_sector_max": 0.8910558788677986,
+      "sector_model_max_abs_1000_3000": 0.0018282923457011435
+    },
+    "field1500d": {
+      "fractional_difference": 0.0010122611866498765,
+      "prediction": 0.00042051304896451036,
+      "sfl_mean": 0.8772738102533155,
+      "sphere_mean": 0.876386678034644,
+      "sfl_sector_min": 0.8522229521036262,
+      "sfl_sector_max": 0.8972369795212392,
+      "sector_model_max_abs_1000_3000": 0.002527464489953113
+    }
+  },
+  "b_diagnostic": {
+    "disk5_ProjZEA": {
+      "sfl_base": 0.00029010754684984325,
+      "sfl_beam": 0.0002815419656851118,
+      "sphere_base": 0.00033593302268858865,
+      "sphere_beam": 0.00032626401961675277,
+      "mismatch": 5.254833641541932e-06,
+      "differential": 9.569213065004172e-09,
+      "cross_mismatch": -7.454317597399274e-08,
+      "cross_sfl_base": 7.65138117589531e-08,
+      "cross_sphere_base": 1.510569877329463e-07,
+      "mismatch_power_change": -1.395171388829813e-07
+    },
+    "disk5_ProjSTG": {
+      "sfl_base": 3.063561063738551e-06,
+      "sfl_beam": 2.902864145099103e-06,
+      "sphere_base": 1.6847485834319437e-07,
+      "sphere_beam": 1.6035907308202668e-07,
+      "mismatch": 3.0849423927183876e-06,
+      "differential": 3.884075526706304e-09,
+      "cross_mismatch": -8.5645258990994e-08,
+      "cross_sfl_base": -8.097729429063298e-08,
+      "cross_sphere_base": 4.667964700360877e-09,
+      "mismatch_power_change": -1.674064424552817e-07
+    },
+    "field1500d_ProjZEA": {
+      "sfl_base": 0.000336334916452743,
+      "sfl_beam": 0.0003260017285032361,
+      "sphere_base": 0.00039420029591636974,
+      "sphere_beam": 0.00038290748179624617,
+      "mismatch": 5.773517215187281e-06,
+      "differential": 1.3604213395033656e-08,
+      "cross_mismatch": -1.701645666370661e-08,
+      "cross_sfl_base": -1.1389403574761711e-07,
+      "cross_sphere_base": -9.687757908391105e-08,
+      "mismatch_power_change": -2.0428699932379564e-08
+    },
+    "field1500d_ProjSTG": {
+      "sfl_base": 2.5084906011137653e-06,
+      "sfl_beam": 2.366537705997718e-06,
+      "sphere_base": 1.7374645740707968e-07,
+      "sphere_beam": 1.65770548963605e-07,
+      "mismatch": 2.5341784170306242e-06,
+      "differential": 3.6610601990217185e-09,
+      "cross_mismatch": -7.59895308499349e-08,
+      "cross_sfl_base": -7.153454217890737e-08,
+      "cross_sphere_base": 4.45498867102751e-09,
+      "mismatch_power_change": -1.483180015008481e-07
+    }
+  }
+}

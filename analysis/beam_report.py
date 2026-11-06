@@ -5,6 +5,8 @@ import json
 import sys
 
 import numpy as np
+# Load NaMaster's CFITSIO before spt3g (via geometry), which loads an older ABI.
+import pymaster as nmt
 
 import section5_geometry as G5
 
@@ -39,7 +41,6 @@ def target_model(ell,chi):
 
 def b_diagnostics():
     """Use the production pure-B workspaces and retain all cross terms."""
-    import pymaster as nmt
     sys.path.insert(0, str(ROOT/'src'/'stages'))
     from beam_reprojection import mask_slices
     lo=np.arange(0.,6000.,50.)
@@ -156,6 +157,7 @@ def report(data,model,bdiag):
                   ('sfl_base','sfl_beam','sphere_base','sphere_beam','mismatch','differential')}
             for other in ('mismatch','sfl_base','sphere_base'):
                 vals['cross_'+other]=float(bdiag[p+'cross_'+other][3,keep].mean()/ee)
+            vals['mismatch_power_change'] = vals['differential'] + 2*vals['cross_mismatch']
             result['b_diagnostic'][footprint+'_'+proj]=vals
     path=ROOT/'paper'/'beam_summary.json'
     path.write_text(json.dumps(result,indent=2)+'\n')

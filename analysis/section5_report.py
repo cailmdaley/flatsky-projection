@@ -45,20 +45,27 @@ def run():
         rows=[]
         for name,label in (('disk5','5% disk'),('field1500d','1500d')):
             row=beam['response'][name]
-            rows.append(f"<tr><th>{label}</th><td>{row['sfl_mean']:.5f}</td><td>{row['sphere_mean']:.5f}</td><td>{100*row['fractional_difference']:+.3f}%</td><td>{100*row['prediction']:+.3f}%</td></tr>")
+            rows.append(f"<tr><th>{label}</th><td>{row['sfl_mean']:.5f}</td><td>{row['sphere_mean']:.5f}</td><td>{100*row['fractional_difference']:+.3f}%</td><td>{100*row['prediction']:+.3f}%</td><td>{100*row['sector_model_max_abs_1000_3000']:.3f} pp</td></tr>")
         beamtext=f'''<p>A one-arcminute Gaussian applied to the existing SFL Q/U map retains a different response after reprojection to ZEA than the same Gaussian applied on the sphere.
         The table compares paired filtered/unfiltered power ratios at target multipole {beam['ell_response']:.0f}; the prediction integrates the local operator over the same target Fourier bins.</p>
-        <table><thead><tr><th>Footprint</th><th>SFL-filtered</th><th>Sphere-filtered</th><th>Difference</th><th>Prediction</th></tr></thead><tbody>{''.join(rows)}</tbody></table>'''
+        <table><thead><tr><th>Footprint</th><th>SFL-filtered</th><th>Sphere-filtered</th><th>Difference</th><th>Prediction</th><th>Max sector residual, ℓ=1000–3000</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+        <p>The directional power response spans several percentage points even where its azimuthal average nearly cancels.
+        This is one paired realization, not an ensemble validation: the residuals above are measured absolute differences in power response, with no fitted statistical uncertainty.
+        The local prediction omits aliasing, mask convolution and Jacobian gradients; those effects have not been separated in the remaining discrepancy.
+        Filtered/unfiltered ratios measure the end-to-end response, and do not in general cancel a spatially varying sampling operator exactly.</p>'''
         beamtext+=figure('beam_reprojection.png','SFL filtering retains its direction-dependent response on ZEA. The conformal STG panel compares the filter differential with the unfiltered path mismatch; these are numerical sensitivity diagnostics, not a calibrated physical B-mode upper limit.')
         brows=[]
         for name,label in (('disk5','5% disk'),('field1500d','1500d')):
             b=beam['b_diagnostic'][name+'_ProjSTG']
-            brows.append(f"<tr><th>{label}</th><td>{b['sfl_base']:.3g}</td><td>{b['sphere_base']:.3g}</td><td>{b['mismatch']:.3g}</td><td>{b['differential']:.3g}</td><td>{b['cross_mismatch']:.3g}</td></tr>")
+            brows.append(f"<tr><th>{label}</th><td>{b['sfl_base']:.3g}</td><td>{b['sphere_base']:.3g}</td><td>{b['mismatch']:.3g}</td><td>{b['differential']:.3g}</td><td>{b['cross_mismatch']:.3g}</td><td>{b['mismatch_power_change']:.3g}</td></tr>")
         beamtext+=f'''<h3>Polarization diagnostic</h3><p>A constant local Jacobian gives a common scalar Q/U multiplier and preserves sky E/B.
         The differential D=(S<sub>F</sub>−S<sub>0</sub>)−(R<sub>F</sub>−R<sub>0</sub>) also contains changed numerical transfer and reference error.
         STG removes leading target shear, but those numerical terms remain.
         The following are production-workspace, decoupled band estimates over 1000≤ℓ&lt;3000, normalized by baseline EE; they quantify the test's sensitivity, rather than isolate physical beam-induced B.</p>
-        <table><thead><tr><th>STG target</th><th>SFL baseline BB/EE</th><th>Sphere baseline BB/EE</th><th>Mismatch BB/EE</th><th>Differential BB/EE</th><th>D×mismatch BB/EE</th></tr></thead><tbody>{''.join(brows)}</tbody></table>
+        <table><thead><tr><th>STG target</th><th>SFL baseline BB/EE</th><th>Sphere baseline BB/EE</th><th>Mismatch BB/EE</th><th>Differential BB/EE</th><th>D×mismatch BB/EE</th><th>Change of mismatch BB/EE</th></tr></thead><tbody>{''.join(brows)}</tbody></table>
+        <p>The mismatch-power change is C<sub>D</sub>+2C<sub>DM</sub>, where M=S<sub>0</sub>−R<sub>0</sub>.
+        Its negative sign in both STG footprints means the Gaussian reduces the numerical path mismatch in this band.
+        These measurements do not isolate physical E→B conversion or set a physical upper limit; the local constant-Jacobian model predicts none, while gradients and numerical errors remain unresolved.</p>
         <p>The spherical reference retains the input's numerical B residual without filtering it; an independent input check bounds that residual below 1.6×10<sup>−15</sup> of EE below ℓ=4000 and 7.0×10<sup>−14</sup> over 4000–6000.
         This E-only approximation is negligible at the measured diagnostic sensitivity.</p>'''
     else:

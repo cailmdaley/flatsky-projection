@@ -973,7 +973,8 @@ def beam_numbers():
         for projection in ('ProjZEA', 'ProjSTG'):
             diagnostic = data['b_diagnostic'][footprint + '_' + projection]
             for key, label in (('mismatch', 'Mismatch'), ('differential', 'Differential'),
-                               ('cross_mismatch', 'CrossMismatch')):
+                               ('cross_mismatch', 'CrossMismatch'),
+                               ('mismatch_power_change', 'MismatchChange')):
                 M.add(prefix + projection[4:] + label, sci(diagnostic[key], 3))
     assert all(name.isalpha() for name in M)
     path = ROOT / 'paper' / 'beam_numbers.tex'
