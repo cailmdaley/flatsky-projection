@@ -23,7 +23,7 @@
     "masked_template_seed0018.npz": "0697ff021418afb715f7622cc63e224820a1f6bfdb63e9fa887ab3fdb53810c0",
     "masked_template_seed0019.npz": "0443fab58d4a78a27cab7e6724d8c9e60f3edabbf41eefb33ca90af8b3e75d20"
   },
-  "scope": "SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.",
+  "scope": "SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0; no source holes or spherical-B response calibration. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.",
   "bands": {
     "900-1100": {
       "oracle": {
