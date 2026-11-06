@@ -28,7 +28,14 @@ def main():
     wc=np.where(r<1,(1-r*r)**3,0)
     q2=q.copy();u2=u.copy();q2[wc==0]=1e9;u2[wc==0]=-1e9
     np.testing.assert_array_equal(pure_e(q,u,wc,res),pure_e(q2,u2,wc,res))
-    print('pure E sign, pure B annihilation, product-rule response, observed-support gates pass')
+    # Even an ideal local E template changes the response to spherical B.
+    angle=np.linspace(-.4,.4,29)
+    eg,bg=2*np.cos(angle)-3*np.sin(angle),2*np.sin(angle)+3*np.cos(angle)
+    for f in (0.,.5,1.):
+        residual=bg-f*np.tan(angle)*eg
+        expected=2*np.sin(angle)*(1-f)+3*(np.cos(angle)**2+f*np.sin(angle)**2)/np.cos(angle)
+        np.testing.assert_allclose(residual,expected,atol=1e-14)
+    print('pure E sign, pure B annihilation, product-rule response, observed support, spherical B response gates pass')
     import argparse
     p=argparse.ArgumentParser()
     p.add_argument('--oracle-regression',nargs=2,metavar=('NEW_NPZ','OLD_NPZ'))

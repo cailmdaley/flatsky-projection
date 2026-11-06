@@ -63,7 +63,11 @@ Paired seed bootstraps give indicative confidence intervals on standard-deviatio
 The unmasked-grid test remains a test of S_J and should retain that qualification.
 The masked experiment is a second validation, not a replacement for the noise-free operator demonstration.
 The sentence saying subtraction comes after purification needs to specify E purification before construction and B purification after Q/U subtraction.
-The present test does not establish that pure E is uniquely necessary; the pseudo-E control probes E-only leakage, while the pure-B annihilation gate explains why a pure-E estimate protects an independent B signal.
+The present test does not establish that pure E is uniquely necessary; the pseudo-E control probes E-only leakage, while the pure-B annihilation gate protects an independent grid-pure-B signal from being absorbed solely through mask-induced mixing.
+That gate does not calibrate the response to a spherical B signal, which the projection itself mixes into grid E.
+Locally, writing a=2 delta psi gives E_grid=E_sky cos(a)-B_sky sin(a) and B_grid=E_sky sin(a)+B_sky cos(a).
+The unfiltered subtraction therefore returns B_sky/cos(a), not B_sky; a Wiener factor f changes that B response to [cos(a)^2+f sin(a)^2]/cos(a).
+A cosmological B analysis needs that response calibration as well as a residual-leakage correction, neither of which is measured by the E-only ensemble here.
 The blanket assertion that Wiener filtering never increases leakage is supported here only for the tested noise model and isotropic weight.
 No statement about optimal mask-edge reconstruction, a cosmological B error bar, source-hole masks, anisotropic noise or real SPT data follows from these runs.
 

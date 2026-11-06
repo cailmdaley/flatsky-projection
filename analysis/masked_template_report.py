@@ -42,6 +42,8 @@ def main():
         'source_sha256':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
         'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
         'bands':{}}
+    manifest=json.loads((Path(a.input)/'.lightcone-manifest.json').read_text())
+    result['source_manifest']={k:manifest[k] for k in ('data_version','code_version','git_sha','input_versions','recipe')}
     for lo,hi in ((900,1100),(1000,2000),(2000,3000),(3000,4000)):
         sel=(ell>=lo)&(ell<hi)
         # Average C_l within the band before moments across seeds.
