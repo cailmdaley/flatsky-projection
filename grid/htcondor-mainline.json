@@ -1,0 +1,13 @@
+{
+  "store": "davs://osg-gridftp.grid.uchicago.edu:2880/sptgrid/user/cailmdaley/pol_project/mainline",
+  "scratch": "/sptlocal/user/cailmdaley/lightcone-htcondor",
+  "timeout": 21600,
+  "setup": "export OS_ARCH=RHEL_9_x86_64 SHELL=/bin/bash\neval \"$(/cvmfs/spt.opensciencegrid.org/py3-v5/setup.sh)\"\ncase \"$(command -v python3)\" in /cvmfs/spt.opensciencegrid.org/py3-v5/*) ;; *) exit 90 ;; esac",
+  "submit": {
+    "+ProjectName": "\"spt\"",
+    "+SingularityImage": "\"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9\"",
+    "requirements": "HAS_CVMFS_spt_opensciencegrid_org == True",
+    "request_disk": "12GB",
+    "+JobDurationCategory": "\"Medium\""
+  }
+}

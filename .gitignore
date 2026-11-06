@@ -48,14 +48,12 @@ figures/covariance/
 .lightcone/snakefile-config.json
 .snakemake/
 .snakemake.legacy/
-results/
 
 # MyST build output
 _build/
 grid/logs/
 grid/lists/
 grid/launcher.log
-/results
 
 # Staged upstream archives for grid execution (lightcone writes these).
 .lightcone/stage/
