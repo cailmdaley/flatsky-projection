@@ -404,12 +404,14 @@ Two conventions separate a model from a bandpower.
 A spherical multipole corresponds to a planar wavenumber $\ell + \tfrac12$, from $P_\ell(\cos\theta) \simeq J_0[(\ell+\tfrac12)\theta]$, and NaMaster's radial coupling and decoupling replace a plain average over each band.
 We apply both to the model with nothing fitted, and call the result the estimator reference.
 It acts on the footprint-averaged spectrum, so it is an approximation to a sky whose response varies with position and mode direction.
+We use it for $TT$ and $EE$; $BB$ stays against the model averaged over integer multipoles in each band (Sect.~\ref{subsec:validation}).
 
 \begin{figure*}
   \includegraphics[width=\textwidth]{model_residuals.pdf}
   \caption{
     Simulations over the parameter-free forward model of Eq.~\eqref{eq:forward} on the 1500d field, for $TT$, $EE$ and $BB$.
-    The model is band-limited at $\ell = \lmaxrun$ and read through the estimator's radial response at wavenumber $\ell + \tfrac12$, in bands of width $\Delta\ell = 50$, with the simulation windows of Sect.~\ref{subsec:sims} applied to it.
+    The model is band-limited at $\ell = \lmaxrun$, in bands of width $\Delta\ell = 50$.
+    For $TT$ and $EE$ it is read through the estimator's radial response at wavenumber $\ell + \tfrac12$, with the simulation windows of Sect.~\ref{subsec:sims} applied to it; for $BB$ it is averaged over integer multipoles, with those windows removed from the simulations.
     Lines are the mean of 20 realizations and shaded bands its standard error.
     STG is omitted from $BB$; the rise of BICEP's and ZEA's $BB$ above $\ell = \cleanhi$ is discussed in Sect.~\ref{subsec:validation}.
   }
@@ -432,8 +434,11 @@ The 20 inputs also differ from the ensemble spectrum: STG's $TT$ over $4500 < \e
 \subsection{Leakage} \label{subsec:validation}
 
 The forward model reproduces the $BB$ of the three sheared projections over $\cleanlo < \ell < \cleanhi$, with no floor subtracted (Fig.~\ref{fig:residuals}).
-On the \covNumProjected\ skies SFL's mean lies \residSFLBBClean\ from the model, although a full-covariance test rejects it band by band ($p = \residSFLBBFitP$), and ZEA's lies \residZEABBClean\ above it, an offset we have not attributed.
-BICEP's lies \residBICEPBBClean\ from the model on its 20 skies.
+The estimator reference was built and tested on $TT$ and $EE$ and is not validated for $BB$, so we compare with the integer-multipole model.
+On the \covNumProjected\ skies SFL's mean lies \residSFLBBInteger\ from that model and ZEA's \residZEABBInteger, with ZEA's worst band at \residZEABBIntegerWorst.
+The estimator reference leaves SFL at \residSFLBBClean\ but moves ZEA to \residZEABBClean, worst band \residZEABBWorst, so ZEA's mean depends on the reference.
+A small mean again does not close every band: against the integer-multipole model full-covariance tests reject SFL at $p = \residSFLBBFitP$ and ZEA at $p = \residZEABBFitP$.
+BICEP lies $\winBBBICEPCleanResidual \pm \winBBBICEPCleanError$ from the model on its 20 skies.
 STG has no shear, so its predicted $BB$ is zero and its measured floor (Sect.~\ref{subsec:spectra}) comes from the pipeline.
 
 Above $\ell = \cleanhi$ two additive terms enter, and the forward model contains neither.
@@ -692,8 +697,8 @@ The response follows the shear of the grid that applied the filter, so filtering
 
 Local measurements see only the local Jacobian, since clusters and point sources are small compared with the scale on which $J$ varies.
 A compact source on a sheared grid is an ellipse, so an isotropic Gaussian matched filter on an equal-area grid recovers a fraction $\sqrt{1-g^2} \simeq 1 - g^2/2$ of its amplitude in white noise, which for SFL is a loss of \filterSFLmean\ in the unweighted mean over the 1500d field.
-We inject Gaussian point sources and tapered $\beta$-profile cluster proxies on the sphere at 15 sampled positions of that field, with a \ang{;1.2;} beam and \SI{18}{\micro\kelvin}-arcmin of white noise.
-A circular filter on SFL loses up to \sourceSFLPointLoss\ of the amplitude of a point source and \sourceSFLClusterLoss\ of a cluster proxy at the sampled positions, and on ZEA less than \sourceZEAPointLoss.
+We inject Gaussian point sources and tapered $\beta$-profile cluster proxies on the sphere at 15 sampled positions of that field, with a \ang{;1.2;} beam, the CMB, and \SI{18}{\micro\kelvin}-arcmin of white noise.
+A circular filter weighted for the CMB and this noise on SFL loses up to \sourceSFLPointLoss\ of the amplitude of a point source and \sourceSFLClusterLoss\ of a cluster proxy at the sampled positions, and on ZEA less than \sourceZEAPointLoss.
 On BICEP the point amplitude runs from $\sourceBICEPPointLow$ to $+\sourceBICEPPointHigh$, since magnification changes it, and a rise in amplitude there is no gain in significance.
 Significance falls further than amplitude on SFL: a finite-patch covariance forecast with the CMB and noise gives losses of \sourceSFLPointSnrLoss\ for points and \sourceSFLClusterSnrLoss\ for clusters, and CMB skies give ratios of \sourceSFLPointTransfer\ and \sourceSFLClusterTransfer\ between the most sheared sampled position and the centre.
 These are controlled template responses and conditional forecasts, with no multifrequency data, foregrounds or selection, so they are not the bias of any catalogue.
@@ -740,7 +745,7 @@ These are signal-only filtering controls, with no shape noise, masks or cosmolog
 \section{Conclusions} \label{sec:conclusions}
 
 A map projection's shear follows in closed form from its definition.
-The shear averages a spectrum over a band of multipoles, which washes out acoustic peaks and lifts the damping tail, and it leaks a fraction $2\gsq$ of $EE$ into $BB$; a parameter-free forward model built from the Jacobian and the analysis mask matches simulations of four projections, with $TT$ and $EE$ band means within \residEECleanWorst\ on the SPT 1500d field over $\cleanlo < \ell < \cleanhi$, although $EE$ fails band by band, by up to \residSTGEEMaxBin, and leakage on the disks at $\bandSFLratio$ of the model for SFL and $\bandBICEPratio$ for BICEP (mean and scatter of the bands).
+The shear averages a spectrum over a band of multipoles, which washes out acoustic peaks and lifts the damping tail, and it leaks a fraction $2\gsq$ of $EE$ into $BB$; a parameter-free forward model built from the Jacobian and the analysis mask matches simulations of four projections: on the SPT 1500d field over $\cleanlo < \ell < \cleanhi$, $TT$ and $EE$ band means lie within \residEECleanWorst\ for SFL, STG and ZEA, although $EE$ fails band by band, by up to \residSTGEEMaxBin, BICEP is tied to ZEA by a paired contrast of \residBICEPZEAEE\ in $EE$ and \residBICEPZEATT\ in $TT$, and leakage on the disks at $\bandSFLratio$ of the model for SFL and $\bandBICEPratio$ for BICEP (mean and scatter of the bands).
 For $B$-mode work STG or a curved-sky method avoids the shear's leakage, and for temperature and $E$-mode work ZEA or a curved-sky method needs almost no scalar correction; correcting STG instead costs a few percent in noise-free two-point variance when bins are weighted by their scatter.
 An analysis that keeps a sheared grid can compute the effect for its footprint before observing: a diagonal transfer function calibrated on the CMB misrecovers a white spectrum by up to \tfSFLworst\ on SFL, while the projection's coupling matrix predicts it to within \tfclosureworst\ below $\ell = \cleanhi$.
 An $E$-mode template built from the Jacobian removes the leaked $B$ map by map near $\ell = 1000$: for SFL on the masked 1500d field with \SI{5}{\micro\kelvin}-arcmin of noise, the leaked power falls by a factor of \templateSFLfieldgainfive\ and the scatter of the $BB$ by \maskedTemplateStdGainRounded\ \maskedTemplateStdGainInterval.

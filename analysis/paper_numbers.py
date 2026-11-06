@@ -1001,17 +1001,6 @@ def production_upper():
             'se': float(per_seed.std(ddof=1) / np.sqrt(len(per_seed)))}
 
 
-def production_band(spec, proj, lo, hi):
-    """One band mean of the 20 skies over the estimator reference."""
-    directory = Path('/sptlocal/user/cailmdaley/pol_project')
-    d = np.load(directory / 'pipeline_windows_production.npz')
-    reference = np.load(directory / 'residual_estimator_response.npz')
-    sel = (d['ell'] >= lo) & (d['ell'] < hi)
-    per_seed = (d[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical'] - 1)[:, sel].mean(-1)
-    return {'mean': float(per_seed.mean()),
-            'se': float(per_seed.std(ddof=1) / np.sqrt(len(per_seed)))}
-
-
 def production_hann_worst():
     """Largest TT or EE residual of the 20 skies on the estimator reference.
 
@@ -1080,9 +1069,15 @@ def residual_numbers():
     M.add('residSTGEEMaxBin', pct(tests['max_bin_residual'], 2))
     M.add('residSTGEEFitP', sci(tests['p'], 0))
     M.add('residEEFitPRange', rng(*sorted(fits[p, 'EE']['p'] for p in ('ProjZEA', 'ProjSFL')), 3))
+    integer = {r['projection']: r for r in d['ensemble_tests']
+               if r['null'] == 'new-model-bin' and r['spectrum'] == 'BB'
+               and r['lo'] == 1000 and r['hi'] == 4000}
     for proj in ('ProjZEA', 'ProjSFL'):
         M.add('resid'+proj[4:]+'BBClean', uncertainty(fits[proj, 'BB']))
-    M.add('residSFLBBFitP', sci(fits['ProjSFL', 'BB']['p'], 0))
+        M.add('resid'+proj[4:]+'BBInteger', uncertainty(integer[proj]))
+        M.add('resid'+proj[4:]+'BBFitP', sci(integer[proj]['p'], 0))
+    M.add('residZEABBWorst', pct(fits['ProjZEA', 'BB']['max_bin_residual'], 2))
+    M.add('residZEABBIntegerWorst', pct(integer['ProjZEA']['max_bin_residual'], 2))
     M.add('residSTGTTUpperInteger', uncertainty(production_upper()))
     for name, lo in (('Upper', 4000), ('Wall', 4500)):
         removed = np.mean([find(d['map_interventions'], projection=proj, spectrum='BB',
@@ -1094,7 +1089,6 @@ def residual_numbers():
     M.add('residRingBDrop', pct(1-ring['bb_ee_vs_4096_r8'], 0))
     M.add('residRingEEChange', pct(abs(1-ring['ee_native_ratio']/coarse['ee_native_ratio']), 1))
     M.add('residHannWorst', pct(production_hann_worst(), 2))
-    M.add('residBICEPBBClean', uncertainty(production_band('BB', 'ProjBICEP', 1000, 4000)))
     assert all(name.isalpha() for name in M)
     path = ROOT/'paper/residual_numbers.tex'
     path.write_text(M.tex())

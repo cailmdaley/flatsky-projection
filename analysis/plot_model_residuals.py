@@ -10,13 +10,15 @@ read at the sheared wavenumber |J^T l|, with the exact
 sin^2/cos^2(2 dpsi + 2 Delta) kernel for E and B and kernel 1 for T, Delta the
 residual of the pipeline's own flattening angle, averaged over mode azimuth
 and over the footprint with weight W^2 |det J|^2 per unit sky area, and
-band-limited at the sims' l = 6000. No free parameters, no fit. It is then
-compared as the estimator sees it: the spectrum reads the sky at k = l + 1/2,
-and NaMaster's own radial coupling and decoupling act on it
+band-limited at the sims' l = 6000. No free parameters, no fit. TT and EE are
+then compared as the estimator sees them: the spectrum reads the sky at
+k = l + 1/2, and NaMaster's own radial coupling and decoupling act on it
 (`residual_estimator_response.py`), since a model averaged over integer
 multipoles draws acoustic structure of its own at the 0.2% level. That
-reference carries the simulation's windows, so the measured arrays are the
-ones with no window removed.
+reference carries the simulation's windows, so those measured arrays have no
+window removed. BB stays against the integer-multipole model with the windows
+removed: the estimator reference is gated on TT and EE only, and it worsens
+ZEA's BB.
 
 Normalisation. The pseudo-C_l denominator is the plane-area mask integral,
 sum(W^2 |det J|) per unit sky area, one power of |det J| lower than the
@@ -30,10 +32,10 @@ projection. Aliasing can therefore arrive below 4800 on sheared projections,
 and matters particularly for the small geometric BB of ZEA. This diagnostic
 retains 4800 to expose that rise; it is not a universal clean-data cutoff.
 
-Pixel windows. The reference includes the coherent ring-interpolation and
+Pixel windows. Both comparisons treat the coherent ring-interpolation and
 finite 8x8-rebin windows separately for each projection and spin block,
 inside the sky-frame forward integral. No parameter is fitted. Aliased power
-and the STG estimator floor are not in it. Bands show pointwise standard errors,
+and the STG estimator floor are not in the model. Bands show pointwise standard errors,
 not independent errors across bins or projections; use paired-seed contrasts
 (`report_pipeline_windows.py`) to compare projections.
 
@@ -79,12 +81,12 @@ REFERENCE = Path('/sptlocal/user/cailmdaley/pol_project/residual_estimator_respo
 
 
 def load_ratios():
-    """Measured over the estimator reference, per spectrum: (projection, seed, band)."""
+    """Measured over model, per spectrum: (projection, seed, band)."""
     measured, reference = np.load(WINDOWS), np.load(REFERENCE)
-    ratios = {}
-    for spec in SPECTRA:
-        ratios[spec] = {proj: measured[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical']
-                        for proj in S.PROJS if not (spec == 'BB' and proj == SL.FLOOR_PROJ)}
+    ratios = {spec: {proj: measured[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical']
+                     for proj in S.PROJS} for spec in ('TT', 'EE')}
+    ratios['BB'] = {proj: measured[f'field_BB_{proj}_ratio']
+                    for proj in S.PROJS if proj != SL.FLOOR_PROJ}
     return ratios
 
 
