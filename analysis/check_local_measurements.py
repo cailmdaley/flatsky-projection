@@ -42,8 +42,42 @@ def run():
     _,peak,pos,_=fit(displaced,template,power,pix)
     np.testing.assert_allclose(pos,[.07,-.11],atol=1e-5)
     np.testing.assert_allclose(peak,1,atol=1e-8)
-    print('Gaussian magnification/shear identity, metric correction, noise normalization and subpixel position gates pass.')
+    # Actual spherical source at a fractional pixel, independent of the
+    # Fourier shift identity above. The pixel-centred layout must not hide bias.
+    from spt3g import core
+    for proj in ('ProjSFL','ProjZEA','ProjBICEP'):
+        fsm=G._flat_map(proj,res_arcmin=res)
+        xc,yc=fsm.angle_to_xy(45*G.DEG,-68*G.DEG)
+        target=np.array([.07,-.11])
+        a,d=fsm.xy_to_angle(xc-target[0]/res,yc+target[1]/res)
+        rr,dd=fsm.xy_to_angle(core.DoubleVector((xc-x/pix).ravel()),
+                             core.DoubleVector((yc+y/pix).ravel()))
+        rr,dd=np.asarray(rr).reshape(x.shape),np.asarray(dd).reshape(x.shape)
+        radius=2*np.arcsin(np.sqrt(np.sin((dd-d)/2)**2+
+            np.cos(dd)*np.cos(d)*np.sin((rr-a)/2)**2))/ARCMIN
+        source=profiles(radius,'point')
+        template=profiles(np.hypot(x,y)/ARCMIN,'point')
+        _,_,pos,_=fit(source,template,power,pix)
+        np.testing.assert_allclose(pos,target,atol=.001)
+    print('Gaussian magnification/shear identity, metric correction, noise normalization and spherical subpixel position gates pass.')
 
 
 if __name__=='__main__':
+    import argparse
+    import json
+    from pathlib import Path
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--geometry',type=Path)
+    a=p.parse_args()
     run()
+    if a.geometry:
+        from local_source_report import affine_prediction_errors,key
+        data=json.loads(a.geometry.read_text())
+        errors,noise=affine_prediction_errors(data)
+        assert max(errors.values())<1e-5,errors
+        assert max(abs(r['optimal_snr_relative_center']-1) for r in noise.values())<.003
+        for row in data['rows']:
+            if row['profile']=='point' and row['noise']=='white':
+                predicted=row['gaussian_prediction']/np.sqrt(row['mu'])
+                np.testing.assert_allclose(noise[key(row)+(row['noise'],)]['snr_relative_center'],predicted,atol=1e-6)
+        print('All profile Fourier predictions and metric/covariance-aware S/N invariance pass.')
