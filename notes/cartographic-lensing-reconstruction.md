@@ -132,6 +132,41 @@ Changing Nside and output pixels together does not isolate their separate effect
 The response test does not include RDN0, cosmological-lensing sample variance, polarization, anisotropic filtering or instrumental noise.
 One cannot square these ratios to infer a cosmological lensing-power bias.
 
+## Shared spherical-lens response
+
+A separate four-seed experiment applies the same physical lens and TT sky to all charts for each seed, varying both between seeds.
+The globally smooth scalar potential is a sum of $A\cos(k\boldsymbol u\cdot\boldsymbol n+p)/k^2$, where $\boldsymbol u$ is tangent to the field centre and $\boldsymbol n$ is a sky direction.
+Its analytic spherical gradient defines the gradient lens; rotating that tangent vector by $90^\circ$ defines the curl lens.
+The directions are remapped with the sphere's exponential map before projection.
+Each characteristic-$k$ group, 30–60, 60–120 and 120–240, has spherical convergence RMS 0.003 on one common solid-angle-weighted field quadrature; these groups are not sharp spherical-harmonic bands.
+The flat control uses the corresponding $Jd_{\rm sky}$ displacement.
+
+For each seed we overlap the grid reconstruction with $W^2$ times spherical convergence, sampled as a scalar on that chart, and divide by the same overlap of the matching flat-control diagonal.
+This template is not grid convergence, and the statistic is not a deconvolved physical-convergence response or the recovered fraction of kappa.
+The report includes the flat diagonal divided by template power as a normalization diagnostic; it is not exactly one (for example, 0.907 for BICEP gradient at $30\le L<60$).
+At $30\le L<60$, the four-seed control gives these overlap ratios relative to the same-displacement flat control, with indicative 95% intervals in brackets:
+
+| Projection | Gradient overlap / flat | Curl overlap / flat |
+|---|---:|---:|
+| SFL | $0.388\;[0.332,0.444]$ | $0.545\;[0.502,0.587]$ |
+| STG | $0.898\;[0.818,0.978]$ | $0.899\;[0.789,1.010]$ |
+| ZEA | $1.025\;[0.859,1.191]$ | $0.987\;[0.879,1.096]$ |
+| BICEP | $0.730\;[0.570,0.890]$ | $0.718\;[0.555,0.882]$ |
+
+The intervals multiply the paired jackknife standard error by the Student-$t$ factor with three degrees of freedom.
+They indicate the small ensemble's limited precision, not exact frequentist coverage of this ratio statistic.
+The plot uses these intervals too.
+Differences near 0.05 between charts or experiments are not resolved by this control.
+The shared-mode gate checks every wave number, direction, phase and amplitude across charts.
+These measurements establish a changed response for the tested physical sky lenses as well as for grid injections.
+The lens realizations and overlap weighting differ from the twenty-seed table, so their difference does not isolate the effect of changing from a grid lens to a spherical lens.
+Neither table is a chart constant or a cosmological lensing-power bias; both retain the same 300–1200 TT filter.
+The full matrices, flat overlaps, template-normalization diagnostics and uncertainties are in `results/lensing_qe_sky_report/summary.json`.
+The displayed $L$ bins are output-grid Fourier bins, not bands of the spherical potential.
+The numerical refinement control was run for the grid lenses; no independent refinement or analytic response prediction has been validated for these physical lenses.
+
+## Mean-field prediction and scale support
+
 The nonlinear affine/squeezed mean-field prediction has no fitted parameters.
 For $2\le L<30$, measured/predicted curl template amplitudes are $0.961\pm0.006$ (SFL), $0.958\pm0.018$ (BICEP), and $0.997\pm0.074$ (ZEA).
 The SFL correlation is 0.9984, but its four-percent amplitude discrepancy is real at the ensemble precision.
@@ -158,18 +193,21 @@ Run the scientific Python commands under the SPT build environment:
 ENV=$HOME/code/python/spt3g_software/build/env-shell.sh
 lc run --executor htcondor --profile htcondor9 lensing_qe_sims -u highell
 lc run --executor htcondor --profile htcondor9 lensing_qe_resolution -u highell
+lc run --executor htcondor --profile htcondor9 lensing_qe_sky_response -u highell
 $ENV python3 analysis/check_lensing_qe.py
 $ENV python3 analysis/check_lensing_resolution.py
+$ENV python3 analysis/check_lensing_sky_injection.py
 $ENV python3 analysis/lensing_geometry.py --out results/lensing_qe_geometry
 $ENV python3 analysis/lensing_mean_prediction.py --out results/lensing_qe_report/mean_prediction.npz
 $ENV python3 analysis/lensing_report.py --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_report
 $ENV python3 analysis/lensing_report.py --inputs results/highell/lensing_qe_resolution --expected-seeds 4 --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_resolution_report
 $ENV python3 analysis/lensing_resolution_report.py
+$ENV python3 analysis/lensing_sky_report.py
 ```
 
 The authoritative measured table is `results/lensing_qe_report/summary.json`.
 The matched-resolution comparison and its end-to-end injection gate are in `results/lensing_qe_resolution_report/paired.json`.
-Both gathered output directories and all 96 per-unit directories pass the official `lightcone.engine.manifest.sha256_dir` content-hash check against their manifests; `lc status -u highell` reports both outputs current.
+All three gathered output directories and all 112 per-unit directories pass the official `lightcone.engine.manifest.sha256_dir` content-hash check against their manifests; `lc status -u highell` reports all three outputs current.
 `analysis/lensing_numbers.py:numbers()` supplies macros for the sole `numbers.tex` writer, `analysis/paper_numbers.py`.
 No manuscript edit belongs in this thread.
 
@@ -179,7 +217,8 @@ The required manuscript changes are:
 - Remove TAN as the QE's source plane, the identification of TAN-relative $\omega_{\rm rms}$ with curl response, and the claim that a symmetric composite Jacobian guarantees a masked curl null.
 - Remove Table C.1 as an estimator prediction, including its comparison with post-Born rotation.
   A chart-comparison table would need a separate purpose to justify retaining it.
-- Replace the BICEP-above-SFL curl ranking with the measured opposite ordering for this field and estimator.
+- Replace the BICEP-above-SFL curl mean-field amplitude ranking with the measured opposite ordering for this field and estimator.
+  Keep additive mean fields distinct from the multiplicative diagonal overlap responses.
 - Describe direct mean-field power as low-$L$ concentrated with measurable tails, rather than confined below the science range.
 - Retain and strengthen the recommendation that projection belongs in the lensing simulations: both the mean field and the response depend on it.
 

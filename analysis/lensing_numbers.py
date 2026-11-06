@@ -2,13 +2,18 @@
 
 Run analysis/lensing_mean_prediction.py and analysis/lensing_report.py first;
 see notes/cartographic-lensing-reconstruction.md for the scope of the test.
+Response macros without 'Sky' are conditional on grid-potential seed 904;
+their SE covers TT skies only. qeSky*Response macros use shared physical
+spherical potentials varying by seed, with a matched-template overlap and
+errors resampling TT+lens pairs. Both use TT legs 300-1200 and neither is
+an intrinsic chart response or a cosmological lensing-power bias.
 This module does not write numbers.tex: paper_numbers.py remains its writer.
 """
 import json
 from pathlib import Path
 
 
-def numbers(summary=None):
+def numbers(summary=None,sky_summary=None):
     if summary is None:
         summary=Path(__file__).resolve().parents[1]/'results/lensing_qe_report/summary.json'
     data=json.loads(Path(summary).read_text())
@@ -27,4 +32,17 @@ def numbers(summary=None):
             rms=power**.5
             out[f'qe{label}CurlMeanRMS']=rf'{rms:.4f}\pm{error/(2*rms):.4f}'
     out['qeSeeds']=str(data['ProjSFL']['seeds'])
+    if sky_summary is None:
+        sky_summary=Path(__file__).resolve().parents[1]/'results/lensing_qe_sky_report/summary.json'
+    sky=json.loads(Path(sky_summary).read_text())
+    for proj,row in sky.items():
+        label=proj.removeprefix('Proj')
+        response=row['response'][0]
+        for i,kind in enumerate(('Gradient','Curl')):
+            val=response['spherical_over_flat_diagonal'][i][i]
+            err=response['SE'][i][i]
+            out[f'qeSky{label}{kind}Response']=rf'{val:.3f}\pm{err:.3f}'
+            lo,hi=response['indicative_t95_interval'][i][i]
+            out[f'qeSky{label}{kind}ResponseInterval']=rf'{val:.3f}\;[{lo:.3f},\,{hi:.3f}]'
+    out['qeSkySeeds']=str(sky['ProjSFL']['seeds'])
     return out
