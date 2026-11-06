@@ -709,7 +709,8 @@ outputs:
       resources:
         cpus: 2
         memory: 4Gi
-        disk: 4Gi
+        # The 1.4 GB coupling archive plus its 2.6 GB unpacked FITS and runtime.
+        disk: 8Gi
         time_limit: 1h
 
   - id: bin_covariance_flat_controls
