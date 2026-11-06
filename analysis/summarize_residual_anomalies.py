@@ -26,7 +26,10 @@ def main():
                          and r['hi'] == 500 and r['spectrum'] in ('TT', 'EE')],
         production_conditioned=[], paired=[],
         map_interventions=[r for r in maps if r['pad'] == 128 and r['lo'] >= 4000],
-        pure_e=[r for r in pure if r['cutoff'] == 6000 and r['lo'] >= 4000])
+        pure_e=[r for r in pure if r['cutoff'] == 6000 and r['lo'] >= 4000],
+        ensemble_tests=json.loads((ROOT/'residual_independent_tests.json').read_text()),
+        fft_gate=json.loads((ROOT/'residual_fft_gate.json').read_text()),
+        ring_controls=json.loads((ROOT/'residual_ring_summary.json').read_text()))
     for spec in ('TT', 'EE'):
         ratios = {}
         for proj in S.PROJS:

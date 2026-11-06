@@ -76,13 +76,10 @@ def main():
                     result[f'{proj}_{spec}_realized'] = realized_dec[index]
                 if spin == 2 and spec == 'EE':
                     result[f'{proj}_EE_to_BB'] = decoupled[3]
-                # Constant bandpowers must be invariant to couple/decouple.
-                constant_ell = np.array([0., 5999.99999, 6000., 20000.])
-                constant = np.broadcast_to([1., 1., 0., 0.], (len(cl), 4)).copy()
-                check = ws.decouple_cell(ws.couple_cell(constant_ell, constant))
-                clean = (S.ELL >= 100) & (S.ELL < 4800)
-                result[f'{proj}_{spec}_constant_error'] = np.max(abs(check[:, clean]-1))
-                print(proj, spec, 'constant response', np.max(abs(check[:, clean]-1)), flush=True)
+                # The independent 2D FFT comparison is executable in
+                # check_residual_fft_response.py. A constant injected into
+                # every spin block would mostly check an algebraic identity,
+                # not the physical radial response.
                 if not (spec == 'BB' and proj == 'ProjSTG'):
                     raw = report[name+'_raw']
                     for lo, hi in ((100, 500), (500, 1000), (1000, 4000), (4000, 4500), (4500, 4800)):

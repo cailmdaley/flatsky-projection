@@ -24,11 +24,16 @@ def main():
                 value = np.array([d[name] for d in ds])
                 bb = (value[:, 3, sel]/normalization[sel]).mean(-1)
                 ee = (value[:, 0, sel]/native[:, 0, sel]).mean(-1)
+                leakage = (value[:, 3, sel]/value[:, 0, sel]).mean(-1)
+                baseline = (native[:, 3, sel]/native[:, 0, sel]).mean(-1)
                 row = dict(projection=proj, intervention=name, lo=lo, hi=hi, nseed=len(ds),
                            bb_input_ee=float(bb.mean()), bb_input_ee_se=float(bb.std(ddof=1)/np.sqrt(len(bb))),
-                           ee_native_ratio=float(ee.mean()), ee_native_ratio_se=float(ee.std(ddof=1)/np.sqrt(len(ee))))
+                           ee_native_ratio=float(ee.mean()), ee_native_ratio_se=float(ee.std(ddof=1)/np.sqrt(len(ee))),
+                           bb_own_ee=float(leakage.mean()), bb_own_ee_se=float(leakage.std(ddof=1)/np.sqrt(len(leakage))),
+                           paired_bb_ee_change=float((leakage-baseline).mean()),
+                           paired_bb_ee_change_se=float((leakage-baseline).std(ddof=1)/np.sqrt(len(leakage))))
                 rows.append(row)
-                print(f'{lo}-{hi} {name}: BB/inputEE {bb.mean():.7g} +/- {row["bb_input_ee_se"]:.2g}; EE/native {ee.mean():.7g}', flush=True)
+                print(f'{lo}-{hi} {name}: BB/inputEE {bb.mean():.7g} +/- {row["bb_input_ee_se"]:.2g}; EE/native {ee.mean():.7g}; BB/ownEE {leakage.mean():.7g}; paired BB/EE change {row["paired_bb_ee_change"]:+.7g} +/- {row["paired_bb_ee_change_se"]:.2g}', flush=True)
         for d in ds:
             d.close()
     (ROOT/'residual_ring_summary.json').write_text(json.dumps(rows, indent=2)+'\n')
