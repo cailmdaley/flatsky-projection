@@ -1115,6 +1115,30 @@ outputs:
 # DECISIONS
 # ---------------------------------------------------------------------------
 # Additive paired band-limit intervention; existing outputs are unchanged.
+  - id: residual_map_upsample
+    type: data
+    label: Paired production-map estimator de-aliasing intervention
+    description: |
+      Fixed native projected Q/U maps Fourier-interpolated before masking
+      and pure-B estimation, with two padded/tapered boundary controls.
+      Native spectra gate exact reproduction of production. No synthesis,
+      reprojection, spherical cutoff or physical pixel window changes.
+    inputs: [projected_qu, field_flatsky_masks, field_coupling]
+    units:
+      seed: [0, 1, 2, 3]
+      projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/residual_map_upsample.py
+        --maps {inputs.projected_qu} --masks {inputs.field_flatsky_masks}
+        --workspaces {inputs.field_coupling}
+        --projection {units.projection} --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 12Gi
+        disk: 4Gi
+        time_limit: 1h
+
   - id: residual_pure_e_test
     type: data
     label: Pure-E estimator sampling and mask-product controls
