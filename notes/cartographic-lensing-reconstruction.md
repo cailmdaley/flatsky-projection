@@ -118,14 +118,23 @@ The twenty-seed diagonal response ratios at $30\le L<60$ are:
 | BICEP | $0.564\pm0.014$ | $0.741\pm0.018$ |
 
 These are measured response changes in this estimator with its unprojected isotropic filters, not biases in an SPT analysis.
-A Nside4096/two-arcminute control tests interpolation and output-grid sampling; its result belongs beside these numbers before precise continuum claims are made.
+A Nside4096/two-arcminute control uses four matched seeds, the same spherical harmonic realization, and the same continuous grid potential and flat Gaussian control.
+The coarse-grid Fourier coefficients are embedded with their pixel-centre phases; the stored injection coefficients agree across all sixteen matched pairs to $6.1\times10^{-20}$ after this phase conversion.
+Across all four charts and three injection bands, the diagonal response ratios increase by 0.2–2.6% on refinement.
+For SFL at $30\le L<60$, the matched four-seed curl ratio changes from $0.637\pm0.024$ to $0.645\pm0.026$, a paired fractional change of $(1.30\pm0.61)\%$.
+The matched subset must not be compared directly with the twenty-seed value above.
+The numerical shifts are much smaller than the observed cylindrical response suppression, but the responses are not converged to sub-percent precision.
+Changing Nside and output pixels together does not isolate their separate effects.
 The response test does not include RDN0, cosmological-lensing sample variance, polarization, anisotropic filtering or instrumental noise.
 One cannot square these ratios to infer a cosmological lensing-power bias.
 
 The nonlinear affine/squeezed mean-field prediction has no fitted parameters.
 For $2\le L<30$, measured/predicted curl template amplitudes are $0.961\pm0.006$ (SFL), $0.958\pm0.018$ (BICEP), and $0.997\pm0.074$ (ZEA).
 The SFL correlation is 0.9984, but its four-percent amplitude discrepancy is real at the ensemble precision.
-The predictor approximates both finite-$L$ leg support and filtering near the mask boundary; exact normalization alone does not make it an exact mean-field calculation.
+On matched seeds, the curl template amplitude rises by $(1.687\pm0.026)\%$ for SFL and $(1.277\pm0.016)\%$ for BICEP when the grids are refined.
+Numerical sampling therefore contributes to the discrepancy; the remaining offset cannot be assigned to continuum physics from this test.
+The gradient template amplitudes change by up to five percent.
+The predictor also approximates finite-$L$ leg support and filtering near the mask boundary; exact normalization alone does not make it an exact mean-field calculation.
 STG's curl mean field is consistent with zero.
 
 The curl mean field is concentrated at low $L$, but there is no cutoff at ten or thirty.
@@ -143,12 +152,17 @@ ENV=$HOME/code/python/spt3g_software/build/env-shell.sh
 lc run --executor htcondor --profile htcondor9 lensing_qe_sims -u highell
 lc run --executor htcondor --profile htcondor9 lensing_qe_resolution -u highell
 $ENV python3 analysis/check_lensing_qe.py
+$ENV python3 analysis/check_lensing_resolution.py
 $ENV python3 analysis/lensing_geometry.py --out results/lensing_qe_geometry
 $ENV python3 analysis/lensing_mean_prediction.py --out results/lensing_qe_report/mean_prediction.npz
 $ENV python3 analysis/lensing_report.py --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_report
+$ENV python3 analysis/lensing_report.py --inputs results/highell/lensing_qe_resolution --expected-seeds 4 --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_resolution_report
+$ENV python3 analysis/lensing_resolution_report.py
 ```
 
 The authoritative measured table is `results/lensing_qe_report/summary.json`.
+The matched-resolution comparison and its end-to-end injection gate are in `results/lensing_qe_resolution_report/paired.json`.
+Both gathered output directories and all 96 per-unit directories pass the official `lightcone.engine.manifest.sha256_dir` content-hash check against their manifests; `lc status -u highell` reports both outputs current.
 `analysis/lensing_numbers.py:numbers()` supplies macros for the sole `numbers.tex` writer, `analysis/paper_numbers.py`.
 No manuscript edit belongs in this thread.
 
