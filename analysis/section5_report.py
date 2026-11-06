@@ -46,26 +46,36 @@ def run():
         for name,label in (('disk5','5% disk'),('field1500d','1500d')):
             row=beam['response'][name]
             rows.append(f"<tr><th>{label}</th><td>{row['sfl_mean']:.5f}</td><td>{row['sphere_mean']:.5f}</td><td>{100*row['fractional_difference']:+.3f}%</td><td>{100*row['prediction']:+.3f}%</td><td>{100*row['sector_model_max_abs_1000_3000']:.3f} pp</td></tr>")
+        bandrows=[]
+        for name,label in (('disk5','5% disk'),('field1500d','1500d')):
+            for band,values in beam['response'][name]['bands'].items():
+                bandrows.append(f"<tr><th>{label}, ℓ={band.replace('_','–')}</th><td>{100*values['measured']:+.3f}%</td><td>{100*values['predicted']:+.3f}%</td></tr>")
         beamtext=f'''<p>A one-arcminute Gaussian applied to the existing SFL Q/U map retains a different response after reprojection to ZEA than the same Gaussian applied on the sphere.
-        The table compares paired filtered/unfiltered power ratios at target multipole {beam['ell_response']:.0f}; the prediction integrates the local operator over the same target Fourier bins.</p>
+        The first table compares unweighted means of the paired response differences over ten 100-ℓ bins per band.
+        The local model reproduces the small azimuthal offset below ℓ=3000; agreement degrades above that, including an unexplained common residual step near ℓ=3600.
+        The cos2χ amplitude of the measured SFL/sphere response relative to the model has zero-intercept slopes {beam['response']['disk5']['quadrupole_amplitude_slope_1000_3000']:.3f} (disk) and {beam['response']['field1500d']['quadrupole_amplitude_slope_1000_3000']:.3f} (field) over ℓ=1000–3000, without ensemble error estimates.</p>
+        <table><thead><tr><th>Footprint and band</th><th>Measured SFL/sphere − 1</th><th>Predicted</th></tr></thead><tbody>{''.join(bandrows)}</tbody></table>
+        <p>The next table gives the directional figure's bin at ℓ={beam['ell_response']:.0f}, close to the azimuthal zero crossing; it is not the headline agreement test.</p>
         <table><thead><tr><th>Footprint</th><th>SFL-filtered</th><th>Sphere-filtered</th><th>Difference</th><th>Prediction</th><th>Max sector residual, ℓ=1000–3000</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
         <p>The directional power response spans several percentage points even where its azimuthal average nearly cancels.
         This is one paired realization, not an ensemble validation: the residuals above are measured absolute differences in power response, with no fitted statistical uncertainty.
         The local prediction omits aliasing, mask convolution and Jacobian gradients; those effects have not been separated in the remaining discrepancy.
         Filtered/unfiltered ratios measure the end-to-end response, and do not in general cancel a spatially varying sampling operator exactly.</p>'''
-        beamtext+=figure('beam_reprojection.png','SFL filtering retains its direction-dependent response on ZEA. The conformal STG panel compares the filter differential with the unfiltered path mismatch; these are numerical sensitivity diagnostics, not a calibrated physical B-mode upper limit.')
+        beamtext+=figure('beam_reprojection.png','SFL filtering retains its direction-dependent response on ZEA. The conformal STG panel compares the filter differential with the unfiltered path mismatch. These contain physical and numerical terms that this test does not separate; neither is a calibrated physical B-mode upper limit.')
         brows=[]
         for name,label in (('disk5','5% disk'),('field1500d','1500d')):
             b=beam['b_diagnostic'][name+'_ProjSTG']
             brows.append(f"<tr><th>{label}</th><td>{b['sfl_base']:.3g}</td><td>{b['sphere_base']:.3g}</td><td>{b['mismatch']:.3g}</td><td>{b['differential']:.3g}</td><td>{b['cross_mismatch']:.3g}</td><td>{b['mismatch_power_change']:.3g}</td></tr>")
         beamtext+=f'''<h3>Polarization diagnostic</h3><p>A constant local Jacobian gives a common scalar Q/U multiplier and preserves sky E/B.
         The differential D=(S<sub>F</sub>−S<sub>0</sub>)−(R<sub>F</sub>−R<sub>0</sub>) also contains changed numerical transfer and reference error.
-        STG removes leading target shear, but those numerical terms remain.
-        The following are production-workspace, decoupled band estimates over 1000≤ℓ&lt;3000, normalized by baseline EE; they quantify the test's sensitivity, rather than isolate physical beam-induced B.</p>
+        STG removes leading target shear, but spatially varying basis rotations and Jacobians can still produce physical filter-induced B, alongside numerical errors.
+        The following are production-workspace, decoupled band ratios over 1000≤ℓ&lt;3000, formed as mean BB divided by mean baseline EE.
+        They are not typical per-bin levels: the numerator and denominator weight different parts of this band.
+        The figure instead shows coupled pure pseudo-spectra per bin; those need not match these decoupled band ratios.</p>
         <table><thead><tr><th>STG target</th><th>SFL baseline BB/EE</th><th>Sphere baseline BB/EE</th><th>Mismatch BB/EE</th><th>Differential BB/EE</th><th>D×mismatch BB/EE</th><th>Change of mismatch BB/EE</th></tr></thead><tbody>{''.join(brows)}</tbody></table>
         <p>The mismatch-power change is C<sub>D</sub>+2C<sub>DM</sub>, where M=S<sub>0</sub>−R<sub>0</sub>.
-        Its negative sign in both STG footprints means the Gaussian reduces the numerical path mismatch in this band.
-        These measurements do not isolate physical E→B conversion or set a physical upper limit; the local constant-Jacobian model predicts none, while gradients and numerical errors remain unresolved.</p>
+        Its negative sign in both STG footprints means the Gaussian reduces the path mismatch in this band.
+        These measurements do not isolate physical E→B conversion or set a physical upper limit; the local constant-Jacobian model predicts none, while spatial-gradient terms and numerical errors remain unresolved.</p>
         <p>The spherical reference retains the input's numerical B residual without filtering it; an independent input check bounds that residual below 1.6×10<sup>−15</sup> of EE below ℓ=4000 and 7.0×10<sup>−14</sup> over 4000–6000.
         This E-only approximation is negligible at the measured diagnostic sensitivity.</p>'''
     else:

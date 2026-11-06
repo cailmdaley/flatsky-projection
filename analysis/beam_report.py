@@ -118,7 +118,7 @@ def plot(data,model):
                                     ('differential','Filter differential','-')):
                 ax.semilogy(ell,data[p+tag+'_bb']/base,style,color=PS.SECONDARY[0],label=label)
             ax.set(xlim=(500,4000),ylabel=r'Pure pseudo-$BB$/baseline pseudo-$EE$')
-            ax.set_title('STG numerical control')
+            ax.set_title('Conformal STG target')
             if row==0:
                 ax.legend(fontsize=5.9)
         for ax in axs[:,0]:
@@ -146,9 +146,28 @@ def report(data,model,bdiag):
             'sphere_mean':float(data[p+'sphere_response'][idx]),
             'sfl_sector_min':float(data[p+'sfl_response2d'][idx].min()),
             'sfl_sector_max':float(data[p+'sfl_response2d'][idx].max())}
+        response=result['response'][footprint]
+        response['bands']={}
+        measured_ratio=data[p+'sfl_response']/data[p+'sphere_response']-1
+        predicted_ratio=model[footprint+'_source']/model[footprint+'_sphere']-1
+        for lo,hi in ((1000,2000),(2000,3000),(3000,4000)):
+            band=(data['ell']>=lo)&(data['ell']<hi)
+            response['bands'][f'{lo}_{hi}']={
+                'measured':float(measured_ratio[band].mean()),
+                'predicted':float(predicted_ratio[band].mean())}
         clean=(data['ell']>=1000)&(data['ell']<=3000)
         residual=data[p+'sfl_response2d']-model[footprint+'_source2d']
-        result['response'][footprint]['sector_model_max_abs_1000_3000']=float(abs(residual[clean]).max())
+        response['sector_model_max_abs_1000_3000']=float(abs(residual[clean]).max())
+        sphere_residual=data[p+'sphere_response2d']-model[footprint+'_sphere2d']
+        response['sphere_sector_model_max_abs_1000_3000']=float(abs(sphere_residual[clean]).max())
+        cosine=np.cos(2*data['chi'])
+        measured2d=data[p+'sfl_response2d']/data[p+'sphere_response2d']-1
+        predicted2d=model[footprint+'_source2d']/model[footprint+'_sphere2d']-1
+        observed_amplitude=2*np.mean(measured2d*cosine,axis=1)
+        predicted_amplitude=2*np.mean(predicted2d*cosine,axis=1)
+        response['quadrupole_amplitude_slope_1000_3000']=float(
+            np.dot(observed_amplitude[clean],predicted_amplitude[clean])
+            /np.dot(predicted_amplitude[clean],predicted_amplitude[clean]))
         keep=(bdiag['ell']>=1000)&(bdiag['ell']<3000)
         for proj in ('ProjZEA','ProjSTG'):
             p=f'{footprint}_{proj}_'
