@@ -61,7 +61,7 @@ def main():
         ax.set_xlim(ELL_LO, ELL_HI)
     bot.set_ylim(-ZOOM, ZOOM)
     top.set_ylabel(r"diagonal error [\%]")
-    bot.set_ylabel(r"$R$ error [\%]")
+    bot.set_ylabel(r"$\mathcal{R}$ error [\%]")
     bot.set_xlabel(r"$\ell$")
 
     handles = [Line2D([], [], color=PS.PROJ_COLORS[str(p)], lw=1.3,

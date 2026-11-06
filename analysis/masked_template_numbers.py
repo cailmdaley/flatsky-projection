@@ -33,6 +33,7 @@ def numbers(path=SUMMARY):
         'maskedTemplateNoiseless':f"\\num{{{m['noiseless_residual_over_raw']:.2e}}}",
         'maskedTemplateEstimatorCost':f"{low['estimator_cost_isolated_masked_over_oracle']:.4f}",
         'maskedTemplateStdGain':f"{m['cross_standard_deviation_gain_vs_fixed_power_subtraction']:.1f}",
+        'maskedTemplateStdGainRounded':f"{m['cross_standard_deviation_gain_vs_fixed_power_subtraction']:.0f}",
         'maskedTemplateStdGainInterval':f"$[{interval[0]:.0f}, {interval[1]:.0f}]$", 
         'maskedTemplateRMSGain':f"{m['sample_RMS_gain_without_residual_debiasing']:.1f}",
         'maskedTemplateConditionedGain':f"{m['cross_standard_deviation_gain_vs_EE_amplitude_conditioned']:.1f}",
