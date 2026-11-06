@@ -1295,6 +1295,44 @@ outputs:
         disk: 2Gi
         time_limit: 2h
 
+  - id: beyond_two_point
+    type: data
+    label: Lognormal scalar peaks, moments and wavelet projection control
+    description: |
+      Signal-only isotropic lognormal sphere, paired spherical and planar
+      Gaussian smoothing. TAN, STG and ZEA on 14.6, 30 and 60 degree diameter
+      sky disks, fixed central 0.5 degree Gaussian sigma. Not a survey forecast.
+    units:
+      seed: 0..24
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/beyond_two_point.py
+        --seed {units.seed} --out {output}
+      resources:
+        cpus: 2
+        memory: 4Gi
+        disk: 1Gi
+        time_limit: 1h
+
+  - id: beyond_two_point_resolution
+    type: data
+    label: Lognormal projection interpolation and peak resolution control
+    description: |
+      Same spherical realization spectrum, doubled HEALPix and/or planar
+      sampling, with the same physical smoothing scales and sky disks.
+    units:
+      seed: [0, 1, 2, 3]
+      resolution: [sphere, plane, both]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/beyond_two_point_resolution.py
+        --seed {units.seed} --resolution {units.resolution} --out {output}
+      resources:
+        cpus: 2
+        memory: 8Gi
+        disk: 1Gi
+        time_limit: 1h
+
 decisions:
   intermediate_nside:
     label: "Intermediate Healpix synthesis resolution"
