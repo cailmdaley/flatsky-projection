@@ -31,6 +31,22 @@ def run():
     ell=np.arange(4000)
     cl=1/(ell+50.)**2*np.exp(-(ell/1300.)**2)
     qe=TTQE(shape,pixel,ell,cl,lmin=200,lmax=900)
+    # Independently sum the symmetrized f_a f_b response, including wrap,
+    # both leg cuts and the finite-grid off-diagonal. This guards factors
+    # of two and signs in the FFT-convolution response implementation.
+    iy,ix=np.indices(shape)
+    for i,j in ((3,4),(9,5),(15,20)):
+        other=((i-iy)%shape[0],(j-ix)%shape[1])
+        xp,yp=qe.x[other],qe.y[other]
+        cp,ip=qe.cl[other],qe.inv[other]
+        lx,ly=qe.x[i,j],qe.y[i,j]
+        fg=(lx*qe.x+ly*qe.y)*qe.cl+(lx*xp+ly*yp)*cp
+        fc=(-ly*qe.x+lx*qe.y)*qe.cl+(-ly*xp+lx*yp)*cp
+        direct=np.array([[np.sum(a*b*qe.inv*ip)/(2*qe.area)
+                          for b in (fg,fc)] for a in (fg,fc)])
+        convolution=np.array([[qe.rgg[i,j],qe.rgc[i,j]],
+                              [qe.rgc[i,j],qe.rcc[i,j]]])
+        assert np.max(abs(direct-convolution))/np.max(abs(direct))<1e-11
     rng=np.random.default_rng(41)
     kinj,d=qe.injection(rng,bins=(40,90,180),rms=.003)
     cross=[]
