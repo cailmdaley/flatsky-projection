@@ -17,4 +17,4 @@ if __name__=='__main__':
                     corrections.append(w/b)
                 c=np.array(corrections)
                 print(field,proj,spec,'32/128-1',c[0]/c[2]-1,'64/128-1',c[1]/c[2]-1,flush=True)
-                assert np.max(abs(c[1]/c[2]-1))<4e-4
+                assert np.max(abs(c[:2]/c[2]-1))<4e-4

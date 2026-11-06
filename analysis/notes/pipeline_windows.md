@@ -29,6 +29,9 @@ The controlled tests below include that implementation and bound the local appro
 The window depends on declination and wave direction.
 It must therefore be evaluated with the full Jacobian and its orientation, before averaging the footprint and Fourier azimuth.
 The histogram of singular values alone discards the orientation relative to the HEALPix rings.
+In the eastward-map-x, COSMO Stokes convention, the flattened spin angle is \(\arg q+\phi-\Delta-\arg k\), where \(\phi\) is the polar rotation of \(J\) and \(\Delta\) is `shear_leakage.flattening_residual` in its original pixel-frame convention.
+`flattened_rotation` supplies \(\phi-\Delta\) both to the production window integral and to a gate using actual Q/U reprojection and `flatten_pol`.
+The sign is invisible in the azimuthally averaged unwindowed model, but matters when an anisotropic interpolation window weights the cross term.
 The previous equal-area-square approximation \(\exp[-q^2(4\pi/N_{\rm pix})/6]\) cannot capture that information.
 
 ## Finite grid average
@@ -70,6 +73,12 @@ Elsewhere the spherical cutoff becomes an ellipse in the map Fourier plane, so n
 `report_grid_aliases.py` sums the nearest reciprocal images for the field and compares both sky cutoffs.
 It is a local-affine prediction, not an exact prediction of every purified-estimator bandpower or the HEALPix-interpolation sidebands.
 `window_bandlimit_test` in `astra.yaml` supplies the independent paired spherical intervention.
+Its cutoff6000 leg is checked against the existing production seed before interpreting any cutoff difference.
+Only complete Fourier circles, \(\ell<5400\), are predicted by the current angular quadrature; above that limit the radial estimator samples square corners, so the diagnostic shows the observed maps without extending this prediction.
+For comparison with production, both windowed and aliased local spectra are normalized together as \(R_{\rm reference}(C_{\rm local,window}+C_{\rm local,alias})/C_{\rm local,base}\).
+Aliasing remains an additive prediction in this diagnostic, never part of the multiplicative loader correction.
+For conformal STG, the BB base is exactly zero and the alias term uses the normalization of its EE base.
+A paired STG-floor subtraction is reported only below4800; subtracting STG above that limit would remove its own alias signal and double-count the correction.
 
 An isotropic pre-deconvolution of the alms would invert neither the direction-dependent ring response nor the map-frame average exactly.
 It would also increase the high-frequency power available to alias.
@@ -79,10 +88,13 @@ It offers no precision gain over this known-input effective correction; direct e
 
 Run scientific scripts with `~/code/python/spt3g_software/build/env-shell.sh python <script>` and bounded OpenMP/BLAS threads.
 
-- `analysis/check_pipeline_windows.py` synthesizes monochromatic sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator.
-- `analysis/check_projected_windows.py` passes known plane-wave spectra through actual `maps.reproj_map` in every paper projection, off-centre on the field, varying interpolation and rebin independently.
+- `analysis/check_pipeline_windows.py` synthesizes periodic azimuthal sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator at declinations−70, −56, −42 and−35degrees.
+  It phase-averages full longitude rings and one interval between adjacent rings using a deterministic low-discrepancy quadrature; the eastward wavenumber is rounded to an integer azimuthal mode so that the sky is periodic.
+  A small random patch is unsuitable because incomplete longitudinal phases bias the coherent mean, even at large sample count.
+- `analysis/check_projected_windows.py` passes known plane-wave spectra through actual `maps.reproj_map` in every paper projection at two off-centre positions, varying interpolation and rebin independently.
+  It also gates super-Nyquist waves, the equatorial HEALPix belt, and the signed COSMO Q/U rotation through `flatten_pol`.
 - `analysis/check_window_quadrature.py` compares footprint/azimuth quadratures; convergence is assessed on the correction ratio rather than a coarse absolute forward spectrum.
-- `analysis/cache_simulation_windows.py` warms the known-input correction cache; cache keys include the implementation, theory file and production mask metadata.
+- `analysis/cache_simulation_windows.py` warms the known-input correction cache; cache keys include its implementation, geometry, spin and spectral code, analytic-mask source, theory file and production mask metadata.
 - `analysis/check_window_loaders.py` checks shapes, broadcasting, raw-data roundtrips and invalidation of the derived field cache.
 - `analysis/report_pipeline_windows.py` uses the production-mask geometric R model evaluated at every integer multipole, reports corrected residuals and paired-seed projection differences, and writes `/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz`.
 - `analysis/plot_pipeline_windows.py` renders those absolute and paired residuals.
