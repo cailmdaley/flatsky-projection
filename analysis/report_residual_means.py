@@ -52,8 +52,10 @@ def main():
                 stat = float(d @ np.linalg.solve(cov, d)/(1/len(x)+1/len(y)))
                 dim, n = len(d), len(y)
                 p = f.sf((n-dim)*stat/((n-1)*dim), dim, n-dim)
+                band_se = float(np.sqrt(cov.mean()*(1/len(x)+1/len(y))))
                 tests.append(dict(projection=proj, spectrum=spec, null='old-new', lo=lo, hi=hi,
-                                  t2=stat, dimension=dim, p=float(p)))
+                                  t2=stat, dimension=dim, p=float(p), mean=float(d.mean()), se=band_se,
+                                  band_mean_p=float(2*t.sf(abs(d.mean()/band_se), n-1))))
                 print(f'old-new {lo}-{hi}: T2 {stat:.3f}, dim {dim}, covariance-corrected F p {p:.5g}', flush=True)
                 # Remove only the predicted all-sky input-mean difference, not
                 # the finite-footprint realization scatter.
@@ -62,8 +64,14 @@ def main():
                     dc = d-offset[sel]
                     tc = float(dc @ np.linalg.solve(cov, dc)/(1/len(x)+1/len(y)))
                     pc = float(f.sf((n-dim)*tc/((n-1)*dim), dim, n-dim))
+                    # Nominal diagnostic: subtracting a realized all-sky
+                    # mean also slightly reduces covariance. We keep the
+                    # unconditioned covariance, not claim exact coverage.
                     tests.append(dict(projection=proj, spectrum=spec, null='old-new-input-conditioned',
-                                      lo=lo, hi=hi, t2=tc, dimension=dim, p=pc))
+                                      lo=lo, hi=hi, t2=tc, dimension=dim, p=pc,
+                                      mean=float(dc.mean()), se=band_se,
+                                      band_mean_p=float(2*t.sf(abs(dc.mean()/band_se), n-1)),
+                                      covariance='unconditioned-diagnostic'))
                     print(f'old-new input-conditioned {lo}-{hi}: T2 {tc:.3f}, F p {pc:.5g}', flush=True)
                 for label, theory in [('bin', model), ('radial', radial_model), ('spherical', spherical)]:
                     residual = arr[:, sel]/theory[sel]-1

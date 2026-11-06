@@ -1,54 +1,50 @@
-# Residuals after the introduced simulation windows
+# Residuals after the simulation windows
 
-The large low-multipole TT/EE structure is mostly a mismatch between the reference curve and the actual estimator, rather than an unmodelled projection distortion.
-A second additive numerical BB term comes from sampling the masked pure-B estimator on the native grid.
-Neither finding justifies a universal floor subtraction or a claim of sub-percent agreement in every band.
-The production arrays, default loaders, geometric coupling matrix and paper source are unchanged by this diagnostic.
+Most repeatable low-multipole TT/EE structure comes from comparing the estimator with the wrong radial reference, rather than from a missing leading projection distortion.
+The original upper-band STG TT excess also contains an input-spectrum mismatch.
+For BB, numerical sampling of the masked pure-B estimator explains about 30% of the STG/ZEA additive contamination at ell=4500–4800, but only about 12% at 4000–4500.
+A separate synthesis-grid/finite-averaging-dependent additive B term is demonstrated at Nside4096; its size in the Nside8192 production maps remains unmeasured.
+Neither result supports a universal STG floor subtraction or sub-percent agreement in every bin.
 
-## Reference operators
+The production arrays, default loaders, geometric coupling matrix and manuscript are unchanged by this diagnostic.
+All uncertainties below are standard errors of per-sky band means unless stated otherwise.
+The small ring ensemble has only two skies, so its errors should not be read as a precision calibration.
 
-The previous window analysis compares production to the geometric coupling matrix R, averaged at the integer multipoles in each width-50 bin.
-The native measured spectra have already had the continuous square-pixel window divided out at the nominal bin centre.
-The diagnostic here restores that window, applies NaMaster's actual `workspace.decouple_cell(workspace.couple_cell(k, C_native))` response, and only then divides out the same nominal window.
-This accounts for discrete Fourier-cell weighting, variation of the spectrum within a bin, and the mask's radial bandpower response.
-The independently controlled interpolation and finite-grid windows remain inside the coupled spectrum.
-They are held fixed when testing the small spectral-shape perturbations below.
+## Estimator and spherical conventions
 
-There is also a distinction between a spherical harmonic label and a local planar wavenumber.
-At small separation, the leading large-ell Legendre/Bessel correspondence is `P_ell(cos theta) ≈ J_0[(ell+1/2) theta]`.
-Changing variables in the spherical covariance, `(2ell+1) d ell = 2k dk`, gives `C_plane(k) ≈ C_sphere(k-1/2)`.
-The diagnostic therefore shifts the input spectrum by minus one half before applying R; it does not shift the measured bandpowers, fit an offset, or double the area Jacobian.
-The corresponding spin-2 corrections start beyond this leading large-ell correspondence.
-The independent review establishes that the attribution between these stages is order-dependent: the original integer average already samples a half-multipole below the bin centre.
-Consequently the radial-response-only stage introduces part of the convention difference that the spherical term then removes.
-The net correction is physical; the two intermediate shifts must not be described as separately isolated pipeline mechanisms.
-The reviewer independently reproduced the radial closure with a padded two-dimensional FFT forward model and the actual Fourier-cell counts.
+The previous window model averages the footprint-averaged geometric spectrum at integer multipoles in each width-50 bin.
+The measured native spectra have already had the continuous square-pixel power window divided out at the nominal bin centre.
+`residual_estimator_response.py` restores that window, applies NaMaster's actual `workspace.decouple_cell(workspace.couple_cell(k, C_native))`, and divides out the same nominal window afterwards.
+The independently controlled interpolation and finite-subsample windows remain inside the coupled spectrum.
+This includes discrete Fourier-cell weighting, within-bin spectral variation and the mask's radial response.
 
-`analysis/residual_estimator_response.py` keeps the simple integer-bin average, the radial estimator response, and the additional spherical correspondence as separate arrays.
-`analysis/check_residual_fft_response.py` independently tests Fourier-cell counts, normalization and the radial response against a padded two-dimensional mask-covariance convolution on all four actual grids.
-Its direct masked-map Fourier normalization agrees with NaMaster to the asserted1e-10 tolerance without fitting a normalization.
-The maximum per-bin coupled-response discrepancy is0.30% over100–4800, with an asserted0.5% envelope; the rms discrepancies are0.015–0.049%.
-This replaces a non-asserting constant-spectrum identity diagnostic, which did not test the physical response.
-The production pixel-grid corner radius is below the diagnostic's input limit8000.
-Its high-multipole radial continuation is only an approximation to the full anisotropic, sampled map.
+The leading large-ell spherical/planar correspondence is `P_ell(cos theta) ≈ J_0[(ell+1/2) theta]`.
+With `(2ell+1) d ell = 2k dk`, the corresponding planar spectrum is `C_plane(k) ≈ C_sphere(k-1/2)`.
+The diagnostic shifts the input spectrum by minus one half before applying the geometric response, without fitting an offset or changing the area normalization.
+The intermediate radial and half-multipole shifts are order-dependent: the old integer average already sits half a multipole below the bin centre.
+Only their net effect should be interpreted; they are not separately isolated physical pipeline mechanisms.
 
-Applying the radial response to a footprint-averaged projected spectrum is **not** the exact response of a spatially varying, anisotropic projected sky.
-The approximation works particularly well for TT and EE, but it is not used to replace the BB forward model or calibrate its additive floor.
-Remaining structured EE residuals and low-ell BB differences explicitly limit that interpretation.
+Applying a radial response to a footprint-averaged projected spectrum is an approximation to a spatially varying, anisotropic sky.
+It is not an exact forward model of that sky and is not used to calibrate the additive BB floor.
+`check_residual_fft_response.py` independently verifies Fourier-cell counts, normalization and TT/EE mask coupling using a padded two-dimensional FFT covariance convolution on all four actual grids.
+Its masked-map normalization agrees with NaMaster to the asserted 1e-10 tolerance, without fitting a scale.
+Over ell=100–4800, the maximum coupled-bin discrepancy is 0.30% and rms discrepancies are 0.015–0.049%; the asserted envelope is 0.5%.
+The independent reviewer found band-mean differences no larger than 0.006% over 1000–4000.
+This gate checks the radial calculation, not BB or the homogeneity approximation.
+The input limit of 8000 exceeds the native grid's Fourier-corner radius.
 
-## Independent means and sample variance
+## Independent skies and remaining bin structure
 
-The independent260-sky ensemble is `results/highell/bin_covariance_pilot` seeds0–3 plus `bin_covariance_sims` seeds4–259.
-Its E and T draws are independent, with zero true B, Nside8192, lmax6000, the production interpolation/rebin8/FlattenPol settings and the same field masks and pure-B estimator.
-Its theory array was exported from `analysis/theory_spectra.npz`.
-It is never pooled with the original20 skies, whose alms came from the pre-existing production simulations.
-Unit-width pseudo-spectra are Fourier-cell weighted back to the production width50 and decoupled with the original production matrices.
-No new science maps are synthesized locally.
+The 260 independent skies comprise `bin_covariance_pilot` seeds 0–3 and `bin_covariance_sims` seeds 4–259.
+They use independent T/E draws, zero true B, Nside8192, lmax6000 and the production interpolation, rebin8, FlattenPol, masks and pure-B estimator.
+Their theory was exported from `analysis/theory_spectra.npz`.
+Unit-width pseudo-spectra are Fourier-cell weighted to width50 and decoupled with the original production matrices.
+These skies are never pooled with the 20 original production skies, whose pre-existing alms have a different realized input mean.
+BICEP has no independent 260-sky test.
 
-For the independent260, ZEA TT over100–500 has residual−1.246±0.106% against the integer-bin reference.
-The radial response alone leaves+0.421±0.108%; including the spherical correspondence leaves+0.003±0.108%.
-Over1000–4000 the latter gives the following fractional residuals, in percent.
-The uncertainties are standard errors of the per-seed mean over the specified band, not errors obtained by treating the bins as independent.
+For independent ZEA TT at ell=100–500, the residual changes from −1.246±0.106% against the integer-bin model to +0.003±0.108% after the net estimator/spherical correction.
+The intermediate radial-only result is +0.421±0.108%, but should not be interpreted as an independent mechanism.
+Over ell=1000–4000, the net diagnostic gives these band means:
 
 | Projection | TT [%] | EE [%] |
 |---|---:|---:|
@@ -56,124 +52,143 @@ The uncertainties are standard errors of the per-seed mean over the specified ba
 | STG | −0.0193±0.0132 | −0.0482±0.0128 |
 | ZEA | −0.0103±0.0140 | −0.0316±0.0130 |
 
-These are bounded band means, **not** a per-bin closure claim.
-STG EE still has resolved acoustic structure, including a maximum absolute mean residual of roughly0.85% below1000 and0.78% over1000–4000 against this radial-plus-spherical diagnostic.
-On the same260 skies, ZEA and STG TT below1000 are consistent with the full band covariance after these operators, whereas STG EE is not.
-The residual below1000 is therefore neither wholly sample variance nor wholly explained by the radial model.
-Over1000–4000 the full-covariance probabilities for TT are0.419,0.063 and0.239 for SFL,STG and ZEA, whereas EE gives0.0053,6.1e-17 and0.0030.
-These diagnostic probabilities use the radial-plus-spherical reference, not an exact inhomogeneous model.
-For example, STG EE has a band mean−0.048±0.013% and a maximum bin residual0.784%; its small mean does not imply closure.
-The report also prints and stores one-dimensional per-sky band-mean tests, which need not agree with tests of bin structure.
+Small band means do not establish agreement in each bin.
+The full-covariance TT test over this band has diagnostic probabilities 0.419, 0.063 and 0.239 for SFL, STG and ZEA, whereas EE gives 0.0053, 6.1e-17 and 0.0030.
+STG EE retains acoustic structure with maximum absolute bin residuals 0.85% below 1000 and 0.784% over 1000–4000.
+Below 1000, TT is consistent with the net reference, but STG EE is not.
+`report_residual_means.py` stores full-covariance tests and separate one-dimensional per-sky band-mean tests, including upper bands.
 
-The production20-minus-independent260 low-ell differences are consistent with the measured band covariance: for ZEA100–1000, the approximate covariance-corrected F-test gives p=0.44 for TT and0.94 for EE.
-These are diagnostic probabilities, not exact finite-sample coverage claims for arbitrary non-Gaussian projected spectra.
-They test a difference of ensembles, not whether either ensemble agrees with the original simple model.
-`analysis/report_residual_means.py` prints both tests separately.
-The independent-sky comparison shows that most of the large acoustic pattern is repeatable, while the extra excursions of the original20 are consistent with sample variance.
+The production20-minus-independent260 difference below 1000 is consistent with the independent covariance: ZEA gives nominal p=0.44 for TT and 0.94 for EE over 100–1000.
+This tests the difference between ensembles, not either ensemble against the simple model.
+The independent reviewer empirically calibrated the ensemble-difference test using 2000 random 20-versus240 splits per configuration.
+Thus most of the large acoustic pattern is repeatable, while the original 20 skies' additional excursions are compatible with sample variance.
+The remaining EE/BB structure is not wholly sample variance.
 
-After conditioning on the original all-sky input mean, the production20-versus-independent260 full-covariance test over4000–4800 gives p=0.970 for STG TT and0.294 for STG EE; ZEA gives0.307 and0.322.
-That conditions on the input *mean*, not on its finite-footprint realization, and does not prove that every original upper-band excursion is an input-spectrum effect.
+The production BICEP-minus-ZEA contrast at 1000–4000 changes from +0.120±0.021% to +0.0585±0.0214% in TT and from +0.171±0.040% to +0.0022±0.0404% in EE.
+The remaining TT contrast is unattributed.
+The figures `low_ell.png` and `high_ell.png` show both ensembles and the reference operators.
 
-The paired production BICEP−ZEA contrast over1000–4000 changes from+0.120±0.021% to+0.0585±0.0214% in TT, and from+0.171±0.040% to+0.0022±0.0404% in EE.
-The remaining roughly0.06% TT projection contrast is not attributed here.
+## Original input spectra and the upper STG bands
 
-## Original input spectra and STG's upper bands
+`residual_input_spectra.py` measures full-sky T/E spectra from all 20 original alm files.
+Passing their realized mean through the same response distinguishes an input-spectrum mismatch from finite-footprint sample variance.
+The window kernels are held fixed during this small spectral-shape perturbation.
 
-`analysis/residual_input_spectra.py` reads the T and E alms of **all20** original production skies and computes their full-sky power spectra.
-Conditioning the reference on their realized mean spectrum is distinct from measuring power on the masked field.
-It can remove a mismatch of the supplied input spectrum without removing finite-footprint sample variance.
+At ell=4500–4800, the production STG TT residual becomes +0.0446±0.1064%, compared with +0.4093±0.1068% against the earlier integer-bin reference.
+STG EE becomes +0.1480±0.1028%, compared with +0.2782±0.1029%.
+No new local alias term is required to account for the original positive TT excursion of conformal STG.
+This is not a statement that every upper-band residual vanishes: independent STG TT/EE means in the same band are −0.047±0.028% and −0.073±0.029%.
 
-With that input mean passed through the same radial-plus-spherical response, STG4500–4800 TT is+0.0446±0.1064%, compared with+0.4093±0.1068% against the earlier integer-bin reference.
-STG EE is+0.1480±0.1028%, compared with+0.2782±0.1029%.
-The upper-band TT excess is thus accounted for without adding a local alias term to conformal STG.
-There is no evidence here that its remaining EE difference requires a new mechanism.
-The roughly−0.11% lower-band EE shift shared by all four original charts after conditioning is compatible with a finite-field realization difference; it is not declared a proven bias.
+After input-mean adjustment, the full-covariance production-versus-independent diagnostic over 4000–4800 gives p=0.970 for STG TT and 0.294 for STG EE; ZEA gives 0.307 and 0.322.
+These use the unconditioned covariance, ignoring the small variance reduction associated with the correlated all-sky mean subtraction; they are nominal diagnostics, not exact conditional coverage claims.
+The report also stores their one-dimensional tests.
+The roughly −0.11% clean-band production EE shift shared by the four charts after conditioning is compatible with a finite-field realization difference, not a proven universal bias.
 
-## Pure-E mask-product controls
+## Pure-E mask products and fixed-map refinement
 
-`residual_pure_e_test` is an additive lightcone/OSG output with four independent periodic planar E-only realizations on each of the four production field grids.
-The periodic input has BB/EE below1e-30 in the tested circles before masking.
-The same native Fourier coefficients are interpolated onto a twice-finer periodic grid before multiplying by the production mask and computing its pure-B terms.
-The mask is interpolated separately; no new sky modes or projection are introduced.
-An unmasked zero-B gate passes on both grids.
-Native and refined pseudo-spectra use the **same original workspace only as a diagnostic normalization**, not a claimed exact refined-grid calibration.
+`residual_pure_e_test` contains four periodic planar E-only realizations on each of the four production field grids.
+The same native Fourier coefficients are interpolated onto a twice-finer grid before multiplying by the separately interpolated production mask and forming pure-B terms.
+No new sky modes or reprojection are introduced.
+Native and fine pseudo-spectra use the same original workspace only as a diagnostic normalization, not an exact refined-grid calibration.
+Unmasked zero-B gates pass on both grids.
 
-Native mask products generate high-ell B even though the input is exactly pure E on the plane.
-For cutoff6000, STG4500–4800 gives BB/periodicEE=(3.94±0.03)e-6 and ZEA gives(5.75±0.27)e-6.
-Refining only those products reduces them to about1e-12, removing more than99.999%.
-Truncating the input at4000 leaves almost the same native high-ell floor.
-This isolates numerical mask-product/derivative sampling leakage rather than spherical reprojection or input power confined to the6000 tail.
-It does not imply that every BB floor in production has this origin.
+Native mask products generate a BB floor even though the input is pure E on the plane.
+At ell=4500–4800 with cutoff6000, BB/periodicEE is (3.94±0.03)e-6 for STG and (5.75±0.27)e-6 for ZEA.
+Refining only the mask products reduces these ratios to about 1e-12, removing more than 99.999%.
+Cutoff4000 leaves nearly the same native floor at high ell, but not throughout 1000–4000.
+This establishes numerical mask-product sampling leakage without spherical reprojection or power confined to the lmax6000 tail.
+The pure-E report explicitly compares its dimensionful native power with production after restoring the production pixel window.
 
-## Fixed production-map intervention
+`residual_map_upsample` holds the actual projected, flattened production Q/U maps fixed and refines only their sampling before the mask and pure-B estimator.
+All four seeds per projection reproduce the stored native spectra to the asserted 2e-9 relative tolerance, with observed differences near roundoff.
+Periodic-crop and 64/128-native-pixel padded/tapered controls compare the paired change within each padding, rather than equating different Fourier lattices.
+The taper is unity throughout the original crop; area normalization is restored before decoupling.
+The 64/128-padding gate passes for every projection.
+EE changes by no more than about 0.0002% in these controls.
 
-`residual_map_upsample` keeps the actual projected, flattened production Q/U maps fixed.
-Their native spectra must reproduce the stored production bandpowers before interpretation.
-Fourier refinement by two changes only their sampling before the mask and pure-B estimator.
-Periodic-crop and64/128-native-pixel padded/tapered versions distinguish the response from an interpolation artefact at a discontinuous crop boundary.
-The taper is unity throughout the original crop and hence wherever the production mask is nonzero.
-A change in map area is normalized out before using the original workspace.
-The refined/padded outputs remain diagnostic, not replacement production bandpowers.
+For four-seed ZEA at ell=4500–4800, pad128 refinement changes the fractional BB residual by −2.589±0.173 percentage points, leaving +4.908±0.086% over window+alias.
+Averaging dimensionful native C_ell, the removed fraction is about 30% of the STG/ZEA contamination in this band, about 12% at 4000–4500 and about 20% across 4000–4800.
+The fraction depends on weighting and the reference denominator; the earlier approximately 26% ZEA figure omitted the alias term.
+Prefer the direct paired percentage-point change and remaining residual for paper text.
 
-The four-seed ZEA4500–4800 paired change is about−2.59 percentage points relative to the window-plus-alias model, leaving about+4.91%.
-The same intervention barely changes SFL or BICEP BB.
-All four projections pass the native production roundtrip and64/128-padding paired-change gates.
-Using the mean native C_ell over4500–4800, the removed fraction is30.8% of STG's floor and32.5% of ZEA's excess over window+alias.
-Other weightings give different fractions: in particular, the earlier independent review's approximate26% ZEA used a different excess definition.
-The direct paired change and remaining fractional residual above are unambiguous and are the preferred paper numbers.
-Thus the pure-B mask-product sampling effect explains about one third of this upper-band additive contamination, but it does not close ZEA.
-The detailed final figures and generated summary carry the exact four-seed values and the padding checks.
-Subtracting STG, either before or after refinement, is a partial comparison and is never treated as a universal floor calibration.
+At 4500–4800, the removed native powers are 1.32e-14 for STG, 1.87e-14 for ZEA and 3.27e-15 for SFL, respectively 0.94, 0.90 and 0.88 times their independent planar floors.
+The SFL term is present but negligible relative to its geometric BB; BICEP's change is consistent with zero at this precision.
+These controls explain a minority of ZEA's remaining contamination, not all of it.
+The native STG C_ell floor is approximately flat over 4000–4800, while BB/EE rises because EE falls; after refinement its native C_ell decreases.
+The plots `pure_e.png` and `production_bb.png` display these distinctions.
 
-## Ruled out, and still open
+## Synthesis grid and finite averaging
 
-The preceding window thread established the coherent interpolation and finite-subsample windows and independently verified the geometric sampling aliases with a paired spherical cutoff test.
-Those effects are retained, not redone here.
-Changing that cutoff does not remove ZEA's lower additive floor.
-This thread additionally rules out pure sample variance as the origin of the repeatable large TT/EE acoustic pattern, resolves most of that pattern with the estimator and spherical correspondence, and accounts for the original upper STG TT excess through its actual input spectrum.
-It isolates a separate additive pure-B mask-product sampling term, including its effect on the actual production maps.
-It does **not** establish a universal STG subtraction, exact sub-per-mille TT/EE closure, or the mechanism of the remaining low-ell BB and high-ell additive ZEA residual.
-Nonlocal projection terms and incoherent interpolation/subsample response remain candidates rather than measured explanations.
+`residual_ring_test` holds the original E alms, chart, footprint, output pixel centres and estimator fixed, synthesizing at Nside4096 with 8 or 16 subpixel samples per output-pixel axis.
+The unchanged Nside8192/rebin8 production maps supply the baseline.
+Both seeds in STG and ZEA pass native EE/BB roundtrips.
+Production's tiny input B, omitted in this E-only intervention, is below 8e-14 of EE in the tested upper band and cannot explain the change.
 
-Retain4000 as the common upper edge for the paper's BB band-mean comparison, for the pre-existing reasons of projection-dependent aliases and the rising non-common additive floor.
-Do not call1000–4000 a universally closed precision range: covariant tests still resolve sub-percent BB structure, STG is only a floor, and BICEP has no independent260-sky test.
-Do not extend the lower edge below1000 on the strength of a TT/EE diagnostic: the BB local-affine model still has resolved low-ell structure.
-TT/EE can be shown through4800 as diagnostics provided the estimator response, input-spectrum distinction and remaining per-bin deviations are stated.
+For STG at ell=4500–4800, the two-sky mean BB/ownEE is:
+
+| Synthesis and samples per axis | BB/ownEE | EE/production EE |
+|---|---:|---:|
+| Nside8192, 8 | (3.065±0.026)e-5 | 1 |
+| Nside4096, 8 | (13.086±0.387)e-5 | 0.82965 |
+| Nside4096, 16 | (8.847±0.242)e-5 | 0.82366 |
+
+Doubling the sampling at Nside4096 lowers BB/ownEE by 32.39±0.15%, while EE changes by only 0.72%.
+The independent reviewer checked the coherent EE change against the finite-subsample window, agreeing to roughly 1e-4.
+A common multiplicative window cannot explain the B change in conformal STG.
+Interpolation/finite averaging demonstrably contributes additive numerical B at Nside4096.
+The ZEA two-sky mean BB/ownEE changes from 4.341e-4 in production to 5.552e-4 at4096/8 and 5.119e-4 at4096/16; it does not support a chart-independent floor subtraction.
+
+The STG floor below 500 barely responds to either sampling intervention, and its 500–1000 value changes by at most about 4%.
+These numerical sampling terms therefore do not explain the low-ell floor.
+The plot `ring_controls.png` shows the low-ell stability and upper-band sensitivity.
+
+No Nside8192/rebin16 control was run.
+Changing Nside also changes the interpolation lattice and code path, and the high-ell spectral shapes of the Nside4096 term and refined production remainder differ.
+Therefore these controls do not establish how much of the remaining Nside8192 production floor comes from finite averaging.
+A paired8192/16 intervention would be the smallest next test if a quantitative decomposition is needed; this report instead closes with that limitation explicit.
+
+## Quoted ranges and remaining causes
+
+Keep ell=4000 as the common upper edge for BB band-mean comparisons because of the already demonstrated projection-dependent aliases and the growing contamination relative to EE.
+Do not call 1000–4000 a universally closed precision range.
+ZEA's independent BB band mean against the radial-plus-spherical diagnostic is +0.273±0.025% there, with resolved bin structure; SFL's mean is −0.010±0.026%, but its bin-structure test also rejects the approximation.
+STG BB is a floor diagnostic, and BICEP has no independent 260-sky test.
+Do not extend the common BB lower edge below1000 using a TT/EE result: ZEA retains strong low-ell BB structure, especially around EE troughs, that neither mask-product refinement nor the ring controls remove.
+Inhomogeneous leakage and nonlocal projection/estimator response remain hypotheses for that structure, not established quantitative explanations.
+TT/EE may be shown through4800 as diagnostics, with the estimator conventions, input distinction and remaining per-bin errors stated.
 No range is moved merely to improve agreement.
 
-## Independent review and unfinished validation
+Ruled out as complete explanations are pure sample variance for the repeatable acoustic pattern, input cutoff changes for the lower additive ZEA/STG floor, a common coherent window for the controlled Nside4096 B term, and mask-product sampling for the entire production BB floor.
+Established contributions are the net radial/spherical reference correction, the original input-spectrum mismatch, native pure-B mask-product leakage and the Nside4096 sampling-dependent additive B term.
+Their distinction is essential: none licenses a universal production floor correction.
 
-The native Opus review is preserved beside the residual-anomalies fiber as `residual-review.json`, with its exploratory FFT and covariance scripts attributed to that review.
-It accepts the TT/EE net closure and planar pure-E control with the qualifications above, independently verifies the production-map pairing, and rejects attribution of the entire BB floor to mask-product sampling.
-The report already treats that term as a minority contribution.
-The review confirms empirical calibration of the low-ell ensemble-difference test with2000 random20-versus240 splits per configuration.
-It also finds statistically resolved EE and BB bin structure that small band means conceal.
+## Review, provenance and reproduction
 
-Before scientific closure, finish the detached grid jobs and ring/subsample report, regenerate the compact summary from complete canonical outputs, and add executable gates.
-The constant-response diagnostic currently records an error without asserting; replace or supplement it with an independently checked Fourier-cell/FFT forward gate rather than calling it a complete response validation.
-The pure-E report now compares planar contamination with the production excess explicitly in native C_ell units, with the pixel window restored only on the production side.
-The mean report uses `radial_model` rather than `exact`, tests the upper bands and stores both one-dimensional band-mean and full-covariance tests plus the realized-input control.
-`paper_numbers.py --residual-only` generates the bounded claims in `paper/residual_numbers.tex`; the manuscript itself is unchanged.
+Two independent Opus reviews are preserved beside the residual-anomalies fiber as `residual-review.json` and `residual-final-review.json`, with their briefs and attributed FFT/covariance scripts.
+The final review accepts the FFT arithmetic, covariance tests, four-seed measurements and macros, and requires the band-specific and native-power wording incorporated here.
+Its ring assessment used both STG seeds and the first ZEA seed; the final canonical report includes both ZEA seeds.
 
-## Reproduction
+All 36 control units ran through `lc run --executor htcondor --profile htcondor9` and are canonical.
+`lc verify -u highell` passed the materialized chain before the last ring gather; `check_residual_provenance.py` additionally checks all three final canonical hashes, all 36 unit hashes and upstream versions.
+It compares explicit stage/theory inputs and imported stage helpers byte-for-byte with each unit's git pin, avoiding reliance on the external-file mtime/size fingerprints alone.
+No manifests are rewritten by the check.
+The compact data and provenance records are in `analysis/figures/residual_anomalies/summary.json` and `provenance.json`.
 
-Run science under `~/code/python/spt3g_software/build/env-shell.sh` after activating CVMFS py3-v5, with `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` for the local reports.
-The additive OSG commands are `lc run --executor htcondor --profile htcondor9 residual_pure_e_test residual_map_upsample residual_ring_test -u highell`.
-A fresh worktree must first verify and reuse the canonical upstreams and their existing archives, as documented in the OSG troubleshooting fiber; otherwise Snakemake can schedule legacy upstream units that no longer exist separately.
-The tested controls carry explicit implementation/theory input fingerprints.
+Run reports with CVMFS py3-v5 activated under `~/code/python/spt3g_software/build/env-shell.sh`, with `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`.
+Large arrays/logs use `/sptlocal/user/cailmdaley/pol_project/residual_*`.
+The reproduction order is:
 
-Local reports, in order:
+1. `analysis/residual_input_spectra.py`
+2. `analysis/residual_estimator_response.py`
+3. `analysis/report_residual_means.py`
+4. `analysis/check_residual_fft_response.py`
+5. `analysis/report_residual_pure_e.py`
+6. `analysis/report_residual_map_upsample.py`
+7. `analysis/report_residual_rings.py`
+8. `analysis/summarize_residual_anomalies.py`
+9. `analysis/plot_residual_anomalies.py`
+10. `analysis/paper_numbers.py --residual-only`
+11. `lc verify -u highell` and `analysis/check_residual_provenance.py` using the installed lightcone Python environment.
 
-- `analysis/residual_input_spectra.py`
-- `analysis/residual_estimator_response.py`
-- `analysis/report_residual_means.py`
-- `analysis/check_residual_fft_response.py`
-- `analysis/report_residual_pure_e.py`
-- `analysis/report_residual_map_upsample.py`
-- `analysis/report_residual_rings.py`
-- `analysis/summarize_residual_anomalies.py`
-- `analysis/plot_residual_anomalies.py`
-- `analysis/paper_numbers.py --residual-only`
-
-Large arrays and logs use `/sptlocal/user/cailmdaley/pol_project/residual_*`.
-The compact summary and inspected plots live in `analysis/figures/residual_anomalies/`.
+The sole macro writer generates the bounded claims in `paper/residual_numbers.tex`, including the STG EE covariance-test probability alongside its small mean and largest bin error.
+The manuscript author should replace the original unexplained positive STG TT claim, qualify the clean-band EE agreement, explain the low-ell reference mismatch, and retain the numerical-BB limitation rather than claiming closure.

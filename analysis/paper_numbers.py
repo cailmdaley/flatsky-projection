@@ -1067,6 +1067,7 @@ def residual_numbers():
     tests = find(d['ensemble_tests'], projection='ProjSTG', spectrum='EE',
                  null='new-model-spherical', lo=1000, hi=4000)
     M.add('residSTGEEMaxBin', pct(tests['max_bin_residual'], 2))
+    M.add('residSTGEEFitP', '$'+sci(tests['p'], 1)+'$')
     assert all(name.isalpha() for name in M)
     path = ROOT/'paper/residual_numbers.tex'
     path.write_text(M.tex())

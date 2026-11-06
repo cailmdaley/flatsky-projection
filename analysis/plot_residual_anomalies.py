@@ -32,7 +32,7 @@ def plot_ring_controls():
             ax.grid(alpha=.15)
         for d in data:
             d.close()
-    axes[0, 1].legend(fontsize=8, loc='upper left')
+    axes[0, 1].legend(fontsize=8, loc='center left')
     fig.savefig(OUT/'ring_controls.png', dpi=160)
     fig.savefig(OUT/'ring_controls.pdf')
     plt.close(fig)
