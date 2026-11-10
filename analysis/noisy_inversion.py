@@ -42,9 +42,9 @@ EDGES = np.arange(500, 4001, 500)
 NB = len(S.ELL)
 
 
-def load(proj):
+def load(proj, directory=DIR):
     """Decoupled width-50 cross and signal spectra, windows divided out."""
-    paths = sorted(DIR.glob(f'noisy_{proj}_seed*.npz'))
+    paths = sorted(directory.rglob(f'noisy_{proj}_seed*.npz'))
     with np.load(paths[0]) as z:
         counts, beam = z['counts'].copy(), float(z['beam_fwhm_arcmin'])
     raw = {k: [] for k in ('tt_cross', 'pol_cross', 'tt_signal', 'pol_signal')}
@@ -98,6 +98,7 @@ def jackknife_ratio(x, y):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--dir', type=Path, default=DIR)
     p.add_argument('--plots', type=Path, default=Path('/sptlocal/user/cailmdaley/pol_project/noisy_inversion'))
     args = p.parse_args()
     th = T.load()
@@ -106,7 +107,7 @@ def main():
     select = (S.ELL >= 500) & (S.ELL < 4000)
     amps, data, seeds, extra = {}, {}, {}, {}
     for proj in PROJS:
-        d, seeds[proj], fwhm = load(proj)
+        d, seeds[proj], fwhm = load(proj, args.dir)
         data[proj] = d
         b2 = np.exp(-lp*(lp+1)*(np.deg2rad(fwhm/60)/np.sqrt(8*np.log(2)))**2)
         shapes = {s: th[f'lensed_{s}']*b2 for s in ('TT', 'EE', 'BB')}
@@ -202,9 +203,9 @@ def plot(result, data, extra, out):
     ell = np.array(d['ell'])
     f = ell*(ell+1)/(2*np.pi)
     ax.plot(ell, f*np.array(d['leak_model']), label='SFL leaked BB (model)')
-    ax.plot(ell, f*np.array(d['measured_leak']), '.', ms=3, label='SFL BB − lensed (measured)')
+    ax.plot(ell, f*np.array(d['measured_leak']), '.', ms=3, label='SFL BB minus lensed (measured)')
     ax.plot(ell, f*np.array(d['lensed_model']), label='lensed BB (through R)')
-    ax.plot(ell, f*np.array(d['sd']), label='scatter per band, Δℓ=50')
+    ax.plot(ell, f*np.array(d['sd']), label=r'scatter per band, $\Delta\ell=50$')
     ax.set_yscale('log')
     ax.set_xlim(0, 5000)
     ax.set_xlabel(r'$\ell$')
