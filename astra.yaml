@@ -745,6 +745,34 @@ outputs:
         disk: 4Gi
         time_limit: 4h
 
+  - id: noisy_inversion_sims
+    type: data
+    label: "Noisy SPT-3G-like field skies for inverting the response"
+    description: |
+      Independent lensed Gaussian skies (TT, EE, BB, TE) with a 1.2 arcmin
+      Gaussian beam, through the production field projection, observed as two
+      noise splits of 5 uK-arcmin coadded polarization depth (5/sqrt(2) in T).
+      Noise is white on the grid, never projected, at a fixed depth per sky
+      area: uniform for ZEA and SFL, rising with STG's area magnification.
+      Keeps unit-width split-cross and noise-free pseudo-spectra; no maps.
+    inputs: [field_flatsky_masks]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    units:
+      seed: 0..260
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/noisy_inversion_sims.py
+        --masks {inputs.field_flatsky_masks} --seed {units.seed}
+        --nside {decisions.intermediate_nside}
+        --interpolation {decisions.interpolation}
+        --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
+        --max-procs {resources.cpus} --out {output}
+      resources:
+        cpus: 8
+        memory: 24Gi
+        disk: 4Gi
+        time_limit: 6h
+
   - id: bin_covariance_control_spectra
     type: data
     label: "Matched homogeneous covariance control spectra"
