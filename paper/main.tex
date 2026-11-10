@@ -712,7 +712,12 @@ These are controlled template responses and conditional forecasts, with no multi
 
 The closed form extends to other flat-sky work, and Table~\ref{table:footprints} evaluates it for a few footprints.
 For the gnomonic \ang{10} fields of \citet{pires20}, Eq.~\eqref{eq:law_footprint} gives $BB/EE$ of $\bbEePiresTAN$, which quantifies the residual they call negligible.
-\citet{casas23} report ``significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane'', and BICEP/Keck note that ``other map projections will have significantly lower distortion'' \citep{bk7}.
+
+Many analyses split a footprint into patches, project each about its own centre and average the per-patch statistics, as for the 19 SPT-SZ fields \citep{story13} and the \ang{10} tiles of a DES peak-count analysis \citep{harnoisderaps21}.
+Equation~\eqref{eq:coupling} is an integral over position, so such an average carries the weighted mean of the per-patch $\mathcal{R}$, and its leakage is $2\gsq$ with $\gsq$ averaged over the patches with the combination weights.
+Re-centring lowers $\gsq$ quickly: $g$ grows as the square of the distance from the tangent point on a non-conformal zenithal projection and linearly on a cylindrical one, so $\gsq$ scales as the fourth and second power of the patch size, and the two gnomonic squares of Table~\ref{table:footprints} differ by $(14.6/10)^4$ to better than 1\%.
+The cost is that no patch holds modes larger than itself \citep{plaszczynski12} and each pays its own apodized edge, whereas a conformal grid removes the leakage at any size.
+\citet{casas23} report ``significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane'', and BICEP/Keck note that ``other map projections will have significantly lower distortion'' \citep{bk7}. BICEP2 counts ``the simple RA-Dec.\ map projection which we have chosen'' among three sources of $E$/$B$ mixing in its maps \citep{bicep2}.
 \citet{ge24} replace bilinear interpolation with non-uniform FFTs and verify round trips between grids to $\lesssim 0.3\%$ out to $\ell = 3500$; this measures interpolation fidelity, whereas the shear belongs to the projection, so a perfect resampler onto a non-conformal grid still leaks $2\gsq$ of $EE$ into $BB$.
 \citet{wolz25} and \citet{cornish25} estimate spectra directly from catalogues by summing spherical harmonics at true sky positions, which involves no projection and so no leakage.
 
