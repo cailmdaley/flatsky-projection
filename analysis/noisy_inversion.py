@@ -90,8 +90,17 @@ def fit(a, expected, data, weight, keep):
     return ((data-expected)[:, keep]/weight[keep]) @ np.linalg.pinv(w).T
 
 
-def jackknife_ratio(x, y):
-    stat = lambda a, b: a.var(0, ddof=1).mean()/b.var(0, ddof=1).mean()
+def band_mean(a, b):
+    """Ratio of band-averaged variances, as in the noise-free comparison."""
+    return a.var(0, ddof=1).mean()/b.var(0, ddof=1).mean()
+
+
+def combined(a, b):
+    """Ratio of variances of the inverse-variance-combined amplitude."""
+    return np.sum(1/b.var(0, ddof=1))/np.sum(1/a.var(0, ddof=1))
+
+
+def jackknife_ratio(x, y, stat):
     d = np.array([stat(np.delete(x, i, 0), np.delete(y, i, 0)) for i in range(len(x))])
     return float(stat(x, y)), float(np.sqrt((len(x)-1)/len(x)*np.sum((d-d.mean())**2)))
 
@@ -134,13 +143,15 @@ def main():
     rows = []
     for (proj, spec, kind, est), v in amps.items():
         per_sky = v.mean(1)
-        ratio, err = jackknife_ratio(v, amps['ProjZEA', spec, kind, est])
+        ratio, err = jackknife_ratio(v, amps['ProjZEA', spec, kind, est], band_mean)
+        cratio, cerr = jackknife_ratio(v, amps['ProjZEA', spec, kind, est], combined)
         rows.append(dict(projection=proj, spectrum=spec, spectra=kind, estimator=est,
                          mean_bias=float(per_sky.mean()),
                          mean_bias_se=float(per_sky.std(ddof=1)/np.sqrt(nsky)),
                          bin_bias=v.mean(0).tolist(),
                          bin_sd=v.std(0, ddof=1).tolist(),
-                         variance_over_zea=ratio, variance_over_zea_se=err))
+                         variance_over_zea=ratio, variance_over_zea_se=err,
+                         combined_over_zea=cratio, combined_over_zea_se=cerr))
 
     # SFL's leaked BB against the scatter of its noisy BB bandpowers.
     sfl = data['ProjSFL']
@@ -150,7 +161,10 @@ def main():
     detect = dict(ell=S.ELL.tolist(), leak_model=extra['ProjSFL']['leak'].tolist(),
                   lensed_model=extra['ProjSFL']['lensed'].tolist(),
                   measured_leak=measured_leak.tolist(), sd=sd.tolist(), snr=snr.tolist())
-    for lo, hi in ((500, 1000), (1000, 2000), (2000, 3000), (3000, 4000), (4000, 5000), (500, 4000)):
+    leak, lensed = extra['ProjSFL']['leak'], extra['ProjSFL']['lensed']
+    above = S.ELL > 1000
+    detect['ell_leak_below_lensed'] = float(S.ELL[above][np.argmax(leak[above] < lensed[above])])
+    for lo, hi in ([(a, a+500) for a in range(500, 5000, 500)] + [(500, 4000)]):
         s = (S.ELL >= lo) & (S.ELL < hi)
         detect[f'snr_{lo}_{hi}'] = float(np.sqrt(np.sum(snr[s]**2)))
         detect[f'leak_over_lensed_{lo}_{hi}'] = float(np.mean(extra['ProjSFL']['leak'][s]/extra['ProjSFL']['lensed'][s]))
@@ -165,7 +179,8 @@ def main():
     for r in rows:
         if r['estimator'] == 'weighted':
             print(f"{r['projection']} {r['spectrum']} {r['spectra']:6s} bias {r['mean_bias']:+.2e}"
-                  f" ± {r['mean_bias_se']:.1e}  var/ZEA {r['variance_over_zea']:.3f} ± {r['variance_over_zea_se']:.3f}")
+                  f" ± {r['mean_bias_se']:.1e}  var/ZEA {r['variance_over_zea']:.3f} ± {r['variance_over_zea_se']:.3f}"
+                  f"  combined {r['combined_over_zea']:.3f} ± {r['combined_over_zea_se']:.3f}")
     print({k: v for k, v in detect.items() if k.startswith(('snr_', 'leak_over'))})
 
 
