@@ -143,11 +143,15 @@ def main():
     rows = []
     for (proj, spec, kind, est), v in amps.items():
         per_sky = v.mean(1)
+        w = 1/v.var(0, ddof=1)
+        per_sky_combined = v @ w/w.sum()
         ratio, err = jackknife_ratio(v, amps['ProjZEA', spec, kind, est], band_mean)
         cratio, cerr = jackknife_ratio(v, amps['ProjZEA', spec, kind, est], combined)
         rows.append(dict(projection=proj, spectrum=spec, spectra=kind, estimator=est,
                          mean_bias=float(per_sky.mean()),
                          mean_bias_se=float(per_sky.std(ddof=1)/np.sqrt(nsky)),
+                         combined_bias=float(per_sky_combined.mean()),
+                         combined_bias_se=float(per_sky_combined.std(ddof=1)/np.sqrt(nsky)),
                          bin_bias=v.mean(0).tolist(),
                          bin_sd=v.std(0, ddof=1).tolist(),
                          variance_over_zea=ratio, variance_over_zea_se=err,
@@ -178,7 +182,7 @@ def main():
     plot(result, data, extra, args.plots)
     for r in rows:
         if r['estimator'] == 'weighted':
-            print(f"{r['projection']} {r['spectrum']} {r['spectra']:6s} bias {r['mean_bias']:+.2e}"
+            print(f"{r['projection']} {r['spectrum']} {r['spectra']:6s} bias {r['combined_bias']:+.2e} ± {r['combined_bias_se']:.1e} band-mean {r['mean_bias']:+.2e}"
                   f" ± {r['mean_bias_se']:.1e}  var/ZEA {r['variance_over_zea']:.3f} ± {r['variance_over_zea_se']:.3f}"
                   f"  combined {r['combined_over_zea']:.3f} ± {r['combined_over_zea_se']:.3f}")
     print({k: v for k, v in detect.items() if k.startswith(('snr_', 'leak_over'))})

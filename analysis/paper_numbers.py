@@ -1301,14 +1301,21 @@ def noisy_numbers():
             r = row[proj, spec, 'signal']
             n = 2 if proj == 'STG' else 1
             M.add(f'noisyFreeCost{proj}{spec}', pm(r['combined_over_zea'], r['combined_over_zea_se'], n))
-    # TT and EE share one offset across charts; the noisy means agree with it.
-    free = [row[p, s, 'signal']['mean_bias'] for p in ('ZEA', 'STG', 'SFL') for s in ('TT', 'EE')]
-    M.add('noisyOffsetLow', pct(min(free), 2))
-    M.add('noisyOffsetHigh', pct(max(free), 2))
+    # Biases of the inverse-variance-combined amplitude, as for the variances.
+    offsets = [row[p, s, 'cross']['combined_bias'] for p in ('ZEA', 'STG', 'SFL') for s in ('TT', 'EE')]
+    M.add('noisyOffsetLow', pct(min(offsets), 2))
+    M.add('noisyOffsetHigh', pct(max(offsets), 2))
     for proj in ('ZEA', 'STG', 'SFL'):
         r = row[proj, 'BB', 'cross']
-        M.add(f'noisyBBBias{proj}', f(r['mean_bias'], 2))
-        M.add(f'noisyBBBias{proj}Error', f(r['mean_bias_se'], 2))
+        M.add(f'noisyBBBias{proj}', f(r['combined_bias'], 3))
+        M.add(f'noisyBBBias{proj}Error', f(r['combined_bias_se'], 3))
+    low = row['SFL', 'BB', 'cross']
+    low_se = low['bin_sd'][0]/np.sqrt(data['nsky'])
+    M.add('noisySFLBBLowBias', f(low['bin_bias'][0], 3))
+    M.add('noisySFLBBLowBiasError', f(low_se, 3))
+    ratio = data['sfl_detectability']['leak_over_lensed_500_1000']
+    M.add('noisySFLLeakLensedLow', f"{ratio:.0f}")
+    M.add('noisySFLLeakModelError', pct(low['bin_bias'][0]/ratio, 1))
     sfl, zea = row['SFL', 'BB', 'cross'], row['ZEA', 'BB', 'cross']
     M.add('noisySFLBBScatterLow', f"{sfl['bin_sd'][0]/zea['bin_sd'][0]:.0f}")
     M.add('noisySFLBBLeakedShare', pct(row['SFL', 'BB', 'signal']['bin_sd'][0]**2/sfl['bin_sd'][0]**2, 0))
