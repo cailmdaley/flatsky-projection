@@ -33,6 +33,7 @@
 \input{covariance_numbers}
 \input{residual_numbers}
 \input{choosing_numbers}
+\input{noisy_numbers}
 \input{masked_template_numbers}
 \input{local_source_numbers}
 \input{beyond_two_point_numbers}
@@ -167,6 +168,8 @@ The two legs share everything else, so their difference isolates the effect of p
 The $T$ leg projects $T$ as a scalar.
 A second set of 20 skies with a white spectrum, $C_\ell = 1$, passes through the $T$ leg alone.
 A separate ensemble of \covNumProjected\ independent skies, with no BICEP maps, passes through the same pipeline for SFL, STG and ZEA; it sets band means and covariances in Sect.~\ref{sec:results}.
+All of these skies are noise-free by design: noise moves no mean, and an instrument's noise is binned in grid pixels and never passes through the projection, so the leakage of Sects.~\ref{sec:law}--\ref{sec:footprints} is a property of the sky alone.
+Section~\ref{sec:discussion} adds noise where it can change a conclusion, to the inversion of the response and to the template and filters that act on noisy maps, and each noisy result states its configuration.
 
 We estimate spectra with NaMaster \citep{alonso19}, in its flat-sky mode.
 Flattened $Q$ and $U$ enter as a spin-two field with $B$-mode purification, and the maps of the $E/B$ and $T$ legs as spin-zero fields.
@@ -531,10 +534,10 @@ On the 1500d field over $1000 < \ell < 3000$, STG's $BB/EE$ is the pipeline floo
 For temperature and $E$-mode work we recommend ZEA, because it needs almost no scalar correction.
 ZEA preserves area exactly, shears only as $r^2/8$ near the tangent point, and stays within \EEboxZEAdev\ of the input $EE$ on the field, while it leaks \ZEAoverlens\ of the lensed $BB/EE$.
 STG removes the shear by adding magnification, which leaves \EEboxSTGthreeK\ of the input $EE$ power near $\ell = 3000$ and \EEboxSTGfourK\ near $\ell = 4000$ on the 1500d field (Sect.~\ref{subsec:spectra}).
-That loss is known and invertible, and on noise-free skies inverting it costs little.
-On the \choiceSkies\ skies, fitting one amplitude per 500-wide band through the scalar block of Eq.~\eqref{eq:coupling}, STG's corrected variance over ZEA's is \choiceCostTTWeighted\ in $TT$ and \choiceCostEEWeighted\ in $EE$ with bins weighted by their measured scatter.
-Direct bandpowers with no inverse give \choiceCostTTDirect\ and \choiceCostEEDirect, and equal weight on every fractional bin gives \choiceCostTTEqual\ and \choiceCostEEEqual.
-These are noise-free, unlensed two-point variances on one field with no off-diagonal weighting, so our recommendation rests on convenience and not on an information advantage.
+That loss is known and invertible, and inverting it costs little.
+We test the inversion on \noisySkies\ lensed skies of the 1500d field with a \ang{;1.2;} Gaussian beam and two splits of white noise on the grid, \SI{5}{\micro\kelvin}-arcmin in polarization and $5/\sqrt{2}$ in temperature at a fixed depth per unit sky area, whose cross-spectra carry no noise bias.
+Fitting one amplitude per 500-wide sky band over $500 < \ell < 4000$ through Eq.~\eqref{eq:coupling}, with bins weighted by their measured scatter and bands combined by inverse variance, STG's variance over ZEA's is \noisyCostSTGTT\ in $TT$, \noisyCostSTGEE\ in $EE$ and \noisyCostSTGBB\ in $BB$; without noise, on the same skies, it is \noisyFreeCostSTGTT\ and \noisyFreeCostSTGEE\ in $TT$ and $EE$, so noise dilutes the cost.
+These are two-point variances on one field with no off-diagonal weighting, so our recommendation rests on convenience and not on an information advantage.
 Moving ZEA's tangent point to $\delta = -\ang{\choiceZEACentreDec}$ lowers $\gsq$ by \choiceZEATuneGain, and an axis-aligned stretch of unit determinant lowers it by \choiceZEAAffineGain; we have not simulated either.
 
 \subsection{Correcting a projected analysis} \label{subsec:correct}
@@ -552,11 +555,12 @@ The forward model predicts these errors.
 The measured white bandpowers over $\mathcal{R}$ applied to the white input stay within \tfclosureworst\ of unity in every band over that range for all four projections, with rms residuals of \tfclosurezrms\ standard errors, BICEP the largest, and their mean over that range departs from unity by $\ScalarFieldSFLWhiteFullMeanError \pm \ScalarFieldSFLWhiteFullMeanErrorSEM$ for SFL and $\ScalarFieldBICEPWhiteFullMeanError \pm \ScalarFieldBICEPWhiteFullMeanErrorSEM$ for BICEP.
 This tests $\mathcal{R}$ forward on one known spectrum.
 
-The joint $EE$/$BB$ system of Eq.~\eqref{eq:coupling} also inverts on noise-free skies.
-Fitting known-shape $E$ amplitudes in 500-wide sky bands over $500 < \ell < 4000$, with the exterior spectrum held at its model, on the 20 CMB skies, leaves a mean null $B$ of $(\choiceZEABBMeanBias) \pm (\choiceZEABBMeanBiasError)$ of the input $EE$ for ZEA and $(\choiceSFLBBMeanBias) \pm (\choiceSFLBBMeanBiasError)$ for SFL.
-At equal fractional weight SFL's inverse amplifies the variance of the corrected spectra by factors of \choiceSFLTTVarianceRatio\ in $TT$ and \choiceSFLEEVarianceRatio\ in $EE$ relative to ZEA's, which belongs to this estimator and is not a limit on information.
-We have not inverted $\mathcal{R}$ on noisy bandpowers.
-A correction of the mean, inverted or subtracted, leaves the sample variance of the leaked $E$ in the $B$ bandpowers.
+The joint $EE$/$BB$ system of Eq.~\eqref{eq:coupling} also inverts on the noisy skies of Sect.~\ref{subsec:choose}, with the exterior spectrum held at its model and $B$ amplitudes multiplying the lensed $BB$.
+The mean residual of the corrected $BB$ is $\noisyBBBiasZEA \pm \noisyBBBiasZEAError$ of the lensed $BB$ for ZEA and $\noisyBBBiasSFL \pm \noisyBBBiasSFLError$ for SFL, and $TT$ and $EE$ agree with the offset of \noisyOffsetLow\ to \noisyOffsetHigh\ that all three projections share without noise.
+SFL's inverse multiplies the variance of the combined amplitude by \noisyCostSFLTT\ in $TT$ and \noisyCostSFLEE\ in $EE$ relative to ZEA's, which belongs to this estimator and is not a limit on information.
+Uncorrected, SFL's leaked $BB$ is detected at \noisySFLSnr$\sigma$ over $500 < \ell < 4000$ and \noisySFLSnrMid$\sigma$ over $2500 < \ell < 3000$, and falls to \noisySFLSnrHigh$\sigma$ over $3000 < \ell < 3500$ although it exceeds the lensed $BB$ up to $\ell \approx \noisySFLLensedEll$.
+In $BB$ the inverse's factor is \noisyCostSFLBB: a correction of the mean, inverted or subtracted, leaves the sample variance of the leaked $E$ in the $B$ bandpowers.
+Over $500 < \ell < 1000$ SFL's corrected $BB$ scatters \noisySFLBBScatterLow\ times as much as ZEA's, and \noisySFLBBLeakedShare\ of its variance is present without noise.
 
 \begin{figure}
   \includegraphics[width=\columnwidth]{transfer_error.pdf}
@@ -757,7 +761,7 @@ These are signal-only filtering controls, with no shape noise, masks or cosmolog
 
 A map projection's shear follows in closed form from its definition.
 The shear averages a spectrum over a band of multipoles, which washes out acoustic peaks and lifts the damping tail, and it leaks a fraction $2\gsq$ of $EE$ into $BB$; a parameter-free forward model built from the Jacobian and the analysis mask matches simulations of four projections: on the SPT 1500d field over $\cleanlo < \ell < \cleanhi$, $TT$ and $EE$ band means lie within \residEECleanWorst\ for SFL, STG and ZEA, although $EE$ fails band by band, by up to \residSTGEEMaxBin, BICEP is tied to ZEA by a paired contrast of \residBICEPZEAEE\ in $EE$ and \residBICEPZEATT\ in $TT$, and leakage on the disks at $\bandSFLratio$ of the model for SFL and $\bandBICEPratio$ for BICEP (mean and scatter of the bands).
-For $B$-mode work STG or a curved-sky method avoids the shear's leakage, and for temperature and $E$-mode work ZEA or a curved-sky method needs almost no scalar correction; correcting STG instead costs a few percent in noise-free two-point variance when bins are weighted by their scatter.
+For $B$-mode work STG or a curved-sky method avoids the shear's leakage, and for temperature and $E$-mode work ZEA or a curved-sky method needs almost no scalar correction; correcting STG instead costs a few percent in two-point variance at SPT-3G-like noise, while correcting SFL multiplies the variance of a $B$-mode amplitude by \noisyCostSFLBB.
 An analysis that keeps a sheared grid can compute the effect for its footprint before observing: a diagonal transfer function calibrated on the CMB misrecovers a white spectrum by up to \tfSFLworst\ on SFL, while the projection's coupling matrix predicts it to within \tfclosureworst\ below $\ell = \cleanhi$.
 An $E$-mode template built from the Jacobian removes the leaked $B$ map by map near $\ell = 1000$: for SFL on the masked 1500d field with \SI{5}{\micro\kelvin}-arcmin of noise, the leaked power falls by a factor of \templateSFLfieldgainfive\ and the scatter of the $BB$ by \maskedTemplateStdGainRounded\ \maskedTemplateStdGainInterval.
 Over $2000 < \ell < 3000$ there is no gain, and the Wiener bias must be calibrated.
