@@ -236,7 +236,15 @@ A spin-two field also carries a basis, and flattening (Sect.~\ref{subsec:sims}) 
     2\psi = \atantwo \qty(\pdv*{\theta}{y},\, \pdv*{\theta}{x}) + \atantwo \qty(-\pdv*{\phi}{x},\, \pdv*{\phi}{y}).
 \end{equation}
 Flattening by the angle of $R$ would remove all of the rotation and leave exactly the shear $\Sigma$.
-Equation~\eqref{eq:rot_angle} misses that angle by $\Delta = \order{g^2}$, which raises SFL's leakage on the 1500d field by \flattenSFLfield\ and affects the other projections far less; the forward model carries $\Delta$, and Appendix~\ref{app:flatten} gives the angle of $R$ in closed form, which removes it.
+That angle has a closed form in the same four derivatives,
+\begin{equation} \label{eq:polar_angle}
+    \psi_R = \atantwo \qty(\pdv*{\theta}{x} - \sin\theta\,\pdv*{\phi}{y},\, -\pdv*{\theta}{y} - \sin\theta\,\pdv*{\phi}{x}).
+\end{equation}
+It follows from asking that $R(\psi)^{T}J$ be symmetric, which for a $2\times2$ matrix fixes $\tan\psi$ as the ratio of the antisymmetric part of $J$ to its trace; the positive-trace branch makes the remaining factor positive definite, and the inverse map, whose derivatives Eq.~\eqref{eq:rot_angle} uses, has the inverse rotation.
+Flattening by $\psi_R$ costs one $\sin\theta$ per pixel.
+Equation~\eqref{eq:rot_angle} misses it by $\Delta = \order{g^2}$ (Appendix~\ref{app:flatten}), which raises SFL's leakage on the 1500d field by \flattenSFLfield\ and affects the other projections far less.
+Reflattening the SFL simulations by $\psi_R$ lowers their $BB/EE$ on the 5\% disk by \flattenSFLmaps, against the \flattenSFL\ the forward model attributes to $\Delta$.
+The simulations and the forward model both flatten with Eq.~\eqref{eq:rot_angle}, the model carrying $\Delta$ pixel by pixel.
 For a conformal projection $\Sigma$ is a multiple of the identity, so flattening is exact and the leakage vanishes.
 
 Flattening leaves the shear, and the shear misaligns modes.
@@ -839,22 +847,13 @@ Scalars do not respond to misalignment at any order, and nonzero spins respond a
 The quartic correction is spin-specific: at $s = 2$ it is the $-\tfrac34 g^2$ of Eq.~\eqref{eq:law}, while at $s = 1$ it vanishes, so $\expval{\sin^2\delta\psi}_\chi = g^2/2$ exactly.
 
 
-\section{Flattening angles} \label{app:flatten}
+\section{The flattening residual} \label{app:flatten}
 
 The equal-weight average of Eq.~\eqref{eq:rot_angle} differs from the polar rotation by the signed angle $\Delta = \psi - \psi_R = (g^2/2)\sin 4\beta + \order{g^3}$, with $\psi_R$ the angle of $R$ and $\beta$ the angle of the principal axes of $\Sigma$ from sky east toward north.
 This uniform rotation of the polarization adds $4\Delta^2 = g^4\sin^2 4\beta$ to the leakage, the same order as, and opposite in sign to, the $-\tfrac32 g^4$ term of Eq.~\eqref{eq:law}.
 The residual vanishes where the principal axes lie along the sky axes (BICEP everywhere, the zenithal projections on their central meridians) or along the diagonals between them.
 On a round footprint of a zenithal projection $\expval{\sin^2 4\beta} = \tfrac12$, so flattening with Eq.~\eqref{eq:rot_angle} realizes $2g^2(1-\tfrac12 g^2)$ rather than $2g^2(1-\tfrac34 g^2)$, a ${\sim}1\%$ shift at $g = 0.2$.
 SFL's axes lie off the diagonals by $\tfrac12\arcsin g$, which defers its residual to $\Delta \simeq g^3$, but SFL shears far harder than ZEA, so it carries nearly all of the effect: \flattenSFL\ of its leakage on the 5\% disk, against \flattenZEA\ for ZEA and none for BICEP or STG.
-The simulations and the forward model both flatten with Eq.~\eqref{eq:rot_angle}, the model evaluating $\Delta$ pixel by pixel from the Jacobian.
-
-The angle $\psi_R$ has a closed form in the same four derivatives,
-\begin{equation} \label{eq:polar_angle}
-    \psi_R = \atantwo \qty(\pdv*{\theta}{x} - \sin\theta\,\pdv*{\phi}{y},\, -\pdv*{\theta}{y} - \sin\theta\,\pdv*{\phi}{x}),
-\end{equation}
-and flattening by it leaves $R(\psi_R)^{T}J$ exactly symmetric, at the cost of one $\sin\theta$ per pixel.
-It follows from asking that $R(\psi)^{T}J$ be symmetric, which for a $2\times2$ matrix fixes $\tan\psi$ as the ratio of the antisymmetric part of $J$ to its trace; the positive-trace branch makes the remaining factor positive definite, and the inverse map, whose derivatives Eq.~\eqref{eq:rot_angle} uses, has the inverse rotation.
-Reflattening the SFL simulations by $\psi_R$ lowers their $BB/EE$ on the 5\% disk by \flattenSFLmaps, against the \flattenSFL\ the forward model attributes to $\Delta$, and on the 1500d field the model puts the gain at \flattenSFLfield.
 
 The residual also makes $TB$ from a $TE$-only sky, through $\sin 2\Delta$ in the $TB \leftarrow TE$ kernel of Eq.~\eqref{eq:coupling}.
 $\Delta$ is odd under reflection about the central meridian, so $TB$ vanishes on any footprint symmetric about it, but not on one that is not.
