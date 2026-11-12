@@ -86,15 +86,16 @@ There, simulations and data pass through the same projection, so the distortion 
 
 No map of the sphere onto a plane preserves both angles and areas \citep{snyder87}, so every flat map distorts the field it carries.
 SPT-3G found that it correlates power-spectrum bins at high $\ell$ in ways hard to model, and moved its spectra to the sphere \citep{balkenhol23, spt3gd1}.
-In weak-lensing mass maps, projected shear generates $B$ modes until it is rotated to local north, after which the residual is taken to be negligible \citep{pires20}; this paper quantifies that residual.
 
 Working on the sphere avoids the distortion and has its own formalism: pseudo-$C_\ell$ estimators build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}, and lensing estimators have full-sky forms \citep{okamotohu03}.
 Wide-area analyses increasingly use it \citep{choi20, qu24, spt3gd1}, partial-sky SHTs now match the cost of the FFT even on small fields \citep{carron26}, and convolutional networks have been built on the sphere \citep{cohen18, perraudin19}.
 Flat maps remain in small-field, local and image-based analyses, which carry the distortion through simulations or neglect it.
 
-This paper predicts that distortion in closed form for scalar and spin-two power spectra.
 Near any point a projection rotates, magnifies, and shears the sky.
-Polarization pipelines undo the rotation but not the shear (Fig.~\ref{fig:schematic}), which acts on a spectrum in two ways: it averages a scalar spectrum over a band of multipoles, an order-unity effect on the damping tail of a wide field, and it shifts the direction of each mode, which turns $E$ into $B$.
+For a polarization or shear field the rotation turns the local basis, which left alone generates large $B$ modes.
+It is easy to undo, and polarization pipelines and weak-lensing mass maps undo it pixel by pixel \citep{wallis17, pires20}, treating what is left as negligible.
+What is left is the shear (Fig.~\ref{fig:schematic}), and this paper predicts its effect in closed form for scalar and spin-two power spectra.
+The shear acts on a spectrum in two ways: it averages a scalar spectrum over a band of multipoles, an order-unity effect on the damping tail of a wide field, and it shifts the direction of each mode, which turns $E$ into $B$.
 The second matters because the faint signals of polarization live in $B$, from the imprint of primordial gravitational waves \citep{bicep18} to the lensing signal \citep{lewis06} that delensing must remove.
 The CMB is our worked example, with no free parameters and a test against simulations; the derivation applies to a field of any spin.
 
