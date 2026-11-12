@@ -72,43 +72,24 @@ Where a correction is unavoidable it must be the full coupling matrix: on SFL a 
 
 \section{Introduction} \label{sec:intro}
 
-Analyses across cosmology often make use of the flat-sky approximation, projecting a patch of the celestial sphere onto a Cartesian grid and replacing spherical harmonics with two-dimensional Fourier modes.
-Flat-sky maps are quick to transform, simple to work with, and ready for image-based methods.
-Fast Fourier transforms (FFTs) have historically been faster than spherical harmonic transforms (SHTs): an SHT band-limited at $\ell_{\rm max}$ costs $\order{\ell_{\rm max}^3}$ operations \citep{reinecke13}, against $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ for an FFT at the same resolution.
-The plane also has simpler mathematics: harmonic modes are plane waves, a filter is a multiplication in Fourier space, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
-Images are the natural input of convolutional neural networks.
+Analyses across cosmology often project a patch of the celestial sphere onto a Cartesian grid and replace spherical harmonics with two-dimensional Fourier modes.
+The plane is fast, since a fast Fourier transform costs $\order{\ell_{\rm max}^2 \log \ell_{\rm max}}$ operations against $\order{\ell_{\rm max}^3}$ for a spherical harmonic transform (SHT) at the same resolution \citep{reinecke13}.
+Its mathematics is simple: harmonic modes are plane waves, a filter is a multiplication, and the decomposition of linear polarization into curl-free $E$ and divergence-free $B$ modes \citep{seljak97, kamionkowski97} is a rotation of each Fourier mode \citep{zal01}.
+And a flat map is an image.
 
-Scalar fields have been analysed on flat maps since the early ground-based measurements.
-The quadratic estimators of CMB lensing were derived on the flat sky \citep{huokamoto02}, and the first measurements of the lensing power spectrum used them there \citep{das11, vanengelen12}.
-SPT has measured temperature spectra \citep{story13, balkenhol23} and lensing \citep{pan23} on Lambert azimuthal equal-area maps, and its field-level lensing analyses run on projected maps \citep{millea21, ge24}.
-Galaxy clusters and point sources are found with matched filters built in two-dimensional Fourier space \citep{melin06, vieira10, bleem15, hilton21, bleem24}; the all-sky \textit{Planck} cluster catalogue cut the HEALPix maps into tangent-plane patches before filtering \citep{planck16sz}.
-Cluster and halo CMB-lensing analyses cut flat stamps around known objects \citep{baxter15, madhavacheril15, ansarinejad24}, and 21\,cm intensity mapping measures power spectra on flat grids \citep{cunnington23}.
+Flat maps carry work from cluster finding to lensing reconstruction to simulation-based inference, on a handful of projections: Lambert zenithal equal-area and Sanson--Flamsteed grids at SPT, plate carr\'ee at ACT, and gnomonic tangent planes for cluster stamps and weak-lensing patches.
+They enter an analysis in three ways.
+Ground-based CMB experiments measure temperature, polarization and lensing spectra on projected maps \citep{henning18, louis17, pan23}, with lensing estimators that were first derived on the flat sky \citep{huokamoto02}, and find clusters with filters built in Fourier space \citep{melin06, bleem15}.
+Pipelines move maps between grids, to combine experiments or to apply an operation defined on another pixelization \citep{bleem22, ge24}.
+And simulation-based and machine-learning analyses project because their tools need a plane: wavelet statistics, convolutional networks and field-level inference run on flat patches of weak-lensing and CMB maps \citep{gatti24, jeffrey25, porqueres23, caldeira19}.
+There, simulations and data pass through the same projection, so the distortion costs information rather than biasing the result \citep{jeffrey25}.
 
-Spin-two fields carry an orientation as well as a position, so a projection has to treat both.
-Ground-based CMB experiments measure $E$ and $B$ on projected maps: SPT on Lambert maps \citep{henning18, dutcher21}, ACT on cylindrical equal-area maps \citep{louis17}, and POLARBEAR and BICEP/Keck on small patches \citep{polarbear14, bk7}.
-Weak-lensing mass maps invert projected shear into convergence \citep{kaiser93} on flat grids in HSC \citep{oguri18}, on orthographic tangent planes in the DES Glimpse reconstruction \citep{jeffrey21massmaps}, and on gnomonic \ang{10} fields in preparation for \textit{Euclid} \citep{pires20}.
-Peak statistics then inherit the flat map, or the flat simulations that calibrate them \citep{marques24, harnois24}.
+No map of the sphere onto a plane preserves both angles and areas \citep{snyder87}, so every flat map distorts the field it carries.
+In SPT-3G spectra the distortion inflates the correlation between bins at high $\ell$ \citep{balkenhol23}, an effect hard enough to compute that the most recent analysis moved to SHTs \citep{spt3gd1}.
+In weak-lensing mass maps, projected shear generates $B$ modes until it is rotated to local north, after which the residual is taken to be negligible \citep{pires20}; this paper quantifies that residual.
 
-Many analyses also move maps between grids.
-An SPT-3G lensing pipeline works by ``projecting from a Lambert to an Equirectangular pixelization, applying some weights, then projecting back'' \citep{ge24}, joint SPT and \textit{Planck} maps project \textit{Planck} onto SPT's Sanson--Flamsteed pixelization \citep{bleem22}, and ACT component separation moves \textit{Planck} from HEALPix to a plate carr\'ee (CAR) grid \citep{coulton24}.
-
-Simulation-based inference and machine learning project because their tools need a plane.
-DES wavelet statistics are measured on gnomonic patches \ang{14.6} on a side of maps built from the shear, since the wavelet package ``works on a two-dimensional projection'' \citep{gatti24}, and DES convolutional networks take HEALPix base pixels flattened to images \citep{jeffrey25, williamson26des}.
-Field-level shear inference assumes the flat sky \citep{porqueres23, zhou24}, and networks trained on projected patches reconstruct CMB lensing \citep{caldeira19} and recover polarization maps \citep{casas23}.
-Because simulations and data pass through the same projection, this distortion does not bias the inference, but it ``makes the compression potentially suboptimal'' \citep{jeffrey25}.
-Other recent analyses of the same data work in spherical geometry \citep{fluri22, thomsen26, prat26}.
-
-These advantages come with caveats.
-On small fields the cost gap can close: \citet{carron26} report partial-sky SHTs with ``comparable or sometimes lower cost than the 2D FFT at the same resolution'' on the \SI{57}{deg\squared} SPT map of the Euclid Deep Field South, at a tolerance of $10^{-7}$.
-Convolutional networks built on the sphere now exist \citep{cohen18, krachmalnicoff19, perraudin19, mcewen26, williamson26so3}.
-And every flat map distorts the field, because no map of the sphere onto a plane preserves both angles and areas \citep{snyder87}.
-
-The distortion has measurable consequences.
-The Lambert projection ``does not preserve angles and leads to increasing bin-to-bin correlations at high $\ell$'' in SPT-3G's 2018 spectra \citep{balkenhol23}.
-In the SPT-3G D1 analysis, ``projection effects were causing excess correlation between power spectrum bins at high $\ell$, in a manner that is difficult to compute analytically'', and the analysis uses full SHTs for that reason \citep{spt3gd1}.
-Projected shear ``can generate substantial $B$ modes'' until it is rotated to local north, after which \citet{pires20} find the residual errors negligible compared with other effects; this paper quantifies that residual.
-Working on the sphere avoids the distortion and has its own formalism: pseudo-$C_\ell$ estimators build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}, and lensing estimators have full-sky forms in spin-weighted harmonics \citep{okamotohu03}.
-Several wide-area analyses now use SHTs: ACT's power spectra since its fourth data release, which keep a CAR grid but transform it on the sphere \citep{choi20}, its lensing reconstruction \citep{qu24}, the most recent SPT-3G spectra \citep{spt3gd1}, and wide-area mass maps \citep{chang18, wallis17}.
+Working on the sphere avoids the distortion and has its own formalism: pseudo-$C_\ell$ estimators build their mode-coupling matrices from Wigner $3j$ symbols \citep{hivon02, alonso19}, and lensing estimators have full-sky forms \citep{okamotohu03}.
+Wide-area analyses increasingly use it \citep{choi20, qu24, spt3gd1}, partial-sky SHTs now match the cost of the FFT even on small fields \citep{carron26}, and convolutional networks have been built on the sphere \citep{cohen18, perraudin19}.
 Flat maps remain in small-field, local and image-based analyses, which carry the distortion through simulations or neglect it.
 
 This paper predicts that distortion in closed form for scalar and spin-two power spectra.
@@ -524,7 +505,7 @@ Against the lensed $BB/EE$ of Sect.~\ref{subsec:spectra}, the cylindrical projec
 \subsection{Choosing a projection} \label{subsec:choose}
 
 For $B$-mode work we recommend STG.
-Conformal projections leak least, as \citet{wallis17} found empirically for weak-lensing convergence maps: ``The stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection.''
+Conformal projections leak least, as \citet{wallis17} found empirically for weak-lensing convergence maps, where the stereographic projection performed best of the planar projections they tried.
 The closed form explains that ranking and gives a coefficient for any projection and footprint.
 On the 1500d field over $1000 < \ell < 3000$, STG's $BB/EE$ is the pipeline floor, \floorField, against \ZEAleakField\ for ZEA; the floor rises to \floorFieldTop\ over $\floorTopBand$.
 
@@ -719,7 +700,7 @@ Many analyses split a footprint into patches, project each about its own centre 
 Equation~\eqref{eq:coupling} is an integral over position, so such an average carries the weighted mean of the per-patch $\mathcal{R}$, and its leakage is $2\gsq$ with $\gsq$ averaged over the patches with the combination weights.
 Re-centring lowers $\gsq$ quickly: $g$ grows as the square of the distance from the tangent point on a non-conformal zenithal projection and linearly on a cylindrical one, so $\gsq$ scales as the fourth and second power of the patch size, and the two gnomonic squares of Table~\ref{table:footprints} differ by $(14.6/10)^4$ to better than 1\%.
 The cost is that no patch holds modes larger than itself \citep{plaszczynski12} and each pays its own apodized edge, whereas a conformal grid removes the leakage at any size.
-\citet{casas23} report ``significant $E$-to-$B$ leakage when projecting larger sky regions onto a flat plane'', and BICEP/Keck note that ``other map projections will have significantly lower distortion'' \citep{bk7}. BICEP2 counts ``the simple RA-Dec.\ map projection which we have chosen'' among three sources of $E$/$B$ mixing in its maps \citep{bicep2}.
+\citet{casas23} find significant $E$-to-$B$ leakage when larger regions are projected onto a plane, BICEP2 counts its simple RA--Dec projection among three sources of $E$/$B$ mixing in its maps \citep{bicep2}, and BICEP/Keck note that other projections would distort less \citep{bk7}.
 \citet{ge24} replace bilinear interpolation with non-uniform FFTs and verify round trips between grids to $\lesssim 0.3\%$ out to $\ell = 3500$; this measures interpolation fidelity, whereas the shear belongs to the projection, so a perfect resampler onto a non-conformal grid still leaks $2\gsq$ of $EE$ into $BB$.
 \citet{wolz25} and \citet{cornish25} estimate spectra directly from catalogues by summing spherical harmonics at true sky positions, which involves no projection and so no leakage.
 
