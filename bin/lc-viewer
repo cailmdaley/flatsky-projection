@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# ASTRA viewer for this project on the tailnet.
+#
+#   bin/lc-viewer [start|restart]   (re)build if needed, (re)start, print the URL
+#   bin/lc-viewer status            is it up, and where
+#   bin/lc-viewer stop
+#
+# The server is ~/code/astra-viewer (@astra-spec/ui inventory + a pipeline
+# view ported from Lightcone Lab + `lc status`). It runs in tmux session
+# `lc-viewer` on 127.0.0.1:$PORT and refuses connections from any other UID;
+# Tailscale Serve (userspace, as this user) exposes it on https port $HTTPS.
+set -euo pipefail
+
+PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VIEWER="${ASTRA_VIEWER_DIR:-$HOME/code/astra-viewer}"
+PORT="${LC_VIEWER_PORT:-48761}"
+HTTPS="${LC_VIEWER_HTTPS:-8443}"
+SESSION=lc-viewer
+TS=(tailscale --socket="$HOME/.local/state/tailscale/tailscaled.sock")
+
+url() {
+  local host
+  host=$("${TS[@]}" status --json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))' 2>/dev/null || echo amundsen.tail640f61.ts.net)
+  echo "https://$host:$HTTPS/"
+}
+
+up() { curl -fs -o /dev/null "http://127.0.0.1:$PORT/api/project"; }
+
+build() {
+  cd "$VIEWER"
+  [ -d node_modules ] || npm install --no-audit --no-fund
+  if [ ! -f dist/index.html ] || [ -n "$(find web vite.config.mjs package.json -newer dist/index.html -print -quit)" ]; then
+    npx vite build >/dev/null
+  fi
+}
+
+serve() {
+  if ! "${TS[@]}" serve status 2>/dev/null | grep -q ":$HTTPS"; then
+    "${TS[@]}" serve --bg --https="$HTTPS" "http://127.0.0.1:$PORT" >/dev/null
+  fi
+}
+
+start() {
+  build
+  tmux kill-session -t "$SESSION" 2>/dev/null || true
+  tmux new-session -d -s "$SESSION" -c "$VIEWER" \
+    "ASTRA_PROJECT='$PROJECT' PORT=$PORT exec node --max-old-space-size=384 server.mjs"
+  # A crash leaves the pane and its error in place: tmux attach -t lc-viewer
+  tmux set-option -t "$SESSION" remain-on-exit on >/dev/null
+  for _ in $(seq 30); do up && break; sleep 0.5; done
+  up || { echo "lc-viewer: server did not come up; see: tmux attach -t $SESSION" >&2; exit 1; }
+  serve
+  echo "lc-viewer: $(url)"
+}
+
+case "${1:-start}" in
+  start|restart) start ;;
+  stop)
+    tmux kill-session -t "$SESSION" 2>/dev/null || true
+    echo "lc-viewer: stopped (tailscale https:$HTTPS mapping left in place)" ;;
+  status)
+    if up; then echo "lc-viewer: up on 127.0.0.1:$PORT -> $(url)"; else echo "lc-viewer: down (bin/lc-viewer start)"; exit 1; fi ;;
+  *) echo "usage: $0 [start|restart|status|stop]" >&2; exit 2 ;;
+esac
