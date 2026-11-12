@@ -54,19 +54,16 @@
 
 \date{Received ---; accepted ---}
 
-\abstract
-{Flat-sky analyses of the cosmic microwave background project the sphere onto a plane, and every projection distorts the field it maps.}
-{We measure the distortion of temperature and polarization spectra on simulations and predict it without free parameters.}
-{We project unlensed simulations four ways onto the SPT 1500d field and seven disks covering 0.75--10\% of the sky and estimate their spectra with NaMaster.
-Near any point a projection is a rotation, which polarization pipelines remove, a magnification, and a shear $g$ known in closed form; a forward model folds these over the analysis mask.}
-{The shear averages $C(\ell)$ over a band of multipoles as wide as the acoustic spacing, which washes out acoustic peaks and lifts the damping tail: Sanson--Flamsteed on the 1500d field carries \EEboxSFLfourK\ times the input $EE$ power near $\ell = 4000$.
-The shear also turns the $E$/$B$ basis, so a fraction $2\gsq$ of $EE$ appears as $BB$, with $\gsq$ the mean of $g^2$ under the squared mask.
-On that field the forward model reproduces mean $TT$ and $EE$ to \residEECleanWorst\ over $\cleanlo < \ell < \cleanhi$ on \covNumProjected\ skies, although $EE$ fails band by band, by up to \residSTGEEMaxBin.
-A leakage fit returns a coefficient of $\fitcoef$ with \fitrms\ rms scatter over \decades\ decades in $\gsq$ across \numpairs\ correlated pairs.}
-{The distortion can be computed for any footprint before observing.
-We recommend the stereographic projection for $B$-mode work and the zenithal equal-area projection, which needs almost no scalar correction, for temperature and $E$-mode work.
-On Sanson--Flamsteed, a CMB-calibrated diagonal transfer function misses a white spectrum by up to \tfSFLworst, whereas the coupling matrix predicts it to within \tfclosureworst\ below $\ell = \cleanhi$.
-An $E$-mode template from the Jacobian and masked, noisy data lowers the scatter of the leaked $B$ by a factor of \maskedTemplateStdGainRounded\ \maskedTemplateStdGainInterval\ near $\ell = 1000$, with no gain over $2000 < \ell < 3000$.}
+\abstract{Flat-sky analyses of the cosmic microwave background project the sphere onto a plane, and no projection preserves both angles and areas.
+Near any point a projection rotates, magnifies and shears the field, and all three are known in closed form before anything is observed: the projection is a lens the analyst chooses.
+Polarization pipelines remove the rotation.
+The shear $g$ remains, and it acts on a power spectrum as lensing does, averaging $C(\ell)$ over a band of multipoles as wide as the acoustic spacing; it washes out the acoustic peaks and lifts the damping tail, so that the Sanson--Flamsteed (SFL) projection of the SPT 1500d field carries \EEboxSFLfourK\ times the input $EE$ power near $\ell = 4000$.
+The shear also turns the $E$/$B$ basis, and a fraction $2\gsq$ of $EE$ appears as $BB$, with $\gsq$ the mean of $g^2$ under the squared mask.
+We test both effects on simulations projected four ways onto the 1500d field and onto seven disks covering 0.75--10\% of the sky.
+A forward model that folds the local geometry over the mask reproduces mean $TT$ and $EE$ to \residEECleanWorst\ over $\cleanlo < \ell < \cleanhi$ on \covNumProjected\ skies, though single $EE$ bands miss by up to \residSTGEEMaxBin, and the leakage coefficient fits to $\fitcoef$ with \fitrms\ scatter over \decades\ decades in $\gsq$.
+Because geometry fixes the distortion, the projection is better chosen than corrected.
+The conformal stereographic projection does not shear and so does not leak, and the zenithal equal-area projection needs almost no scalar correction; correcting SFL instead, on noisy SPT-3G-like skies, multiplies the variance of a $B$-mode amplitude by \noisyCostSFLBB.
+Where a correction is unavoidable it must be the full coupling matrix: on SFL a diagonal transfer function calibrated on the CMB misses a white spectrum by up to \tfSFLworst, whereas the coupling matrix predicts it to within \tfclosureworst.}
 
 \keywords{cosmic background radiation -- methods: data analysis -- techniques: image processing}
 
