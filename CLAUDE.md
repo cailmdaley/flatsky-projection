@@ -11,8 +11,8 @@ either of us.
 This is an ASTRA project orchestrated by `lightcone-cli`. `astra.yaml` is
 hand-written and real: it encodes the polarization projection-effects
 pipeline (preprocess healpix sims → project QU/EB legs → masks → NaMaster
-spectra). Universes live in `universes/*.yaml` (e.g. `highell` for the
-ℓ=6000 extension). Stage scripts are `src/stages/*.py`; shared decisions in
+spectra, plus the simulation suites behind the paper's later sections).
+The paper's configuration is the universe `universes/fiducial.yaml`. Stage scripts are `src/stages/*.py`; shared decisions in
 `src/stages/_decisions.py`. Everything scientific runs under the SPT CVMFS
 environment (see the `spt3g-software` skill). Heavy runs go to OSG — see
 "Running production on the grid" below.
@@ -41,11 +41,12 @@ CVMFS requirement, no `wrapper.sh`), and those jobs never run.
 lc run --executor htcondor --profile htcondor9 <output_id> -u <universe>
 ```
 
-`-u` is repeatable, and that is how you get parallelism: one driver, several
-universes, concurrent OSG jobs.
+`-u` is repeatable: one driver can submit several universes' jobs
+concurrently. Within a universe, an output's `units:` fan it out into one
+grid job per unit:
 
 ```bash
-lc run --executor htcondor --profile htcondor9 healpix_masks -u apod_c1 -u apod_wide
+lc run --executor htcondor --profile htcondor9 healpix_masks -u fiducial
 ```
 
 Two `lc run`s at once will not work — lightcone holds a project-level flock.
@@ -53,9 +54,7 @@ Per-unit fan-out exists as of lightcone-cli 612d889: an `Output.units`
 mapping (axis -> list or half-open `a..b` range) in astra.yaml expands one
 output into per-unit grid jobs plus a local gather that assembles the
 canonical directory and single manifest; recipes address their shard with
-`{units.<axis>}`. Stages not yet converted (all of them today) remain one
-output = one fat job; per-seed/per-projection parallelism for those still
-belongs to the raw `grid/` apparatus.
+`{units.<axis>}`. An output without `units:` is one job.
 
 Check the first submission of anything new:
 
