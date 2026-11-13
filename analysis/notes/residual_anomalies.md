@@ -26,7 +26,7 @@ Only their net effect should be interpreted; they are not separately isolated ph
 
 Applying a radial response to a footprint-averaged projected spectrum is an approximation to a spatially varying, anisotropic sky.
 It is not an exact forward model of that sky and is not used to calibrate the additive BB floor.
-`check_residual_fft_response.py` independently verifies Fourier-cell counts, normalization and TT/EE mask coupling using a padded two-dimensional FFT covariance convolution on all four actual grids.
+The FFT gate of `residual_controls.py` independently verifies Fourier-cell counts, normalization and TT/EE mask coupling using a padded two-dimensional FFT covariance convolution on all four actual grids.
 Its masked-map normalization agrees with NaMaster to the asserted 1e-10 tolerance, without fitting a scale.
 Over ell=100–4800, the maximum coupled-bin discrepancy is 0.30% and rms discrepancies are 0.015–0.049%; the asserted envelope is 0.5%.
 The independent reviewer found band-mean differences no larger than 0.006% over 1000–4000.
@@ -56,7 +56,7 @@ Small band means do not establish agreement in each bin.
 The full-covariance TT test over this band has diagnostic probabilities 0.419, 0.063 and 0.239 for SFL, STG and ZEA, whereas EE gives 0.0053, 6.1e-17 and 0.0030.
 STG EE retains acoustic structure with maximum absolute bin residuals 0.85% below 1000 and 0.784% over 1000–4000.
 Below 1000, TT is consistent with the net reference, but STG EE is not.
-`report_residual_means.py` stores full-covariance tests and separate one-dimensional per-sky band-mean tests, including upper bands.
+`residual_controls.py` stores full-covariance tests and separate one-dimensional per-sky band-mean tests, including upper bands.
 
 The production20-minus-independent260 difference below 1000 is consistent with the independent covariance: ZEA gives nominal p=0.44 for TT and 0.94 for EE over 100–1000.
 This tests the difference between ensembles, not either ensemble against the simple model.
@@ -173,24 +173,15 @@ All 36 control units ran through `lc run --executor htcondor --profile htcondor9
 `lc verify -u highell` passed the materialized chain before the last ring gather; `check_residual_provenance.py` additionally checks all three final canonical hashes, all 36 unit hashes and upstream versions.
 It compares explicit stage/theory inputs and imported stage helpers byte-for-byte with each unit's git pin, avoiding reliance on the external-file mtime/size fingerprints alone.
 No manifests are rewritten by the check.
-The compact data and provenance records are in `analysis/figures/residual_anomalies/summary.json` and `provenance.json`.
+Each step is an output of `astra.yaml`, run by `lc run`:
 
-Run reports with CVMFS py3-v5 activated under `~/code/python/spt3g_software/build/env-shell.sh`, with `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`.
-Large arrays/logs use `/sptlocal/user/cailmdaley/pol_project/residual_*`.
-The reproduction order is:
+1. `residual_input_spectra` (`analysis/residual_input_spectra.py`)
+2. `residual_estimator_response` (`analysis/residual_estimator_response.py`)
+3. `residual_controls` (`analysis/residual_controls.py`): the independent-sky means and tests, the FFT gate, the pure-E, map-refinement and ring controls
+4. `residual_summary` (`analysis/summarize_residual_anomalies.py`)
+5. `residual_numbers` (`analysis/paper_numbers/residual_numbers.py`)
 
-1. `analysis/residual_input_spectra.py`
-2. `analysis/residual_estimator_response.py`
-3. `analysis/report_residual_means.py`
-4. `analysis/check_residual_fft_response.py`
-5. `analysis/report_residual_pure_e.py`
-6. `analysis/report_residual_map_upsample.py`
-7. `analysis/report_residual_rings.py`
-8. `analysis/summarize_residual_anomalies.py`
-9. `analysis/plot_residual_anomalies.py`
-10. `analysis/paper_numbers.py --residual-only`
-11. `lc verify -u highell` and `analysis/check_residual_provenance.py` using the installed lightcone Python environment.
+The controls reproduce bit for bit only at one OpenMP/BLAS thread; more threads move the decoupled spectra and the FFT gate at the 1e-14 level and the p-values at the 1e-12 level.
 
-The sole macro writer implements the bounded claims for `paper/residual_numbers.tex`, including `residSTGEEFitP` alongside the STG EE mean and largest bin error.
-Its shared quoted-only policy omits macros until `main.tex` uses them, so the generated file is currently header-only; rerun `--residual-only` after adopting the relevant prose.
+The macro writer implements the bounded claims of `residual_numbers.tex`, including `residSTGEEFitP` alongside the STG EE mean and largest bin error.
 The manuscript author should replace the original unexplained positive STG TT claim, qualify the clean-band EE agreement, explain the low-ell reference mismatch, and retain the numerical-BB limitation rather than claiming closure.

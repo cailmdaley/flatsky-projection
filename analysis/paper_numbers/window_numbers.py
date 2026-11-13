@@ -1,8 +1,35 @@
-"""Window-control and corrected-residual macros, paper/window_numbers.tex.
+"""Window-control and corrected-residual macros.
 
-Not yet a recipe: reads its inputs from fixed paths and writes paper/window_numbers.tex.
+From the projector and interpolator controls (`pipeline_window_controls`),
+the window-corrected production residuals of the 1500d field
+(`pipeline_windows`) and the sky band-limit intervention
+(`pipeline_bandlimit_summary`):
+
+  winRing{East,North}          interpolation power at l = L_WALL along each
+                               axis at the patch centre's declination
+  win{Projector,RingControl}Error, winSpinControlErrorDeg
+                               the controls' worst deviations
+  win<spec><proj><band>...     per-seed and ZEA-paired residuals, with and
+                               without aliases, alias fractions, and for BB
+                               the STG-floor-subtracted residual
+  zeaFloorField<band>          ZEA's BB excess in units of the STG floor
+  winWhite..., winFieldWall... the white sky's alias and Nyquist residuals
+                               and the window correction at the wall
+  winCutoff<spec><proj><band>  power retained and removed by the cutoff
+                               change, and the predicted removal
+
+The interpolation window takes the synthesis Nside from the masks' index files
+and the declination from `_footprints`.
+
+Run:  bash env.sh python3 analysis/paper_numbers/window_numbers.py
+          --pipeline-windows <dir> --pipeline-window-controls <dir>
+          --pipeline-bandlimit-summary <dir>
+          --healpix-masks results/fiducial/healpix_masks
+          --flatsky-masks results/fiducial/flatsky_masks --out <dir>
+Out:  <out>/window_numbers.tex and <out>/window_numbers.json
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -10,28 +37,21 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import spectra as S  # noqa: E402,F401
-from macros import WORDS as _WORDS, Macros, f, pct, rng, sci  # noqa: E402,F401
+import spectra as S  # noqa: E402
+from _footprints import DEC_DEG  # noqa: E402
+from macros import Macros, f, pct  # noqa: E402
+from pipeline_windows import Sampling, interpolation_power  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+L_WALL = 4800.
 
 
-def window_numbers():
-    """Write window-control and corrected-residual macros from checked outputs.
-
-    Run report_pipeline_windows.py and both controlled projector checks first.
-    """
-    from pipeline_windows import interpolation_power
-    directory = Path('/sptlocal/user/cailmdaley/pol_project')
-    d = np.load(directory / 'pipeline_windows_production.npz')
-    control = json.loads((directory / 'pipeline_projector_control.json').read_text())
-    ring = json.loads((directory / 'pipeline_window_control.json').read_text())
-    spin = json.loads((directory / 'pipeline_spin_control.json').read_text())
-    cutoff = json.loads((directory / 'pipeline_bandlimit_summary.json').read_text())
+def window_numbers(d, controls, cutoff, sampling):
+    """Window-control and corrected-residual macros from checked outputs."""
+    control, ring, spin = controls['projector'], controls['ring'], controls['spin']
     M = Macros()
-    dec = np.deg2rad(-56.)
-    M.add('winRingEast', f(float(interpolation_power(4800., 0., dec)), 4))
-    M.add('winRingNorth', f(float(interpolation_power(0., 4800., dec)), 4))
+    dec = np.deg2rad(DEC_DEG)
+    M.add('winRingEast', f(float(interpolation_power(L_WALL, 0., dec, sampling.nside)), 4))
+    M.add('winRingNorth', f(float(interpolation_power(0., L_WALL, dec, sampling.nside)), 4))
     error = max(abs(r['ratio'] - 1) for r in control if r['interp'] and r['rebin'] == 8)
     M.add('winProjectorError', pct(error, 4))
     M.add('winRingControlError', pct(max(abs(r['residual']) for r in ring), 4))
@@ -98,11 +118,22 @@ def window_numbers():
                 M.add(prefix + 'Retained', pct(value, 3))
                 M.add(prefix + 'Removed', pct(row['delta_over_upper'], 1))
                 M.add(prefix + 'Predicted', pct(row['predicted_delta_over_upper'], 1))
-    assert all(name.isalpha() for name in M)
-    path = ROOT / 'paper' / 'window_numbers.tex'
-    path.write_text(M.tex('window_numbers'))
-    print(f'Wrote {path}')
+    return M
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, 'pipeline_windows', 'pipeline_window_controls', 'pipeline_bandlimit_summary',
+                 'healpix_masks', 'flatsky_masks')
+    ap.add_argument('--out', type=Path, required=True)
+    args = ap.parse_args()
+    M = window_numbers(
+        np.load(args.pipeline_windows / 'pipeline_windows.npz'),
+        json.loads((args.pipeline_window_controls / 'pipeline_window_controls.json').read_text()),
+        json.loads((args.pipeline_bandlimit_summary / 'pipeline_bandlimit_summary.json').read_text()),
+        Sampling.read(args.healpix_masks, args.flatsky_masks))
+    M.write(args.out, 'window_numbers')
 
 
 if __name__ == "__main__":
-    window_numbers()
+    main()

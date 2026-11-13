@@ -92,18 +92,18 @@ It offers no precision gain over this known-input effective correction; direct e
 
 Run scientific scripts with `~/code/python/spt3g_software/build/env-shell.sh python <script>` and bounded OpenMP/BLAS threads.
 
-- `analysis/check_pipeline_windows.py` synthesizes periodic azimuthal sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator at declinations of −70, −56, −42 and −35 degrees.
+- `analysis/pipeline_window_controls.py` (the `pipeline_window_controls` output) holds both controlled tests. Its ring control synthesizes periodic azimuthal sky waves at HEALPix centres and measures the coherent response of the actual spt3g interpolator at declinations of −70, −56, −42 and −35 degrees.
   It phase-averages full longitude rings and one interval between adjacent rings using a deterministic low-discrepancy quadrature; the eastward wavenumber is rounded to an integer azimuthal mode so that the sky is periodic.
   A small random patch is unsuitable because incomplete longitudinal phases bias the coherent mean, even at large sample count.
-- `analysis/check_projected_windows.py` passes known plane-wave spectra through actual `maps.reproj_map` in every paper projection at two off-centre positions, varying interpolation and rebin independently.
+- Its projector control passes known plane-wave spectra through actual `maps.reproj_map` in every paper projection at two off-centre positions, varying interpolation and rebin independently.
   It also gates super-Nyquist waves, the equatorial HEALPix belt, and the signed COSMO Q/U rotation through `flatten_pol`.
 - `analysis/check_window_quadrature.py` compares footprint/azimuth quadratures; convergence is assessed on the correction ratio rather than a coarse absolute forward spectrum.
 - `analysis/cache_simulation_windows.py` warms the known-input correction cache; cache keys include its implementation, geometry, spin and spectral code, analytic-mask source, theory file and production mask metadata.
 - `analysis/check_window_loaders.py` checks shapes, broadcasting, raw-data roundtrips and invalidation of the derived field cache.
-- `analysis/report_pipeline_windows.py` uses the production-mask geometric R model evaluated at every integer multipole, reports corrected residuals and paired-seed projection differences, and writes `/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz`.
+- `analysis/report_pipeline_windows.py` (the `pipeline_windows` output) uses the production-mask geometric R model evaluated at every integer multipole, reports corrected residuals and paired-seed projection differences, and writes `pipeline_windows.npz`.
 - `analysis/plot_pipeline_windows.py` renders those absolute and paired residuals.
-- `analysis/paper_numbers.py --window-only` writes `paper/window_numbers.tex` from those outputs and the controlled tests.
-- `lc run --executor htcondor --profile htcondor9 window_bandlimit_test -u highell` runs the additive paired spherical test; `analysis/report_bandlimit_test.py` verifies its cutoff-6000 leg against production and compares the result with the alias calculation.
+- `analysis/paper_numbers/window_numbers.py` (the `window_numbers` output) writes the window macros from those outputs and the controlled tests.
+- `window_bandlimit_test` runs the additive paired spherical test; `analysis/report_bandlimit_test.py` (the `pipeline_bandlimit_summary` output) verifies its production-cutoff leg against production and compares the result with the alias calculation of `analysis/report_grid_aliases.py` (the `pipeline_aliases` output).
 
 Pointwise standard errors describe seed scatter at a specified multipole.
 They are not independent across bins or projections.

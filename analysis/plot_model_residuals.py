@@ -5,12 +5,12 @@ mean over the 20 realizations, divided by the model, and a band of the
 standard error of that mean.
 
 The model is `shear_leakage.coupling_matrix` on the shear moments of the
-pipeline's own field mask (`shear_leakage.field_moments`): the sky spectrum
+pipeline's own field mask (the `shear_moments` output): the sky spectrum
 read at the sheared wavenumber |J^T l|, with the exact
 sin^2/cos^2(2 dpsi + 2 Delta) kernel for E and B and kernel 1 for T, Delta the
 residual of the pipeline's own flattening angle, averaged over mode azimuth
 and over the footprint with weight W^2 |det J|^2 per unit sky area, and
-band-limited at the sims' l = 6000. No free parameters, no fit. TT and EE are
+band-limited at the sims' harmonic band limit. No free parameters, no fit. TT and EE are
 then compared as the estimator sees them: the spectrum reads the sky at
 k = l + 1/2, and NaMaster's own radial coupling and decoupling act on it
 (`residual_estimator_response.py`), since a model averaged over integer
@@ -40,48 +40,40 @@ not independent errors across bins or projections; use paired-seed contrasts
 (`report_pipeline_windows.py`) to compare projections.
 
 STG is left out of BB: its model is the rounding of zero shear, and its
-measured BB is the pipeline's floor. `plot_projection_spectra.measured_tt`
-supplies TT; until it exists the TT panel holds only its unity line.
+measured BB is the pipeline's floor.
 
-Run:  ~/code/python/spt3g_software/build/env-shell.sh python analysis/plot_model_residuals.py
-Out:  figures/model_residuals.pdf
+`load_data` assembles the field's measured spectra beside the integer-bin
+forward model for `paper_numbers`; the figure itself reads only the two
+reference outputs.
+
+Run:  bash env.sh python3 analysis/plot_model_residuals.py
+          --pipeline-windows <dir> --residual-estimator-response <dir> --out <dir>
+Out:  <out>/model_residuals.pdf, the file paper/main.tex includes, and
+      <out>/fig_model_residuals.png
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paper_style as PS
 import plot_projection_spectra as PPS
 import shear_leakage as SL
 import spectra as S
 import theory as T
 
-ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "model_residuals.pdf"
-
 SPECTRA = PPS.SPECTRA
 ELL_MIN, ELL_MAX = PPS.ELL_MIN, PPS.ELL_MAX
-BAND_LIMIT = S.LMAX     # 6000: the run's own harmonic band limit
 Y_LIM = {'TT': (0.97, 1.03), 'EE': (0.97, 1.03), 'BB': (0.97, 1.24)}
 BAND_ALPHA = 0.25
 FIG_H = 2.2
 
 
-def binned(values):
-    """Bandpowers of an array whose last axis is every multipole below LMAX."""
-    return values.reshape(*values.shape[:-1], S.NBINS, S.DELTA_L).mean(-1)
-
-
-WINDOWS = Path('/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz')
-REFERENCE = Path('/sptlocal/user/cailmdaley/pol_project/residual_estimator_response.npz')
-
-
-def load_ratios():
+def load_ratios(windows, estimator):
     """Measured over model, per spectrum: (projection, seed, band)."""
-    measured, reference = np.load(WINDOWS), np.load(REFERENCE)
+    measured = np.load(windows / 'pipeline_windows.npz')
+    reference = np.load(estimator / 'residual_estimator_response.npz')
     ratios = {spec: {proj: measured[f'field_{spec}_{proj}_raw'] / reference[f'{proj}_{spec}_spherical']
                      for proj in S.PROJS} for spec in ('TT', 'EE')}
     ratios['BB'] = {proj: measured[f'field_BB_{proj}_ratio']
@@ -89,33 +81,40 @@ def load_ratios():
     return ratios
 
 
-def load_data():
-    """The field's bandpowers and forward model, per spectrum, in absolute C_l."""
-    mom = SL.field_moments()
-    th = T.load()
-    ell_th = th["ell"].astype(float)
-    fine = np.arange(S.LMAX, dtype=float)
+def load_data(run, windows, estimator):
+    """The field's bandpowers and forward model, per spectrum, in absolute C_l.
 
-    model = {s: np.empty((len(S.PROJS), S.NBINS)) for s in SPECTRA}
+    `run` carries bandpowers, scalar_bandpowers, simulation_windows,
+    theory_spectra and shear_moments. The model is band-limited at the run's
+    own harmonic band limit.
+    """
+    mom = run.field_moments()
+    th = T.load(run.theory_spectra)
+    ell_th = th["ell"].astype(float)
+    fine = np.arange(run.lmax, dtype=float)
+
+    def binned(values):
+        return values.reshape(run.nbins, run.delta_l).mean(-1)
+
+    model = {s: np.empty((len(S.PROJS), run.nbins)) for s in SPECTRA}
     for j in range(len(S.PROJS)):
-        R = SL.coupling_matrix(mom, 0, j, fine, ell_th, band_limit=BAND_LIMIT)
+        R = SL.coupling_matrix(mom, 0, j, fine, ell_th, band_limit=run.lmax)
         model["BB"][j] = binned(R["BB<-EE"] @ th["unlensed_EE"])
         model["EE"][j] = binned(R["EE<-EE"] @ th["unlensed_EE"])
         model["TT"][j] = binned(R["TT<-TT"] @ th["unlensed_TT"])
 
     return dict(
-        mom=mom, ell=S.ELL, model=model, cl_ee=S.theory("unlensed_EE"),
-        ratios=load_ratios(),
-        measured={"TT": PPS.measured_tt(), "EE": S.load_field("EE"),
-                  "BB": S.load_field("BB")},
+        mom=mom, ell=run.ell, model=model, cl_ee=run.theory("unlensed_EE"),
+        ratios=load_ratios(windows, estimator),
+        measured={"TT": run.load_scalar("TT", field=True), "EE": run.load_field("EE"),
+                  "BB": run.load_field("BB")},
     )
 
 
-def plot(plt, d):
+def plot(plt, ell, ratios, out):
     """Measured over model, TT, EE, BB, on one y axis."""
     from matplotlib.lines import Line2D
 
-    ell = d["ell"]
     keep = (ell > ELL_MIN) & (ell < ELL_MAX)
     x = ell[keep]
 
@@ -123,7 +122,7 @@ def plot(plt, d):
                              sharex=True, sharey=False, layout="constrained")
     for ax, spec in zip(axes, SPECTRA):
         ax.axhline(1.0, color=PPS.REF_COLOR, lw=PPS.REF_LW, zorder=PPS.REF_Z)
-        for proj, ratio in d["ratios"][spec].items():
+        for proj, ratio in ratios[spec].items():
             r = ratio[:, keep]
             mean = r.mean(0)
             err = r.std(0, ddof=1) / np.sqrt(r.shape[0])
@@ -143,47 +142,10 @@ def plot(plt, d):
                 for p in S.PROJS], [S.PROJ_LABEL[p] for p in S.PROJS],
                ncol=len(S.PROJS), loc="outside upper center")
 
-    FIGURE.parent.mkdir(exist_ok=True)
-    fig.savefig(FIGURE)
-    print(f"wrote {FIGURE}")
-
-
-def print_numbers(d):
-    """A few numbers for the caption and the prose, printed rather than typed."""
-    ell = d["ell"]
-    ee, bb = d["measured"]["EE"], d["measured"]["BB"]
-    m_ee, m_bb = d["model"]["EE"], d["model"]["BB"]
-    cl_ee = d["cl_ee"]
-
-    print("\n1500d field, measured / input EE (measured / model in parentheses):")
-    for j, proj in enumerate(S.PROJS):
-        r = ee[j].mean(0) / cl_ee
-        row = []
-        for L in (1000, 2000, 3000, 4000, 4500):
-            k = np.argmin(abs(ell - L))
-            row.append(f"{L}: {r[k]:.3f} ({r[k] / (m_ee[j][k] / cl_ee[k]):.3f})")
-        print(f"  {S.PROJ_LABEL[proj]:<6s} " + "  ".join(row))
-    sel = (ell > 500) & (ell < 3000)
-    print("\nBB on the field, 500 < l < 3000 mean [uK^2]:")
-    for j, proj in enumerate(S.PROJS):
-        print(f"  {S.PROJ_LABEL[proj]:<6s} measured {bb[j].mean(0)[sel].mean():9.3e}   "
-              f"model {m_bb[j][sel].mean():9.3e}   "
-              f"<g^2> {d['mom']['g2'][0, j]:9.3e}")
-    print("\nMeasured / model, mean over l range [min, max of the band means]:")
-    for spec in SPECTRA:
-        m = d["measured"][spec]
-        if m is None:
-            continue
-        for j, proj in enumerate(S.PROJS):
-            if spec == "BB" and proj == SL.FLOOR_PROJ:
-                continue
-            r = m[j].mean(0) / d["model"][spec][j]
-            row = []
-            for lo, hi in ((300, 1000), (1000, 3000), (3000, 4000), (4000, 4800)):
-                k = (ell > lo) & (ell < hi)
-                row.append(f"{lo}-{hi}: {r[k].mean():.3f} "
-                           f"[{r[k].min():.3f}, {r[k].max():.3f}]")
-            print(f"  {spec} {S.PROJ_LABEL[proj]:<6s} " + "  ".join(row))
+    out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out / "model_residuals.pdf")
+    fig.savefig(out / "fig_model_residuals.png", dpi=200)
+    print(f"wrote {out / 'model_residuals.pdf'}")
 
 
 def main():
@@ -191,10 +153,14 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "pipeline_windows", "residual_estimator_response")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
     plt.rcParams.update(PS.rc())
-    d = load_data()
-    plot(plt, d)
-    print_numbers(d)
+    with np.load(args.pipeline_windows / "pipeline_windows.npz") as z:
+        ell = z["ell"]
+    plot(plt, ell, load_ratios(args.pipeline_windows, args.residual_estimator_response), args.out)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,21 @@
-"""Bounded residual claims, paper/residual_numbers.tex.
+"""Bounded residual claims on the 1500d field.
 
-Not yet a recipe: reads its inputs from fixed paths and writes paper/residual_numbers.tex.
+Formats `residual_summary` (independent-sky residuals on the spherical and
+integer-bin references, ensemble tests, map-refinement and ring controls,
+paired contrasts) and computes two numbers from the 20 production skies:
+STG's TT over 4500 <= l < 4800 on the integer-bin model, and the worst
+Hann-smoothed TT or EE residual on the estimator reference. Never a closure
+calibration: the radial response is an approximate diagnostic, and the
+summary keeps covariant per-bin tests alongside band means so the two cannot
+be confused.
+
+Run:  bash env.sh python3 analysis/paper_numbers/residual_numbers.py
+          --residual-summary <dir> --pipeline-windows <dir>
+          --residual-estimator-response <dir> --out <dir>
+Out:  <out>/residual_numbers.tex and <out>/residual_numbers.json
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -10,30 +23,24 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import spectra as S  # noqa: E402,F401
-from macros import WORDS as _WORDS, Macros, f, pct, rng, sci  # noqa: E402,F401
-
-ROOT = Path(__file__).resolve().parents[2]
+import spectra as S  # noqa: E402
+from macros import Macros, pct, rng, sci  # noqa: E402
 
 
-def production_upper():
+def production_upper(d):
     """STG's TT over 4500-4800 on the 20 skies, against the integer-bin model."""
-    d = np.load('/sptlocal/user/cailmdaley/pol_project/pipeline_windows_production.npz')
     sel = (d['ell'] >= 4500) & (d['ell'] < 4800)
     per_seed = (d['field_TT_ProjSTG_ratio'][:, sel] - 1).mean(-1)
     return {'mean': float(per_seed.mean()),
             'se': float(per_seed.std(ddof=1) / np.sqrt(len(per_seed)))}
 
 
-def production_hann_worst():
+def production_hann_worst(d, reference):
     """Largest TT or EE residual of the 20 skies on the estimator reference.
 
     Residuals are smoothed with the Hann window of full width 600 that the
     paper uses for measured power, away from the ends of 1000 < l < 4000.
     """
-    directory = Path('/sptlocal/user/cailmdaley/pol_project')
-    d = np.load(directory / 'pipeline_windows_production.npz')
-    reference = np.load(directory / 'residual_estimator_response.npz')
     ell = d['ell']
     centres = np.flatnonzero((ell >= 1300) & (ell < 3700))
     worst = 0.
@@ -47,15 +54,8 @@ def production_hann_worst():
     return worst
 
 
-def residual_numbers():
-    """Generate only the bounded residual claims, never a closure calibration.
-
-    Run summarize_residual_anomalies.py after all canonical controls and gates.
-    The radial response remains an approximate diagnostic; the summary retains
-    covariant per-bin tests alongside band means so those cannot be confused.
-    """
-    import json
-    d = json.loads((ROOT/'analysis/figures/residual_anomalies/summary.json').read_text())
+def residual_numbers(d, windows, reference):
+    """The bounded residual claims, from the summary and the production skies."""
     M = Macros()
 
     def find(rows, **keys):
@@ -102,7 +102,7 @@ def residual_numbers():
         M.add('resid'+proj[4:]+'BBFitP', sci(integer[proj]['p'], 0))
     M.add('residZEABBWorst', pct(fits['ProjZEA', 'BB']['max_bin_residual'], 2))
     M.add('residZEABBIntegerWorst', pct(integer['ProjZEA']['max_bin_residual'], 2))
-    M.add('residSTGTTUpperInteger', uncertainty(production_upper()))
+    M.add('residSTGTTUpperInteger', uncertainty(production_upper(windows)))
     for name, lo in (('Upper', 4000), ('Wall', 4500)):
         removed = np.mean([find(d['map_interventions'], projection=proj, spectrum='BB',
                                 lo=lo, hi=4800 if lo == 4500 else 4500)['removed_fraction']
@@ -112,12 +112,21 @@ def residual_numbers():
     coarse = find(d['ring_controls'], projection='ProjSTG', intervention='n4096_r8', lo=4500, hi=4800)
     M.add('residRingBDrop', pct(1-ring['bb_ee_vs_4096_r8'], 0))
     M.add('residRingEEChange', pct(abs(1-ring['ee_native_ratio']/coarse['ee_native_ratio']), 1))
-    M.add('residHannWorst', pct(production_hann_worst(), 2))
-    assert all(name.isalpha() for name in M)
-    path = ROOT/'paper/residual_numbers.tex'
-    path.write_text(M.tex('residual_numbers'))
-    print(f'Wrote {path}')
+    M.add('residHannWorst', pct(production_hann_worst(windows, reference), 2))
+    return M
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, 'residual_summary', 'pipeline_windows', 'residual_estimator_response')
+    ap.add_argument('--out', type=Path, required=True)
+    args = ap.parse_args()
+    M = residual_numbers(
+        json.loads((args.residual_summary / 'residual_summary.json').read_text()),
+        np.load(args.pipeline_windows / 'pipeline_windows.npz'),
+        np.load(args.residual_estimator_response / 'residual_estimator_response.npz'))
+    M.write(args.out, 'residual_numbers')
 
 
 if __name__ == "__main__":
-    residual_numbers()
+    main()
