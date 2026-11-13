@@ -1,4 +1,0 @@
-host=c1825.swan.hcc.unl.edu
-site=Swan-CE1
-pymaster=1.5.1
-date=2026-08-15T17:48:27.706302Z

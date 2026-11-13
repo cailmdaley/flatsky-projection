@@ -50,9 +50,8 @@ truncated FITS that a later run mistakes for done.
 
 One pair per grid job
 ---------------------
-The build cost spans three orders of magnitude across the footprints (the
-raw ``grid/coupling`` logs: 11 min on 8 cores for disk_0p75, 33 h on 32
-cores for disk_10), so the pairs never share a job. ``--footprint`` names
+The build cost spans three orders of magnitude across the footprints (11
+min on 8 cores for disk_0p75, 33 h on 32 cores for disk_10), so the pairs never share a job. ``--footprint`` names
 the footprint(s) a unit builds (``astra.yaml`` says ``--projections
 {units.projection} --footprint {units.footprint}``); the manifest is
 written under a coordinate-keyed name so the shards do not collide at the

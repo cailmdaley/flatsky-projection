@@ -328,9 +328,8 @@ def main() -> None:
     projections = list(args.projections)
     # A unit job (explicit --seeds) writes its bandpowers under a name keyed
     # by its coordinates, so the unit gather can hardlink every shard into
-    # one canonical directory without collision -- the same per-(projection,
-    # seed) layout the raw grid/ apparatus produced, which analysis/ already
-    # reads. A whole-output run keeps the single bandpowers.npz.
+    # one canonical directory without collision, the per-(projection, seed)
+    # layout analysis/ reads. A whole-output run keeps the single bandpowers.npz.
     unit = args.seeds is not None
     stem = (
         "bandpowers_" + "_".join(projections) + "_seed" + "_".join(f"{s:04d}" for s in seeds)

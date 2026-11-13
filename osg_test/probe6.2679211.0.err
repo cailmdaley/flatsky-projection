@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "<stdin>", line 5, in <module>
-  File "/usr/lib64/python3.9/base64.py", line 133, in urlsafe_b64decode
-    return b64decode(s)
-  File "/usr/lib64/python3.9/base64.py", line 87, in b64decode
-    return binascii.a2b_base64(s)
-binascii.Error: Incorrect padding

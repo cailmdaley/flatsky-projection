@@ -7,7 +7,7 @@
 # Worker mode: an HTCondor-transferred spt3g_build.tar.gz sits in the job
 # scratch (cwd). Untar it once, activate the CVMFS py3-v5 toolset (which
 # carries python + healpy + pymaster), and point the spt3g env at the
-# unpacked build -- exactly what grid/worker.sh does for the raw-condor path.
+# unpacked build.
 #
 # Local mode (amundsen): no tarball in cwd; defer to the real build's
 # env-shell.sh.

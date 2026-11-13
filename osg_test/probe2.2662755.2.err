@@ -1,1 +1,0 @@
-WARNING: The requested toolset (/cvmfs/spt.opensciencegrid.org/py3-v5) has not yet been installed for this platform (Debian_13_x86_64). Please run (or have your admin run) $SROOTBASE/tools/bootstrap_platform_tools.sh.
