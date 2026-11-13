@@ -1,24 +1,27 @@
-"""Beyond-two-point lognormal control macros, paper/beyond_two_point_numbers.tex.
+"""Beyond-two-point lognormal control macros: signal-only controls, never survey-level biases.
 
-Not yet a recipe: reads its inputs from fixed paths and writes paper/beyond_two_point_numbers.tex.
+Formats the `beyond_two_point_summary` output: per chart (TAN, STG, ZEA) and
+sky-disk diameter (14.6, 30 and 60 deg, `Small`, `Medium`, `Large`), the
+paired fractional shift of the smoothed variance, third moment, reduced
+skewness, wavelet L1 and peak count at fixed central filter scale (`ng...`)
+and after mean angular-scale calibration (`ngCal...`), each with its error.
+
+Run:  bash env.sh python3 analysis/paper_numbers/beyond_two_point_numbers.py
+          --beyond-two-point-summary <beyond_two_point_summary dir> --out <dir>
+Out:  <out>/beyond_two_point_numbers.tex and <out>/beyond_two_point_numbers.json
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
 
-import numpy as np
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import spectra as S  # noqa: E402,F401
-from macros import WORDS as _WORDS, Macros, f, pct, rng, sci  # noqa: E402,F401
-
-ROOT = Path(__file__).resolve().parents[2]
+import spectra as S  # noqa: E402
+from macros import Macros, pct  # noqa: E402
 
 
-def beyond_two_point_numbers():
-    """Signal-only lognormal controls, never survey-level parameter biases."""
-    data = json.loads((ROOT/'analysis/beyond_two_point_results/summary.json').read_text())
+def macros(data):
     M = Macros()
     for chart in ('TAN', 'STG', 'ZEA'):
         for diameter, size in ((14.6, 'Small'), (30., 'Medium'), (60., 'Large')):
@@ -38,10 +41,17 @@ def beyond_two_point_numbers():
                            if r['chart'] == chart and r['diameter'] == diameter)['statistics'][key]
                 M.add('ngCal'+chart+label+size, pct(cal['bias'], digits))
                 M.add('ngCal'+chart+label+size+'Error', pct(cal['se'], digits))
-    path = ROOT/'paper/beyond_two_point_numbers.tex'
-    path.write_text(M.tex('beyond_two_point_numbers'))
-    print(f'Wrote {path}')
+    return M
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "beyond_two_point_summary")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    data = json.loads((args.beyond_two_point_summary / "beyond_two_point_summary.json").read_text())
+    macros(data).write(args.out, "beyond_two_point_numbers")
 
 
 if __name__ == "__main__":
-    beyond_two_point_numbers()
+    main()

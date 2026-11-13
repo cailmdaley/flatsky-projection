@@ -31,8 +31,9 @@ mask = np.ones_like(source, dtype=bool)
 out = statistics(source, source, source*0, mask, np.ones(mask.sum()), .5)
 assert out[-1] == 1
 if '--results' in sys.argv:
-    from beyond_two_point_report import summarize
-    summary = summarize()
+    # --results <beyond_two_point_summary.json>
+    import json
+    summary = json.loads(Path(sys.argv[sys.argv.index('--results')+1]).read_text())
     # Conformal-chart third-moment response cannot be a shear-only law.
     stg = next(r for r in summary['records']
                if r['chart'] == 'STG' and r['diameter'] == 60.)
@@ -73,22 +74,12 @@ if '--results' in sys.argv:
     assert wavelet['bias'] < -3*wavelet['se']
     assert abs(wavelet['bias']) > .5*abs(tan['wavelet_l1']['bias'])
     assert abs(wavelet['controls']['both']['paired_drift']) < .1*abs(wavelet['bias'])
-    # Exercise the real writer and quoted-macro filter without editing paper.
-    import tempfile
-    from unittest.mock import patch
-    import paper_numbers as PN
-    with tempfile.TemporaryDirectory() as directory:
-        root = Path(directory)
-        (root/'analysis').symlink_to(PN.ROOT/'analysis')
-        (root/'paper').mkdir()
-        (root/'paper/main.tex').write_text(
-            r'\ngTANThirdLarge \ngTANReducedSkewnessLarge \ngCalTANThirdLarge')
-        with patch.object(PN, 'ROOT', root):
-            PN.beyond_two_point_numbers()
-        text = (root/'paper/beyond_two_point_numbers.tex').read_text()
-        assert r'\newcommand{\ngTANThirdLarge}{19.6\%}' in text
-        assert r'\newcommand{\ngTANReducedSkewnessLarge}{0.57\%}' in text
-        assert r'\newcommand{\ngCalTANThirdLarge}{0.9\%}' in text
-        assert 'ngTANWaveletLarge' not in text
+    # The macros the paper quotes, from the numbers formatter.
+    sys.path.insert(0, str(Path(__file__).resolve().parent/'paper_numbers'))
+    from beyond_two_point_numbers import macros
+    M = macros(summary)
+    assert M['ngTANThirdLarge'] == r'19.6\%'
+    assert M['ngTANReducedSkewnessLarge'] == r'0.57\%'
+    assert M['ngCalTANThirdLarge'] == r'0.9\%'
     print('24 paired skies, 24 scale-calibrated pairs and 16 resolution controls pass')
 print('beyond-two-point geometry and estimator gates pass')

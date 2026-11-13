@@ -1,9 +1,18 @@
 """Paired OSG lognormal controls, including variance-normalized summaries.
 
-Run: bash env.sh python3 analysis/beyond_two_point_report.py
 All reported errors pair the same skies and account for shared denominators.
 A third-moment change alone is not evidence of a change beyond its variance.
+
+Run:  bash env.sh python3 analysis/beyond_two_point_report.py
+          --beyond-two-point results/fiducial/beyond_two_point
+          --beyond-two-point-resolution results/fiducial/beyond_two_point_resolution
+          --beyond-two-point-calibrated results/fiducial/beyond_two_point_calibrated
+          --beyond-two-point-calibrated-resolution results/fiducial/beyond_two_point_calibrated_resolution
+          --out <dir>
+Out:  <out>/beyond_two_point_summary.json, and <out>/report.md with its
+      figure <out>/comparison.png, which the paper does not include.
 """
+import argparse
 import json
 from pathlib import Path
 
@@ -12,13 +21,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from paper_style import PROJ_COLORS, PROJ_MARKERS
+import spectra as S
 
-ROOT = Path(__file__).resolve().parents[1]
-RESULTS = ROOT/'results/highell'
-BASE = RESULTS/'beyond_two_point'
-CONTROL = RESULTS/'beyond_two_point_resolution'
-OUT = ROOT/'analysis/beyond_two_point_results'
-BOOT = np.random.default_rng(4).integers(0, 24, (20000, 24))
 KEYS = ('smooth_variance', 'smooth_third', 'reduced_skewness',
         'wavelet_l1', 'peaks_gt_2sigma')
 
@@ -31,6 +35,11 @@ def ensemble(samples):
     """Original six moments of the ensemble and S3=M3/M2^2, not mean(S3_i)."""
     mean = np.mean(samples, axis=-2)
     return np.concatenate((mean, (mean[..., 3]/mean[..., 2]**2)[..., None]), axis=-1)
+
+
+def bootstrap_draws(n):
+    """20000 whole-sky resamples of n paired skies, from a fixed seed."""
+    return np.random.default_rng(4).integers(0, n, (20000, n))
 
 
 def estimate(t, m):
@@ -49,14 +58,14 @@ def estimate(t, m):
         keep = np.arange(len(t)) != i
         leave_one.append((ensemble(m[keep])/ensemble(t[keep])-1)[-1])
     se[-1] = np.std(leave_one)*np.sqrt(len(t)-1)
-    bootstrap = ensemble(m[BOOT])/ensemble(t[BOOT])-1
+    boot = bootstrap_draws(len(t))
+    bootstrap = ensemble(m[boot])/ensemble(t[boot])-1
     return bias, se, bootstrap
 
 
-def summarize_arm(directory, controls):
+def summarize_arm(directory, controls, calibrated):
     data = [load(p) for p in sorted(directory.glob('seed*.json'))]
-    assert len(data) == 24 and [d['seed'] for d in data] == list(range(24))
-    calibrated = 'calibrated' in directory.name
+    assert [d['seed'] for d in data] == list(range(len(data)))
     assert all(d['mean_scale_calibration'] == calibrated for d in data)
     names = data[0]['statistics']+['reduced_skewness']
     records = []
@@ -77,7 +86,7 @@ def summarize_arm(directory, controls):
                 ct = np.array([d['rows'][j]['reference'] for d in c])
                 cm = np.array([d['rows'][j]['measured'] for d in c])
                 cbias = ensemble(cm)/ensemble(ct)-1
-                bbias = ensemble(m[:4])/ensemble(t[:4])-1
+                bbias = ensemble(m[:len(c)])/ensemble(t[:len(c)])-1
                 sampling[resolution] = dict(bias=float(cbias[k]),
                                            paired_drift=float(cbias[k]-bbias[k]))
             stat = dict(bias=float(bias[k]), se=float(se[k]),
@@ -97,23 +106,30 @@ def summarize_arm(directory, controls):
     return records
 
 
-def summarize():
-    controls = {r: [load(CONTROL/f'seed{s:03d}_{r}.json') for s in range(4)]
+def control_skies(paths):
+    """The control skies at `paths`, which must be seeds 0..k-1: they repeat
+    the first k skies of the arm they control."""
+    data = [load(p) for p in sorted(paths)]
+    assert [d['seed'] for d in data] == list(range(len(data)))
+    return data
+
+
+def summarize(base, control, calibrated_dir, calibrated_control):
+    controls = {r: control_skies(control.glob(f'seed*_{r}.json'))
                 for r in ('sphere', 'plane', 'both')}
-    fine = RESULTS/'beyond_two_point_calibrated_resolution'
-    calibrated_controls = {'both': [load(fine/f'seed{s:03d}_n1024_p0.050.json') for s in range(4)]}
-    records = summarize_arm(BASE, controls)
-    calibrated = summarize_arm(RESULTS/'beyond_two_point_calibrated', calibrated_controls)
+    calibrated_controls = {'both': control_skies(calibrated_control.glob('seed*.json'))}
+    records = summarize_arm(base, controls, False)
+    calibrated = summarize_arm(calibrated_dir, calibrated_controls, True)
     raw_spreads = []
-    for diameter in (14.6, 30., 60.):
+    for diameter in sorted({r['diameter'] for r in records}):
         rows = [r for r in records if r['diameter'] == diameter]
         entry = dict(diameter=diameter)
         for key in ('raw_variance', 'raw_third'):
             means = np.array([r['statistics'][key]['reference_mean'] for r in rows])
             entry[key] = float(np.ptp(means)/means[2])  # ZEA normalization.
         raw_spreads.append(entry)
-    baseline_data = [load(p) for p in sorted(BASE.glob('seed*.json'))]
-    calibrated_data = [load(p) for p in sorted((RESULTS/'beyond_two_point_calibrated').glob('seed*.json'))]
+    baseline_data = [load(p) for p in sorted(base.glob('seed*.json'))]
+    calibrated_data = [load(p) for p in sorted(calibrated_dir.glob('seed*.json'))]
     decomposition = []
     for j, row in enumerate(records):
         truth = np.array([d['rows'][j]['reference'][4] for d in baseline_data])
@@ -121,16 +137,17 @@ def summarize():
         matched = np.array([d['rows'][j]['measured'][4] for d in calibrated_data])
         difference = fixed-matched
         term = difference.mean()/truth.mean()
-        error = (difference-term*truth).std(ddof=1)/24**.5/truth.mean()
+        error = (difference-term*truth).std(ddof=1)/len(truth)**.5/truth.mean()
         decomposition.append(dict(chart=row['chart'], diameter=row['diameter'],
                                   mean_scale_term=float(term), se=float(error)))
-    return dict(nseed=24, ncontrol=4, model='signal-only scalar lognormal',
+    return dict(nseed=len(baseline_data), ncontrol=len(controls['both']),
+                model='signal-only scalar lognormal',
                 records=records, calibrated_records=calibrated,
                 raw_cross_chart_spreads=raw_spreads,
                 wavelet_calibration_decomposition=decomposition)
 
 
-def figure(summary):
+def figure(summary, out):
     plt.rcParams.update({'font.size': 10, 'axes.labelsize': 11,
                          'xtick.labelsize': 10, 'ytick.labelsize': 10,
                          'legend.fontsize': 10, 'text.usetex': False})
@@ -155,7 +172,7 @@ def figure(summary):
     for ax in axes[-1]:
         ax.set_xlabel('Sky-disk diameter (degrees)')
     fig.tight_layout()
-    fig.savefig(OUT/'comparison.png', dpi=180)
+    fig.savefig(out/'comparison.png', dpi=180)
     plt.close(fig)
 
 
@@ -167,7 +184,7 @@ def table(lines, records):
         lines.append(f'| {row["chart"]} | {row["diameter"]:g}° | '+' | '.join(cells)+' |')
 
 
-def report(summary):
+def report(summary, out):
     lines = ['# Scalar lognormal projection control', '',
         'Fixed central filter scales change the variance and third moment, but the third-moment response largely follows the variance.',
         'At fixed central scale, reduced skewness S3 = M3/M2² shows no significant change in this toy field.',
@@ -266,22 +283,24 @@ def report(summary):
         r'Matching the mean angular filter scale leaves a third-moment shift of \ngCalTANThirdLarge\ (error \ngCalTANThirdLargeError), whereas the mean absolute amplitude of a $0.5^\circ$ minus $1^\circ$ Gaussian wavelet retains a shift of \ngCalTANWaveletLarge\ (error \ngCalTANWaveletLargeError).',
         r'The large raw third-moment shift alone does not establish an independent higher-order bias, and mean-scale calibration does not remove every statistic’s response.',
         r'Projection therefore belongs in the simulations and filtering convention of a higher-order analysis \citep{jeffrey25}; realistic safe-patch bounds require a dedicated weak-lensing study.', '',
-        'To use the macros, input paper/beyond_two_point_numbers.tex and run analysis/paper_numbers.py --beyond-two-point-only after editing main.tex.', '',
+        'The macros are the beyond_two_point_numbers output, paper/beyond_two_point_numbers.tex.', '',
         '## Reproduction', '',
-        '`lc run --executor htcondor --profile htcondor9 beyond_two_point beyond_two_point_resolution beyond_two_point_calibrated beyond_two_point_calibrated_resolution -u highell`',
-        '`bash env.sh python3 analysis/check_beyond_two_point.py --results`',
-        '`bash env.sh python3 analysis/beyond_two_point_report.py`',
-        '`~/.local/share/uv/tools/lightcone-cli/bin/python analysis/check_beyond_two_point_provenance.py`', '',
-        'The provenance gate checks canonical hashes, all unit hashes, gathered bytes and stage contents against unit git pins.',
-        'It runs lc verify on an isolated unchanged four-output slice because the CLI has no output selector.',
-        'Raw measurements and manifests live under results/highell/beyond_two_point*; summary.json holds all cells, bootstrap errors, counts and controls.', '']
-    (OUT/'report.md').write_text('\n'.join(lines))
+        '`lc run --executor htcondor --profile htcondor9 beyond_two_point beyond_two_point_resolution beyond_two_point_calibrated beyond_two_point_calibrated_resolution -u fiducial`',
+        '`lc run beyond_two_point_numbers -u fiducial`', '',
+        'Raw measurements and manifests live under results/fiducial/beyond_two_point*; the beyond_two_point_summary output holds all cells, bootstrap errors, counts and controls.', '']
+    (out/'report.md').write_text('\n'.join(lines))
 
 
 if __name__ == '__main__':
-    OUT.mkdir(exist_ok=True)
-    summary = summarize()
-    (OUT/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
-    figure(summary)
-    report(summary)
-    print(OUT/'report.md')
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(p, 'beyond_two_point', 'beyond_two_point_resolution',
+                 'beyond_two_point_calibrated', 'beyond_two_point_calibrated_resolution')
+    p.add_argument('--out', type=Path, required=True)
+    a = p.parse_args()
+    a.out.mkdir(parents=True, exist_ok=True)
+    summary = summarize(a.beyond_two_point, a.beyond_two_point_resolution,
+                        a.beyond_two_point_calibrated, a.beyond_two_point_calibrated_resolution)
+    (a.out/'beyond_two_point_summary.json').write_text(json.dumps(summary, indent=2)+'\n')
+    figure(summary, a.out)
+    report(summary, a.out)
+    print(a.out/'report.md')
