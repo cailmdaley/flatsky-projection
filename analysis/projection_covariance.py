@@ -146,17 +146,10 @@ def measure(out, extra=None):
 
 def invalid_radial_propagation(out):
     """Quantify the tempting, but incorrect, R diag(Var C_l) R^T recipe."""
-    from field_1500d import pipeline_moments
     import shear_leakage as sl
     import spectra as sp
     import theory
-    cache = out/'moments.npz'
-    if cache.exists():
-        with np.load(cache) as z:
-            mom = {key: z[key] for key in z.files}
-    else:
-        mom = pipeline_moments(nside=512)
-        np.savez(cache, **mom)
+    mom = sl.field_moments()
     th = theory.load()
     sky_ell = np.arange(6001, dtype=float)
     sky_variance = {spec: 2*th[f'unlensed_{spec}'][:6001]**2/(2*sky_ell+1)

@@ -16,7 +16,6 @@ import geometry as G
 import spectra as S
 import shear_leakage as SL
 import theory as T
-from field_1500d import pipeline_moments
 from section5_geometry import footprint_samples
 
 PROJS = ('ProjZEA', 'ProjSTG', 'ProjSFL')
@@ -45,7 +44,7 @@ def fit_amplitudes(matrix, data, reference, select, edges, input_ell, shape,
 def measurement(out, widths=(250, 500)):
     th = T.load()
     lp = th['ell'].astype(float)
-    mom = pipeline_moments(nside=256)
+    mom = SL.field_moments()
     ee, bb, tt = S.load_field('EE'), S.load_field('BB'), S.load_scalar('TT', field=True)
     select = (S.ELL >= 500) & (S.ELL < 4000)
     rows, arrays = [], {}

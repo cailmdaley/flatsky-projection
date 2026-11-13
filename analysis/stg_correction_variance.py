@@ -28,7 +28,6 @@ import compare_bin_covariance as CB
 import shear_leakage as SL
 import spectra as S
 import theory as T
-from field_1500d import pipeline_moments
 
 OUT = Path(__file__).resolve().parent / 'figures' / 'stg_correction_variance.json'
 DIRS = [S.ROOT / 'results/highell/bin_covariance_pilot', S.ROOT / 'results/highell/bin_covariance_sims']
@@ -68,7 +67,7 @@ def inverses():
     assert seeds['ProjZEA'] == seeds['ProjSTG']
     th = T.load()
     lp = th['ell'].astype(float)
-    mom = pipeline_moments(nside=256)
+    mom = SL.field_moments()
     select = (S.ELL >= 500) & (S.ELL < 4000)
     result = {}
     for proj in PROJS:

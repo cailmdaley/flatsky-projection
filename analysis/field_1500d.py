@@ -18,9 +18,8 @@ What is compared, per projection:
   `L_CLEAN` -- the disk suite's clean statement (`cleanBBrange`).
 * EE over the binned input spectrum, measured and modelled.
 
-The model reads the shear moments of the pipeline's own field mask
-(`field_healpix_mask`'s taper, evaluated at Nside 2048), and, for reference, the
-Nside-1024 `footprints.rect_mask` the paper's prediction used.
+The model reads the shear moments of the pipeline's own field mask,
+`shear_leakage.field_moments`.
 
 Run:  systemd-run --user --scope -p MemoryMax=16G bash env.sh python3 analysis/field_1500d.py
 """
@@ -36,36 +35,11 @@ import spectra as S
 import theory as T
 
 ROOT = Path(__file__).resolve().parent.parent
-MASK_INDEX = ROOT / "results" / "highell" / "field_healpix_mask" / "index.json"
 CACHE = Path(__file__).resolve().parent / "results_disk_trend" / "field_1500d.npz"
 FIGURE = Path(__file__).resolve().parent / "figures" / "field_1500d.pdf"
 
 BAND = SL.BANDS[0]            # (1000, 3000)
 L_CLEAN = (1000, 4000)        # as paper_numbers.L_CLEAN
-MOMENT_NSIDE = 2048
-
-
-def pipeline_moments(nside=MOMENT_NSIDE):
-    """`footprint_moments` of the pipeline's field mask, shaped (1, ...).
-
-    The mask is analytic, so it is evaluated by the stage's own function
-    (`make_masks.rect_mask_analytic`) at Nside 2048 with the parameters the
-    run recorded, rather than downgraded from the 805M-pixel Nside-8192 map.
-    """
-    import json
-    import healpy as hp
-    sys.path.insert(0, str(ROOT / "src" / "stages"))
-    import make_masks as MM
-
-    idx = json.loads((MASK_INDEX).read_text())
-    rec = idx["masks"][0]
-    pix, w = MM.rect_mask_analytic(nside, idx["ra_deg"], rec["ra_half_deg"],
-                                   rec["dec_min_deg"], rec["dec_max_deg"],
-                                   idx["apotype"], idx["aposize_deg"])
-    arr = np.zeros(hp.nside2npix(nside))
-    arr[pix] = w
-    m = SL.footprint_moments(arr)
-    return {k: v[None] for k, v in m.items()}
 
 
 def band_ratio(ee, bb, sel):
@@ -84,7 +58,7 @@ def run():
     cl_ee = S.theory("unlensed_EE")
     jstg = S.PROJS.index(SL.FLOOR_PROJ)
 
-    moms = {"pipeline": pipeline_moments(), "rect1024": SL.field_moments_1500d()}
+    moms = {"pipeline": SL.field_moments()}
     sel = (ell > BAND[0]) & (ell < BAND[1])
     cband = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
     n = ee.shape[1]
@@ -133,7 +107,8 @@ def run():
             clean.append(float(rr[cband].mean()))
         out[f"{name}_clean"] = np.array(clean)
     CACHE.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(CACHE, projs=S.PROJS, simulation_windows=_simulation_windows(), **out)
+    np.savez(CACHE, projs=S.PROJS, simulation_windows=_simulation_windows(),
+             moments_g2=moms["pipeline"]["g2"], **out)
     return out
 
 
@@ -149,7 +124,9 @@ def load(refresh=False):
         with np.load(CACHE) as f:
             if ("projs" in f.files and list(f["projs"]) == S.PROJS
                     and "simulation_windows" in f.files
-                    and np.array_equal(f['simulation_windows'], _simulation_windows())):
+                    and np.array_equal(f['simulation_windows'], _simulation_windows())
+                    and "moments_g2" in f.files
+                    and np.array_equal(f["moments_g2"], SL.field_moments()["g2"])):
                 return {k: f[k] for k in f.files}
     return run()
 
@@ -160,17 +137,15 @@ def report(res):
     print(f"1500d field, {int(res['n_sims'])} sims, QU leg, BB/EE over {BAND[0]}<l<{BAND[1]}")
     print(f"  STG floor (band) {res['floor_band']:.3e}")
     print(f"  {'proj':<7}{'meas-floor':>12}{'+-':>10}{'model':>11}{'2<g2>':>11}"
-          f"{'meas/model':>12}{'clean':>8}{'2<g2> rect1024':>16}")
+          f"{'meas/model':>12}{'clean':>8}")
     for j, l in enumerate(lab):
         m, e = res["meas_band"][j], res["meas_band_err"][j]
         mo = res["pipeline_model_band"][j]
         print(f"  {l:<7}{m:12.3e}{e:10.1e}{mo:11.3e}{2 * res['pipeline_g2'][j]:11.3e}"
-              f"{m / mo:12.3f}{res['pipeline_clean'][j]:8.3f}"
-              f"{2 * res['rect1024_g2'][j]:16.3e}")
+              f"{m / mo:12.3f}{res['pipeline_clean'][j]:8.3f}")
     print(f"  SFL/BICEP measured {res['sfl_bicep']:.2f} +- {res['sfl_bicep_err']:.2f}; "
           f"model {res['pipeline_model_band'][jsfl] / res['pipeline_model_band'][jbic]:.2f}; "
-          f"2<g2> pipeline {res['pipeline_g2'][jsfl] / res['pipeline_g2'][jbic]:.2f}, "
-          f"rect1024 {res['rect1024_g2'][jsfl] / res['rect1024_g2'][jbic]:.2f}")
+          f"2<g2> {res['pipeline_g2'][jsfl] / res['pipeline_g2'][jbic]:.2f}")
     ell = res["ell"]
     print("  EE/input (measured | model) at l ~ 1000, 3000, 4000:")
     for j, l in enumerate(lab):

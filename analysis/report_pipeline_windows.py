@@ -5,7 +5,6 @@ import numpy as np
 import spectra as S
 import theory as T
 import shear_leakage as SL
-import field_1500d as FD
 from pipeline_windows import response
 
 
@@ -24,7 +23,7 @@ def main():
     ell=np.arange(5,6000,10,dtype=float)
     for field in (True,False):
         name='field' if field else 'disk5'
-        mom=FD.pipeline_moments() if field else SL.load_moments(verbose=False)
+        mom=SL.field_moments() if field else SL.load_moments()
         reference={}
         for j,proj in enumerate(S.PROJS):
             R=SL.coupling_matrix(mom,0 if field else 5,j,np.arange(S.LMAX,dtype=float),

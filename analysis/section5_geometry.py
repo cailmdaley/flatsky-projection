@@ -115,18 +115,33 @@ def local_check():
 
 
 def footprint_samples(nside=128):
-    """Sky points with the production mask's analytic C2 taper squared."""
+    """Sky points with the production mask's analytic taper squared.
+
+    The 5% disk and the 1500d field, shaped by `_footprints.FOOTPRINTS` and
+    tapered with the apodization the `healpix_masks` run recorded, evaluated
+    at a quadrature Nside rather than read from the Nside-8192 maps.
+    """
+    import json
     import healpy as hp
-    centre=hp.ang2vec(G.ALPHA_CENTER_DEG,G.DELTA_CENTER_DEG,lonlat=True)
-    disk=MM.apodize_disk_analytic(nside,centre,.45,'C2',2.5)
-    ids=np.flatnonzero(disk)
-    ra,dec=hp.pix2ang(nside,ids,lonlat=True)
-    out={'disk5':(ra,dec,disk[ids]**2)}
-    ids,w=MM.rect_mask_analytic(nside,0.,50.,-70.,-42.,'C2',2.5)
-    ra,dec=hp.pix2ang(nside,ids,lonlat=True)
-    out['field1500d']=(ra,dec,w**2)
-    east=(ra>0)&(ra<180)
-    out['fieldEast']=(ra[east],dec[east],w[east]**2)
+    from _footprints import DEC_DEG, FOOTPRINTS, RA_DEG
+    masks = Path(__file__).resolve().parents[1]/'results'/'fiducial'/'healpix_masks'
+    out = {}
+    for key, name in (('disk5', 'disk_5'), ('field1500d', 'field_1500d')):
+        index = json.loads((masks/f'index_{name}.json').read_text())
+        apodization = index['apotype'], index['aposize_deg']
+        fp = FOOTPRINTS[name]
+        if fp.shape == 'disk':
+            centre = hp.ang2vec(RA_DEG, DEC_DEG, lonlat=True)
+            disk = MM.apodize_disk_analytic(nside, centre, fp.radius_rad, *apodization)
+            ids = np.flatnonzero(disk)
+            w = disk[ids]
+        else:
+            ids, w = MM.rect_mask_analytic(nside, RA_DEG, *fp.box, *apodization)
+        ra, dec = hp.pix2ang(nside, ids, lonlat=True)
+        out[key] = (ra, dec, w**2)
+    ra, dec, w2 = out['field1500d']
+    east = (ra > 0) & (ra < 180)
+    out['fieldEast'] = (ra[east], dec[east], w2[east])
     return out
 
 

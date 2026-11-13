@@ -32,7 +32,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import shear_leakage as SL
 import spectra as S
 import theory as T
-from field_1500d import pipeline_moments
 from validate_fine_spectra import read_matrix, decouple_many
 
 DIR = S.ROOT/'results/highell/noisy_inversion_sims'
@@ -112,7 +111,7 @@ def main():
     args = p.parse_args()
     th = T.load()
     lp = th['ell'].astype(float)
-    mom = pipeline_moments(nside=256)
+    mom = SL.field_moments()
     select = (S.ELL >= 500) & (S.ELL < 4000)
     amps, data, seeds, extra = {}, {}, {}, {}
     for proj in PROJS:

@@ -222,7 +222,7 @@ def main():
     # half's EB/EE from the E-only sky, stock and polar, with its error.
     import polar_flatten as PF
     res_pf = PF.map_test()
-    pf = PF.summary(res_pf, mom, _moments_1500d())
+    pf = PF.summary(res_pf, mom, SL.field_moments())
     M.add("flattenSFLmaps", f"${100 * pf['disk_shift_maps']:.2f}"
           f" \\pm {100 * pf['disk_shift_maps_err']:.2f}\\%$")
     M.add("flattenSFLfield", pct(pf["field_shift_model"], 1))
@@ -466,8 +466,8 @@ def main():
     white = np.where(ell_th >= 2, 1.0, 0.0)
     step, half = 5.0, 150.0
     for label, (mom_, i_, p, nd) in {
-            "SFLtfd": (_moments_1500d(), 0, "ProjSFL", 0),
-            "ZEAtfd": (_moments_1500d(), 0, "ProjZEA", 1)}.items():
+            "SFLtfd": (SL.field_moments(), 0, "ProjSFL", 0),
+            "ZEAtfd": (SL.field_moments(), 0, "ProjZEA", 1)}.items():
         for l0, word in ((3000.0, "threeK"), (4000.0, "fourK")):
             ell_b = np.arange(l0 - half + step / 2, l0 + half, step)
             R = SL.coupling_matrix(mom_, i_, P[p], ell_b, ell_th,
@@ -542,7 +542,7 @@ def prose_numbers(M, mom):
     wide_bb = (ell > 500) & (ell < L_CLEAN[1])
     clean = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
 
-    idx = json.loads(FD.MASK_INDEX.read_text())
+    idx = json.loads((S.RESULTS / "healpix_masks" / f"index_{S.FIELD}.json").read_text())
     M.add("fieldfsky", pct(idx["masks"][0]["fsky_binary"], 1))
 
     # ---- scalar: the acoustic spacing against the shear's band ------------
@@ -730,23 +730,12 @@ def _offdiag(ee, bb, ell, lo=500, hi=4800):
     return out
 
 
-_FIELD_CACHE = {}
-
-
-def _moments_1500d():
-    """`shear_leakage.field_moments_1500d`, computed once per run."""
-    if not _FIELD_CACHE:
-        _FIELD_CACHE["mom"] = SL.field_moments_1500d()
-    return _FIELD_CACHE["mom"]
-
-
 def _field_1500d():
     """Predicted BB/EE = 2<g^2> on SPT's real 1500d footprint, per projection.
 
-    Built at Nside 1024, which agrees with the full-resolution moment to 0.2%;
-    nothing here touches map pixels.
+    From the moments of the pipeline's own field mask.
     """
-    g2 = _moments_1500d()["g2"][0]
+    g2 = SL.field_moments()["g2"][0]
     return {S.PROJ_LABEL[p]: 2 * float(g2[j]) for j, p in enumerate(S.PROJS)}
 
 
@@ -771,7 +760,7 @@ def _scalar_forward(mom, mask, j, ell, lp, inputs):
 
 def check_scalar_forward():
     """Gate scalar reports on agreement with the full matrix, including its edge."""
-    mom = SL.load_moments(verbose=False)
+    mom = SL.load_moments()
     th = T.load()
     lp = th['ell'].astype(float)
     inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
@@ -805,7 +794,7 @@ def scalar_numbers():
     np.testing.assert_allclose(truth[1, 0], (S.DELTA_L - 2) / S.DELTA_L)
     measured, predictions = [], []
     for field in (False, True):
-        mom = _moments_1500d() if field else SL.load_moments()
+        mom = SL.field_moments() if field else SL.load_moments()
         mask = 0 if field else MASK
         measured.append(np.stack([S.load_scalar(spec, field=field) if field
                                   else S.load_scalar(spec)[MASK]

@@ -500,8 +500,8 @@ def main():
               f"  |Delta| stock {r['delta_stock']:.3f}  polar {r['delta_polar']:.1e}")
     refresh = "--refresh" in sys.argv
     res = map_test(refresh=refresh)
-    mom_disk = SL.load_moments(verbose=False)
-    mom_field = SL.field_moments_1500d()
+    mom_disk = SL.load_moments()
+    mom_field = SL.field_moments()
     for k, v in summary(res, mom_disk, mom_field).items():
         print(f"  {k:<24} {v: .4e}")
     figure(res, mom_disk)

@@ -5,7 +5,7 @@ mean over the 20 realizations, divided by the model, and a band of the
 standard error of that mean.
 
 The model is `shear_leakage.coupling_matrix` on the shear moments of the
-pipeline's own field mask (`field_1500d.pipeline_moments`): the sky spectrum
+pipeline's own field mask (`shear_leakage.field_moments`): the sky spectrum
 read at the sheared wavenumber |J^T l|, with the exact
 sin^2/cos^2(2 dpsi + 2 Delta) kernel for E and B and kernel 1 for T, Delta the
 residual of the pipeline's own flattening angle, averaged over mode azimuth
@@ -53,7 +53,6 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import field_1500d as FD
 import paper_style as PS
 import plot_projection_spectra as PPS
 import shear_leakage as SL
@@ -92,7 +91,7 @@ def load_ratios():
 
 def load_data():
     """The field's bandpowers and forward model, per spectrum, in absolute C_l."""
-    mom = FD.pipeline_moments()
+    mom = SL.field_moments()
     th = T.load()
     ell_th = th["ell"].astype(float)
     fine = np.arange(S.LMAX, dtype=float)

@@ -93,10 +93,11 @@ Three places, all real and all reported rather than smoothed over.
      geometry side suffers a milder version of the same problem: the RA step of
      geometry.jacobian goes as 1 / cos(delta), so the differenced Jacobian
      fails inside the last fraction of a degree. Removing a 0.5 deg polar cap
-     (0.3% of the disk's weight) moves <g^2> by 0.1-0.3% for the sheared
-     projections -- and takes STG's apparent <g^2> from 2.0e-8 to 3.5e-12, i.e.
-     that whole apparent value was the polar cap. No other disk comes within
-     8 deg of a pole.
+     (0.02% of the disk's weight) moves <g^2> by 0.04-0.3% for the sheared
+     projections -- and takes STG's apparent <g^2> from 4.8e-8 to 3.5e-12, i.e.
+     that whole apparent value was the polar cap. It grows with the mask's
+     Nside (2.0e-8 at 4096), as pixel centres approach the pole. No other disk
+     comes within 8 deg of a pole.
 
   3. The band average hides an l dependence. Band by band on the 5% disk, SFL's
      ratio rises from 1.02 to 1.09 times 2<g^2> and BICEP's falls from 1.07 to
@@ -131,10 +132,9 @@ Three places, all real and all reported rather than smoothed over.
 
 Inputs
 ------
-Masks: the run's apodized HEALPix disks,
-/sptlocal/analysis/pol_project2020/results/masks/healpix_mask{0..6}.g3
-(Nside 4096, C2 apodization at 2.5 deg, radii 0.175 to 0.65 rad about
-RA 0, dec -56). Read, not rebuilt.
+Shear moments: `load_moments`, the product of `analysis/shear_moments.py`,
+evaluated on the pixels of the pipeline's own `healpix_masks` (Nside 8192, the
+seven C2-apodized disks and the 1500d field of `src/stages/_footprints.py`).
 
 Spectra: the highell bandpowers via `spectra.load` -- dl = 50 to l = 6000, QU
 leg, HEALPix pixel-window artefact undone. `predicted_spectra` is accordingly
@@ -145,10 +145,7 @@ refinement. Not Clee.dat -- see analysis/theory.py for why that file is wrong.
 
 Cost
 ----
-One pass over each mask's support at full Nside 4096 (46 M pixels total across
-the seven), four Jacobians each. About five minutes and under 4 GB, single
-threaded apart from BLAS. Results are cached per `--n-bins`; `--refresh`
-recomputes. The l-dependent model adds about 30 s and needs no cache.
+The moments are read, not computed. The l-dependent model takes about 30 s.
 """
 
 import argparse
@@ -167,15 +164,10 @@ from spt3g import core
 
 DEG = core.G3Units.deg
 
-MASK_DIR = Path("/sptlocal/analysis/pol_project2020/results/masks")
 CACHE_DIR = Path("/sptlocal/user/cailmdaley/pol_project")
 ROOT = Path(__file__).resolve().parent.parent
 FIGURE = ROOT / "figures" / "shear_leakage.pdf"
-
-# config.yaml of the 2021 run: seven concentric disks about the projection
-# centre, apodized C2 at 2.5 deg. Radii carried here only for the record --
-# the masks themselves are read from disk.
-RADII_RAD = [0.175, 0.2, 0.225, 0.25, 0.35, 0.45, 0.65]
+MOMENTS = S.RESULTS / "shear_moments" / "shear_moments.npz"
 
 # Bands to test the law in. The first is the headline band average; the rest
 # resolve the l dependence the average hides. The band-by-band set runs to
@@ -240,170 +232,25 @@ def flattening_residual(jac):
     return rot / 2 + phi
 
 
-def _bin_edges(proj, alpha, delta, n_bins, pad=0.05):
-    """Log-s edges for the (s1, s2) histogram, from a subsample of the mask."""
-    s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
-    out = []
-    for s in (s1, s2):
-        lo, hi = np.log(s.min()), np.log(s.max())
-        span = max(hi - lo, 1e-9)
-        out.append(np.linspace(lo - pad * span, hi + pad * span, n_bins + 1))
-    return out
+def load_moments(footprints=S.DISKS):
+    """Shear moments of `footprints`, stacked (footprint, projection, ...).
 
-
-def footprint_moments(mask, n_bins=64, chunk=2_000_000):
-    """Mask-squared-weighted shear moments of one HEALPix footprint.
-
-    `mask` is the apodized HEALPix map. Returns, per projection (leading axis
-    in `spectra.PROJS` order), the exact per-pixel moments and a (n_bins,
-    n_bins) weight histogram in (log s1, log s2) with the weighted *centroid*
-    of each occupied cell and the cell's weighted means of sin^2(2 Delta) and
-    sin(2 Delta), Delta = `flattening_residual` -- the quantities the forward
-    model needs that (s1, s2) do not fix. The signed mean feeds only TB<-TE.
-
-    The centroid matters. Placing cells at their geometric midpoints biases
-    <g^2> by 4% for BICEP at n_bins = 64, because BICEP's magnification spans
-    a factor of four across the largest disks and g^2 is strongly convex in
-    log s. Carrying the first moment inside each cell drops that to 1e-4, so
-    the l-dependent model costs a few hundred cells instead of tens of
-    thousands. Bin assignment is clipped to the edges; the accumulated log s
-    values are not, so a pixel outside the subsampled range still lands at its
-    true position.
+    Read from `analysis/shear_moments.py`'s product, evaluated on the
+    pipeline's own Nside-8192 masks. The default, the seven disks in registry
+    order, matches `spectra.PERC`, so mask index i is a disk throughout.
     """
-    import healpy as hp
-
-    arr = np.asarray(mask)
-    nside = hp.npix2nside(arr.size)
-    idx = np.flatnonzero(arr)
-    w2 = arr[idx] ** 2
-    npj = len(S.PROJS)
-    out = {k: np.zeros(npj) for k in
-           ("sum_w2", "sum_w2_det", "sum_w2_det2", "sum_w2_nopole",
-            "g2_det", "g2_det2", "g2_nopole", "s1_max", "s2_min")}
-    for key in REDUCTIONS:
-        out[key] = np.zeros(npj)
-    hist = np.zeros((npj, n_bins, n_bins))
-    m1 = np.zeros_like(hist)
-    m2 = np.zeros_like(hist)
-    mf = np.zeros_like(hist)
-    ms = np.zeros_like(hist)
-
-    # Edges from a ~200k subsample; the moments themselves are exact.
-    stride = max(1, idx.size // 200_000)
-    a_s, d_s = hp.pix2ang(nside, idx[::stride], lonlat=True)
-    edges = {p: _bin_edges(p, a_s, d_s, n_bins) for p in S.PROJS}
-
-    for start in range(0, idx.size, chunk):
-        sl = slice(start, start + chunk)
-        alpha, delta = hp.pix2ang(nside, idx[sl], lonlat=True)
-        w = w2[sl]
-        off_pole = (90.0 - np.abs(delta)) > POLAR_CUT_DEG
-        for j, proj in enumerate(S.PROJS):
-            jac = G.jacobian(proj, alpha, delta)
-            s1, s2 = G.singular_values(jac)
-            sin_2d = np.sin(2 * flattening_residual(jac))
-            sin2_2d = sin_2d ** 2
-            det = s1 * s2
-            out["sum_w2"][j] += w.sum()
-            out["sum_w2_det"][j] += (w * det).sum()
-            out["sum_w2_det2"][j] += (w * det ** 2).sum()
-            for key, (_, f) in REDUCTIONS.items():
-                out[key][j] += (w * f(s1, s2)).sum()
-            gg = REDUCTIONS["g2"][1](s1, s2)
-            out["g2_det"][j] += (w * det * gg).sum()
-            out["g2_det2"][j] += (w * det ** 2 * gg).sum()
-            out["sum_w2_nopole"][j] += w[off_pole].sum()
-            out["g2_nopole"][j] += (w[off_pole] * gg[off_pole]).sum()
-            out["s1_max"][j] = max(out["s1_max"][j], s1.max())
-            out["s2_min"][j] = (s2.min() if out["s2_min"][j] == 0
-                                else min(out["s2_min"][j], s2.min()))
-
-            l1, l2 = np.log(s1), np.log(s2)
-            e1, e2 = edges[proj]
-            k1 = np.clip(((l1 - e1[0]) / (e1[1] - e1[0])).astype(np.intp),
-                         0, n_bins - 1)
-            k2 = np.clip(((l2 - e2[0]) / (e2[1] - e2[0])).astype(np.intp),
-                         0, n_bins - 1)
-            flat = k1 * n_bins + k2
-            nb2 = n_bins * n_bins
-            hist[j] += np.bincount(flat, weights=w, minlength=nb2).reshape(n_bins, n_bins)
-            m1[j] += np.bincount(flat, weights=w * l1, minlength=nb2).reshape(n_bins, n_bins)
-            m2[j] += np.bincount(flat, weights=w * l2, minlength=nb2).reshape(n_bins, n_bins)
-            mf[j] += np.bincount(flat, weights=w * sin2_2d, minlength=nb2).reshape(n_bins, n_bins)
-            ms[j] += np.bincount(flat, weights=w * sin_2d, minlength=nb2).reshape(n_bins, n_bins)
-
-    for key in REDUCTIONS:
-        out[key] /= out["sum_w2"]
-    out["g2_det"] /= out["sum_w2_det"]
-    out["g2_det2"] /= out["sum_w2_det2"]
-    out["g2_nopole"] /= out["sum_w2_nopole"]
-    out["hist"] = hist
-    out["cell_s1"] = np.exp(np.divide(m1, hist, out=np.zeros_like(m1), where=hist > 0))
-    out["cell_s2"] = np.exp(np.divide(m2, hist, out=np.zeros_like(m2), where=hist > 0))
-    out["cell_sin2_2delta"] = np.divide(mf, hist, out=np.zeros_like(mf), where=hist > 0)
-    out["cell_sin_2delta"] = np.divide(ms, hist, out=np.zeros_like(ms), where=hist > 0)
-    return out
+    with np.load(MOMENTS) as f:
+        if list(f["projs"]) != S.PROJS:
+            raise ValueError(f"{MOMENTS}: projections {list(f['projs'])}, "
+                             f"expected {S.PROJS}")
+        rows = [list(f["footprints"]).index(name) for name in footprints]
+        return {k: f[k][rows] for k in f.files
+                if k not in ("footprints", "projs", "n_bins")}
 
 
-def mask_moments(n_bins=64, chunk=2_000_000, verbose=True):
-    """`footprint_moments` of the run's seven disks, as (n_mask, n_proj, ...)."""
-    per_mask = []
-    for i in range(len(RADII_RAD)):
-        frame = next(core.G3File(str(MASK_DIR / f"healpix_mask{i}.g3")))
-        arr = np.asarray(frame["T"])
-        if verbose:
-            n = np.count_nonzero(arr)
-            print(f"  mask{i}: Nside {frame['T'].nside}, support {n / 1e6:.2f} M "
-                  f"pixels ({n / arr.size:.4f} of the sky)", flush=True)
-        per_mask.append(footprint_moments(arr, n_bins=n_bins, chunk=chunk))
-        del arr, frame
-    return {k: np.stack([m[k] for m in per_mask]) for k in per_mask[0]}
-
-
-def field_moments_1500d(nside=1024, n_bins=64):
-    """`footprint_moments` of SPT's 1500d field, shaped like one mask (i = 0).
-
-    RA +-50 deg, dec -70 to -42, C2-apodized at 2.5 deg, built through
-    `footprints` at Nside 1024 like `report_1500d`. The result drops into
-    every function that takes `(mom, i, j)` with i = 0.
-    """
-    import footprints as F
-    m = footprint_moments(F.rect_mask(50.0, -70.0, -42.0, nside=nside),
-                          n_bins=n_bins)
-    return {k: v[None] for k, v in m.items()}
-
-
-# What `predicted_spectra` and the reports read from a moments cache.
-MOMENT_FIELDS = {"g2", "hist", "cell_s1", "cell_s2", "cell_sin2_2delta",
-                 "cell_sin_2delta"}
-
-
-def load_moments(n_bins=64, refresh=False, verbose=True):
-    """Cached `mask_moments`, one file per n_bins.
-
-    Written to a temporary name and renamed, so an interrupted run never
-    leaves a half-written cache behind for the next one to trust. A cache
-    lacking any field in `MOMENT_FIELDS`, or not in `spectra.PROJS` order, is
-    stale and is recomputed.
-    """
-    cache = CACHE_DIR / f"shear_leakage_moments_nb{n_bins}.npz"
-    if cache.exists() and not refresh:
-        with np.load(cache) as f:
-            if (MOMENT_FIELDS | {"projs"} <= set(f.files)
-                    and list(f["projs"]) == S.PROJS):
-                if verbose:
-                    print(f"shear moments: cached {cache}")
-                return {k: f[k] for k in f.files if k not in ("n_bins", "projs")}
-    if verbose:
-        print("shear moments: computing (one pass per mask at Nside 4096)")
-    out = mask_moments(n_bins=n_bins, verbose=verbose)
-    cache.parent.mkdir(parents=True, exist_ok=True)
-    tmp = cache.with_suffix(".tmp.npz")
-    np.savez(tmp, n_bins=n_bins, projs=S.PROJS, **out)
-    tmp.replace(cache)
-    if verbose:
-        print(f"shear moments: wrote {cache}")
-    return out
+def field_moments():
+    """`load_moments` of SPT's 1500d field, shaped like one mask (i = 0)."""
+    return load_moments([S.FIELD])
 
 
 # --------------------------------------------------------------------------
@@ -492,7 +339,7 @@ def coupling_matrix(mom, i, j, ell, ell_prime, band_limit=G.SIM_BAND_LIMIT,
 
     dpsi(chi) is the Fourier-space misalignment, Delta FlattenPol's residual
     rotation, f the cell's mean sin^2(2 Delta) and <sin 2 Delta> its signed
-    mean (`footprint_moments`). The cross terms sin(4 dpsi) sin(4 Delta) / 2,
+    mean (`shear_moments.footprint_moments`). The cross terms sin(4 dpsi) sin(4 Delta) / 2,
     sin(2 dpsi) sin(2 Delta) and sin(2 dpsi) cos(2 Delta) are odd in chi about
     the principal axis while the stretch is even, so they average away, for
     any spectrum and to all orders in g. The spin blocks are symmetric under
@@ -958,12 +805,13 @@ def check_te_tb(nside=1024):
     npix = hp.nside2npix(nside)
     ra, dec = hp.pix2ang(nside, np.arange(npix), lonlat=True)
     ra = np.where(ra > 180.0, ra - 360.0, ra)
-    east = np.where((ra >= 0) & (ra <= 50) & (dec >= -70) & (dec <= -42),
+    ra_half, dec_min, dec_max = S.FOOTPRINTS[S.FIELD].box
+    east = np.where((ra >= 0) & (ra <= ra_half) & (dec >= dec_min) & (dec <= dec_max),
                     1.0, 0.0)
     footprints = {
-        "5% disk": F.disk_mask(RADII_RAD[5], nside=nside),
-        "1500d": F.rect_mask(50.0, -70.0, -42.0, nside=nside),
-        "1500d, RA 0 to 50": F.apodize(east),
+        "5% disk": F.disk_mask(S.FOOTPRINTS["disk_5"].radius_rad, nside=nside),
+        "1500d": F.rect_mask(ra_half, dec_min, dec_max, nside=nside),
+        f"1500d, RA 0 to {ra_half:g}": F.apodize(east),
     }
     rows = {}
     for name, mask in footprints.items():
@@ -993,49 +841,27 @@ def check_te_tb(nside=1024):
     return rows
 
 
-def report_1500d(nside=1024):
-    """Apply the law off its training set, to SPT's real 1500d footprint.
+def report_1500d():
+    """Apply the law to SPT's real 1500d footprint, beside the 5% disk.
 
     The analysis disks are concentric about the projection centre, which is exactly
     the configuration that makes SFL's and BICEP's mask-averaged shear coincide
     (see the module docstring). SPT's field is wide in RA and narrow in
     declination, so it breaks that symmetry, and the disk sequence cannot be
-    interpolated to it.
-
-    Built at Nside 1024 through `footprints`, not 4096: <g^2> for the 0.75%
-    disk agrees with the full-resolution value to 0.2%, and nothing here
-    touches map pixels. This is the law applied, not a new measurement --
-    there are no 1500d bandpowers to check it against.
+    interpolated to it. Both footprints' <g^2> come from `load_moments`.
     """
-    import healpy as hp
-    import footprints as F
-
-    def moment(mask):
-        idx = np.flatnonzero(mask)
-        w2 = mask[idx] ** 2
-        a, d = hp.pix2ang(nside, idx, lonlat=True)
-        return a, d, w2
-
-    mask = F.rect_mask(50.0, -70.0, -42.0, nside=nside)
-    alpha, delta, w2 = moment(mask)
-    # The 5% disk at the same resolution, so the ratio below is like for like.
-    a5, d5, w5 = moment(F.disk_mask(RADII_RAD[5], nside=nside))
-    disks = []
-    for proj in S.PROJS:
-        s1, s2 = G.singular_values(G.jacobian(proj, a5, d5))
-        disks.append(float(np.sum(w5 * ((s1 - s2) / (s1 + s2)) ** 2) / w5.sum()))
+    field = field_moments()["g2"][0]
+    disk = load_moments(["disk_5"])["g2"][0]
+    ra_half, dec_min, dec_max = S.FOOTPRINTS[S.FIELD].box
     print()
     print("=" * 78)
     print("THE LAW OFF ITS TRAINING SET: SPT's 1500d FIELD")
     print("=" * 78)
-    print("RA +-50 deg, dec -70 to -42, C2-apodized at 2.5 deg. Predicted, not")
-    print("measured -- there are no 1500d bandpowers in the suite.")
+    print(f"RA +-{ra_half:g} deg, dec {dec_min:g} to {dec_max:g}, the pipeline's own mask.")
     print(f"  {'proj':<8}{'<g^2>':>13}{'2<g^2>':>13}{'x the 5% disk':>16}")
     for j, proj in enumerate(S.PROJS):
-        s1, s2 = G.singular_values(G.jacobian(proj, alpha, delta))
-        g2 = float(np.sum(w2 * ((s1 - s2) / (s1 + s2)) ** 2) / w2.sum())
-        print(f"  {S.PROJ_LABEL[proj]:<8}{g2:13.4e}{2 * g2:13.4e}"
-              f"{g2 / disks[j]:16.2f}")
+        print(f"  {S.PROJ_LABEL[proj]:<8}{field[j]:13.4e}{2 * field[j]:13.4e}"
+              f"{field[j] / disk[j]:16.2f}")
     print("  SFL and BICEP, which agree to 2% on the 5% disk, differ by a")
     print("  factor of four here. Area is the wrong abscissa; shear is not.")
 
@@ -1132,11 +958,6 @@ def figure(mom, meas, pred=None, path=FIGURE):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--n-bins", type=int, default=64,
-                    help="(log s1, log s2) histogram resolution for the "
-                         "l-dependent model (default 64)")
-    ap.add_argument("--refresh", action="store_true",
-                    help="recompute the shear moments instead of using the cache")
     ap.add_argument("--no-model", action="store_true",
                     help="skip the l-dependent forward model (it is the slow part)")
     ap.add_argument("--check-flattenpol", action="store_true",
@@ -1164,7 +985,7 @@ def main():
         check_te_tb()
         return
 
-    mom = load_moments(n_bins=args.n_bins, refresh=args.refresh)
+    mom = load_moments()
     meas = measured_ratios()
     pred = None if args.no_model else predicted_ratios(mom)
     report(mom, meas, pred)

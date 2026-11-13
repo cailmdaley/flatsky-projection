@@ -12,7 +12,6 @@ import pymaster as nmt
 import spectra as S
 import theory as T
 import shear_leakage as SL
-import field_1500d as FD
 
 
 def main():
@@ -23,7 +22,7 @@ def main():
     report = np.load(args.report)
     th = T.load()
     ell = np.arange(8001, dtype=float)
-    mom = FD.pipeline_moments()
+    mom = SL.field_moments()
     inputs = np.load('/sptlocal/user/cailmdaley/pol_project/residual_input_spectra.npz')
     result = {'ell': S.ELL, 'input_ell': ell}
     for j, proj in enumerate(S.PROJS):
