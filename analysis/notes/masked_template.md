@@ -74,9 +74,7 @@ No statement about optimal mask-edge reconstruction, a cosmological B error bar,
 
 ## Generated numbers and suggested wording
 
-`analysis/masked_template_numbers.py:numbers()` returns a dictionary consumed by the sole central writer, `analysis/paper_numbers.py`.
-Its `--masked-template-only` mode writes `paper/masked_template_numbers.tex`; the full writer also includes these macros in `paper/numbers.tex`.
-The paper source was not edited by this thread.
+The `masked_template_numbers` output (`analysis/paper_numbers/masked_template_numbers.py`) formats the `masked_template_summary` output into `masked_template_numbers.tex`.
 A compact addition after the unmasked operator test could read as follows, using those exported macros:
 
 > We also estimate E solely from the masked, noisy Q/U on the 1500d field, using pure-E multipoles with a narrower taper on the same observed support, followed by Wiener filtering and Q/U subtraction before B purification.
@@ -95,9 +93,7 @@ The first two bands overlap and their plotted points are not independent.
 
 ## Reproduction
 
-Production is the additive `masked_template_realistic` ASTRA output in the highell universe.
-Run it with `lc run masked_template_realistic -u highell --executor htcondor --profile htcondor9 --rerun-triggers code,input,params`.
-Existing production outputs are unchanged.
-Generate the report with `bash env.sh python analysis/masked_template_report.py --input results/highell/masked_template_realistic --out analysis/masked_template_results`.
-The report refuses an incomplete or duplicated seed set; the pilot requires an explicit `--expected-seeds 1`.
-Its summary stores the SHA256 of every numerical source file.
+Production is the `masked_template` output of `astra.yaml`; the report is the `masked_template_summary` output (`analysis/masked_template_report.py`), and the macros the `masked_template_numbers` output.
+Run them with `lc run masked_template_numbers -u fiducial`, sending `masked_template` to the grid with `--executor htcondor --profile htcondor9`.
+The report refuses a seed set that is not 0..n-1, and reads the noise depth from the seeds and the pixel size from the flat-sky masks.
+Lightcone's manifests record the hash of every input.

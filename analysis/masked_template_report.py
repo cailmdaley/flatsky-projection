@@ -3,11 +3,22 @@
 Power subtraction means subtraction of a FIXED ensemble R_BB<-EE C_EE
 prediction, whose variance is exactly that of raw BB. A supplementary
 EE-amplitude-conditioned diagonal reference is not the full R estimator.
+
+Run:  bash env.sh python3 analysis/masked_template_report.py
+          --masked-template results/fiducial/masked_template
+          --flatsky-masks results/fiducial/flatsky_masks
+          --theory-spectra data/theory_spectra.npz --out <dir>
+Out:  <out>/masked_template_summary.json, and the diagnostic figure
+      <out>/masked_template.{png,pdf}. The noise depth per split is the one
+      the masked_template seeds record; the pixel size is the flat-sky masks'.
 """
 import argparse
 import json
 from pathlib import Path
 import numpy as np
+
+import spectra as S
+import theory as T
 
 
 def ratio_sem(y, x):
@@ -19,39 +30,35 @@ def ratio_sem(y, x):
 
 
 def main():
-    p=argparse.ArgumentParser()
-    p.add_argument('--input',required=True)
-    p.add_argument('--out',required=True)
-    p.add_argument('--expected-seeds',type=int,default=20)
+    p=argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(p,'masked_template','flatsky_masks','theory_spectra')
+    p.add_argument('--out',type=Path,required=True)
     a=p.parse_args()
-    files=sorted(Path(a.input).glob('masked_template_seed*.npz'))
+    files=sorted(a.masked_template.glob('masked_template_seed*.npz'))
     data=[dict(np.load(f)) for f in files]
     n=len(data)
-    assert sorted(int(d['seed']) for d in data)==list(range(a.expected_seeds)), 'incomplete or duplicated seed set'
+    assert sorted(int(d['seed']) for d in data)==list(range(n)), 'duplicated or missing seeds'
+    level,=set(float(d['level']) for d in data)
+    res_arcmin=json.loads((a.flatsky_masks/f'index_{S.FIELD}.json').read_text())['res_arcmin']
     ell=data[0]['ell']
     rows={k:np.array([d[k] for d in data]) for k in data[0] if k.startswith(('bb_','ee_'))}
     variants=[k for k in ('oracle','wide','masked','pseudo') if 'bb_cross_'+k in rows]
     # Local white-E-noise prediction with the SAME isotropic Wiener prior.
     # The signal term uses the actual raw BB (no fitted noise amplitude).
     # Angular pixel response is averaged; boundary/pure-B coupling is omitted.
-    import theory as T
-    th=T.load();phi=(np.arange(256)+.5)*2*np.pi/256
-    freq=ell[:,None]*np.deg2rad(2/60)/(2*np.pi)
+    th=T.load(a.theory_spectra);phi=(np.arange(256)+.5)*2*np.pi/256
+    freq=ell[:,None]*np.deg2rad(res_arcmin/60)/(2*np.pi)
     pix=(np.sinc(freq*np.cos(phi))*np.sinc(freq*np.sin(phi)))**2
     prior=np.interp(ell,th['ell'],th['unlensed_EE'])[:,None]*pix
-    noise=(5*np.deg2rad(1/60))**2
+    noise=(level*np.deg2rad(1/60))**2
     wf=prior/(prior+noise)
     pred=(np.mean((1-wf)**2,axis=1)*rows['bb_signal'].mean(0)
           +float(data[0]['tan2'])*noise*np.mean(wf**2,axis=1))
     rng=np.random.default_rng(98372)
     boots=rng.integers(n,size=(4000,n))
-    import hashlib
-    result={'nseed':n,'delta_P_per_split_uK_arcmin':5,
-        'source_sha256':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
+    result={'nseed':n,'delta_P_per_split_uK_arcmin':level,
         'scope':'SFL, polar reflattening, 1500d 2.5-degree C2 analysis mask; coupled pure-B spectra divided by mean W^2. Masked/pseudo use a sharper 0.5-degree E taper; wide control uses the analysis taper. Scalar isotropic Wiener weight, not optimal cut-sky posterior. Signal sky B=0; no source holes or spherical-B response calibration. Fixed ensemble power subtraction; a diagonal EE-amplitude-conditioned reference is supplementary, not the full R operator. Variance gains presume a known mean residual is subtracted in BOTH arms.',
         'bands':{}}
-    manifest=json.loads((Path(a.input)/'.lightcone-manifest.json').read_text())
-    result['source_manifest']={k:manifest[k] for k in ('data_version','code_version','git_sha','input_versions','recipe')}
     for lo,hi in ((900,1100),(1000,2000),(2000,3000),(3000,4000)):
         sel=(ell>=lo)&(ell<hi)
         # Average C_l within the band before moments across seeds.
@@ -86,8 +93,8 @@ def main():
             vals['bb_isolated_masked'].mean()/vals['bb_isolated_oracle'].mean())
         band['estimator_extra_relative_SE']=ratio_sem(vals['bb_isolated_masked'],vals['bb_isolated_oracle'])
         result['bands'][f'{lo}-{hi}']=band
-    out=Path(a.out);out.mkdir(parents=True,exist_ok=True)
-    (out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
+    out=a.out;out.mkdir(parents=True,exist_ok=True)
+    (out/'masked_template_summary.json').write_text(json.dumps(result,indent=2)+'\n')
     import matplotlib;matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import paper_style as PS
