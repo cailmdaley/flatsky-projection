@@ -14,7 +14,7 @@ from local_measurements import profiles,ARCMIN
 @lru_cache()
 def kernel(kind,n=256,res=.2,pad=4):
     pix=res*ARCMIN
-    theory=np.load(Path(__file__).with_name('theory_spectra.npz'))
+    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
     k=2*np.pi*fft.fftfreq(n,pix)
     ell=np.hypot(k[:,None],k[None,:])
     sig=1.2/np.sqrt(8*np.log(2))*ARCMIN

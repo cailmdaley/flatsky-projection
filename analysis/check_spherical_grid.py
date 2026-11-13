@@ -30,7 +30,7 @@ row = np.flatnonzero((dec < -42)&(dec > -44.5))[0]
 distance = np.radians(-42-dec[row])
 x = np.sqrt((1-np.cos(distance))/(1-np.cos(np.radians(2.5))))
 expected = (.5*(1-np.cos(np.pi*x)))**2*np.sin(theta[row])
-np.testing.assert_allclose(regions(ntheta)['field1500'][row, 0], expected, atol=1e-14)
+np.testing.assert_allclose(regions(ntheta, {'apotype': 'C2', 'aposize': 2.5})['field1500'][row, 0], expected, atol=1e-14)
 np.random.seed(10)
 e = hp.synalm(np.r_[0., 0., np.ones(31)], lmax=32)
 a = np.array([e, e*0])

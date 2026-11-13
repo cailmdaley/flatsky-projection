@@ -47,7 +47,7 @@ __all__ = [
     "run_leg",
 ]
 
-PROJECTIONS_DEFAULT = ["ProjSFL", "ProjSIN", "ProjSTG", "ProjZEA", "ProjBICEP"]
+PROJECTIONS_DEFAULT = ["ProjSFL", "ProjSTG", "ProjZEA", "ProjBICEP"]
 
 # spt3g.maps.FlatSkyMap's alpha_center defaults to 0 deg when the kwarg is
 # omitted -- verified directly against the current build:

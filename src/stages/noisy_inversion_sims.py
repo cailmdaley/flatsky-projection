@@ -116,7 +116,7 @@ def run(args):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--masks', type=Path, required=True)
-    p.add_argument('--theory', type=Path, default=Path(__file__).resolve().parent/'data/noisy_inversion_theory.npz')
+    p.add_argument('--theory', type=Path, required=True, help='theory_spectra npz')
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--nside', type=parse_nside, required=True)
     p.add_argument('--lmax', type=parse_lmax, required=True)

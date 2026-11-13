@@ -6,6 +6,7 @@ which changes a mask-weighted response on an anisotropic background. Embed
 4' Fourier coefficients, with their pixel-centre phase, on the 2' grid.
 The spherical harmonic realization already shares its seed across Nside.
 """
+import argparse
 from pathlib import Path
 import os
 import sys
@@ -51,13 +52,15 @@ def injection(qe,rng,bins=(30,60,120,240),rms=.003):
 
 
 def gaussian(qe,rng):
-    theory=np.load(Path(__file__).resolve().parents[2]/'analysis/theory_spectra.npz')
-    cl=np.interp(BL,theory['ell'],theory['unlensed_TT'])
+    cl=np.interp(BL,THEORY['ell'],THEORY['unlensed_TT'])
     t=fft.fft2(rng.normal(size=BASE_SHAPE))*np.sqrt(cl/BASE_PIXEL**2)
     return fft.ifft2(embed(qe,t)).real
 
 
 if __name__=='__main__':
+    p=argparse.ArgumentParser(add_help=False)
+    p.add_argument('--theory',type=Path,required=True)
+    THEORY=np.load(p.parse_known_args()[0].theory)
     TTQE.injection=injection
     TTQE.gaussian=gaussian
     lensing_qe_sims.main()

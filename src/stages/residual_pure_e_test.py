@@ -10,7 +10,7 @@ precision calibration. Unmasked periodic controls gate the zero-B input.
 from pathlib import Path
 import argparse
 from _footprints import FIELD
-from _decisions import set_threads, write_index
+from _decisions import parse_delta_ell, parse_lmax, parse_purify_b, set_threads, write_index
 
 
 def refine_periodic(array):
@@ -22,7 +22,10 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--masks', type=Path, required=True)
     p.add_argument('--workspaces', type=Path, required=True)
-    p.add_argument('--theory', type=Path, default=Path('src/stages/data/bin_covariance_theory.npz'))
+    p.add_argument('--theory', type=Path, required=True, help='theory_spectra npz')
+    p.add_argument('--lmax', type=parse_lmax, required=True)
+    p.add_argument('--delta-ell', type=parse_delta_ell, required=True)
+    p.add_argument('--purify-b', type=parse_purify_b, required=True)
     p.add_argument('--projection', required=True)
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--out', type=Path, required=True)
@@ -41,15 +44,16 @@ def main():
     fine_mask = map_coordinates(mask, [yy, xx], order=3, mode='grid-wrap')
     fine_mask = np.clip(fine_mask, 0., 1.)
     del yy, xx
-    ell = np.arange(6001, dtype=float)
+    ell = np.arange(args.lmax+1, dtype=float)
     with np.load(args.theory) as z:
         ee = z['unlensed_EE'][:len(ell)]
-    bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
+    d = args.delta_ell
+    bins = nmt.NmtBinFlat(np.arange(0., args.lmax, d), np.arange(d, args.lmax+d, d))
     ws = nmt.NmtWorkspaceFlat()
     ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     output = {'ell': bins.get_effective_ells(), 'projection': args.projection,
               'seed': args.seed, 'mask_shape': mask.shape}
-    for cutoff in (4000, 6000):
+    for cutoff in (4000, args.lmax):
         cl = ee * (ell <= cutoff)
         # At two threads synfast_flat assigns seed+thread by arrival order, so
         # the two cutoffs do not reliably share low modes; each cutoff is
@@ -58,7 +62,7 @@ def main():
                                  [2], seed=900000+1024*args.seed)
         for factor, m in ((1, mask), (2, fine_mask)):
             qr, ur = (q, u) if factor == 1 else (refine_periodic(q), refine_periodic(u))
-            f = nmt.NmtFieldFlat(lx, ly, m, [qr, ur], purify_b=True, lite=True)
+            f = nmt.NmtFieldFlat(lx, ly, m, [qr, ur], purify_b=args.purify_b, lite=True)
             coupled = nmt.compute_coupled_cell_flat(f, f, bins)
             output[f'cut{cutoff}_x{factor}_coupled'] = coupled
             output[f'cut{cutoff}_x{factor}_decoupled'] = ws.decouple_cell(coupled)

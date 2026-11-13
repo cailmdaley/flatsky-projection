@@ -231,7 +231,7 @@ def affine_prediction_errors(data):
     from scipy import fft
     import geometry as G
     from local_measurements import profiles, ARCMIN
-    theory=np.load(ROOT/'analysis/theory_spectra.npz')
+    theory=np.load(ROOT/'data/theory_spectra.npz')
     n,pixel=data['n'],data['res_arcmin']*ARCMIN
     axis=(np.arange(n)-n//2)*pixel
     y,x=np.meshgrid(axis,axis,indexing='ij')

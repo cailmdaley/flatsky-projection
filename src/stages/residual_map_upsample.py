@@ -8,7 +8,7 @@ Native results must reproduce production before any interpretation.
 from pathlib import Path
 import argparse
 from _footprints import FIELD
-from _decisions import set_threads, write_index
+from _decisions import parse_delta_ell, parse_lmax, parse_purify_b, set_threads, write_index
 from residual_pure_e_test import refine_periodic
 
 
@@ -18,6 +18,9 @@ def main():
         p.add_argument('--'+name, type=Path, required=True)
     p.add_argument('--projection', required=True)
     p.add_argument('--seed', type=int, required=True)
+    p.add_argument('--lmax', type=parse_lmax, required=True)
+    p.add_argument('--delta-ell', type=parse_delta_ell, required=True)
+    p.add_argument('--purify-b', type=parse_purify_b, required=True)
     args = p.parse_args()
     set_threads(2)
     import numpy as np
@@ -31,7 +34,8 @@ def main():
     frame = next(core.G3File(str(args.maps/f'qu_{args.projection}_seed{args.seed:04d}.g3')))
     full = [np.asarray(frame[key], dtype=float).copy() for key in ('Q', 'U')]
     del frame
-    bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
+    d = args.delta_ell
+    bins = nmt.NmtBinFlat(np.arange(0., args.lmax, d), np.arange(d, args.lmax+d, d))
     ws = nmt.NmtWorkspaceFlat()
     ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     result = dict(ell=bins.get_effective_ells(), projection=args.projection, seed=args.seed)
@@ -62,7 +66,7 @@ def main():
                 qr, ur = refine_periodic(q), refine_periodic(u)
             else:
                 fine_mask, qr, ur = m, q, u
-            field = nmt.NmtFieldFlat(lxp, lyp, fine_mask, [qr, ur], purify_b=True, lite=True)
+            field = nmt.NmtFieldFlat(lxp, lyp, fine_mask, [qr, ur], purify_b=args.purify_b, lite=True)
             coupled = nmt.compute_coupled_cell_flat(field, field, bins)
             # Coupled power scales as integral(mask^2)/map area. Restore the
             # original area normalization before using its fixed workspace.

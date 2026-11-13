@@ -30,7 +30,8 @@ def main():
     p.add_argument('--res-arcmin',type=float,default=4.)
     p.add_argument('--lmin',type=float,default=300.)
     p.add_argument('--lmax',type=float,default=1200.)
-    p.add_argument('--theory',type=Path,default=Path('analysis/theory_spectra.npz'))
+    p.add_argument('--theory',type=Path,required=True,help='theory_spectra npz')
+    p.add_argument('--apodization',required=True,help='field mask taper, as the apodization decision')
     a=p.parse_args()
     os.environ['OMP_NUM_THREADS']='4'
     os.environ['OPENBLAS_NUM_THREADS']='1'
@@ -42,6 +43,8 @@ def main():
     import geometry as G
     from lensing_qe import TTQE,metric_strain,shear_eb
     from make_masks import taper
+    from _decisions import parse_apodization
+    apod=parse_apodization(a.apodization)
     pixel=np.deg2rad(a.res_arcmin/60)
     shape=tuple(int(round(s*60/a.res_arcmin)) for s in (60,90))
     y,x=np.meshgrid((np.arange(shape[0])-(shape[0]-1)/2)*pixel,
@@ -59,7 +62,7 @@ def main():
     distance=np.minimum(dec-dmin,dmax-dec)
     for edge in (-half,half):
         distance=np.minimum(distance,np.arcsin(np.clip(np.cos(dec)*np.abs(np.sin(ra-edge)),0,1)))
-    w=np.where(inside,taper(np.maximum(distance,0),'C2',2.5),0.)
+    w=np.where(inside,taper(np.maximum(distance,0),apod['apotype'],apod['aposize']),0.)
     assert not np.any(w[[0,-1],:]) and not np.any(w[:,[0,-1]])
     theory=np.load(a.theory)
     ell,cl=theory['ell'],theory['unlensed_TT']

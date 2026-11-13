@@ -20,7 +20,7 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('--out',type=Path,required=True)
     a=p.parse_args()
-    theory=np.load(Path(__file__).parent/'theory_spectra.npz')
+    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
     ell,cl=theory['ell'],theory['unlensed_TT']
     pixel=np.deg2rad(4/60)
     qe=TTQE((900,1350),pixel,ell,cl,300,1200)

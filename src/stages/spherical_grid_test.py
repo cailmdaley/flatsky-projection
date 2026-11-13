@@ -18,6 +18,7 @@ import json
 import healpy as hp
 import numpy as np
 from ducc0 import sht
+from _decisions import parse_apodization
 
 
 def synth(alm, ntheta, spin=2):
@@ -101,29 +102,29 @@ def car_average(a, ntheta, factor):
     return out, raw
 
 
-def regions(ntheta):
+def regions(ntheta, apodization):
     theta = (np.arange(ntheta)+.5)*np.pi/ntheta
     dec = 90-np.degrees(theta)
     ra = np.degrees(np.arange(2*ntheta)*np.pi/ntheta)
     dra = (ra+180)%360-180
-    # Same C2 2.5-degree boundary taper as production's field mask.
+    # The production field mask's boundary taper (`_decisions.parse_apodization`).
     from _footprints import FIELD, FOOTPRINTS
     half, dec_min, dec_max = FOOTPRINTS[FIELD].box
     d = np.minimum(np.minimum(dec[:, None]-dec_min, dec_max-dec[:, None]),
         np.degrees(np.arcsin(np.cos(np.radians(dec[:, None]))*
                              np.sin(np.radians(half-np.abs(dra)[None, :])))))
     from make_masks import taper
-    mask = taper(np.radians(np.maximum(d, 0)), 'C2', 2.5)**2
+    mask = taper(np.radians(np.maximum(d, 0)), apodization['apotype'], apodization['aposize'])**2
     result = {'field1500': mask, 'fullsky': np.ones_like(mask)}
     for centre in (0, -30, -56, -75):
         result[f'dec{centre}'] = np.broadcast_to((abs(dec[:, None]-centre)<3).astype(float), mask.shape)
     return {k: v*np.sin(theta[:, None]) for k, v in result.items()}
 
 
-def statistics(a, truth, lmax):
+def statistics(a, truth, lmax, apodization):
     edges = [x for x in (32, 64, 128, 192) if x <= lmax] + [lmax+1]
     ell, _ = hp.Alm.getlm(lmax)
-    reg = regions(384)
+    reg = regions(384, apodization)
     values = []
     for lo, hi in zip(edges[:-1], edges[1:]):
         band = (ell>=lo)&(ell<hi)
@@ -145,6 +146,7 @@ def main():
     p.add_argument('--factor', type=int, default=4)
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--lmax', type=int, default=256)
+    p.add_argument('--apodization', type=parse_apodization, required=True)
     p.add_argument('--out', required=True)
     args = p.parse_args()
     np.random.seed(args.seed)
@@ -173,7 +175,7 @@ def main():
     result = dict(settings=vars(args), statistics={})
     for name, a in records.items():
         print('Statistics', name, flush=True)
-        result['statistics'][name] = statistics(a, truth, args.lmax)
+        result['statistics'][name] = statistics(a, truth, args.lmax, args.apodization)
     (output/f'{prefix}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')
 
 

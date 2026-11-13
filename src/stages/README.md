@@ -1,16 +1,14 @@
 # Stage scripts — the data contract
 
 Each file in `src/stages/` is a standalone `argparse` CLI. `astra.yaml` invokes them
-through the SPT-3G environment wrapper:
+through the dual-mode launcher at the repo root:
 
 ```
-/home/cailmdaley/code/python/spt3g_software/build/env-shell.sh python src/stages/<stage>.py …
+bash env.sh python3 src/stages/<stage>.py …
 ```
 
-They were ported from `/sptlocal/analysis/pol_project2020/workflow/scripts/`, which is
-the code that produced the 2021 numbers. That pipeline injected `snakemake.config` and
-`snakemake.input`; these take the same values as explicit flags so they run under
-lightcone, under Snakemake, or by hand.
+Every input arrives as an explicit flag, so a stage runs the same under lightcone,
+on the grid, or by hand.
 
 ## Rules every stage follows
 
@@ -25,7 +23,8 @@ lightcone, under Snakemake, or by hand.
    `--interpolation` (`interp_rebin8` | `interp_rebin1` | `nearest`),
    `--apodization` (`c2_2p5deg` | `c1_2p5deg` | `c2_5deg`),
    `--purify-b` (`purify` | `standard` | `true` | `false`),
-   `--pixel-window` (`none` | `healpix_only` | `healpix_and_flat`).
+   `--pixel-window` (`flat_only` | `none` | `healpix_only` | `healpix_and_flat`),
+   `--delta-ell` (`d50` | `d10`).
    Put that parsing in `src/stages/_decisions.py` and import it; do not duplicate it.
 4. **Threading is bounded.** Set `OMP_NUM_THREADS` from `--max-procs` (default 4)
    *before* importing numpy/healpy/spt3g. amundsen is a shared 24-core login node;
@@ -34,14 +33,14 @@ lightcone, under Snakemake, or by hand.
 6. **Idempotent.** If a per-seed product already exists and is newer than its input,
    skip it. Long stages must be resumable after a kill.
 7. **No `snakemake`, no `spt3g_plotting`, no relative-path magic.** Every path arrives
-   through a flag.
+   through a flag, theory spectra included (`--theory`, the `theory_spectra` input,
+   `data/theory_spectra.npz`); a stage slices the multipoles it needs itself.
 
 ## Grid and geometry, fixed for every stage
 
 The flat-sky patch is 110 deg across at 2 arcmin, i.e. **3300 x 3300 pixels**, centred
-on RA 0, dec -56 (the 2021 convention — note this is *not* the production 1500d centre
-of -57.5). Projections are named by `spt3g.maps.MapProjection`:
-`ProjSFL ProjSIN ProjSTG ProjZEA ProjBICEP`.
+on RA 0, dec -56. Projections are named by `spt3g.maps.MapProjection`:
+`ProjSFL ProjSTG ProjZEA ProjBICEP`.
 
 ## The files, in DAG order
 
@@ -82,7 +81,7 @@ Write `<out>/qu_{proj}_seed{N:04d}.g3` and `<out>/eb_{proj}_seed{N:04d}.g3`.
 
 Projects each footprint's Healpix mask into each projection, zeroes NaNs, then cuts
 the window NaMaster analyses. A disk's window is its square `lo:hi` from the registry
-(the 2021 hand-maintained table, which sets the Fourier grid and therefore the
+(a hand-maintained table; the window sets the Fourier grid and therefore the
 bandpowers); the field's is the tightest even-sided rectangle around its support.
 Writes `<out>/mask_{proj}_{footprint}.npz` with `mask` (2-D float64), `lx_rad`,
 `ly_rad` and the window bounds `ylo yhi xlo xhi` (plus `lo hi` for a square), and
@@ -113,9 +112,8 @@ bb          (same shape)
 legs        ['qu', 'eb']  projections  footprints (names, registry order)  seeds
 ```
 
-One array, explicitly indexed. The 2021 script assigned `cl_flat_EE[ii]` inside the
-projection loop and collapsed every projection onto the last one read; the shape above
-is what makes that class of bug impossible.
+One array, explicitly indexed, with the leg, projection and footprint names stored
+beside it, so downstream code cannot mis-index them.
 
 Pixel-window handling: `flat_only` (the production mode for high-ell work) divides
 by the azimuthally averaged flat-sky window from
@@ -133,13 +131,10 @@ white alms). Maps are `<out>/{spectrum}_{proj}_seed{N:04d}.g3`; bandpowers are
 `<out>/bandpowers_{spectrum}_{proj}_seed{N:04d}.npz` with `cl` of shape
 `(nfootprint, nbins)` and `footprints`.
 
-### `eb_residuals.py`, `covariance.py`, `leakage_summary.py`
-Downstream reductions; see `astra.yaml` for their flags. They read `bandpowers.npz`
-and the `.g3` map files and write plain `.npz` / `.csv` into their own `--out`.
+### The simulation suites
 
-## Validating a port
-
-`/sptlocal/analysis/pol_project2020/results/` holds the 2021 products, including
-per-seed bandpower text files. A faithful port run under the **baseline** universe with
-seed 0 must reproduce the corresponding 2021 row. That is the regression test; run it
-on one seed and two projections before running anything at scale.
+The remaining stages each produce one suite of the paper's controls and corollaries
+(covariance skies and controls, noisy inversion skies, the BB-floor controls, the
+masked template, lensing reconstruction, compact sources, the beam test, spherical
+pixel tests, lognormal filtering). `astra.yaml` describes each one and gives its
+flags; the module docstrings give the method.

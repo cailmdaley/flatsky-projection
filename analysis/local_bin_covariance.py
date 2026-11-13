@@ -120,7 +120,7 @@ def main():
                     print(row, flush=True)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     sources = [Path(__file__), Path(W.__file__), S.ROOT/'analysis/geometry.py',
-               S.ROOT/'analysis/shear_leakage.py', S.ROOT/'analysis/theory_spectra.npz',
+               S.ROOT/'analysis/shear_leakage.py', S.ROOT/'data/theory_spectra.npz',
                S.ROOT/'results/highell/field_flatsky_masks/.lightcone-manifest.json']
     hashes = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
     args.out.write_text(json.dumps(dict(approximation=__doc__, stride=args.stride,

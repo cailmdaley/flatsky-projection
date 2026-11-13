@@ -37,54 +37,53 @@ def pure_e(q, u, w, res):
                 -fft.fft2(wplus*q+wcross*u))
 
 
-def run(maps_path, masks_path, seed, out):
+def run(maps_path, masks_path, theory_path, seed, out, lmax, delta_ell, purify_b,
+        noise=5.):
+    """Template comparison for one seed of the SFL Q/U leg.
+
+    `maps_path`, `masks_path`: projected_qu and flatsky_masks directories;
+    `theory_path`: theory_spectra. Bandpowers of width `delta_ell` to `lmax`;
+    `noise` is the white Q/U depth of each split in uK-arcmin.
+    """
     from pathlib import Path
-    import tempfile
-    import template_subtraction as T
+    import template_geometry as TG
     import pymaster as nmt
     from spt3g import core
+    qu_path=Path(maps_path)/f'qu_ProjSFL_seed{seed:04d}.g3'
     print(f'seed{seed}: constructing template geometry',flush=True)
-    # Grid uses seed zero only for geometry; it is identical for every seed.
-    with tempfile.TemporaryDirectory() as td:
-        root=Path(td)
-        (root/'projected_qu').mkdir()
-        (root/'projected_qu'/'qu_ProjSFL_seed0000.g3').symlink_to(
-            Path(maps_path).resolve()/f'qu_ProjSFL_seed{seed:04d}.g3')
-        (root/'flatsky_masks').symlink_to(Path(masks_path).resolve())
-        T.RUN=root
-        gr=T.Grid('ProjSFL')
+    gr=TG.Grid('ProjSFL',qu_path,Path(masks_path)/'mask_ProjSFL_disk_5.npz',theory_path)
     print(f'seed{seed}: geometry ready; symbol truncation {gr.trunc:.3g}',flush=True)
-    fr=next(core.G3File(str(Path(maps_path)/f'qu_ProjSFL_seed{seed:04d}.g3')))
+    fr=next(core.G3File(str(qu_path)))
     z=(np.asarray(fr['Q'],float)+1j*np.asarray(fr['U'],float))*gr.extra
     q,u=z.real.copy(),z.imag.copy(); del z
     w=np.zeros(gr.shape); w[gr.field['box']]=gr.field['mask']
     yy,xx=np.nonzero(w>0)
     alpha,delta=fr['Q'].xy_to_angle(core.DoubleVector(xx.astype(float)),core.DoubleVector(yy.astype(float)))
     alpha,delta=np.asarray(alpha),np.asarray(delta)
-    ra_max,dlo,dhi=T.PF.FIELD
-    ra=np.degrees(T.PF._wrap(alpha));dec=np.degrees(delta)
+    ra_max,dlo,dhi=TG.FIELD
+    ra=np.degrees(TG._wrap(alpha));dec=np.degrees(delta)
     we=np.zeros(gr.shape)
-    we[yy,xx]=(T.PF._c2_taper(np.minimum(dec-dlo,dhi-dec),.5)
-               *T.PF._c2_taper((ra_max-np.abs(ra))*np.cos(delta),.5))
+    we[yy,xx]=(TG._c2_taper(np.minimum(dec-dlo,dhi-dec),.5)
+               *TG._c2_taper((ra_max-np.abs(ra))*np.cos(delta),.5))
     del fr,yy,xx,alpha,delta,ra,dec
-    bins=nmt.NmtBinFlat(np.arange(0,6000,50,dtype=float),
-                        np.arange(50,6050,50,dtype=float))
+    bins=nmt.NmtBinFlat(np.arange(0,lmax,delta_ell,dtype=float),
+                        np.arange(delta_ell,lmax+delta_ell,delta_ell,dtype=float))
     def field(qq,uu):
         m=gr.field; box=m['box']
         return nmt.NmtFieldFlat(m['lx'],m['ly'],m['mask'],
-            [np.ascontiguousarray(qq[box]),np.ascontiguousarray(uu[box])],purify_b=True)
+            [np.ascontiguousarray(qq[box]),np.ascontiguousarray(uu[box])],purify_b=purify_b)
     def cell(a,b):
         return nmt.compute_coupled_cell_flat(a,b,bins)[3]/np.mean(gr.field['mask']**2)
     result={'ell':bins.get_effective_ells(), 'seed':seed,
-            'tan2':gr.weighted(gr.tan2,'field'), 'level':5.,
+            'tan2':gr.weighted(gr.tan2,'field'), 'level':noise,
             'trunc':gr.trunc, 'template_apod_deg':.5}
     for name,window in [('masked',we),('wide',w)]:
         result['local_taper_cost_'+name]=(gr.weighted(gr.tan2*(1-window[gr.tbox])**2,'field')
                                          /result['tan2'])
     # Noiseless controls isolate this estimator's mask/taper cost.
-    wf=gr.c_ee/(gr.c_ee+(5*T.ARCMIN_RAD)**2)
+    wf=gr.c_ee/(gr.c_ee+(noise*TG.ARCMIN_RAD)**2)
     def subtract(qq,uu,ee):
-        tq,tu=gr.qu_of_b(T.TEMPLATE_SIGN*gr.template(ee))
+        tq,tu=gr.qu_of_b(TG.TEMPLATE_SIGN*gr.template(ee))
         return field(qq-tq,uu-tu)
     raw=field(q,u)
     result['bb_signal']=cell(raw,raw)
@@ -99,12 +98,12 @@ def run(maps_path, masks_path, seed, out):
         result['bb_signal_'+name]=cell(f,f)
         print(f'seed{seed}: noiseless {name}',flush=True)
     del raw,f,ee
-    # Each split has Delta_P=5 uK arcmin, isotropic independent Q/U noise.
+    # Each split has Delta_P=noise uK arcmin, isotropic independent Q/U noise.
     split_fields={name:[] for name in ['raw']+list(estimators)}
     isolated={name:[] for name in estimators}
     for split in range(2):
         rng=np.random.default_rng(np.random.SeedSequence([827346,seed,split]))
-        sigma=5*T.ARCMIN_RAD/gr.res
+        sigma=noise*TG.ARCMIN_RAD/gr.res
         nq=rng.standard_normal(gr.shape)*sigma
         nu=rng.standard_normal(gr.shape)*sigma
         qq,uu=q+nq,u+nu

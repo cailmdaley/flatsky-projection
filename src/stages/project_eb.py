@@ -2,7 +2,7 @@
 
 Synthesizes E and B on an intermediate Healpix grid *as independent spin-0
 scalars* from the same per-seed alms the QU leg uses, then resamples each
-into the five flat sky projections with no further processing. A spin-0
+into the four flat sky projections with no further processing. A spin-0
 field cannot mix into another spin-0 field under reprojection, so this leg
 has no projection-induced E-to-B leakage by construction. It is the
 reference project_qu.py's (leaky) EE/BB is differenced against.

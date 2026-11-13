@@ -90,8 +90,8 @@ def noisy_test(source, template, power, actual, pixel, nsim=64):
                 position_std_arcmin=np.std(positions,axis=0,ddof=1).tolist())
 
 
-def run(out, res=.2, n=256, nsim=64):
-    theory = np.load(Path(__file__).with_name('theory_spectra.npz'))
+def run(out, theory, res=.2, n=256, nsim=64):
+    theory = np.load(theory)
     pixel = res*ARCMIN
     k = 2*np.pi*fft.fftfreq(n, pixel)
     ky, kx = np.meshgrid(k, k, indexing='ij')
@@ -155,8 +155,9 @@ def run(out, res=.2, n=256, nsim=64):
 if __name__ == '__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--theory',type=Path,required=True,help='theory_spectra npz')
     p.add_argument('--res',type=float,default=.2)
     p.add_argument('--n',type=int,default=256)
     p.add_argument('--nsim',type=int,default=64)
     a=p.parse_args()
-    run(a.out,a.res,a.n,a.nsim)
+    run(a.out,a.theory,a.res,a.n,a.nsim)

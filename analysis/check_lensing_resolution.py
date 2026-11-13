@@ -26,7 +26,7 @@ def run():
     phase=np.exp(.5j*(base.x[iy[:,None],ix[None,:]]+base.y[iy[:,None],ix[None,:]])*(fine.pixel_rad-base.pixel_rad))
     np.testing.assert_allclose(fine_k[fy[:,None],fx[None,:]]/fine.n,
                                coarse_k[iy[:,None],ix[None,:]]*phase/base.n,rtol=2e-14,atol=1e-18)
-    theory=np.load(Path(__file__).parent/'theory_spectra.npz')
+    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
     base.cl=np.interp(base.l,theory['ell'],theory['unlensed_TT'])
     flat=TTQE.gaussian(base,np.random.default_rng(2000))
     refined=R.gaussian(fine,np.random.default_rng(2000))

@@ -35,10 +35,10 @@ def selected(d, method, region='field1500'):
     return [x for x in d['statistics'][method] if x['region']==region]
 
 
-def prediction(nside, lo, hi, region, factor=0):
+def prediction(nside, lo, hi, region, apodization, factor=0):
     # Coarse CAR cells are pi/(3 Nside) x pi/(3 Nside).
     theta = (np.arange(384)+.5)*np.pi/384
-    weight = regions(384)[region].sum(axis=1)
+    weight = regions(384, apodization)[region].sum(axis=1)
     keep = weight>0
     theta, weight = theta[keep], weight[keep]
     chi = (np.arange(180)+.5)*np.pi/180
@@ -86,6 +86,8 @@ def main():
                 report['alias_tests'].append(dict(input_lmax=cutoff, method=method, lo=rows[0]['lo'], hi=rows[0]['hi'],
                     ee=float(np.mean([r['ee'] for r in rows])),
                     bb=float(np.mean([r['bb'] for r in rows]))))
+    # The field taper the test itself used, as recorded in its settings.
+    apodization = data[0]['settings']['apodization']
     windows = []
     for region in ('dec0', 'dec-30', 'dec-56', 'dec-75', 'field1500'):
         ds = [d for d in data if d['settings']['nside']==128 and d['settings']['factor']==8]
@@ -94,8 +96,8 @@ def main():
             lo, hi = rows[0]['lo'], rows[0]['hi']
             windows.append(dict(region=region, lo=lo, hi=hi,
                 amplitude=float(np.mean([r['amplitude'] for r in rows])),
-                prediction=prediction(128, lo, hi, region, 8),
-                continuum_prediction=prediction(128, lo, hi, region)))
+                prediction=prediction(128, lo, hi, region, apodization, 8),
+                continuum_prediction=prediction(128, lo, hi, region, apodization)))
     report['car_windows'] = windows
     hp_windows = []
     for nside in (128, 256):

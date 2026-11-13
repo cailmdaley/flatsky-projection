@@ -64,8 +64,8 @@ def parse_nside(value: str) -> int:
 def parse_interpolation(value: str) -> dict:
     """-> ``{"interp": bool, "rebin": int}``.
 
-    ``interp_rebin8`` is the 2021 setting: bilinear interpolation onto a grid
-    oversampled 8x, then averaged down. ``nearest`` turns interpolation off and
+    ``interp_rebin8``: bilinear interpolation onto a grid oversampled 8x,
+    then averaged down. ``nearest`` turns interpolation off and
     measures the bare pixelization floor.
     """
     table = {

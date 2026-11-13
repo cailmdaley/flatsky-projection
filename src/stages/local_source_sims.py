@@ -12,6 +12,7 @@ import sys
 os.environ['OMP_NUM_THREADS']='2'
 os.environ['OPENBLAS_NUM_THREADS']='1'
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'analysis'))
+from _decisions import parse_lmax
 import numpy as np
 from scipy import fft
 import healpy as hp
@@ -20,11 +21,12 @@ import geometry as G
 from local_measurements import cutout, profiles, fit, ARCMIN
 
 
-def run(seed, out, nside=2048):
+def run(seed, out, nside, theory, lmax):
+    """CMB from `theory`'s lensed TT band-limited at `lmax`, at Healpix `nside`."""
     n, res = 256, .2
     pixel = res*ARCMIN
-    theory=np.load('analysis/theory_spectra.npz')
-    cl=theory['lensed_TT'][:6001].copy()
+    theory=np.load(theory)
+    cl=theory['lensed_TT'][:lmax+1].copy()
     ell=np.arange(len(cl))
     sigma=1.2/np.sqrt(8*np.log(2))*ARCMIN
     cl*=np.exp(-ell*(ell+1)*sigma**2)
@@ -86,6 +88,8 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--seed',type=int,required=True)
     p.add_argument('--out',type=Path,required=True)
-    p.add_argument('--nside',type=int,default=2048)
+    p.add_argument('--nside',type=int,required=True)
+    p.add_argument('--theory',type=Path,required=True,help='theory_spectra npz')
+    p.add_argument('--lmax',type=parse_lmax,required=True)
     a=p.parse_args()
-    run(a.seed,a.out,a.nside)
+    run(a.seed,a.out,a.nside,a.theory,a.lmax)

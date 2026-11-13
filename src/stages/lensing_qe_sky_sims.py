@@ -22,6 +22,7 @@ import geometry as G
 from lensing_qe import TTQE
 from lensing_sky_injection import evaluate,potential,remap
 from make_masks import taper
+from _decisions import parse_apodization
 
 
 def main():
@@ -29,7 +30,8 @@ def main():
     p.add_argument('--seed',type=int,required=True)
     p.add_argument('--projection',required=True)
     p.add_argument('--out',type=Path,required=True)
-    p.add_argument('--theory',type=Path,default=Path('analysis/theory_spectra.npz'))
+    p.add_argument('--theory',type=Path,required=True,help='theory_spectra npz')
+    p.add_argument('--apodization',required=True,help='field mask taper, as the apodization decision')
     p.add_argument('--res-arcmin',type=float,default=4.)
     p.add_argument('--nside',type=int,default=2048)
     p.add_argument('--sky-lmax',type=int,default=4000)
@@ -52,7 +54,8 @@ def main():
     distance=np.minimum(dec-dmin,dmax-dec)
     for edge in (-half,half):
         distance=np.minimum(distance,np.arcsin(np.clip(np.cos(dec)*abs(np.sin(ra-edge)),0,1)))
-    w=np.where(inside,taper(np.maximum(distance,0),'C2',2.5),0.)
+    apod=parse_apodization(a.apodization)
+    w=np.where(inside,taper(np.maximum(distance,0),apod['apotype'],apod['aposize']),0.)
     assert not np.any(w[[0,-1],:]) and not np.any(w[:,[0,-1]])
     theory=np.load(a.theory)
     qe=TTQE(shape,pixel,theory['ell'],theory['unlensed_TT'],a.lmin,a.lmax)

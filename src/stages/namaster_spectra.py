@@ -185,11 +185,10 @@ def load_mask(masks_dir: Path, proj: str, footprint: str):
 def finite_in_mask(m, mask):
     """Zero non-finite pixels, requiring that none carry mask weight.
 
-    Orthographic (SIN) grids are undefined beyond the unit disk -- 1 rad =
-    57.3 deg from centre -- so the 110-deg box's corners are NaN. Every mask
-    stays inside that disk, but NaN * 0 is NaN and NaMaster then returns an
-    all-NaN spectrum; zeroing them is exact because the mask weight there is
-    zero. A NaN *inside* the mask would be a real problem, so it raises.
+    A projection can leave grid pixels with no sky behind them (NaN), as an
+    orthographic grid does beyond 1 rad from its centre. NaN * 0 is NaN and
+    NaMaster then returns an all-NaN spectrum; zeroing them is exact because
+    the mask weight there is zero. A NaN *inside* the mask would be a real problem, so it raises.
     """
     import numpy as np
 

@@ -1,6 +1,7 @@
 """Compare a Gaussian on the SFL grid with the same Gaussian on the sphere.
 
-The input is an existing lc Q/U map and its E-only harmonic realization.
+The input is one seed's projected SFL Q/U map and the same seed's harmonic
+realization (its E and B alms; the input sky has no B).
 Filtered and unfiltered paths are paired to measure end-to-end power response;
 sampling cancels only where it factorizes. ZEA is the response target; the
 conformal STG target removes leading target-side shear, not filter-induced B.
@@ -13,7 +14,7 @@ from pathlib import Path
 import sys
 import time
 
-from _decisions import set_threads
+from _decisions import parse_purify_b, set_threads
 from _footprints import FIELD
 from namaster_spectra import load_mask
 
@@ -34,7 +35,7 @@ def run(args):
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    frame = next(core.G3File(args.qu))
+    frame = next(core.G3File(str(Path(args.qu_maps)/f'qu_ProjSFL_seed{args.seed:04d}.g3')))
     q, u = frame['Q'], frame['U']
     ny, nx = q.shape
     res = q.res
@@ -75,7 +76,7 @@ def run(args):
     gc.collect()
 
     # Each reference pair has identical synthesis and pixel integration.
-    e, b = hp.read_alm(args.alms, hdu=(2,3))
+    e, b = hp.read_alm(str(Path(args.alms)/f'alms_seed{args.seed:04d}.fits'), hdu=(2,3))
     lmax = hp.Alm.getlmax(e.size)
     for filtered, tag in ((False, 'sphere_base'), (True, 'sphere_beam')):
         ep = hp.almxfl(e, hp.gauss_beam(np.deg2rad(args.fwhm/60), lmax=lmax,
@@ -131,7 +132,7 @@ def run(args):
                 result[f'{footprint}_{proj}_{origin}_response2d'] = filt/base
                 result[f'{footprint}_{proj}_{origin}_response'] = filt.sum(1)/base.sum(1)
 
-            # NaMaster's purified pseudo-B excludes ambiguous boundary modes.
+            # The purified pseudo-B excludes ambiguous boundary modes.
             # No window correction: these are end-to-end B diagnostics.
             baseline = cropped['sphere_base']
             mismatch = cropped['sfl_base']-baseline
@@ -139,7 +140,7 @@ def run(args):
                             -(cropped['sphere_beam']-baseline))
             for tag, pair in (('baseline',baseline), ('mismatch',mismatch),
                               ('differential',differential)):
-                fld = nmt.NmtFieldFlat(lx,ly,mask,list(pair),purify_b=True)
+                fld = nmt.NmtFieldFlat(lx,ly,mask,list(pair),purify_b=args.purify_b)
                 cl = nmt.compute_coupled_cell_flat(fld,fld,binner)
                 result[f'{footprint}_{proj}_{tag}_ee'] = cl[0]
                 result[f'{footprint}_{proj}_{tag}_bb'] = cl[3]
@@ -153,12 +154,14 @@ def run(args):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--qu',required=True)
-    p.add_argument('--alms',required=True)
+    p.add_argument('--qu-maps',required=True,help='projected_qu output directory')
+    p.add_argument('--alms',required=True,help='preprocessed_alms output directory')
+    p.add_argument('--seed',type=int,required=True)
+    p.add_argument('--purify-b',type=parse_purify_b,required=True)
     p.add_argument('--masks',required=True,help='flatsky_masks output directory')
     p.add_argument('--out',required=True)
-    p.add_argument('--fwhm',type=float,default=1.)
-    p.add_argument('--nside',type=int,default=4096)
-    p.add_argument('--rebin',type=int,default=4)
+    p.add_argument('--fwhm',type=float,required=True,help='arcmin')
+    p.add_argument('--nside',type=int,required=True,help='Healpix Nside of the sphere-side reference synthesis')
+    p.add_argument('--rebin',type=int,required=True,help='oversampling of every reprojection')
     p.add_argument('--max-procs',type=int,default=2)
     run(p.parse_args())

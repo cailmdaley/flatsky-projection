@@ -7,7 +7,7 @@ from local_measurements import profiles,cutout,ARCMIN
 
 
 def run():
-    theory=np.load(Path(__file__).with_name('theory_spectra.npz'))
+    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
     rows=[]
     for n in (256,512,1024):
         pix=.2*ARCMIN

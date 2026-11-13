@@ -9,10 +9,12 @@ import argparse
 import json
 from pathlib import Path
 from spherical_grid_test import hp, np, synth, analyse, hp_inverse, hp_average, car_average, statistics
+from _decisions import parse_apodization
 
 p = argparse.ArgumentParser()
 p.add_argument('--seed', type=int, required=True)
 p.add_argument('--input-lmax', type=int, required=True)
+p.add_argument('--apodization', type=parse_apodization, required=True)
 p.add_argument('--out', required=True)
 args = p.parse_args()
 np.random.seed(args.seed)
@@ -39,5 +41,5 @@ out.mkdir(parents=True, exist_ok=True)
 prefix = f'{args.input_lmax}-{args.seed}'
 np.savez(out/f'{prefix}-alms.npz', sky=sky, truth=truth, **records)
 result = dict(settings=dict(seed=args.seed, input_lmax=args.input_lmax, analysis_lmax=256, nside=128, factor=4),
-              statistics={name: statistics(a, truth, 256) for name, a in records.items()})
+              statistics={name: statistics(a, truth, 256, args.apodization) for name, a in records.items()})
 (out/f'{prefix}-statistics.json').write_text(json.dumps(result, indent=2)+'\n')

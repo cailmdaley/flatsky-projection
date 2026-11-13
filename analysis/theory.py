@@ -1,12 +1,9 @@
-"""Regenerate the theory CMB power spectra that the 2021 pipeline lost.
+"""CMB power spectra in the input simulations' cosmology, from CAMB.
 
-Why this exists: several figures need a lensed BB curve (the "lensing floor")
-to compare projection-induced leakage against, and none exists on disk. The
-2021 plotting script read both scalCls and lensedCls through
-`spt3g...read_camb('planck18_TTEEEE_lowl_lowE_lensing_highacc/...')`, a path
-relative to a data root that does not resolve under this checkout, and
-`read_camb` is gone from the current spt3g build. This module regenerates the
-same spectra directly with CAMB instead of chasing the dead path.
+Writes data/theory_spectra.npz, the analysis input `theory_spectra`: lensed
+and unlensed TT, EE, BB and TE as raw C_l in uK^2, indexed by multipole from
+ell = 0 to 10050. Every stage and analysis script that needs a theory curve
+reads this one file and slices what it uses.
 
 COSMOLOGY PROVENANCE. The unlensed input sims
 (/sptgrid/simulation/lensing_maps/unlensed_TQU1/TQU1_planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_seed*.fits)
@@ -25,25 +22,6 @@ file's unlensed EE to 0.03% over 100 < ell < 3000, even though the Fortran run
 used accuracy_boost=4 / l_accuracy_boost=4 -- default accuracy is already
 enough at the precision this project needs.
 
-VALIDATION AGAINST Clee.dat. Clee.dat (the unlensed EE the 2021 sims'
-input synfast actually drew from) does NOT match this cosmology's As. Fitting
-a constant scale to Clee.dat / (this module's unlensed EE, ell-shifted by
-one) gives amplitude ratio 0.905 => implied As = 1.90e-9, against the
-recovered best-fit As = 2.1005e-9 -- a real ~9.5% deficit, not noise (the
-residual after removing that constant scale has std 0.2-0.6% across
-100 < ell < 3000). Clee.dat *also* carries a one-multipole indexing bug:
-row i holds C_l for l = i+1, not l = i (consistent with row 0 being NaN --
-l=1 is undefined for E-modes, and CAMB does not emit it either). Correcting
-both the amplitude and the index-by-one recovers sub-percent agreement.
-Clee.dat predates the sims themselves (Apr 2020 vs Jul 2020) and was most
-likely an early placeholder spectrum, not the one synfast actually used for
-the seeds this repo analyzes -- or synfast was handed the same flawed file.
-Either way, Clee.dat should not be trusted as ground truth; the parameters
-below, cross-checked against the preserved Fortran CAMB output, are the
-better record of the sims' actual input. (Residual after removing the
-constant scale: std ~0.2%, worst 10-ell window ~0.9%, over 100 < ell < 3000 --
-so the two remaining knobs, index and amplitude, really do close the gap.)
-
 TRAPS.
   - raw_cl vs D_l: CAMB's natural output is D_l = l(l+1)C_l/2pi in uK^2. This
     module stores raw C_l (divide that out) because that is what synfast-style
@@ -53,10 +31,8 @@ TRAPS.
     the monopole/dipole, conventionally excluded). CAMB's raw_cl output
     already zeros indices 0 and 1; we keep that convention rather than NaN,
     so every array here is safe to index directly by ell with no NaN traps.
-  - lmax=10000 exists to look past ell=4000, where the 2021 run hit its band
-    limit (see analysis/spectra.py). It is not needed for the BB floor itself
-    (which lives around ell~1000) but the same run is reused for whatever
-    high-ell figure needs it, so there is no reason to compute it twice.
+  - lmax=10000 reaches well past the simulations' band limit of 6000, so one
+    file serves every consumer, including the lensed BB curve around ell~1000.
   - NonLinear_lens (halofit applied to the lensing potential only, not the
     matter power spectrum) is CAMB's default once lens_potential_accuracy > 0
     and is what the reference Fortran run effectively used too; do not turn
@@ -67,7 +43,7 @@ from pathlib import Path
 
 import numpy as np
 
-OUT = Path(__file__).resolve().parent / "theory_spectra.npz"
+OUT = Path(__file__).resolve().parent.parent / "data" / "theory_spectra.npz"
 
 # Planck 2018 base_plikHM_TTTEEE_lowl_lowE_lensing best-fit parameters, as
 # used to draw /sptgrid/simulation/lensing_maps/unlensed_TQU1 (see module

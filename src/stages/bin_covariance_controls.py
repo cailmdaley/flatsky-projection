@@ -1,7 +1,8 @@
 """Matched isotropic Gaussian controls for projection covariance.
 
-prepare: radial TT/EE/BB means from the existing 20 projected field skies,
-mask-decoupled but with their native sampling window retained.
+prepare: radial TT/EE/BB means of the 20 projected field skies, decoupled
+from the mask at the analysis bin width but with their native sampling
+window retained.
 simulate: independent homogeneous flat-sky skies with those radial powers,
 through precisely the same field masks, purification and unit-width bins.
 This tests whether a standard homogeneous Gaussian covariance suffices once
@@ -10,7 +11,7 @@ the mean spectrum is matched. It is not a simulation of the projection.
 from pathlib import Path
 import argparse
 
-from _decisions import set_threads, write_index
+from _decisions import parse_delta_ell, parse_lmax, parse_purify_b, set_threads, write_index
 from _footprints import FIELD
 from namaster_spectra import load_mask, atomic_save
 
@@ -31,25 +32,29 @@ def prepare(args):
     for proj in PROJS:
         raw = [np.load(args.pseudos/f'pseudo_{proj}_{FIELD}_seed{s:04d}.npz') for s in range(20)]
         counts = raw[0]['counts']
-        weight = counts.reshape(120, 50)
+        nb, d = args.lmax//args.delta_ell, args.delta_ell
+        weight = counts.reshape(nb, d)
         total = weight.sum(-1)
-        ell = np.arange(25, 6000, 50.)
-        data['ell'] = np.r_[0., ell, 6000.]
+        ell = np.arange(d/2, args.lmax, float(d))
+        data['ell'] = np.r_[0., ell, float(args.lmax)]
         for spin, key in ((0, 'tt'), (2, 'pol')):
             cl = np.mean([r[key] for r in raw], axis=0)
-            coupled = (cl.reshape(-1, 120, 50)*weight[None, :, :]).sum(-1)/total[None, :]
+            coupled = (cl.reshape(-1, nb, d)*weight[None, :, :]).sum(-1)/total[None, :]
             ncls = 1 if spin == 0 else 4
-            # Aggregate the existing width-five response exactly to width50.
-            # P M Q uses mode-count-weighted rows and constant input columns,
-            # as in analysis/spectra.py:rebin_flat_response.
+            # Aggregate the fine workspace's response exactly to the analysis
+            # width. P M Q uses mode-count-weighted rows and constant input
+            # columns, as in analysis/spectra.py:rebin_flat_response.
             with fits.open(args.workspaces/f'w{spin}{spin}_{proj}_{FIELD}.fits') as h:
-                np.testing.assert_array_equal(h['BINS_SUMMARY'].data.field(0), np.arange(0, 6000, 5))
+                lo = h['BINS_SUMMARY'].data.field(0)
+                fine = int(lo[1]-lo[0])
+                np.testing.assert_array_equal(lo, np.arange(0, args.lmax, fine))
                 matrix = h['MCM_BINNED'].data.copy()
-            columns = matrix.reshape(120, 10, ncls, 120, 10, ncls).sum(axis=4)
-            fine_counts = counts.reshape(120, 10, 5).sum(-1)
+            k = d//fine
+            columns = matrix.reshape(nb, k, ncls, nb, k, ncls).sum(axis=4)
+            fine_counts = counts.reshape(nb, k, fine).sum(-1)
             matrix = ((columns*fine_counts[:, :, None, None, None]).sum(axis=1)
-                      / total[:, None, None, None]).reshape(120*ncls, 120*ncls)
-            decoupled = solve(matrix, coupled.T.reshape(-1)).reshape(120, ncls).T
+                      / total[:, None, None, None]).reshape(nb*ncls, nb*ncls)
+            decoupled = solve(matrix, coupled.T.reshape(-1)).reshape(nb, ncls).T
             for spec, index in ([('tt', 0)] if spin == 0 else [('ee', 0), ('bb', 3)]):
                 power = decoupled[index]
                 # The Gaussian controls need a nonnegative spectrum; only the
@@ -74,7 +79,7 @@ def simulate(args):
     import time
     start = time.monotonic()
     args.out.mkdir(parents=True, exist_ok=True)
-    ell = np.arange(6001, dtype=float)
+    ell = np.arange(args.lmax+1, dtype=float)
     bins = nmt.NmtBinFlat(ell[:-1], ell[1:])
     records = []
     with np.load(args.spectra/'control_spectra.npz') as z:
@@ -85,11 +90,11 @@ def simulate(args):
                           for spec in ('tt', 'ee', 'bb')]
             zeros = np.zeros_like(ell)
             cls = [tt, zeros, zeros, ee, zeros, bb]
-            counts = mode_counts(mask.shape, lx, ly, 6000)
+            counts = mode_counts(mask.shape, lx, ly, args.lmax)
             for seed in range(args.batch*args.batch_size, (args.batch+1)*args.batch_size):
                 t, q, u = nmt.synfast_flat(nx, ny, lx, ly, cls, [0, 2],
                                            seed=control_seed(j, seed))
-                f2 = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=True, lite=True)
+                f2 = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b, lite=True)
                 pol = nmt.compute_coupled_cell_flat(f2, f2, bins)
                 del f2, q, u
                 f0 = nmt.NmtFieldFlat(lx, ly, mask, [t], lite=True)
@@ -98,7 +103,7 @@ def simulate(args):
                 path = args.out/f'pseudo_{proj}_seed{seed:04d}_mask0.npz'
                 atomic_save(path, pol=pol, tt=cltt, counts=counts,
                             projection=proj, seed=seed, isotropic=True,
-                            purify_b=True, pixel_window='none')
+                            purify_b=args.purify_b, pixel_window='none')
                 records.append(path.name)
                 print(f'{proj} flat control {seed}: {time.monotonic()-start:.1f}s', flush=True)
     write_index(args.out, dict(pseudo_spectra=records, batch=args.batch,
@@ -116,6 +121,9 @@ def main():
     p.add_argument('--masks', type=Path)
     p.add_argument('--batch', type=int)
     p.add_argument('--batch-size', type=int, default=16)
+    p.add_argument('--lmax', type=parse_lmax, required=True)
+    p.add_argument('--delta-ell', type=parse_delta_ell)
+    p.add_argument('--purify-b', type=parse_purify_b)
     p.add_argument('--max-procs', type=int, default=4)
     p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()

@@ -1,7 +1,7 @@
 """Project Q/U onto the flat sky -- the leaky leg.
 
 Synthesizes Q and U on an intermediate Healpix grid from the same per-seed
-T/E/B alms the EB leg uses, then resamples them into each of the five flat
+T/E/B alms the EB leg uses, then resamples them into each of the four flat
 sky projections and flattens the polarization basis. This is what a real
 flat-sky polarization analysis does, and because Q/U is a spin-2 field, it is
 the leg that carries the projection-induced E-to-B leakage this project

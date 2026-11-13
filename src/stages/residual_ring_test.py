@@ -8,7 +8,7 @@ interpolation/averaging B that a coherent multiplicative window cannot remove.
 from pathlib import Path
 import argparse
 from _footprints import FIELD
-from _decisions import set_threads, write_index
+from _decisions import parse_delta_ell, parse_lmax, parse_purify_b, set_threads, write_index
 
 
 def main():
@@ -17,6 +17,9 @@ def main():
         p.add_argument('--'+name, type=Path, required=True)
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--projection', required=True)
+    p.add_argument('--lmax', type=parse_lmax, required=True)
+    p.add_argument('--delta-ell', type=parse_delta_ell, required=True)
+    p.add_argument('--purify-b', type=parse_purify_b, required=True)
     args = p.parse_args()
     set_threads(2)
     import numpy as np
@@ -27,14 +30,15 @@ def main():
     from namaster_spectra import load_mask, finite_in_mask, atomic_save
 
     ae = hp.read_alm(str(args.alms/f'alms_seed{args.seed:04d}.fits'), hdu=2)
-    q, u = hp.alm2map_spin([ae, np.zeros_like(ae)], 4096, 2, 6000)
+    q, u = hp.alm2map_spin([ae, np.zeros_like(ae)], 4096, 2, args.lmax)
     del ae
     hq = maps.HealpixSkyMap(q, pol_conv=maps.MapPolConv.COSMO)
     hu = maps.HealpixSkyMap(u, pol_conv=maps.MapPolConv.COSMO)
     del q, u
     mask, window, lx, ly = load_mask(args.masks, args.projection, FIELD)
     stub = mask_stub(args.projection, window)
-    bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
+    d = args.delta_ell
+    bins = nmt.NmtBinFlat(np.arange(0., args.lmax, d), np.arange(d, args.lmax+d, d))
     ws = nmt.NmtWorkspaceFlat()
     ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     result = dict(ell=bins.get_effective_ells(), seed=args.seed, projection=args.projection)
@@ -43,7 +47,7 @@ def main():
         qmap, umap = [project_array(h, stub, dict(interp=True, rebin=rebin)) for h in (hq, hu)]
         maps.flatten_pol(qmap, umap)
         q, u = [finite_in_mask(np.asarray(a, dtype=float), mask) for a in (qmap, umap)]
-        field = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=True, lite=True)
+        field = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b, lite=True)
         coupled = nmt.compute_coupled_cell_flat(field, field, bins)
         result[f'n4096_r{rebin}'] = ws.decouple_cell(coupled)
         del field, qmap, umap, q, u
@@ -51,7 +55,7 @@ def main():
     del hq, hu
     frame = next(core.G3File(str(args.maps/f'qu_{args.projection}_seed{args.seed:04d}.g3')))
     q, u = [finite_in_mask(np.asarray(frame[key], dtype=float)[window], mask) for key in ('Q', 'U')]
-    field = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=True, lite=True)
+    field = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b, lite=True)
     result['n8192_r8'] = ws.decouple_cell(nmt.compute_coupled_cell_flat(field, field, bins))
     args.out.mkdir(parents=True, exist_ok=True)
     path = f'rings_{args.projection}_seed{args.seed:04d}.npz'

@@ -56,6 +56,8 @@ import paper_style as PS
 import shear_leakage as SL
 import spectra as S
 import theory as T
+from template_geometry import (  # noqa: F401  (re-exported for callers)
+    APOD_DEG, FIELD, _c2_taper, _wrap, field_masks, flatten_angles)
 
 from spt3g import core, maps
 
@@ -65,36 +67,8 @@ RUN = ROOT / "results" / "highell"
 CACHE = SL.CACHE_DIR / "polar_flatten_maps.npz"
 FIGURE = ROOT / "analysis" / "notes" / "flattenpol-pr" / "flattenpol_polar.png"
 MASK = 5                       # 5% disk, the paper's reference footprint
-FIELD = (50.0, -70.0, -42.0)   # 1500d: |RA| < 50 deg, dec -70 to -42
-APOD_DEG = 2.5                 # C2, as footprints.rect_mask
 PAD_DEG = 4.0
 L_CLEAN = (1000, 4000)
-
-
-def _wrap(v):
-    return (v + np.pi) % (2 * np.pi) - np.pi
-
-
-def flatten_angles(fsm, x, y, h=1e-3):
-    """FlattenPol's rot and the polar rot_R at pixel coordinates (x, y).
-
-    The arithmetic of maputils.cxx: central differences of `xy_to_angle` with
-    step h pixels, RA wrapped. Returns (rot, rot_R, alpha, delta) in radians.
-    """
-    def ang(xx, yy):
-        a, d = fsm.xy_to_angle(core.DoubleVector(xx), core.DoubleVector(yy))
-        return np.asarray(a), np.asarray(d)
-    a1, d1 = ang(x - h, y)
-    a2, d2 = ang(x + h, y)
-    a3, d3 = ang(x, y - h)
-    a4, d4 = ang(x, y + h)
-    dax, ddx = _wrap(a2 - a1) / (2 * h), (d2 - d1) / (2 * h)
-    day, ddy = _wrap(a4 - a3) / (2 * h), (d4 - d3) / (2 * h)
-    alpha, delta = ang(x, y)
-    cd = np.cos(delta)
-    rot = np.arctan2(-dax, day) + np.arctan2(-ddy, -ddx)
-    rot_r = 2 * np.arctan2(-ddx - cd * day, ddy - cd * dax)
-    return rot, rot_r, alpha, delta
 
 
 def check_closed_form(n=4000, seed=1):
@@ -157,32 +131,6 @@ def check_closed_form(n=4000, seed=1):
             g_max=float(((s1 - s2) / (s1 + s2)).max()),
         )
     return out
-
-
-def _c2_taper(dist_deg, width=APOD_DEG):
-    """C2 apodization (NaMaster's form) of a distance inside the edge."""
-    x = np.clip(dist_deg / width, 0, 1)
-    return x - np.sin(2 * np.pi * x) / (2 * np.pi)
-
-
-def field_masks(alpha, delta):
-    """1500d mask and its halves about the central meridian, on the flat grid.
-
-    Separable C2 taper in dec and in RA arc length (RA offset times cos dec),
-    2.5 deg wide -- the same footprint as `footprints.rect_mask` up to the
-    taper's shape at the corners. `alpha`, `delta` in radians.
-    """
-    ra = np.degrees(_wrap(alpha))
-    dec = np.degrees(delta)
-    ra_max, dlo, dhi = FIELD
-    cd = np.cos(delta)
-    t_dec = _c2_taper(np.minimum(dec - dlo, dhi - dec))
-    full = _c2_taper((ra_max - np.abs(ra)) * cd) * t_dec
-    east = _c2_taper(np.minimum(ra, ra_max - ra) * cd) * t_dec
-    west = _c2_taper(np.minimum(-ra, ra_max + ra) * cd) * t_dec
-    for m in (full, east, west):
-        m[~np.isfinite(m)] = 0.0
-    return {"1500d": full, "east": east, "west": west}
 
 
 def field_geometry(fsm, proj="ProjSFL"):
