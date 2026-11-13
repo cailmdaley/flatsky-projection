@@ -68,12 +68,13 @@ if __name__=='__main__':
     from pathlib import Path
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--geometry',type=Path)
+    p.add_argument('--theory-spectra',type=Path,help='needed with --geometry')
     a=p.parse_args()
     run()
     if a.geometry:
         from local_source_report import affine_prediction_errors,key
         data=json.loads(a.geometry.read_text())
-        errors,noise=affine_prediction_errors(data)
+        errors,noise=affine_prediction_errors(data,a.theory_spectra)
         assert max(errors.values())<1e-5,errors
         assert max(abs(r['optimal_snr_relative_center']-1) for r in noise.values())<.003
         for row in data['rows']:

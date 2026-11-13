@@ -1,10 +1,12 @@
 """Nonperiodic stationary-sky covariance of the finite-patch linear filter.
 
 Zero-padding the actual real-space estimator kernel samples its continuous
-Fourier transform; it does not change the filter or taper any data.
+Fourier transform; it does not change the filter or taper any data. The
+filter's cutout (`n` pixels of `res` arcmin), beam and white-noise depth are
+those of the local_source_geometry campaign, passed in from its header; the
+CMB is the lensed TT of `theory`, band-limited at the sims' `lmax`.
 """
 from functools import lru_cache
-from pathlib import Path
 import numpy as np
 from scipy import fft
 import geometry as G
@@ -12,16 +14,16 @@ from local_measurements import profiles,ARCMIN
 
 
 @lru_cache()
-def kernel(kind,n=256,res=.2,pad=4):
+def kernel(kind,theory,n,res,beam,noise,pad=4):
     pix=res*ARCMIN
-    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
+    theory=np.load(theory)
     k=2*np.pi*fft.fftfreq(n,pix)
     ell=np.hypot(k[:,None],k[None,:])
-    sig=1.2/np.sqrt(8*np.log(2))*ARCMIN
-    power=np.interp(ell,theory['ell'],theory['lensed_TT'],right=0.)*np.exp(-(ell*sig)**2)+(18*ARCMIN)**2
+    sig=beam/np.sqrt(8*np.log(2))*ARCMIN
+    power=np.interp(ell,theory['ell'],theory['lensed_TT'],right=0.)*np.exp(-(ell*sig)**2)+(noise*ARCMIN)**2
     power[ell<300]=np.inf
     a=(np.arange(n)-n//2)*pix
-    tf=fft.fft2(profiles(np.hypot(a[:,None],a[None,:])/ARCMIN,kind))
+    tf=fft.fft2(profiles(np.hypot(a[:,None],a[None,:])/ARCMIN,kind,beam))
     norm=np.sum(abs(tf)**2/power).real
     weights=fft.ifft2(tf/power).real*n*n/norm
     squared=abs(fft.fft2(weights,s=(n*pad,n*pad)))**2
@@ -31,10 +33,9 @@ def kernel(kind,n=256,res=.2,pad=4):
 
 
 @lru_cache(maxsize=256)
-def covariance(proj,ra,dec,kind,pad=4):
-    n,res=256,.2
+def covariance(proj,ra,dec,kind,theory,n,res,beam,noise,lmax,pad=4):
     pix=res*ARCMIN
-    squared,theory=kernel(kind,n,res,pad)
+    squared,theory=kernel(kind,theory,n,res,beam,noise,pad)
     m=n*pad
     k=2*np.pi*fft.fftfreq(m,pix)
     jac=G.jacobian(proj,[ra],[dec])[0]
@@ -42,42 +43,32 @@ def covariance(proj,ra,dec,kind,pad=4):
     qn=jac[0,1]*k[None,:]+jac[1,1]*k[:,None]
     q=np.hypot(qe,qn)
     mu=abs(np.linalg.det(jac))
-    sig=1.2/np.sqrt(8*np.log(2))*ARCMIN
+    sig=beam/np.sqrt(8*np.log(2))*ARCMIN
     cmb=mu*np.interp(q,theory['ell'],theory['lensed_TT'],right=0.)*np.exp(-(q*sig)**2)
-    cmb[q>6000]=0.
+    cmb[q>lmax]=0.
     var_cmb=np.sum(squared*cmb)/(m*m*pix*pix)
-    var_white=np.sum(squared)*mu*(18*ARCMIN)**2/(m*m*pix*pix)
+    var_white=np.sum(squared)*mu*(noise*ARCMIN)**2/(m*m*pix*pix)
     return float(var_cmb),float(var_white)
 
 
-def models(rows):
-    """Nonperiodic background forecasts for the actual finite-patch weights."""
+def models(geometry,theory,lmax):
+    """Nonperiodic background forecasts for the actual finite-patch weights.
+
+    `geometry` is local_source_geometry's geometry.json; `theory` the
+    theory_spectra path; `lmax` the band limit of the sims' CMB. Each
+    position's S/N is relative to the filter at the patch centre.
+    """
+    setup=(str(theory),geometry['n'],geometry['res_arcmin'],
+           geometry['beam_fwhm_arcmin'],geometry['noise_uK_arcmin'],lmax)
     out={}
-    for row in rows:
+    for row in geometry['rows']:
         if row['noise']!='cmb_white':
             continue
         kind=row['profile']
-        c,w=covariance(row['projection'],row['ra'],row['dec'],kind)
-        c0,w0=covariance('ProjSFL',0.,-56.,kind)
+        c,w=covariance(row['projection'],row['ra'],row['dec'],kind,*setup)
+        c0,w0=covariance('ProjSFL',G.RA_DEG,G.DEC_DEG,kind,*setup)
         out[row['projection'],row['ra'],row['dec'],kind]=dict(
             finite_patch_sigma_cmb_uK=np.sqrt(c),finite_patch_sigma_white_uK=np.sqrt(w),
             snr_relative_center_finite_patch=float(row['amplitude']*np.sqrt((c0+w0)/(c+w))))
     return out
 
-
-if __name__=='__main__':
-    import json
-    rows=[]
-    for proj in ('ProjSFL','ProjZEA','ProjBICEP'):
-        for ra,dec in ((0.,-56.),(45.,-68.)):
-            for kind in ('point','cluster'):
-                for pad in (1,2,4,8):
-                    c,w=covariance(proj,ra,dec,kind,pad)
-                    rows.append(dict(projection=proj,ra=ra,dec=dec,profile=kind,pad=pad,
-                                     cmb_sigma_uK=np.sqrt(c),white_sigma_uK=np.sqrt(w)))
-    for proj in ('ProjSFL','ProjZEA','ProjBICEP'):
-        for ra in (0.,45.):
-            for kind in ('point','cluster'):
-                selected={r['pad']:r for r in rows if r['projection']==proj and r['ra']==ra and r['profile']==kind}
-                assert abs(selected[8]['cmb_sigma_uK']**2/selected[4]['cmb_sigma_uK']**2-1)<1e-4
-    print(json.dumps(rows,indent=2))

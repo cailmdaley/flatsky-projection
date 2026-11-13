@@ -1,57 +1,60 @@
-"""Compact-source response and S/N macros, paper/local_source_numbers.tex.
+"""Compact-source response and S/N macros: spherical responses and finite-patch forecasts.
 
-Not yet a recipe: reads its inputs from fixed paths and writes paper/local_source_numbers.tex.
+Formats the `local_source_summary` output. Amplitude macros (`...Loss`, the
+BICEP range, the metric-template error, the position bias) are noiseless
+spherical template-mismatch responses over the 15 positions; `...SnrLoss`
+macros are local-affine finite-patch covariance forecasts; `...Transfer` the
+corner S/N relative to the centre from the 64 coarse CMB skies calibrated by
+their paired repeats at the finest Nside. None measures an SPT catalogue bias or a
+maximum over the whole footprint.
+
+Run:  bash env.sh python3 analysis/paper_numbers/local_source_numbers.py
+          --local-source-summary <local_source_summary dir> --out <dir>
+Out:  <out>/local_source_numbers.tex and <out>/local_source_numbers.json
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
 
-import numpy as np
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import spectra as S  # noqa: E402,F401
-from macros import WORDS as _WORDS, Macros, f, pct, rng, sci  # noqa: E402,F401
-
-ROOT = Path(__file__).resolve().parents[2]
+import spectra as S  # noqa: E402
+from macros import Macros, f, pct, sci  # noqa: E402
 
 
-def local_source_numbers(M=None):
-    """Spherical source responses and finite-patch S/N forecasts at 15 points.
+def macros(d):
+    geo = d['geometry']
+    M = Macros()
+    for proj in ('SFL', 'ZEA'):
+        for kind in ('point', 'cluster'):
+            g = geo['Proj' + proj][kind + '_cmb_white']
+            M.add('source' + proj + kind.title() + 'Loss', pct(1 - g['amplitude_range'][0], 2))
+            M.add('source' + proj + kind.title() + 'SnrLoss',
+                  pct(1 - g['finite_patch_snr_relative_center_range'][0], 1))
+    lo, hi = geo['ProjBICEP']['point_cmb_white']['amplitude_range']
+    M.add('sourceBICEPPointLow', pct(lo - 1, 1))
+    M.add('sourceBICEPPointHigh', pct(hi - 1, 1))
+    cells = [c for proj in geo.values() for c in proj.values()]
+    M.add('sourceMetricError', sci(max(c['metric_amplitude_max_error'] for c in cells), 1))
+    M.add('sourcePositionArcsec', f(max(c['position_bias_max_arcsec'] for c in cells), 3))
+    finest = max(d['sampling_resolution'], key=int)
+    transferred = d['sampling_resolution'][finest]['transferred_noise_validation']['ProjSFL']
+    for kind in ('point', 'cluster'):
+        row = transferred[kind]
+        M.add('sourceSFL' + kind.title() + 'Transfer',
+              rf"${row['corner_snr']:.2f} \pm {row['corner_snr_jackknife_error']:.2f}$")
+    return M
 
-    Amplitude macros are noiseless spherical template-mismatch responses;
-    SnrLoss macros are local-affine covariance forecasts. Neither measures
-    an SPT catalogue bias or a maximum over its whole footprint.
-    """
-    import json
-    path=ROOT/'results/highell/local_source_geometry/geometry.json'
-    rows=json.loads(path.read_text())['rows']
-    from local_source_window_covariance import models
-    finite=models(rows)
-    own=M is None
-    if own:
-        M=Macros()
-    for proj in ('SFL','ZEA'):
-        for kind in ('point','cluster'):
-            rs=[r for r in rows if r['projection']=='Proj'+proj and r['profile']==kind and r['noise']=='cmb_white']
-            M.add('source'+proj+kind.title()+'Loss',pct(max(1-r['amplitude'] for r in rs),2))
-            relative_snr=[finite[r['projection'],r['ra'],r['dec'],r['profile']]['snr_relative_center_finite_patch'] for r in rs]
-            M.add('source'+proj+kind.title()+'SnrLoss',pct(1-min(relative_snr),1))
-    rs=[r for r in rows if r['projection']=='ProjBICEP' and r['profile']=='point' and r['noise']=='cmb_white']
-    M.add('sourceBICEPPointLow',pct(min(r['amplitude']-1 for r in rs),1))
-    M.add('sourceBICEPPointHigh',pct(max(r['amplitude']-1 for r in rs),1))
-    M.add('sourceMetricError',sci(max(abs(r['metric_template_amplitude']-1) for r in rows),1))
-    M.add('sourcePositionArcsec',f(60*max(np.linalg.norm(r['position_arcmin']) for r in rows),3))
-    transferred=json.loads((ROOT/'analysis/results_disk_trend/local_sources/local_source_summary.json').read_text())
-    transferred=transferred['sampling_resolution']['8192']['transferred_noise_validation']['ProjSFL']
-    for kind in ('point','cluster'):
-        row=transferred[kind]
-        M.add('sourceSFL'+kind.title()+'Transfer',rf"${row['corner_snr']:.2f} \pm {row['corner_snr_jackknife_error']:.2f}$")
-    if own:
-        output=ROOT/'paper/local_source_numbers.tex'
-        output.write_text(M.tex('local_source_numbers'))
-        print(f'Wrote {output}')
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "local_source_summary")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    d = json.loads((args.local_source_summary / "local_source_summary.json").read_text())
+    macros(d).write(args.out, "local_source_numbers")
 
 
 if __name__ == "__main__":
-    local_source_numbers()
+    main()

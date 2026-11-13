@@ -1,25 +1,52 @@
-"""Summarize compact-source injections without treating them as a survey calibration."""
+"""Summarize compact-source injections without treating them as a survey calibration.
+
+Reads the analytic matched-filter campaign (local_source_geometry), the 64
+spherical CMB skies (local_source_sims) and their paired Nside 4096 and 8192
+repeats (local_source_resolution). The filter's beam, noise depth and cutout
+come from the campaign's header; the positions and seeds from the outputs
+themselves; the CMB band limit of the sims from --lmax.
+
+Run:  bash env.sh python3 analysis/local_source_report.py
+          --local-source-geometry results/fiducial/local_source_geometry
+          --local-source-sims results/fiducial/local_source_sims
+          --local-source-resolution results/fiducial/local_source_resolution
+          --theory-spectra data/theory_spectra.npz --lmax l6000 --out <dir>
+Out:  <out>/local_source_summary.json, and the figures
+      <out>/local_source_{bias,snr}.{png,pdf} and local_source_examples.png,
+      which the paper does not include.
+"""
 import argparse
 import json
+import sys
 from pathlib import Path
 import numpy as np
 
-ROOT=Path(__file__).resolve().parents[1]
-PROJS=('ProjSFL','ProjZEA','ProjBICEP')
+import geometry as G
+import spectra as S
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src/stages'))
+from _decisions import parse_lmax  # noqa: E402
+
+PROJS=('ProjSFL','ProjZEA','ProjBICEP')   # the campaign's projections
 
 
 def key(r):
     return r['projection'],r['ra'],r['dec'],r['profile']
 
 
-def report(geometry, sims, out, fine=None, sampling=None):
-    data=json.loads(geometry.read_text())
+def corner_center(gr):
+    """Indices in `gr` of the corner position (largest RA, lowest dec) and the patch centre."""
+    corner=next(i for i,g in enumerate(gr) if g['ra']==max(r['ra'] for r in gr) and g['dec']==min(r['dec'] for r in gr))
+    center=next(i for i,g in enumerate(gr) if g['ra']==G.RA_DEG and g['dec']==G.DEC_DEG)
+    return corner,center
+
+
+def report(data, sims, sampling, theory, lmax, out):
     rows=data['rows']
-    assert len(rows)==180,'Incomplete geometry campaign'
-    assert sampling is not None,'The paired sampling convergence output is required'
-    affine_errors, noise_model=affine_prediction_errors(data)
+    assert {r['projection'] for r in rows}==set(PROJS)
+    affine_errors, noise_model=affine_prediction_errors(data, theory)
     from local_source_window_covariance import models
-    finite=models(rows)
+    finite=models(data, theory, lmax)
     for row in rows:
         row.update(noise_model[key(row)+(row['noise'],)])
         if row['noise']=='cmb_white':
@@ -28,11 +55,13 @@ def report(geometry, sims, out, fine=None, sampling=None):
     nu, tcmb = 150e9, 2.7255
     z=h*nu/(k*tcmb)
     jy_sr_per_K=2*k*nu**2/c**2*z*z*np.exp(z)/np.expm1(z)**2*1e26
-    solid_angle=2*np.pi*(1.2/np.sqrt(8*np.log(2))*np.pi/10800)**2
+    beam,noise=data['beam_fwhm_arcmin'],data['noise_uK_arcmin']
+    solid_angle=2*np.pi*(beam/np.sqrt(8*np.log(2))*np.pi/10800)**2
+    positions=sorted({(r['ra'],r['dec']) for r in rows})
     result={'point_100uK_flux_mJy': float(100e-6*jy_sr_per_K*solid_angle*1e3),
-            'scope': 'Single-frequency isotropic filter with 1.2 arcmin beam and 18 uK arcmin white noise; no TOD filtering, foregrounds, template size maximization, selection, or catalogue calibration.',
+            'scope': f'Single-frequency isotropic filter with {beam:g} arcmin beam and {noise:g} uK arcmin white noise; no TOD filtering, foregrounds, template size maximization, selection, or catalogue calibration.',
             'profiles': 'Point Gaussian and beta=1, core=1 arcmin, tapered at 8 arcmin, beam-convolved SZ proxy.',
-            'sampling': '15 sky locations, not an area-weighted footprint average.',
+            'sampling': f'{len(positions)} sky locations, not an area-weighted footprint average.',
             'gaussian_prediction_valid_only_for': {'profile':'point','noise':'white'},
             'geometry': {}, 'spherical_sims': {}}
     for proj in PROJS:
@@ -53,19 +82,16 @@ def report(geometry, sims, out, fine=None, sampling=None):
     gauss=[r for r in rows if r['profile']=='point' and r['noise']=='white']
     result['gaussian_max_absolute_prediction_error']=max(abs(r['amplitude']-r['gaussian_prediction']) for r in gauss)
     result['affine_prediction_errors']=affine_errors
-    if fine:
-        refined={key(r)+(r['noise'],):r for r in json.loads(fine.read_text())['rows']}
-        result['refinement_max_amplitude_difference']=max(abs(r['amplitude']-refined[key(r)+(r['noise'],)]['amplitude']) for r in rows)
     paths=sorted(sims.glob('sources_*.json'))
     result['spherical_seed_count']=len(paths)
     all_sims=[json.loads(p.read_text()) for p in paths]
-    assert sorted(d['seed'] for d in all_sims)==list(range(64)),'Expected all 64 spherical CMB seeds'
+    assert sorted(d['seed'] for d in all_sims)==list(range(len(all_sims))),'spherical CMB seeds are not 0..n-1'
     for proj in PROJS:
         result['spherical_sims'][proj]={}
         for kind in ('point','cluster'):
             means=[]
-            for dec in (-68.,-56.,-44.):
-                for ra in (-45.,-22.5,0.,22.5,45.):
+            for dec in sorted({d for _,d in positions}):
+                for ra in sorted({r for r,_ in positions}):
                     rs=[r for d in all_sims for r in d['rows'] if key(r)==(proj,ra,dec,kind)]
                     if not rs:
                         continue
@@ -86,27 +112,25 @@ def report(geometry, sims, out, fine=None, sampling=None):
                         position_std_arcmin=np.std([r['position_arcmin'] for r in rs],axis=0,ddof=1).tolist()))
             result['spherical_sims'][proj][kind]=means
     result['noise_validation']=noise_validation(all_sims,rows)
-    result['sampling_resolution']=sampling_report(all_sims,rows,sampling) if sampling else {}
-    example=sampling/'examples_8192.npz' if sampling and (sampling/'examples_8192.npz').exists() else sims/'source_examples.npz'
-    result['display_background_nside']=8192 if example.name=='examples_8192.npz' else 2048
+    result['sampling_resolution']=sampling_report(all_sims,rows,sampling)
+    nside=max(int(p.stem.split('_')[1]) for p in sampling.glob('examples_*.npz'))
+    result['display_background_nside']=nside
     out.mkdir(parents=True,exist_ok=True)
     (out/'local_source_summary.json').write_text(json.dumps(result,indent=2)+'\n')
     plot(rows,out)
     plot(rows,out,'snr_relative_center_finite_patch')
-    if example.exists():
-        plot_examples(example,out)
+    plot_examples(sampling/f'examples_{nside}.npz',out)
     print(json.dumps(result,indent=2))
 
 
 def sampling_report(base,geometry,directory):
     files=sorted(directory.glob('resolution_*.json'))
     data=[json.loads(p.read_text()) for p in files]
-    assert set(d['nside'] for d in data)=={4096,8192},'Missing paired sampling resolution output'
     coarse={d['seed']:d for d in base}
     result={}
     for nside in sorted(set(d['nside'] for d in data)):
         fine=[d for d in data if d['nside']==nside]
-        assert sorted(d['seed'] for d in fine)==list(range(16)),f'Incomplete Nside {nside} sampling control'
+        assert sorted(d['seed'] for d in fine)==list(range(len(fine))),f'Nside {nside} sampling control seeds are not 0..n-1'
         pairs=[(coarse[d['seed']],d) for d in fine]
         item={'seeds':len(fine),'noise_validation':noise_validation(fine,geometry),
               'transferred_noise_validation':transferred_noise_validation(base,fine,geometry),
@@ -166,8 +190,7 @@ def transferred_noise_validation(base,fine,geometry):
             amps=np.array([g['amplitude'] for g in gr])
             b=np.array([[d[key(g)]['cmb_blank_uK'] for g in gr] for d in bd])
             f=np.array([[d[key(g)]['cmb_blank_uK'] for g in gr] for d in fd])
-            corner=next(i for i,g in enumerate(gr) if g['ra']==45 and g['dec']==-68)
-            center=next(i for i,g in enumerate(gr) if g['ra']==0 and g['dec']==-56)
+            corner,center=corner_center(gr)
             def statistic(all_coarse,paired_coarse,paired_fine):
                 gain=np.var(paired_fine,axis=0,ddof=1)/np.var(paired_coarse,axis=0,ddof=1)
                 variance=np.var(all_coarse,axis=0,ddof=1)*gain
@@ -207,8 +230,7 @@ def noise_validation(sims,geometry):
             predicted=np.array([g['finite_patch_sigma_cmb_uK']**2 for g in gr])
             white=np.array([g['finite_patch_sigma_white_uK']**2 for g in gr])
             amps=np.array([g['amplitude'] for g in gr])
-            corner=next(i for i,g in enumerate(gr) if g['ra']==45 and g['dec']==-68)
-            center=next(i for i,g in enumerate(gr) if g['ra']==0 and g['dec']==-56)
+            corner,center=corner_center(gr)
             def statistic(c):
                 variance=np.var(c,axis=0,ddof=1)
                 ratio=np.mean(variance/predicted)
@@ -226,22 +248,22 @@ def noise_validation(sims,geometry):
     return result
 
 
-def affine_prediction_errors(data):
+def affine_prediction_errors(data, theory):
     """Predict all profiles/weights from the local metric, not spherical samples."""
     from scipy import fft
-    import geometry as G
     from local_measurements import profiles, ARCMIN
-    theory=np.load(ROOT/'data/theory_spectra.npz')
+    theory=np.load(theory)
+    beam,noise=data['beam_fwhm_arcmin'],data['noise_uK_arcmin']
     n,pixel=data['n'],data['res_arcmin']*ARCMIN
     axis=(np.arange(n)-n//2)*pixel
     y,x=np.meshgrid(axis,axis,indexing='ij')
     k=2*np.pi*fft.fftfreq(n,pixel)
     ell=np.hypot(k[:,None],k[None,:])
-    sigma=1.2/np.sqrt(8*np.log(2))*ARCMIN
+    sigma=beam/np.sqrt(8*np.log(2))*ARCMIN
     cmb=np.interp(ell,theory['ell'],theory['lensed_TT'],right=0.)*np.exp(-(ell*sigma)**2)
-    powers={'white':np.full_like(ell,(18*ARCMIN)**2),'cmb_white':cmb+(18*ARCMIN)**2}
+    powers={'white':np.full_like(ell,(noise*ARCMIN)**2),'cmb_white':cmb+(noise*ARCMIN)**2}
     powers['cmb_white'][ell<300]=np.inf
-    templates={kind:fft.fft2(profiles(np.hypot(x,y)/ARCMIN,kind)) for kind in ('point','cluster')}
+    templates={kind:fft.fft2(profiles(np.hypot(x,y)/ARCMIN,kind,beam)) for kind in ('point','cluster')}
     errors={}
     noise_model={}
     central_sigma={}
@@ -251,7 +273,7 @@ def affine_prediction_errors(data):
     for row in data['rows']:
         jac=G.jacobian(row['projection'],[row['ra']],[row['dec']])[0]
         tangent=np.linalg.solve(jac,np.stack([x.ravel(),y.ravel()]))
-        affine=profiles(np.linalg.norm(tangent,axis=0).reshape(x.shape)/ARCMIN,row['profile'])
+        affine=profiles(np.linalg.norm(tangent,axis=0).reshape(x.shape)/ARCMIN,row['profile'],beam)
         tf=templates[row['profile']]
         power=powers[row['noise']]
         af=fft.fft2(affine)
@@ -264,7 +286,7 @@ def affine_prediction_errors(data):
         q=np.hypot(qx,qy)
         mu=abs(np.linalg.det(jac))
         actual_cmb=mu*np.interp(q,theory['ell'],theory['lensed_TT'],right=0.)*np.exp(-(q*sigma)**2)
-        actual_white=mu*(18*ARCMIN)**2
+        actual_white=mu*(noise*ARCMIN)**2
         var_white=n*n*np.sum(abs(tf)**2*actual_white/power**2).real/(pixel**2*norm**2)
         var_cmb=n*n*np.sum(abs(tf)**2*actual_cmb/power**2).real/(pixel**2*norm**2) if row['noise']=='cmb_white' else 0.
         actual=actual_cmb+actual_white if row['noise']=='cmb_white' else np.full_like(ell,actual_white)
@@ -291,7 +313,7 @@ def plot(rows,out,quantity='amplitude'):
             for i,kind in enumerate(('point','cluster')):
                 ax=axs[i,j]
                 ax.axhline(0,color='.7',lw=.6)
-                for dec,color in zip((-68.,-56.,-44.),PS.SECONDARY[:3]):
+                for dec,color in zip(sorted({r['dec'] for r in rows}),PS.SECONDARY[:3]):
                     rs=sorted([r for r in rows if r['projection']==proj and r['profile']==kind and r['noise']=='cmb_white' and r['dec']==dec],key=lambda r:r['ra'])
                     ax.plot([r['ra'] for r in rs],[100*(r[quantity]-1) for r in rs],'-o',ms=3,color=color,label=rf'$\delta={dec:g}^\circ$')
                 if proj=='ProjBICEP' and kind=='point':
@@ -341,11 +363,10 @@ def plot_examples(path,out):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--geometry',type=Path,default=ROOT/'results/highell/local_source_geometry/geometry.json')
-    p.add_argument('--sims',type=Path,default=ROOT/'results/highell/local_source_sims')
-    p.add_argument('--out',type=Path,default=ROOT/'analysis/results_disk_trend/local_sources')
-    p.add_argument('--fine',type=Path)
-    p.add_argument('--sampling',type=Path,default=ROOT/'results/highell/local_source_resolution')
+    p=argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(p,'local_source_geometry','local_source_sims','local_source_resolution','theory_spectra')
+    p.add_argument('--lmax',type=parse_lmax,required=True,help='the sims\' CMB band limit, the ell_max decision')
+    p.add_argument('--out',type=Path,required=True)
     a=p.parse_args()
-    report(a.geometry,a.sims,a.out,a.fine,a.sampling)
+    report(json.loads((a.local_source_geometry/'geometry.json').read_text()),
+           a.local_source_sims,a.local_source_resolution,a.theory_spectra,a.lmax,a.out)

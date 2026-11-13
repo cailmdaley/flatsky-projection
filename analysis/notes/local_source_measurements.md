@@ -190,22 +190,16 @@ The finite-patch SFL corner significance ratios are 0.89459 and 0.82049, versus 
 The background-boundary correction is therefore below 0.4 percentage points in significance for these controls.
 It does not explain the much larger Nside2048 CMB-only variance deficit, which the paired spherical sampling intervention tests separately.
 
-The production runs used:
+The production runs and the report are outputs of `astra.yaml`:
 
 ```bash
-lc run --executor htcondor --profile htcondor9 local_source_geometry local_source_sims -u highell
-lc run --executor htcondor --profile htcondor9 local_source_resolution -u highell
-bash env.sh python3 analysis/check_local_measurements.py --geometry results/highell/local_source_geometry/geometry.json
+lc run --executor htcondor --profile htcondor9 local_source_geometry local_source_sims local_source_resolution -u fiducial
+lc run local_source_numbers -u fiducial
+bash env.sh python3 analysis/check_local_measurements.py --geometry results/fiducial/local_source_geometry/geometry.json --theory-spectra data/theory_spectra.npz
 bash env.sh python3 analysis/check_local_source_window.py
-bash env.sh python3 analysis/local_source_window_covariance.py
-bash env.sh python3 analysis/local_source_report.py
-bash env.sh python3 analysis/paper_numbers.py --local-source-only
 ```
 
-The three additive canonical outputs (`local_source_geometry`, `local_source_sims`, `local_source_resolution`) and all 96 unit-directory hashes passed focused lightcone verification.
-`lc status -u highell` reports all three current.
-No claim is made about unrelated outputs in the universe.
-The aggregate is `analysis/results_disk_trend/local_sources/local_source_summary.json`; plots beside it show the noiseless response, finite-patch significance forecasts, and actual seed-zero cutouts.
+The `local_source_summary` output (`analysis/local_source_report.py`) is the aggregate, `local_source_summary.json`; plots beside it show the noiseless response, finite-patch significance forecasts, and actual seed-zero cutouts.
 The significance panels are model predictions, not noisy catalogue measurements.
 The display cutouts use the seed-zero Nside8192 CMB background and 0.4 arcmin Gaussian smoothing only for display; black contours mark the injected spherical profiles.
 
