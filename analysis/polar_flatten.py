@@ -42,9 +42,19 @@ purified coupled pseudo-spectra, where EB/EE from the E-only sky is the TB/TE
 pattern's spin-2 twin: a frame rotation by Delta turns E into B by sin 2Delta,
 so EB/EE carries (1/2) sin 4Delta where TB/TE carries sin 2Delta.
 
-Run:  systemd-run --user --scope -p MemoryMax=12G bash env.sh python3 analysis/polar_flatten.py
+Run:  bash env.sh python3 analysis/polar_flatten.py
+          --projected-qu results/fiducial/projected_qu
+          --flatsky-masks results/fiducial/flatsky_masks
+          --coupling-matrices results/fiducial/coupling_matrices
+          --theory-spectra data/theory_spectra.npz
+          --shear-moments results/fiducial/shear_moments --out <dir>
+Out:  <out>/polar_flatten_maps.npz (the `map_test` arrays),
+      <out>/polar_flatten_summary.json (`check_closed_form` and `summary`),
+      <out>/flattenpol_polar.png (`figure`).
 """
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -62,22 +72,46 @@ from template_geometry import (  # noqa: F401  (re-exported for callers)
 from spt3g import core, maps
 
 DEG = core.G3Units.deg
-ROOT = Path(__file__).resolve().parent.parent
-RUN = ROOT / "results" / "highell"
-CACHE = SL.CACHE_DIR / "polar_flatten_maps.npz"
-FIGURE = ROOT / "analysis" / "notes" / "flattenpol-pr" / "flattenpol_polar.png"
-MASK = 5                       # 5% disk, the paper's reference footprint
+FOOTPRINT = "disk_5"           # the paper's reference footprint
+PROJ = "ProjSFL"
 PAD_DEG = 4.0
 L_CLEAN = (1000, 4000)
 
 
-def check_closed_form(n=4000, seed=1):
+def qu_maps(projected_qu, proj):
+    """{seed: path} of `proj`'s projected Q/U maps, and the grid's index entry.
+
+    The grid entry is one of the output's index files: it carries the map
+    size, pixel size and patch centre every map of the output shares.
+    """
+    files, grid = {}, None
+    for p in sorted(Path(projected_qu).glob(f"index_*_{proj}.json")):
+        grid = json.loads(p.read_text())
+        for rec in grid["files"]:
+            files[rec["seed"]] = Path(projected_qu) / rec["path"]
+    return dict(sorted(files.items())), grid
+
+
+def disk_inputs(flatsky_masks, coupling_matrices, proj, footprint=FOOTPRINT):
+    """The footprint's flat-sky mask file and w22 workspace for `proj`, and
+    the workspace's binning (lmax, delta_ell), from the outputs' index files."""
+    rec, = [r for r in json.loads((Path(flatsky_masks) / f"index_{footprint}.json")
+                                  .read_text())["records"] if r["projection"] == proj]
+    idx = json.loads((Path(coupling_matrices) / f"index_{proj}_{footprint}.json").read_text())
+    ws, = idx["workspaces"]
+    return (Path(flatsky_masks) / rec["path"], Path(coupling_matrices) / ws["w22"],
+            int(idx["lmax"]), int(idx["delta_ell"]))
+
+
+def check_closed_form(grid, n=4000, seed=1):
     """Closed form vs scipy.linalg.polar, and the spt3g-side residuals, per projection.
 
     Points uniform in RA -60..60, dec -80..-35, which covers every footprint
     in the paper. Returns {proj: dict} with, in degrees: max |phi - scipy|,
     max asymmetry of R(phi)^T J (relative), max |FlattenPol - normalised
-    form|, max |Delta| for FlattenPol and for rot_R, and max g.
+    form|, max |Delta| for FlattenPol and for rot_R, and max g. The spt3g
+    side uses a map of the production grid (`grid`, a projected_qu index
+    entry) in each projection.
     """
     from scipy.linalg import polar
     rng = np.random.default_rng(seed)
@@ -97,9 +131,11 @@ def check_closed_form(n=4000, seed=1):
             M = Rc.T @ jac[k]
             asym[k] = abs(M[0, 1] - M[1, 0]) / np.abs(M).max()
 
-        fsm = maps.FlatSkyMap(3300, 3300, 2.0 * core.G3Units.arcmin,
+        fsm = maps.FlatSkyMap(grid["size_pix"], grid["size_pix"],
+                              grid["res_arcmin"] * core.G3Units.arcmin,
                               proj=getattr(maps.MapProjection, proj),
-                              alpha_center=0.0, delta_center=-56 * DEG)
+                              alpha_center=grid["ra_deg"] * DEG,
+                              delta_center=grid["dec_deg"] * DEG)
         x, y = fsm.angle_to_xy(core.DoubleVector(alpha * DEG),
                                core.DoubleVector(delta * DEG))
         x, y = np.asarray(x), np.asarray(y)
@@ -162,7 +198,7 @@ def field_geometry(fsm, proj="ProjSFL"):
                 lx=(c1 - c0) * fsm.res, ly=(r1 - r0) * fsm.res, s1=s1, s2=s2)
 
 
-def eb_model(geo, ell, n_chi=64, stride=4):
+def eb_model(geo, ell, theory, n_chi=64, stride=4):
     """EB and EE per l from an E-only sky on each field mask, from Delta alone.
 
     Returns {mask: (EB, EE)} in arbitrary common units, one entry per `ell`.
@@ -176,8 +212,7 @@ def eb_model(geo, ell, n_chi=64, stride=4):
     tail the stretched, high-shear corners -- where |Delta| is largest --
     gain weight. Pixels subsampled by `stride` in each direction.
     """
-    th = T.load()
-    lt, ct = th["ell"].astype(float), th["unlensed_EE"]
+    lt, ct = theory["ell"].astype(float), theory["unlensed_EE"]
     sl = (slice(None, None, stride), slice(None, None, stride))
     s1, s2 = geo["s1"][sl].ravel(), geo["s2"][sl].ravel()
     dl = (geo["Delta"][geo["box"]][sl]).ravel()
@@ -202,40 +237,35 @@ def eb_model(geo, ell, n_chi=64, stride=4):
     return out
 
 
-def map_test(proj="ProjSFL", seeds=range(S.NSIMS), refresh=False):
-    """Stock vs polar flattening on the production QU maps. Cached.
+def map_test(qu_paths, mask_path, w22_path, lmax, delta_l, theory):
+    """Stock vs polar flattening on the production QU maps.
 
-    Returns a dict of arrays: ell (bin centres), for the 5% disk decoupled
-    `disk_{EE,EB,BB}_{stock,polar}` (seed, bin), and for the 1500d field and
-    halves coupled pseudo-spectra `{field}_{EE,EB,BB}_{stock,polar}`, plus
-    the per-pixel predictions `{field}_eb_pred` (W^2-weighted
-    s (1/2) sin 4Delta <cos 4dpsi> over W^2-weighted <cos^2 2dpsi>, s the
-    pol_conv sign) and `{field}_tb_pred` (the same for TB/TE), and the
-    Delta map over the field's bounding box for the figure.
+    `qu_paths` maps seed to the projected Q/U map of one projection; the 5% disk's
+    flat-sky mask and w22 workspace, and the workspace's binning, come from
+    `disk_inputs`. Returns a dict of arrays: ell (bin centres), for the 5%
+    disk decoupled `disk_{EE,EB,BB}_{stock,polar}` (seed, bin), and for the
+    1500d field and halves coupled pseudo-spectra
+    `{field}_{EE,EB,BB}_{stock,polar}`, plus the per-pixel predictions
+    `{field}_eb_pred` (W^2-weighted s (1/2) sin 4Delta <cos 4dpsi> over
+    W^2-weighted <cos^2 2dpsi>, s the pol_conv sign) and `{field}_tb_pred`
+    (the same for TB/TE), the Delta map over the field's bounding box for
+    the figure, and `eb_model` on the field and halves.
     """
-    if CACHE.exists() and not refresh:
-        with np.load(CACHE) as f:
-            out = {k: f[k] for k in f.files}
-        if "east_eb_model_num" not in out:
-            first = next(core.G3File(str(
-                RUN / "projected_qu" / f"qu_{proj}_seed0000.g3")))
-            _add_eb_model(out, field_geometry(first["Q"]))
-            _save(out)
-        return out
     import pymaster as nmt
 
-    l0 = np.arange(S.LMAX // S.DELTA_L) * float(S.DELTA_L)
-    b = nmt.NmtBinFlat(l0, l0 + S.DELTA_L)
+    l0 = np.arange(lmax // delta_l) * float(delta_l)
+    b = nmt.NmtBinFlat(l0, l0 + delta_l)
     out = {"ell": b.get_effective_ells()}
 
-    d = np.load(RUN / "flatsky_masks" / f"mask_{proj}_{MASK}.npz")
+    d = np.load(mask_path)
     dmask = d["mask"]
     lo, hi = int(d["lo"]), int(d["hi"])
     lx, ly = float(d["lx_rad"]), float(d["ly_rad"])
     ws = nmt.NmtWorkspaceFlat()
-    ws.read_from(str(RUN / "coupling_matrices" / f"w22_{proj}_{MASK}.fits"))
+    ws.read_from(str(w22_path))
 
-    first = next(core.G3File(str(RUN / "projected_qu" / f"qu_{proj}_seed0000.g3")))
+    seeds = list(qu_paths)
+    first = next(core.G3File(str(qu_paths[seeds[0]])))
     geo = field_geometry(first["Q"])
     sign, extra, Delta, fm, fbox = (geo[k] for k in
                                     ("sign", "extra", "Delta", "masks", "box"))
@@ -257,7 +287,6 @@ def map_test(proj="ProjSFL", seeds=range(S.NSIMS), refresh=False):
                                   / np.sum((w * np.cos(2 * dl) * (1 - g2))[ok]))
     out["disk_delta_max_deg"] = np.degrees(np.nanmax(np.abs(Delta[lo:hi, lo:hi][dmask > 0])))
 
-    seeds = list(seeds)
     keys = [f"{f}_{x}_{v}" for f in ("disk", *fm) for x in ("EE", "EB", "BB")
             for v in ("stock", "polar")]
     acc = {k: [] for k in keys}
@@ -267,8 +296,7 @@ def map_test(proj="ProjSFL", seeds=range(S.NSIMS), refresh=False):
         return [z.real.copy(), z.imag.copy()]
 
     for si, seed in enumerate(seeds):
-        fr = first if si == 0 else next(core.G3File(
-            str(RUN / "projected_qu" / f"qu_{proj}_seed{seed:04d}.g3")))
+        fr = first if si == 0 else next(core.G3File(str(qu_paths[seed])))
         z_stock = np.asarray(fr["Q"], dtype=float) + 1j * np.asarray(fr["U"], dtype=float)
         z_polar = z_stock * extra
         for v, z in (("stock", z_stock), ("polar", z_polar)):
@@ -284,44 +312,40 @@ def map_test(proj="ProjSFL", seeds=range(S.NSIMS), refresh=False):
                 cl = nmt.compute_coupled_cell_flat(f2, f2, b)
                 for k, row in (("EE", 0), ("EB", 1), ("BB", 3)):
                     acc[f"{name}_{k}_{v}"].append(cl[row])
-        print(f"  map_test {proj}: seed {seed} done", flush=True)
+        print(f"  map_test: seed {seed} done", flush=True)
     out.update({k: np.array(v) for k, v in acc.items()})
     out["seeds"] = np.array(seeds)
-    _add_eb_model(out, geo)
-    _save(out)
+    _add_eb_model(out, geo, theory)
     return out
 
 
-def _add_eb_model(out, geo):
+def _add_eb_model(out, geo, theory):
     """`eb_model` on the 50-wide bins with 500 < l < 4500."""
     ell = out["ell"]
     sel = (ell > 500) & (ell < 4500)
-    for name, (num, den) in eb_model(geo, ell[sel]).items():
+    for name, (num, den) in eb_model(geo, ell[sel], theory).items():
         for k, v in (("num", num), ("den", den)):
             full = np.full(ell.size, np.nan)
             full[sel] = v
             out[f"{name}_eb_model_{k}"] = full
 
 
-def _save(out):
-    CACHE.parent.mkdir(parents=True, exist_ok=True)
-    tmp = CACHE.with_suffix(".tmp.npz")
-    np.savez(tmp, **out)
-    tmp.replace(CACHE)
-
-
-def model_ratio(mom, i, j, ell, with_delta):
-    """Forward-model BB/EE per bin, with FlattenPol's Delta or with the polar angle."""
-    th = T.load()
+def model_ratio(mom, j, ell, with_delta, theory, band_limit):
+    """Forward-model BB/EE per bin on the one footprint of `mom`, with
+    FlattenPol's Delta or with the polar angle."""
     if not with_delta:
         mom = dict(mom, cell_sin2_2delta=np.zeros_like(mom["cell_sin2_2delta"]))
-    bb, ee = SL.predicted_spectra(mom, i, j, ell, th["ell"].astype(float),
-                                  th["unlensed_EE"], band_limit=S.LMAX)
+    bb, ee = SL.predicted_spectra(mom, 0, j, ell, theory["ell"].astype(float),
+                                  theory["unlensed_EE"], band_limit=band_limit)
     return bb / ee
 
 
-def summary(res, mom_disk, mom_field, proj="ProjSFL"):
-    """The numbers: measured and modelled BB/EE shifts, EB/EE on the halves."""
+def summary(res, mom_disk, mom_field, theory, band_limit, proj=PROJ):
+    """The numbers: measured and modelled BB/EE shifts, EB/EE on the halves.
+
+    `mom_disk` and `mom_field` are the shear moments of the 5% disk and of
+    the 1500d field, one footprint each; `band_limit` is the sky's.
+    """
     j = S.PROJS.index(proj)
     ell = res["ell"]
     band = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
@@ -331,11 +355,11 @@ def summary(res, mom_disk, mom_field, proj="ProjSFL"):
     per_seed = (r_st / r_po)[:, band].mean(1) - 1
     out["disk_shift_maps"] = per_seed.mean()
     out["disk_shift_maps_err"] = per_seed.std(ddof=1) / np.sqrt(per_seed.size)
-    m_d = model_ratio(mom_disk, MASK, j, ell, True)
-    m_0 = model_ratio(mom_disk, MASK, j, ell, False)
+    m_d = model_ratio(mom_disk, j, ell, True, theory, band_limit)
+    m_0 = model_ratio(mom_disk, j, ell, False, theory, band_limit)
     out["disk_shift_model"] = (m_d / m_0)[band].mean() - 1
-    mf_d = model_ratio(mom_field, 0, j, ell, True)
-    mf_0 = model_ratio(mom_field, 0, j, ell, False)
+    mf_d = model_ratio(mom_field, j, ell, True, theory, band_limit)
+    mf_0 = model_ratio(mom_field, j, ell, False, theory, band_limit)
     out["field_shift_model"] = (mf_d / mf_0)[band].mean() - 1
     f_st = res["1500d_BB_stock"] / res["1500d_EE_stock"]
     f_po = res["1500d_BB_polar"] / res["1500d_EE_polar"]
@@ -362,7 +386,7 @@ def _wide(x, ell, edges):
                      for lo, hi in zip(edges[:-1], edges[1:])], -1)
 
 
-def figure(res, mom_disk, proj="ProjSFL", path=FIGURE):
+def figure(res, mom_disk, theory, band_limit, path, proj=PROJ):
     """Three panels: Delta over the 1500d field; the BB/EE FlattenPol adds
     over the polar angle on the 5% disk, against the forward model's
     sin^2 2Delta term; EB/EE on the 1500d field's halves, both flattenings,
@@ -397,8 +421,8 @@ def figure(res, mom_disk, proj="ProjSFL", path=FIGURE):
                 color=PS.INK_SOFT)
 
     ax = axes[1]
-    m_0 = _wide(model_ratio(mom_disk, MASK, j, ell, False), ell, edges)
-    m_d = _wide(model_ratio(mom_disk, MASK, j, ell, True), ell, edges)
+    m_0 = _wide(model_ratio(mom_disk, j, ell, False, theory, band_limit), ell, edges)
+    m_d = _wide(model_ratio(mom_disk, j, ell, True, theory, band_limit), ell, edges)
     ratio = {v: _wide(res[f"disk_BB_{v}"], ell, edges)
              / _wide(res[f"disk_EE_{v}"], ell, edges) for v in ("stock", "polar")}
     r = (ratio["stock"] / ratio["polar"] - 1) * 100
@@ -434,25 +458,41 @@ def figure(res, mom_disk, proj="ProjSFL", path=FIGURE):
     ax.set_ylim(-2.8, 4.2)
     ax.legend(loc="upper left", fontsize=PS.LEGEND_SIZE - 1.5, ncol=2,
               columnspacing=0.8)
-    path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=200)
     print(f"wrote {path}")
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "projected_qu", "flatsky_masks", "coupling_matrices",
+                 "theory_spectra", "shear_moments")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    run = S.Run.from_args(args)
+    theory = T.load(args.theory_spectra)
+    qu, grid = qu_maps(args.projected_qu, PROJ)
+    mask_path, w22_path, lmax, delta_l = disk_inputs(
+        args.flatsky_masks, args.coupling_matrices, PROJ)
+    args.out.mkdir(parents=True, exist_ok=True)
+
     print("closed form vs scipy.linalg.polar, and residuals from xy_to_angle (deg):")
-    for proj, r in check_closed_form().items():
+    closed = check_closed_form(grid)
+    for proj, r in closed.items():
         print(f"  {S.PROJ_LABEL[proj]:<6} g_max {r['g_max']:.3f}  |phi-scipy| {r['scipy']:.1e}"
               f"  asym {r['asym']:.1e}  |FlattenPol-normalised| {r['normalised']:.1e}"
               f"  |arg form - rot_R| {r['complex_polar']:.1e}"
               f"  |Delta| stock {r['delta_stock']:.3f}  polar {r['delta_polar']:.1e}")
-    refresh = "--refresh" in sys.argv
-    res = map_test(refresh=refresh)
-    mom_disk = SL.load_moments()
-    mom_field = SL.field_moments()
-    for k, v in summary(res, mom_disk, mom_field).items():
+    res = map_test(qu, mask_path, w22_path, lmax, delta_l, theory)
+    np.savez(args.out / "polar_flatten_maps.npz", **res)
+    mom_disk = run.moments([FOOTPRINT])
+    mom_field = run.field_moments()
+    summ = summary(res, mom_disk, mom_field, theory, lmax)
+    for k, v in summ.items():
         print(f"  {k:<24} {v: .4e}")
-    figure(res, mom_disk)
+    (args.out / "polar_flatten_summary.json").write_text(json.dumps(
+        {"closed_form": {p: {k: float(v) for k, v in r.items()} for p, r in closed.items()},
+         "summary": {k: float(v) for k, v in summ.items()}}, indent=2) + "\n")
+    figure(res, mom_disk, theory, lmax, args.out / "flattenpol_polar.png")
 
 
 if __name__ == "__main__":

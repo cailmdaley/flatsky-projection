@@ -9,13 +9,19 @@ derivations are in the docstrings of `template_subtraction` and
 `polar_flatten`.
 """
 
+import sys
+from pathlib import Path
+
 import numpy as np
 
 from spt3g import core, maps
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"))
+from _footprints import FIELD as _FIELD, FOOTPRINTS  # noqa: E402
+
 DEG = core.G3Units.deg
 ARCMIN_RAD = np.deg2rad(1.0 / 60.0)
-FIELD = (50.0, -70.0, -42.0)   # 1500d: |RA| < 50 deg, dec -70 to -42
+FIELD = FOOTPRINTS[_FIELD].box   # 1500d: (RA half-width, dec min, dec max), deg
 APOD_DEG = 2.5
 PAD_DEG = 4.0
 N_HARM = 12                 # harmonics |n| <= N_HARM of the pi-periodic symbol
