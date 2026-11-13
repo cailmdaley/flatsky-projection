@@ -1,8 +1,7 @@
 """What a diagonal transfer function misses that the coupling matrix keeps, as measured.
 
-Reads `paper/scalar_summary.npz` from `paper_numbers.py --scalar-only`: 20 CMB
-TT skies and 20 independent unit-C_l white skies through the scalar leg on the
-1500d field, for all four projections.
+Reads the `scalar_summary` output: CMB TT skies and independent unit-C_l white
+skies through the scalar leg on the 1500d field, for all four projections.
 
   top     recovered white bandpower over the truth, minus one, after a diagonal
           correction F_b = measured TT / input TT. Dashed lines are the same
@@ -12,19 +11,19 @@ TT skies and 20 independent unit-C_l white skies through the scalar leg on the
           minus one, on the same skies.
 
 Run:  bash env.sh python3 analysis/plot_transfer_error.py
-Out:  figures/transfer_error.pdf
+          --scalar-summary <scalar_summary dir> --out <dir>
+Out:  <out>/transfer_error.pdf, which the paper includes, and
+      <out>/fig_transfer_error.png
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paper_style as PS
+import spectra as S
 
-ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "transfer_error.pdf"
 FIELD = 1                    # index of the 1500d field in the summary
 ELL_LO, ELL_HI = 500.0, 4800.0
 ZOOM = 5.0                   # bottom axis half-range, percent
@@ -36,7 +35,12 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
 
-    d = np.load(ROOT / "paper" / "scalar_summary.npz")
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "scalar_summary")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+
+    d = np.load(args.scalar_summary / "scalar_summary.npz")
     ell = d["ell"]
     keep = (ell >= ELL_LO) & (ell <= ELL_HI)
     plt.rcParams.update(PS.rc())
@@ -69,8 +73,10 @@ def main():
     handles.append(Line2D([], [], color=PS.INK, lw=0.6, ls=(0, (3, 2)), label="model"))
     fig.legend(handles=handles, loc="outside upper center", ncol=5, frameon=False,
                handlelength=1.5, columnspacing=1.0)
-    fig.savefig(FIGURE)
-    print(f"Wrote {FIGURE}")
+    args.out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.out / "transfer_error.pdf")
+    fig.savefig(args.out / "fig_transfer_error.png", dpi=200)
+    print(f"wrote {args.out / 'transfer_error.pdf'}")
 
 
 if __name__ == "__main__":

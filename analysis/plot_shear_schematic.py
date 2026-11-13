@@ -18,28 +18,24 @@ it holds for a patch small enough that J is constant.
 
 One colour rule across the panels: teal is the sky, ink is the grid.
 
-Run in the SPT environment:
-    ~/code/python/spt3g_software/build/env-shell.sh python analysis/plot_shear_schematic.py
-
-Output: figures/shear_schematic.pdf
+Run:  bash env.sh python3 analysis/plot_shear_schematic.py
+          --theory-spectra data/theory_spectra.npz --out <dir>
+Out:  <out>/shear_schematic.pdf, which the paper includes, and
+      <out>/fig_shear_schematic.png
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 import geometry as G
 import paper_style as PS
+import spectra as S
 import theory as T
 
-ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "shear_schematic.pdf"
-
 PROJ = "ProjSFL"
-POINT = (26.26, G.DELTA_CENTER_DEG)  # (alpha, delta) in deg; g is the field's rms
+POINT = (26.26, G.DEC_DEG)           # (alpha, delta) in deg; g is the field's rms
 ELL_BAND = 2000.0                    # the multipole whose band panel (c) marks
 ELL_RANGE = (300.0, 4800.0)
 LATTICE_N = 6                        # pixels on a side in panel (a)
@@ -212,6 +208,11 @@ def panel_spectrum(plt, ax, d, ell_th, cl):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "theory_spectra")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -224,7 +225,7 @@ def main():
           f"{np.degrees(delta_psi(CHI_MODE, d['s1'], d['s2'])):.2f} deg")
 
     plt.rcParams.update(PS.rc())
-    th = T.load()
+    th = T.load(args.theory_spectra)
     ell_th = th["ell"].astype(float)
     cl = th["unlensed_TT"]
 
@@ -241,9 +242,10 @@ def main():
     for x, s in ((0.0, "(a)"), (2.2, "(b)"), (4.2, "(c)")):
         fig.text(x / W, 0.995, s, ha="left", va="top")
 
-    FIGURE.parent.mkdir(exist_ok=True)
-    fig.savefig(FIGURE)
-    print(f"wrote {FIGURE}")
+    args.out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.out / "shear_schematic.pdf")
+    fig.savefig(args.out / "fig_shear_schematic.png", dpi=200)
+    print(f"wrote {args.out / 'shear_schematic.pdf'}")
 
 
 if __name__ == "__main__":

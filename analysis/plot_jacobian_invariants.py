@@ -6,8 +6,8 @@ the invariants introduced right after the itemization in sec:law).
 Layout: 2 rows (g, mu) x 4 columns (SFL, STG, ZEA, BICEP), one shared
 colorbar per row. The 1500d field's edge (RA +-50 deg, dec -70 to -42 deg) is
 drawn on every panel so the reader sees what the analysis footprint samples,
-with the W=0.5 contour of the 10% disk (contoured from the projected mask image
-cached by plot_masks_figure.py) thin and dashed behind it.
+with the W=0.5 contour of the 10% disk (contoured from the pipeline's
+projected mask, the `mask_contours` output) thin and dashed behind it.
 
 Reachable sky. A grid pixel is drawn only if the sky point it names projects
 back onto it. That one test covers the cylindrical pair's pole and SFL's
@@ -18,10 +18,13 @@ of W on reachable pixels only (zero elsewhere), so it closes on the footprint
 as the projection reaches it rather than tracing the wrapped copies of the
 disk.
 
-Run inside the project container:
-    OMP_NUM_THREADS=4 systemd-run --user --scope -p MemoryMax=12G -p CPUQuota=400% bash env.sh python3 analysis/plot_jacobian_invariants.py
+Run:  bash env.sh python3 analysis/plot_jacobian_invariants.py
+          --mask-contours <mask_contours dir> --out <dir>
+Out:  <out>/jacobian_invariants.pdf, which the paper includes, and
+      <out>/fig_jacobian_invariants.png
 """
 
+import argparse
 from pathlib import Path
 
 import matplotlib
@@ -32,13 +35,10 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 import geometry as G
 import paper_style as PS
+import spectra as S
 from paper_style import INK, INK_SOFT, MASK_RAMP, PROJ_COLORS, PROJ_LABEL, PROJS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
 from matplotlib.patches import Rectangle
-
-ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "figures"
-CONTOUR_CACHE = Path(__file__).resolve().parent / ".cache" / "mask_contours.npz"
 
 # Projection colour identity lives in paper_style: each column is named in ink
 # over a rule in its projection colour, so the hue is never asked to carry text.
@@ -74,8 +74,7 @@ TRIVIAL = {
 RES_DEG = 0.5
 N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
 
-FIELD_HALF_RA_DEG = 50.0
-FIELD_DEC_DEG = (-70.0, -42.0)
+FIELD_HALF_RA_DEG, *FIELD_DEC_DEG = S.FOOTPRINTS[S.FIELD].box
 POLE_DEG = 0.5  # sky-frame differencing is replaced this close to the pole
 
 
@@ -83,8 +82,8 @@ def flat_map(proj):
     """The N x N, RES_DEG FlatSkyMap centred on the field."""
     return maps.FlatSkyMap(
         N, N, RES_DEG * core.G3Units.deg, proj=getattr(maps.MapProjection, proj),
-        alpha_center=G.ALPHA_CENTER_DEG * core.G3Units.deg,
-        delta_center=G.DELTA_CENTER_DEG * core.G3Units.deg,
+        alpha_center=G.RA_DEG * core.G3Units.deg,
+        delta_center=G.DEC_DEG * core.G3Units.deg,
     )
 
 
@@ -189,7 +188,7 @@ def footprint(proj, cache):
 
 def field_edge(proj):
     """(dx, dy) in degrees of the 1500d field's edge on this projection's grid."""
-    a0, d0 = G.ALPHA_CENTER_DEG, G.DELTA_CENTER_DEG
+    a0, d0 = G.RA_DEG, G.DEC_DEG
     alpha = np.linspace(-FIELD_HALF_RA_DEG, FIELD_HALF_RA_DEG, 400)
     delta = np.linspace(*FIELD_DEC_DEG, 200)
     ra = a0 + np.r_[alpha, np.full(200, alpha[-1]), alpha[::-1], np.full(200, alpha[0])]
@@ -201,6 +200,11 @@ def field_edge(proj):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "mask_contours")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+
     plt.rcParams.update(PS.rc())
     plt.rcParams.update({
         "axes.grid": False,
@@ -211,7 +215,7 @@ def main():
     g_maps, mu_maps, dx, dy = compute()
     extent = (dx.min(), dx.max(), dy.min(), dy.max())
 
-    cache = np.load(CONTOUR_CACHE) if CONTOUR_CACHE.exists() else None
+    cache = np.load(args.mask_contours / "mask_contours.npz")
 
     g_cmap = G_CMAP.copy()
     g_cmap.set_bad(alpha=0.0)
@@ -239,7 +243,7 @@ def main():
     im_g = im_mu = None
     for j, proj in enumerate(PROJS):
         axg, axm = axes[0, j], axes[1, j]
-        fp = footprint(proj, cache) if cache is not None else None
+        fp = footprint(proj, cache)
 
         for ax in (axg, axm):
             # Unreachable sky shows through the transparent NaNs as hatching.
@@ -259,9 +263,8 @@ def main():
                 ax.text(0.5, 0.94, TRIVIAL[row, proj], transform=ax.transAxes,
                         ha="center", va="top", color=INK_SOFT,
                         fontsize=PS.LEGEND_SIZE, zorder=6)
-            if cache is not None:
-                ax.contour(*fp, levels=[0.5], colors=INK, linewidths=0.4,
-                           linestyles=[(0, (3, 2))], zorder=5)
+            ax.contour(*fp, levels=[0.5], colors=INK, linewidths=0.4,
+                       linestyles=[(0, (3, 2))], zorder=5)
             ax.plot(*field_edge(proj), color=INK, lw=0.9, zorder=5.5)
             ax.set_xlim(-LIM_DEG, LIM_DEG)
             ax.set_ylim(-LIM_DEG, LIM_DEG)
@@ -305,11 +308,11 @@ def main():
     cb_mu.set_ticks([-1, -0.5, 0, 0.5, 1])
     cb_mu.set_ticklabels(["$1/2$", r"$1/\sqrt{2}$", "$1$", r"$\sqrt{2}$", "$2$"])
 
-    OUT.mkdir(exist_ok=True)
-    path = OUT / "jacobian_invariants.pdf"
-    fig.savefig(path)
+    args.out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.out / "jacobian_invariants.pdf")
+    fig.savefig(args.out / "fig_jacobian_invariants.png", dpi=200)
     plt.close(fig)
-    print("wrote", path)
+    print("wrote", args.out / "jacobian_invariants.pdf")
 
     print("\n--- key numbers ---")
     for proj in PROJS:

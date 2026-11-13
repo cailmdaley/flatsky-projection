@@ -1,7 +1,8 @@
 """The simulated spectra on SPT's 1500d field, projection by projection.
 
 This is the distortion where it lives, in the bandpowers, on a footprint with a
-survey's edges (RA +-50 deg, dec -70 to -42 deg, `field_bandpowers`). The field
+survey's edges (RA +-50 deg, dec -70 to -42 deg; the 1500d field of
+`bandpowers` and `scalar_bandpowers`). The field
 is wide and short, which also splits SFL from BICEP. Data only: the forward
 model is compared with these spectra in `plot_model_residuals`.
 
@@ -23,30 +24,26 @@ is drawn in the BB spectrum panel, where the log axis reaches it, and left out
 of BB/EE so that axis stays on the leakage.
 
 Every projection is one line through every dl = 50 bandpower, the mean over
-the 20 realizations. There are no error bars: `print_error_reach` reports the
+the realizations. There are no error bars: `print_error_reach` reports the
 standard error of the mean against the line width.
 
-Measured TT comes from `spectra.load_scalar`. `measured_tt` returns None until
-the `scalar_tt_field_bandpowers` output exists, and until then the TT panels
-show the input alone.
-
-Run:  ~/code/python/spt3g_software/build/env-shell.sh python analysis/plot_projection_spectra.py
-Out:  figures/projection_spectra.pdf
+Run:  bash env.sh python3 analysis/plot_projection_spectra.py
+          --bandpowers results/fiducial/bandpowers
+          --scalar-bandpowers results/fiducial/scalar_bandpowers
+          --simulation-windows results/fiducial/simulation_windows
+          --theory-spectra data/theory_spectra.npz --out <dir>
+Out:  <out>/projection_spectra.pdf, which the paper includes, and
+      <out>/fig_projection_spectra.png
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paper_style as PS
 import shear_leakage as SL
 import spectra as S
-
-ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "projection_spectra.pdf"
-SCALAR_TT_DIR = ROOT / "results" / "highell" / "scalar_tt_field_bandpowers"
 
 ELL_MIN, ELL_MAX = 300.0, 4800.0
 
@@ -69,27 +66,20 @@ def noise_cl(spec):
     return np.radians(depth / 60.0) ** 2
 
 
-def measured_tt():
-    """Measured TT on the field, (n_projs, NSIMS, NBINS), or None."""
-    if not SCALAR_TT_DIR.is_dir():
-        return None
-    return S.load_scalar("TT", field=True)
-
-
-def load_data():
+def load_data(run):
     """Bandpowers and inputs, per spectrum, in absolute C_l."""
-    ell = S.ELL
+    ell = run.ell
     return dict(
         ell=ell,
-        measured={"TT": measured_tt(), "EE": S.load_field("EE"),
-                  "BB": S.load_field("BB")},
-        input={"TT": S.theory("unlensed_TT"), "EE": S.theory("unlensed_EE"),
+        measured={"TT": run.load_scalar("TT", field=True), "EE": run.load_field("EE"),
+                  "BB": run.load_field("BB")},
+        input={"TT": run.theory("unlensed_TT"), "EE": run.theory("unlensed_EE"),
                "BB": np.zeros_like(ell)},
-        lensed_bb=S.theory("lensed_BB"),
+        lensed_bb=run.theory("lensed_BB"),
     )
 
 
-def plot(plt, d):
+def plot(plt, d, out):
     """TT, EE, BB side by side: the spectrum above, its ratio below."""
     from matplotlib.lines import Line2D
 
@@ -126,9 +116,8 @@ def plot(plt, d):
                  lw=PS.LW_REF, ls=NOISE_LS, zorder=REF_Z)
         top.set_ylabel(rf"$D_\ell^{{{spec}}}$ [$\mu{{\rm K}}^2$]")
         top.set_yscale("log")
-        if measured is not None:
-            for j, proj in enumerate(S.PROJS):
-                data_line(top, proj, dl * measured[j])
+        for j, proj in enumerate(S.PROJS):
+            data_line(top, proj, dl * measured[j])
         top.margins(y=0.04)
 
         if spec == "BB":
@@ -145,9 +134,8 @@ def plot(plt, d):
             bottom.set_ylabel(r"$C_\ell^{BB} / C_\ell^{EE}$")
         else:
             bottom.axhline(1.0, color=REF_COLOR, lw=REF_LW, zorder=REF_Z)
-            if measured is not None:
-                for j, proj in enumerate(S.PROJS):
-                    data_line(bottom, proj, measured[j] / cl_in)
+            for j, proj in enumerate(S.PROJS):
+                data_line(bottom, proj, measured[j] / cl_in)
             bottom.set_ylabel(rf"$C_\ell^{{{spec}}} / "
                               rf"C_\ell^{{{spec},\,\mathrm{{in}}}}$")
         bottom.set_yscale("log")
@@ -175,9 +163,10 @@ def plot(plt, d):
     labels += ["input", "lensed", "noise"]
     fig.legend(handles, labels, ncol=len(labels), loc="outside upper center")
 
-    FIGURE.parent.mkdir(exist_ok=True)
-    fig.savefig(FIGURE)
-    print(f"wrote {FIGURE}")
+    out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out / "projection_spectra.pdf")
+    fig.savefig(out / "fig_projection_spectra.png", dpi=200)
+    print(f"wrote {out / 'projection_spectra.pdf'}")
     print_error_reach(fig, series)
 
 
@@ -197,12 +186,17 @@ def print_error_reach(fig, series):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "bandpowers", "scalar_bandpowers", "simulation_windows", "theory_spectra")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     plt.rcParams.update(PS.rc())
-    plot(plt, load_data())
+    plot(plt, load_data(S.Run.from_args(args)), args.out)
 
 
 if __name__ == "__main__":
