@@ -144,14 +144,12 @@ The follow-up approved the scoped conclusions after replacing alias-only/suppres
 
 ## Reproduction and figure
 
-Run `bash env.sh python3 analysis/spherical_grid_report.py` after materializing both additive outputs.
-It fails if units are missing, the point-sample null is lost, or the CAR window trend disagrees by more than 0.004 in amplitude.
-It writes `analysis/figures/spherical_grid_summary.json` and `spherical_grid_tests.{png,pdf}`.
+The report is the `spherical_grid_summary` output of `astra.yaml` (`analysis/spherical_grid_report.py`), run with `lc run spherical_grid_summary -u fiducial`.
+It fails if the point-sample null is lost or the CAR window trend disagrees by more than 0.004 in amplitude.
+It writes `spherical_grid_summary.json` and the figure `spherical_grid_tests.{png,pdf}` into the output's directory.
 Run `bash env.sh python3 analysis/check_spherical_grid.py`, adding `--pixell` when pixell 0.32.9 is available.
 
-![Spherical finite-pixel effects](../figures/spherical_grid_tests.png)
-
-Left: intrinsic B/output-E variance on the 1500d footprint for 8x8 parallel-transported pixel averages, averaged over three white E-only skies.
+In the figure, left: intrinsic B/output-E variance on the 1500d footprint for 8x8 parallel-transported pixel averages, averaged over three white E-only skies.
 Right: CAR E cross-amplitude in latitude strips (points), with the local rectangular-window prediction (lines), for the coarse grid.
 The numerical point-sample floors are omitted from the logarithmic panel.
 The plot is a diagnostic, not an additional proposed main-paper figure.
