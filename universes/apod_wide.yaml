@@ -20,3 +20,4 @@ decisions:
   apodization: c2_5deg
   b_purification: purify
   pixel_window: none
+  bandpower_width: d10
