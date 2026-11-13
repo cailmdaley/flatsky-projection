@@ -3,11 +3,11 @@
 Why this exists
 ---------------
 The measured high-l excess in SFL-projected EE is caused by the *local shear*
-of the projection, not by sky area and not by mask corners. Area only tracked
-shear in the 2021 suite because those masks were concentric disks about the
+of the projection, not by sky area and not by mask corners. Area only tracks
+shear in the disk suite because those masks are concentric disks about the
 projection centre, which makes radius and shear degenerate. SPT's real 1500d
 footprint is wide in RA and narrow in declination, so it breaks that
-degeneracy and cannot be read off the 2021 area trend. This module computes
+degeneracy and cannot be read off the disks' area trend. This module computes
 the thing that actually matters, for any mask, in minutes.
 
 The physics, in one line
@@ -50,26 +50,23 @@ a sheared spin-2 field is not a rotated spin-2 field. So E stays mixed into B
 at order (q - 1), which is why the BB panel scales as (q - 1)^2.
 """
 
+import sys
+from pathlib import Path
+
 import numpy as np
 
 from spt3g import core, maps
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"))
+from _footprints import DEC_DEG, RA_DEG  # noqa: E402
+
 DEG = core.G3Units.deg
 ARCMIN = core.G3Units.arcmin
 
-# The 2021 sims, and SPT's own 1500d maps, share this projection centre.
-ALPHA_CENTER_DEG = 0.0
-DELTA_CENTER_DEG = -56.0
 
-# The 2021 sims filtered the sky at map2alm lmax = 4000, so there is no sky
-# power above it. Any forward model compared against those bandpowers must
-# impose the same cut or it will over-predict the topmost bins.
-SIM_BAND_LIMIT = 4000
-
-
-def _flat_map(proj, alpha_center_deg=ALPHA_CENTER_DEG,
-              delta_center_deg=DELTA_CENTER_DEG, res_arcmin=2.0, n=64):
-    """A FlatSkyMap used only as a coordinate transform.
+def _flat_map(proj, alpha_center_deg=RA_DEG,
+              delta_center_deg=DEC_DEG, res_arcmin=2.0, n=64):
+    """A FlatSkyMap about the patch centre, used only as a coordinate transform.
 
     The pixel grid is irrelevant here -- angle_to_xy extrapolates the analytic
     projection formulae well outside the array bounds -- so `n` is kept small.
@@ -199,8 +196,8 @@ def project_spectrum(ell, s1, s2, ell_theory, cl_theory,
     r(psi) = sqrt(s1^2 cos^2 psi + s2^2 sin^2 psi), the azimuthal average that
     NaMaster's |l| binning performs for us.
 
-    `band_limit` sets P_sky = 0 above that multipole. The 2021 sims have a hard
-    cut at l = 4000 from map2alm; leaving it out inflates the top bandpowers.
+    `band_limit` sets P_sky = 0 above that multipole: the sims' own band limit
+    from map2alm; leaving it out inflates the top bandpowers.
     Quarter period suffices -- r(psi) has period pi and is symmetric about
     psi = pi/2.
     """

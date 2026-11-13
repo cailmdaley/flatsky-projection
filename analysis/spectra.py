@@ -1,81 +1,64 @@
 """Bandpowers of the projection suite, and the theory they are compared to.
 
+Every analysis step reads its upstream outputs through a `Run`, which holds
+the directories it was handed on the command line (`add_inputs` declares the
+flags, one per output id) and nothing else. The binning, number of
+realizations and pixel-window treatment come from the bandpowers' own index
+files; no decision value is typed here.
+
 The production run
 ------------------
-`results/fiducial/bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, one file per
-(seed, projection) holding every footprint by name -- SPT's 1500d field and the
-seven disks of `src/stages/_footprints.py`: the `bandpowers` output of
-`astra.yaml` under the `fiducial` universe, run through lightcone on the Open
-Science Pool (one grid job per (seed, projection) unit). The binning, input
-Nside and pixel size are read from the run's own index files. The paper studies four projections,
+`bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, one file per (seed,
+projection) holding every footprint by name -- SPT's 1500d field and the seven
+disks of `src/stages/_footprints.py`. The paper studies four projections,
 `paper_style.PROJS`, and every array here is indexed in that order; the run
 also holds a fifth, ProjSIN, which nothing in `analysis/` reads. What it did:
 
-  - Input: HEALPix Nside 8192 *unlensed* TQU realizations of the Planck 2018
-    best-fit cosmology, so the true B is exactly zero and every recovered B
-    bandpower is leakage.
-  - map2alm to lmax = 6000, monopole and dipole filtered. Sky power therefore
-    exists to l = 6000, and any forward model compared to these spectra must
-    be band-limited there.
-  - Synthesized to a flat grid of 2 arcmin pixels by bilinear interpolation
-    with 8x oversampling, centred on (0 deg, -56 deg).
+  - Input: HEALPix *unlensed* TQU realizations of the Planck 2018 best-fit
+    cosmology, so the true B is exactly zero and every recovered B bandpower
+    is leakage.
+  - map2alm to the band limit, monopole and dipole filtered. Sky power
+    therefore exists to l = lmax, and any forward model compared to these
+    spectra must be band-limited there.
+  - Synthesized to a flat grid by bilinear interpolation with oversampling,
+    centred on the patch centre of `_footprints`.
   - spt3g maps.FlattenPol applied: the projection-induced spin-2 rotation is
     undone before spectra are taken, leaving only the symmetric (shear +
     magnification) part of the Jacobian.
   - Two legs per realization. Leg 0 is QU -- project Q and U, flatten, then
     decompose to E/B on the plane, which is what a real analysis does and what
-    carries the leakage. Leg 1 is EB, decomposed on the sphere first. Every
-    consumer here reads leg 0.
-  - NaMaster NmtFieldFlat with purify_b=True on each apodized footprint
-    (C2, 2.5 deg taper), bandpowers of width dl = 50 out to l = 6000.
-
-purify_b=True is the load-bearing detail: mask-induced E-to-B leakage is
-removed by construction, so residual BB is projection-induced.
+    carries the leakage. Leg 1 is EB, decomposed on the sphere first.
+  - NaMaster NmtFieldFlat with B purification on each apodized footprint.
 
 Pixel window
 ------------
-The run divides out the 2 arcmin flat-sky top-hat and nothing else
-(`pixel_window: flat_only`, recorded in every unit's `index_*.json`, which
-`load` checks). The inputs carry no HEALPix window -- the C_l of the
-preprocessed alms matches theory flat to l = 6000 -- so there is none to
-divide. Loading additionally removes the coherent ring-interpolation and
-finite-8x8-rebin windows, using `simulation_window`. These are integrated with
-the known input spectrum and the full local Jacobian separately for each
-projection, footprint and spin block. The interpolation window acts in the sky
-frame; the grid average acts in the map frame. Neither is a universal scalar
-W(ell). Pass `correct_windows=False` to recover the production files unchanged.
+The run divides out the flat-sky top-hat of the pixel and nothing else
+(`pixel_window: flat_only`, recorded in every unit's index file, which `Run`
+checks). The inputs carry no HEALPix window, so there is none to divide.
+Loading additionally removes the coherent ring-interpolation and finite-rebin
+windows, the `simulation_windows` output (`analysis/simulation_windows.py`).
+These are integrated with the known input spectrum and the full local
+Jacobian separately for each projection, footprint and spin block. Pass
+`correct_windows=False` to recover the production files unchanged.
 
 This removes only windows introduced by the simulation, not the geometric
 projection effect. It does not remove aliased power or calibrate the STG BB
-estimator floor. See `pipeline_windows.py` and the controlled projector tests.
-
-The 2021 run
-------------
-`load_2021` still reads the surviving 2021 bandpowers (dl = 10 to l = 4000,
-sky power band-limited at 4000) for the regression check against the 2021
-run. Nothing in the paper reads it.
+estimator floor. See `pipeline_windows.py`.
 """
 
+import json
 import sys
+from dataclasses import dataclass, fields
+from functools import cached_property
 from pathlib import Path
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from paper_style import PROJ_LABEL, PROJS
+from paper_style import PROJ_LABEL, PROJS  # noqa: E402,F401
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src" / "stages"))
-from _footprints import DISKS, FIELD, FOOTPRINTS  # noqa: E402
-
-# The one place this module reads the production run from.
-RESULTS = ROOT / "results" / "fiducial"
-BANDPOWERS_DIR = RESULTS / "bandpowers"
-SCALAR_DIR = RESULTS / "scalar_bandpowers"
-SPECTRA_DIR_2021 = Path("/sptlocal/analysis/pol_project2020/results/spectra")
-# CAMB spectra in the sims' own cosmology, out to l = 10050, lensed and
-# unlensed; written by analysis/theory.py.
-THEORY_NPZ = ROOT / "data" / "theory_spectra.npz"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"))
+from _footprints import DISKS, FIELD, FOOTPRINTS  # noqa: E402,F401
 
 PROJ_KIND = {
     "ProjSFL": "pseudocylindrical, equal-area",
@@ -86,52 +69,32 @@ PROJ_KIND = {
 # The disks' nominal sky fractions, in percent, in registry order.
 PERC = np.array([100 * FOOTPRINTS[name].fsky_nominal for name in DISKS])
 
-
-def _run_metadata():
-    """Binning, seeds, input Nside and pixel size, from the run's index files."""
-    import json
-    bp = [json.loads(p.read_text()) for p in sorted(BANDPOWERS_DIR.glob("index_*.json"))]
-    (lmax,), (delta_l,) = {b["lmax"] for b in bp}, {b["delta_ell"] for b in bp}
-    seeds = sorted({s for b in bp for s in b["seeds"]})
-    (nside,) = {json.loads(p.read_text())["nside"]
-                for p in (RESULTS / "healpix_masks").glob("index_*.json")}
-    (res,) = {json.loads(p.read_text())["res_arcmin"]
-              for p in (RESULTS / "flatsky_masks").glob("index_*.json")}
-    if seeds != list(range(len(seeds))):
-        raise ValueError(f"{BANDPOWERS_DIR}: seeds {seeds} are not 0..n-1")
-    return lmax, delta_l, len(seeds), nside, res
-
-
-LMAX, DELTA_L, NSIMS, NSIDE_IN, RES_ARCMIN = _run_metadata()
-NBINS = LMAX // DELTA_L
 QU_LEG = 0
 EB_LEG = 1
 
-BIN_LO = np.arange(NBINS) * DELTA_L
-BIN_HI = (np.arange(NBINS) + 1) * DELTA_L
-# NmtBinFlat's effective multipoles for these edges are the bin midpoints;
-# they are read from the files rather than assumed, in `_ell_eff`.
-ELL = 0.5 * (BIN_LO + BIN_HI).astype(float)
 
-# The 2021 run, for the regression check only.
-NSIMS_2021, NBINS_2021, DELTA_L_2021 = 20, 400, 10
-BIN_LO_2021 = np.arange(NBINS_2021) * DELTA_L_2021
-BIN_HI_2021 = (np.arange(NBINS_2021) + 1) * DELTA_L_2021
-ELL_2021 = 0.5 * (BIN_LO_2021 + BIN_HI_2021).astype(float)
+def add_inputs(parser, *names):
+    """Declare one required `--<output-id>` path flag per upstream output."""
+    for name in names:
+        parser.add_argument("--" + name.replace("_", "-"), type=Path, required=True)
 
 
-def _check_window(d=BANDPOWERS_DIR):
-    """Refuse bandpowers made with any pixel-window treatment but flat_only."""
-    import json
-    modes = {json.loads(p.read_text())["pixel_window"]
-             for p in d.glob("index_*.json")}
-    if modes != {"flat_only"}:
-        raise ValueError(f"{d}: pixel_window {sorted(modes)}, "
+def _index(directory):
+    """(lmax, delta_l, seeds) of a bandpower directory, from its index files.
+
+    Refuses bandpowers made with any pixel-window treatment but flat_only:
+    the simulation windows are relative to the flat top-hat alone.
+    """
+    idx = [json.loads(p.read_text()) for p in sorted(Path(directory).glob("index_*.json"))]
+    (lmax,), (delta_l,) = {i["lmax"] for i in idx}, {i["delta_ell"] for i in idx}
+    windows = {i["pixel_window"] for i in idx}
+    if windows != {"flat_only"}:
+        raise ValueError(f"{directory}: pixel_window {sorted(windows)}, "
                          "expected only 'flat_only'")
-
-
-def _path(proj, seed, d=BANDPOWERS_DIR):
-    return d / f"bandpowers_{proj}_seed{seed:04d}.npz"
+    seeds = sorted({s for i in idx for s in i["seeds"]})
+    if seeds != list(range(len(seeds))):
+        raise ValueError(f"{directory}: seeds {seeds} are not 0..n-1")
+    return lmax, delta_l, seeds
 
 
 def _rows(z, footprints):
@@ -140,113 +103,202 @@ def _rows(z, footprints):
     return [names.index(name) for name in footprints]
 
 
-def _load(footprints, spec, leg, directory):
-    """(n_footprints, n_projs, NSIMS, NBINS) bandpowers of one leg."""
-    key = spec.lower()
-    if key not in ("ee", "bb"):
-        raise ValueError(f"spec must be EE or BB, got {spec!r}")
-    _check_window(directory)
-    out = np.full((len(footprints), len(PROJS), NSIMS, NBINS), np.nan)
-    for j, proj in enumerate(PROJS):
-        for s in range(NSIMS):
-            with np.load(_path(proj, s, directory)) as z:
-                arr = z[key][leg, 0, :, 0, :][_rows(z, footprints)]
-            if arr.shape != (len(footprints), NBINS):
-                raise ValueError(f"{_path(proj, s, directory).name}: {arr.shape}")
-            out[:, j, s, :] = arr
-    return out
+@dataclass(frozen=True)
+class Run:
+    """The upstream outputs one analysis step reads, by output id.
 
-
-def load(spec="EE", leg=QU_LEG, correct_windows=True, directory=BANDPOWERS_DIR):
-    """Disk bandpowers as (n_disks, n_projs, NSIMS, NBINS), QU leg by default.
-
-    The disks come in registry order, matching `PERC`. `leg=EB_LEG` reads
-    the E/B leg instead, whose "EE" and "BB" are the spin-0 auto-spectra of
-    the sphere-decomposed E and B maps. The 2 arcmin flat-sky top-hat is
-    already divided out. By default the remaining known simulation windows
-    are removed too (see the module docstring).
+    Each attribute is the output's directory (for `theory_spectra`, the
+    file), or None when the step does not read it. The binning comes from
+    `bandpowers`, or `scalar_bandpowers` when only the scalar leg is read.
     """
-    out = _load(DISKS, spec, leg, directory)
-    if correct_windows:
-        out /= simulation_window(spec, leg=leg)[:, :, None, :]
-    return out
+    bandpowers: Path | None = None
+    scalar_bandpowers: Path | None = None
+    simulation_windows: Path | None = None
+    theory_spectra: Path | None = None
+    shear_moments: Path | None = None
 
+    @classmethod
+    def from_args(cls, args):
+        """The `Run` of a parsed command line, from the flags `add_inputs` declared."""
+        return cls(**{f.name: getattr(args, f.name, None) for f in fields(cls)})
 
-def load_field(spec="EE", leg=QU_LEG, correct_windows=True, directory=BANDPOWERS_DIR):
-    """1500d-field bandpowers as (n_projs, NSIMS, NBINS), QU leg by default.
+    # ---- binning ------------------------------------------------------------
 
-    Same run, maps and binning as `load`, on SPT's 1500d field.
-    """
-    out = _load([FIELD], spec, leg, directory)[0]
-    if correct_windows:
-        out /= simulation_window(spec, field=True, leg=leg)[:, None, :]
-    return out
+    @cached_property
+    def _meta(self):
+        return _index(self.bandpowers or self.scalar_bandpowers)
 
+    @property
+    def lmax(self):
+        return self._meta[0]
 
-def simulation_window(spec="EE", field=False, leg=QU_LEG):
-    """Effective window for the known simulation input, not an arbitrary sky.
+    @property
+    def delta_l(self):
+        return self._meta[1]
 
-    Includes anisotropic ring interpolation in the sky frame and the exact
-    eight-sample grid average, relative to the continuous top-hat already
-    divided out in production. Shape matches `load`/`load_field` without seeds.
-    `pipeline_windows.effective_window` caches the no-fit geometric integral.
-    """
-    from pipeline_windows import effective_window
-    return effective_window(spec, field, leg)
+    @property
+    def nsims(self):
+        return len(self._meta[2])
 
+    @property
+    def nbins(self):
+        return self.lmax // self.delta_l
 
-def ell_eff():
-    """The NmtBinFlat effective multipoles as written by the run."""
-    with np.load(_path(PROJS[0], 0)) as z:
-        return z["ell_eff"]
+    @property
+    def bin_lo(self):
+        return np.arange(self.nbins) * self.delta_l
 
+    @property
+    def bin_hi(self):
+        return (np.arange(self.nbins) + 1) * self.delta_l
 
-def load_2021(spec="EE"):
-    """The 2021 bandpowers, (n_masks, n_projs, NSIMS_2021, NBINS_2021).
+    @property
+    def ell(self):
+        """Bin midpoints, which are NmtBinFlat's effective multipoles here."""
+        return 0.5 * (self.bin_lo + self.bin_hi).astype(float)
 
-    Kept only for the regression check against 2021. dl = 10 to l = 4000,
-    and the 10% disk is overflowed for SFL and BICEP there.
-    """
-    out = np.full((len(PERC), len(PROJS), NSIMS_2021, NBINS_2021), np.nan)
-    for i in range(len(PERC)):
+    def ell_eff(self):
+        """The NmtBinFlat effective multipoles as written by the run."""
+        with np.load(self.bandpowers / f"bandpowers_{PROJS[0]}_seed0000.npz") as z:
+            return z["ell_eff"]
+
+    # ---- bandpowers ---------------------------------------------------------
+
+    def _load(self, footprints, spec, leg):
+        """(n_footprints, n_projs, nsims, nbins) bandpowers of one leg."""
+        key = spec.lower()
+        if key not in ("ee", "bb"):
+            raise ValueError(f"spec must be EE or BB, got {spec!r}")
+        out = np.full((len(footprints), len(PROJS), self.nsims, self.nbins), np.nan)
         for j, proj in enumerate(PROJS):
-            path = (SPECTRA_DIR_2021 /
-                    f"Cl_flatsky_namaster_unlensed_{spec}_{proj}_mask{i}.txt")
-            arr = np.loadtxt(path)
-            if arr.shape != (NSIMS_2021, NBINS_2021):
-                raise ValueError(f"{path.name}: {arr.shape}")
-            out[i, j] = arr
-    return out
+            for s in range(self.nsims):
+                path = self.bandpowers / f"bandpowers_{proj}_seed{s:04d}.npz"
+                with np.load(path) as z:
+                    arr = z[key][leg, 0, :, 0, :][_rows(z, footprints)]
+                if arr.shape != (len(footprints), self.nbins):
+                    raise ValueError(f"{path.name}: {arr.shape}")
+                out[:, j, s, :] = arr
+        return out
+
+    def load(self, spec="EE", leg=QU_LEG, correct_windows=True):
+        """Disk bandpowers as (n_disks, n_projs, nsims, nbins), QU leg by default.
+
+        The disks come in registry order, matching `PERC`. `leg=EB_LEG` reads
+        the E/B leg instead, whose "EE" and "BB" are the spin-0 auto-spectra
+        of the sphere-decomposed E and B maps. The flat-sky top-hat is
+        already divided out. By default the remaining known simulation
+        windows are removed too (see the module docstring).
+        """
+        out = self._load(DISKS, spec, leg)
+        if correct_windows:
+            out /= self.simulation_window(spec, leg=leg)[:, :, None, :]
+        return out
+
+    def load_field(self, spec="EE", leg=QU_LEG, correct_windows=True):
+        """1500d-field bandpowers as (n_projs, nsims, nbins), QU leg by default."""
+        out = self._load([FIELD], spec, leg)[0]
+        if correct_windows:
+            out /= self.simulation_window(spec, field=True, leg=leg)[:, None, :]
+        return out
+
+    def load_scalar(self, spec="TT", field=False, correct_windows=True):
+        """Scalar bandpowers, (disk, projection, seed, band), or field without disk.
+
+        `spec` is TT or white. Both use the EE bins and flat_only window
+        correction. White skies have unit input C_l from ell=2 through lmax.
+        By default their own effective simulation window is removed, not the
+        CMB-calibrated one.
+        """
+        kind = {"tt": "tt", "white": "white"}[spec.lower()]
+        footprints = [FIELD] if field else DISKS
+        directory = self.scalar_bandpowers
+        _index(directory)
+        out = np.empty((len(footprints), len(PROJS), self.nsims, self.nbins))
+        for j, proj in enumerate(PROJS):
+            for seed in range(self.nsims):
+                with np.load(directory / f"bandpowers_{kind}_{proj}_seed{seed:04d}.npz") as z:
+                    if not np.array_equal(z["ell_eff"], self.ell):
+                        raise ValueError(f"{directory}: scalar bins differ from EE")
+                    out[:, j, seed] = z["cl"][_rows(z, footprints)]
+        out = out[0] if field else out
+        if correct_windows:
+            window = self.simulation_window(spec, field=field)
+            out /= window[:, None, :] if field else window[:, :, None, :]
+        return out
+
+    def simulation_window(self, spec="EE", field=False, leg=QU_LEG):
+        """Effective window for the known simulation input, not an arbitrary sky.
+
+        Ring interpolation in the sky frame and the exact finite-subsample grid
+        average, relative to the continuous top-hat already divided out in
+        production. Shape (n_projs, nbins) on the field, (n_disks, n_projs,
+        nbins) on the disks.
+        """
+        with np.load(self.simulation_windows / "simulation_windows.npz") as z:
+            if not np.array_equal(z["ell"], self.ell):
+                raise ValueError(f"{self.simulation_windows}: bins differ from the bandpowers'")
+            return z[window_key(spec, field, leg)]
+
+    # ---- theory -------------------------------------------------------------
+
+    def bin_theory(self, cl):
+        """Average an unbinned C_l over each bandpower.
+
+        Binning matters: the acoustic peaks move fast compared to a bandpower,
+        so evaluating theory at bin centres instead of averaging over the bin
+        manufactures percent-level wiggles that look like a projection effect.
+        """
+        return np.array([np.nanmean(cl[lo:hi]) for lo, hi in zip(self.bin_lo, self.bin_hi)])
+
+    def theory(self, spec="unlensed_EE"):
+        """A binned CAMB spectrum in the sims' cosmology, on the production bins.
+
+        `spec` names a key of theory_spectra.npz: unlensed_ or lensed_ crossed
+        with TT, EE, BB, TE. The sims are unlensed, so unlensed_EE is the input
+        the projected EE must be compared against; lensed_BB is the floor any
+        claimed leakage has to be stated relative to.
+        """
+        with np.load(self.theory_spectra) as data:
+            ell = data["ell"]
+            cl = data[spec]
+        full = np.zeros(int(ell.max()) + 1)
+        full[ell] = cl
+        full[0] = 0.0
+        return self.bin_theory(full)
+
+    # ---- geometry -----------------------------------------------------------
+
+    def moments(self, footprints=DISKS):
+        """Shear moments of `footprints`, stacked (footprint, projection, ...).
+
+        The `shear_moments` output (`analysis/shear_moments.py`), evaluated on
+        the pipeline's own masks. The default, the seven disks in registry
+        order, matches `PERC`, so mask index i is a disk throughout.
+        """
+        path = self.shear_moments / "shear_moments.npz"
+        with np.load(path) as f:
+            if list(f["projs"]) != PROJS:
+                raise ValueError(f"{path}: projections {list(f['projs'])}, expected {PROJS}")
+            rows = [list(f["footprints"]).index(name) for name in footprints]
+            return {k: f[k][rows] for k in f.files
+                    if k not in ("footprints", "projs", "n_bins")}
+
+    def field_moments(self):
+        """`moments` of SPT's 1500d field, shaped like one mask (i = 0)."""
+        return self.moments([FIELD])
 
 
-def _bin(cl, bin_lo, bin_hi):
-    return np.array([np.nanmean(cl[lo:hi]) for lo, hi in zip(bin_lo, bin_hi)])
+def window_key(spec, field, leg):
+    """The array name of one window in `simulation_windows.npz`."""
+    return f"{spec.upper()}_{'field' if field else 'disks'}_{('qu', 'eb')[leg]}"
 
 
-def bin_theory(cl):
-    """Average an unbinned C_l over each bandpower.
-
-    Binning matters: the acoustic peaks move fast compared to a bandpower, so
-    evaluating theory at bin centres instead of averaging over the bin
-    manufactures percent-level wiggles that look like a projection effect.
-    """
-    return _bin(cl, BIN_LO, BIN_HI)
-
-
-def bin_theory_2021(cl):
-    """`bin_theory` on the 2021 dl = 10 bins."""
-    return _bin(cl, BIN_LO_2021, BIN_HI_2021)
-
-
-def flat_pixwin(ell=ELL, res_arcmin=RES_ARCMIN, n_phi=512):
+def flat_pixwin(ell, res_arcmin, n_phi=512):
     """Azimuthally averaged square-pixel window, in C_l (i.e. already squared).
 
     Rebinning an oversampled grid down to `res_arcmin` pixels is a top-hat
     average, whose 2D transform is sinc(lx d/2) sinc(ly d/2). NaMaster bins in
     |l| annuli, so average |W|^2 around each annulus.
-
-    The production files already have it divided out; `transfer_2021` applies
-    it to the raw 2021 files.
     """
     d = np.deg2rad(res_arcmin / 60.0)
     phi = np.linspace(0, 2 * np.pi, n_phi, endpoint=False)
@@ -254,68 +306,6 @@ def flat_pixwin(ell=ELL, res_arcmin=RES_ARCMIN, n_phi=512):
     ly = np.outer(ell, np.sin(phi))
     w = np.sinc(lx * d / (2 * np.pi)) * np.sinc(ly * d / (2 * np.pi))
     return (w ** 2).mean(axis=1)
-
-
-def theory(spec="unlensed_EE"):
-    """A binned CAMB spectrum in the sims' cosmology, on the production bins.
-
-    `spec` names a key of theory_spectra.npz: unlensed_ or lensed_ crossed with
-    TT, EE, BB, TE. The sims are unlensed, so unlensed_EE is the input the
-    projected EE must be compared against; lensed_BB is the floor any claimed
-    leakage has to be stated relative to.
-    """
-    with np.load(THEORY_NPZ) as data:
-        ell = data["ell"]
-        cl = data[spec]
-    full = np.zeros(int(ell.max()) + 1)
-    full[ell] = cl
-    full[0] = 0.0
-    return bin_theory(full)
-
-
-def theory_2021(spec="unlensed_EE"):
-    """`theory` on the 2021 dl = 10 bins."""
-    with np.load(THEORY_NPZ) as data:
-        ell = data["ell"]
-        cl = data[spec]
-    full = np.zeros(int(ell.max()) + 1)
-    full[ell] = cl
-    full[0] = 0.0
-    return bin_theory_2021(full)
-
-
-def theory_ee():
-    """Binned unlensed EE, the sims' own input spectrum."""
-    return theory("unlensed_EE")
-
-
-def transfer_2021(ell=ELL_2021):
-    """The 2021 files were raw: they still need the flat-sky window divided."""
-    return flat_pixwin(ell)
-
-
-def load_scalar(spec="TT", field=False, correct_windows=True, directory=SCALAR_DIR):
-    """Scalar bandpowers, (disk, projection, seed, band), or field without disk.
-
-    `spec` is TT or white. Both use the EE bins and flat_only window correction.
-    White skies have unit input C_l from ell=2 through LMAX. By default their
-    own effective simulation window is removed, not the CMB-calibrated one.
-    """
-    kind = {"tt": "tt", "white": "white"}[spec.lower()]
-    footprints = [FIELD] if field else DISKS
-    _check_window(directory)
-    out = np.empty((len(footprints), len(PROJS), NSIMS, NBINS))
-    for j, proj in enumerate(PROJS):
-        for seed in range(NSIMS):
-            with np.load(directory / f"bandpowers_{kind}_{proj}_seed{seed:04d}.npz") as z:
-                if not np.array_equal(z["ell_eff"], ELL):
-                    raise ValueError(f"{directory}: scalar bins differ from EE")
-                out[:, j, seed] = z["cl"][_rows(z, footprints)]
-    out = out[0] if field else out
-    if correct_windows:
-        window = simulation_window(spec, field=field)
-        out /= window[:, None, :] if field else window[:, :, None, :]
-    return out
 
 
 def rebin_pseudo(pseudo, counts, edges):
@@ -339,20 +329,18 @@ def rebin_pseudo(pseudo, counts, edges):
                      for lo, hi, weight in zip(edges[:-1], edges[1:], weights)], axis=-1)
 
 
-def decouple_fine(path, delta_ell=50, *, workspace=None, masks_dir=None,
-                  cache_dir=None):
+def decouple_fine(path, delta_ell, *, workspace=None, masks_dir=None, cache_dir=None):
     """Return TT, EE, BB bandpowers from a saved finest pseudo-spectrum.
 
     ``delta_ell`` is a positive integer; the last bin ends at stored lmax.
     Supply ``workspace`` as a directory of w00/w22 FITS files at this width
     or a finer width whose bins partition these bins exactly, or
-    ``masks_dir`` to build and cache a workspace for this width.
-    Workspace construction can take hours and should run on the grid.
+    ``masks_dir`` and ``cache_dir`` to build and cache a workspace for this
+    width. Workspace construction can take hours and should run on the grid.
     The flat pixel window is divided out after decoupling, as in production.
     Only the QU leg is stored by the finest pseudo-spectrum stage.
     """
     import pymaster as nmt
-    sys.path.insert(0, str(ROOT / 'src' / 'stages'))
     from namaster_spectra import compute_pixel_window, load_mask
     from coupling_matrices import atomic_write_workspace
 
@@ -370,8 +358,7 @@ def decouple_fine(path, delta_ell=50, *, workspace=None, masks_dir=None,
     pseudo_tt = rebin_pseudo(tt, counts, edges)
     bins = nmt.NmtBinFlat(edges[:-1].astype(float), edges[1:].astype(float))
     target = (Path(workspace) if workspace is not None else
-              Path(cache_dir or RESULTS / 'fine_workspace_cache') /
-              f'd{int(delta_ell)}' / proj / mask_hash)
+              Path(cache_dir) / f'd{int(delta_ell)}' / proj / mask_hash)
     target.mkdir(parents=True, exist_ok=True)
     result = {}
     for spin, pseudo in [(0, pseudo_tt), (2, pseudo_pol)]:

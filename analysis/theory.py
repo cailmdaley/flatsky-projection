@@ -1,6 +1,6 @@
 """CMB power spectra in the input simulations' cosmology, from CAMB.
 
-Writes data/theory_spectra.npz, the analysis input `theory_spectra`: lensed
+Generates the analysis input `theory_spectra` (data/theory_spectra.npz): lensed
 and unlensed TT, EE, BB and TE as raw C_l in uK^2, indexed by multipole from
 ell = 0 to 10050. Every stage and analysis script that needs a theory curve
 reads this one file and slices what it uses.
@@ -39,11 +39,10 @@ TRAPS.
     it off, the BB floor amplitude depends on it at the several-percent level.
 """
 
+import argparse
 from pathlib import Path
 
 import numpy as np
-
-OUT = Path(__file__).resolve().parent.parent / "data" / "theory_spectra.npz"
 
 # Planck 2018 base_plikHM_TTTEEE_lowl_lowE_lensing best-fit parameters, as
 # used to draw /sptgrid/simulation/lensing_maps/unlensed_TQU1 (see module
@@ -129,7 +128,7 @@ def generate(lmax=LMAX, cosmology=None):
     return out
 
 
-def save(spectra=None, path=OUT):
+def save(path, spectra=None):
     """Write the npz. Overwrites cleanly -- safe to rerun after any change."""
     spectra = generate() if spectra is None else spectra
     # np.savez can't store a dict directly; wrap it as a 0-d object array.
@@ -140,7 +139,7 @@ def save(spectra=None, path=OUT):
     return path
 
 
-def load(path=OUT):
+def load(path):
     """Load the saved spectra back into a dict, header included as a real dict."""
     with np.load(path, allow_pickle=True) as f:
         out = {k: f[k] for k in f.files if k != "header"}
@@ -149,4 +148,6 @@ def load(path=OUT):
 
 
 if __name__ == "__main__":
-    save()
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--out", type=Path, required=True, help="the .npz to write")
+    save(ap.parse_args().out)

@@ -4,9 +4,9 @@ The seven disks are concentric about the projection centre, which makes
 SFL's and BICEP's mask-averaged shear coincide. The 1500d field (RA +-50 deg,
 dec -70 to -42 deg) is wide and short, so it splits them, and the paper's
 prediction for it -- SFL and BICEP a factor `tfdratio` apart -- rests on the
-forward model alone unless the field is simulated. `field_bandpowers` runs it
+forward model alone unless the field is simulated. `bandpowers` carries it
 through the same pipeline and the same projected maps as the disks; this
-module compares the result with the model.
+script, the `field_spectra` output, compares the result with the model.
 
 What is compared, per projection:
 
@@ -19,27 +19,28 @@ What is compared, per projection:
 * EE over the binned input spectrum, measured and modelled.
 
 The model reads the shear moments of the pipeline's own field mask,
-`shear_leakage.field_moments`.
+`spectra.Run.field_moments`.
 
-Run:  systemd-run --user --scope -p MemoryMax=16G bash env.sh python3 analysis/field_1500d.py
+Run:  bash env.sh python3 analysis/field_spectra.py
+          --bandpowers results/fiducial/bandpowers
+          --simulation-windows results/fiducial/simulation_windows
+          --theory-spectra data/theory_spectra.npz
+          --shear-moments results/fiducial/shear_moments --out <dir>
+Out:  <out>/field_spectra.npz (read it with `load`), and the diagnostic
+      figure <out>/field_1500d.{pdf,png}.
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import shear_leakage as SL
 import spectra as S
 import theory as T
 
-ROOT = Path(__file__).resolve().parent.parent
-CACHE = Path(__file__).resolve().parent / "results_disk_trend" / "field_1500d.npz"
-FIGURE = Path(__file__).resolve().parent / "figures" / "field_1500d.pdf"
-
 BAND = SL.BANDS[0]            # (1000, 3000)
-L_CLEAN = (1000, 4000)        # as paper_numbers.L_CLEAN
+L_CLEAN = (1000, 4000)        # as the `numbers` output's L_CLEAN
 
 
 def band_ratio(ee, bb, sel):
@@ -48,17 +49,17 @@ def band_ratio(ee, bb, sel):
     return per_sim, bb[:, sel].mean() / ee[:, sel].mean()
 
 
-def run():
-    ee = S.load_field("EE")                       # (proj, sim, bin)
-    bb = S.load_field("BB")
-    ee_eb = S.load_field("EE", leg=S.EB_LEG)
-    ell = S.ELL
-    th = T.load()
+def compute(run):
+    ee = run.load_field("EE")                     # (proj, sim, bin)
+    bb = run.load_field("BB")
+    ee_eb = run.load_field("EE", leg=S.EB_LEG)
+    ell = run.ell
+    th = T.load(run.theory_spectra)
     ell_th, cl_th = th["ell"].astype(float), th["unlensed_EE"]
-    cl_ee = S.theory("unlensed_EE")
+    cl_ee = run.theory("unlensed_EE")
     jstg = S.PROJS.index(SL.FLOOR_PROJ)
 
-    moms = {"pipeline": SL.field_moments()}
+    moms = {"pipeline": run.field_moments()}
     sel = (ell > BAND[0]) & (ell < BAND[1])
     cband = (ell > L_CLEAN[0]) & (ell < L_CLEAN[1])
     n = ee.shape[1]
@@ -96,7 +97,7 @@ def run():
         m_ee = np.empty_like(m_bb)
         for j in range(len(S.PROJS)):
             m_bb[j], m_ee[j] = SL.predicted_spectra(mom, 0, j, ell, ell_th, cl_th,
-                                                    band_limit=S.LMAX)
+                                                    band_limit=run.lmax)
         out[f"{name}_g2"] = g2
         out[f"{name}_m_bb"], out[f"{name}_m_ee"] = m_bb, m_ee
         out[f"{name}_model_band"] = np.array(
@@ -106,29 +107,14 @@ def run():
             rr = (bb[j].mean(0) / ee[j].mean(0) - floor_bin) / (m_bb[j] / m_ee[j])
             clean.append(float(rr[cband].mean()))
         out[f"{name}_clean"] = np.array(clean)
-    CACHE.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(CACHE, projs=S.PROJS, simulation_windows=_simulation_windows(),
-             moments_g2=moms["pipeline"]["g2"], **out)
+    out["projs"] = S.PROJS
     return out
 
 
-def _simulation_windows():
-    """The three known-input windows used by the cached measurements."""
-    return np.stack([S.simulation_window('EE', field=True),
-                     S.simulation_window('BB', field=True),
-                     S.simulation_window('EE', field=True, leg=S.EB_LEG)])
-
-
-def load(refresh=False):
-    if CACHE.exists() and not refresh:
-        with np.load(CACHE) as f:
-            if ("projs" in f.files and list(f["projs"]) == S.PROJS
-                    and "simulation_windows" in f.files
-                    and np.array_equal(f['simulation_windows'], _simulation_windows())
-                    and "moments_g2" in f.files
-                    and np.array_equal(f["moments_g2"], SL.field_moments()["g2"])):
-                return {k: f[k] for k in f.files}
-    return run()
+def load(directory):
+    """The `field_spectra` output as a dict of arrays."""
+    with np.load(Path(directory) / "field_spectra.npz") as f:
+        return {k: f[k] for k in f.files}
 
 
 def report(res):
@@ -157,7 +143,7 @@ def report(res):
         print(f"  {l:<7}" + "  ".join(row))
 
 
-def figure(res, path=FIGURE):
+def figure(res, path):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -203,7 +189,17 @@ def figure(res, path=FIGURE):
     print(f"wrote {path}")
 
 
-if __name__ == "__main__":
-    res = load(refresh="--refresh" in sys.argv)
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "bandpowers", "simulation_windows", "theory_spectra", "shear_moments")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    res = compute(S.Run.from_args(args))
+    args.out.mkdir(parents=True, exist_ok=True)
+    np.savez(args.out / "field_spectra.npz", **res)
     report(res)
-    figure(res)
+    figure(res, args.out / "field_1500d.pdf")
+
+
+if __name__ == "__main__":
+    main()
