@@ -15,9 +15,14 @@ from lensing_qe import metric_strain,shear_eb
 from paper_style import PROJS
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src/stages'))
 from make_masks import taper
+from _decisions import parse_apodization
+from _footprints import FIELD,FOOTPRINTS
 
 
-def geometry(proj,res_arcmin=8.):
+def geometry(proj,apodization,res_arcmin=8.):
+    """Metric convergence and shear on a 60 x 90 deg grid of `res_arcmin`
+    pixels, the 1500d field mask with the `apodization` taper (a
+    `parse_apodization` dict), and a round 22-degree grid taper."""
     pixel=np.deg2rad(res_arcmin/60)
     shape=tuple(int(round(s*60/res_arcmin)) for s in (60,90))
     y,x=np.meshgrid((np.arange(shape[0])-(shape[0]-1)/2)*pixel,
@@ -27,12 +32,12 @@ def geometry(proj,res_arcmin=8.):
                           core.DoubleVector((31.5+y/pixel).ravel()))
     ra=(np.asarray(ra).reshape(shape)+np.pi)%(2*np.pi)-np.pi
     dec=np.asarray(dec).reshape(shape)
-    lo,hi,half=np.deg2rad([-70,-42,50])
+    half,lo,hi=np.deg2rad(FOOTPRINTS[FIELD].box)
     inside=(abs(ra)<half)&(dec>lo)&(dec<hi)
     distance=np.minimum(dec-lo,hi-dec)
     for edge in (-half,half):
         distance=np.minimum(distance,np.arcsin(np.clip(np.cos(dec)*abs(np.sin(ra-edge)),0,1)))
-    field=np.where(inside,taper(np.maximum(distance,0),'C2',2.5),0.)
+    field=np.where(inside,taper(np.maximum(distance,0),apodization['apotype'],apodization['aposize']),0.)
     dist=np.deg2rad(22)-np.hypot(x,y)
     circular=np.where(dist>0,taper(np.maximum(dist,0),'C2',2.5),0.)
     jac=G.jacobian(proj,np.rad2deg(ra).ravel(),np.rad2deg(dec).ravel())
@@ -44,10 +49,11 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--res-arcmin',type=float,default=8.)
+    p.add_argument('--apodization',type=parse_apodization,required=True)
     a=p.parse_args()
     result={}; arrays={}
     for proj in PROJS:
-        pixel,k,g1,g2,field,circular=geometry(proj,a.res_arcmin)
+        pixel,k,g1,g2,field,circular=geometry(proj,a.apodization,a.res_arcmin)
         rows={}
         for label,w in (('field',field),('round_grid',circular)):
             e,b=shear_eb(g1,g2,pixel,w)

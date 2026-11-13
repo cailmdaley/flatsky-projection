@@ -161,7 +161,7 @@ The shared-mode gate checks every wave number, direction, phase and amplitude ac
 These measurements establish a changed response for the tested physical sky lenses as well as for grid injections.
 The lens realizations and overlap weighting differ from the twenty-seed table, so their difference does not isolate the effect of changing from a grid lens to a spherical lens.
 Neither table is a chart constant or a cosmological lensing-power bias; both retain the same 300–1200 TT filter.
-The full matrices, flat overlaps, template-normalization diagnostics and uncertainties are in `results/lensing_qe_sky_report/summary.json`.
+The full matrices, flat overlaps, template-normalization diagnostics and uncertainties are in the `sky` part of the `lensing_summary` output.
 The displayed $L$ bins are output-grid Fourier bins, not bands of the spherical potential.
 The numerical refinement control was run for the grid lenses; no independent refinement or analytic response prediction has been validated for these physical lenses.
 
@@ -187,28 +187,21 @@ No universal statement that a cylindrical grid “fails the curl null” follows
 
 ## Reproduction and paper changes
 
-Run the scientific Python commands under the SPT build environment:
+The three QE outputs and their summary are outputs of `astra.yaml`; the checks run under the SPT build environment:
 
 ```bash
 ENV=$HOME/code/python/spt3g_software/build/env-shell.sh
-lc run --executor htcondor --profile htcondor9 lensing_qe_sims -u highell
-lc run --executor htcondor --profile htcondor9 lensing_qe_resolution -u highell
-lc run --executor htcondor --profile htcondor9 lensing_qe_sky_response -u highell
+lc run --executor htcondor --profile htcondor9 lensing_qe_sims lensing_qe_resolution lensing_qe_sky_response -u fiducial
+lc run lensing_summary -u fiducial
 $ENV python3 analysis/check_lensing_qe.py
 $ENV python3 analysis/check_lensing_resolution.py
 $ENV python3 analysis/check_lensing_sky_injection.py
-$ENV python3 analysis/lensing_geometry.py --out results/lensing_qe_geometry
-$ENV python3 analysis/lensing_mean_prediction.py --out results/lensing_qe_report/mean_prediction.npz
-$ENV python3 analysis/lensing_report.py --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_report
-$ENV python3 analysis/lensing_report.py --inputs results/highell/lensing_qe_resolution --expected-seeds 4 --prediction results/lensing_qe_report/mean_prediction.npz --out results/lensing_qe_resolution_report
-$ENV python3 analysis/lensing_resolution_report.py
-$ENV python3 analysis/lensing_sky_report.py
+$ENV python3 analysis/lensing_geometry.py --apodization c2_2p5deg --out <dir>
 ```
 
-The authoritative measured table is `results/lensing_qe_report/summary.json`.
-The matched-resolution comparison and its end-to-end injection gate are in `results/lensing_qe_resolution_report/paired.json`.
-All three gathered output directories and all 112 per-unit directories pass the official `lightcone.engine.manifest.sha256_dir` content-hash check against their manifests; `lc status -u highell` reports all three outputs current.
-`analysis/lensing_numbers.py:numbers()` supplies macros for the sole `numbers.tex` writer, `analysis/paper_numbers.py`.
+The `lensing_summary` output (`analysis/lensing_summary.py`) runs the squeezed metric prediction (`lensing_mean_prediction.py`) and the three reports (`lensing_report.py`, `lensing_resolution_report.py`, `lensing_sky_report.py`).
+Its `lensing_summary.json` holds the measured table (`qe`), the matched-resolution comparison and its end-to-end injection gate (`resolution`), and the shared-sky overlaps (`sky`).
+`analysis/lensing_numbers.py:numbers()` turns it into macros for `numbers.tex`, written by `analysis/paper_numbers/main.py`.
 No manuscript edit belongs in this thread.
 
 The required manuscript changes are:

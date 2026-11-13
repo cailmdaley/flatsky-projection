@@ -3,10 +3,9 @@
 Both grids share the continuous potential and flat sky; spherical realizations
 share their harmonic seed. This changes Nside and output pixels together,
 so it is a numerical control, not an isolation of either error source.
+`report` reads the lensing_qe_sims and lensing_qe_resolution outputs and the
+squeezed metric prediction; `lensing_summary.py` runs it.
 """
-import argparse
-import json
-from pathlib import Path
 import numpy as np
 from lensing_report import ratio_error
 from paper_style import PROJS
@@ -22,19 +21,13 @@ def paired_statistic(arrays, statistic):
     return {'value':float(value),'SE':float(error)}
 
 
-def main():
-    p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--coarse',type=Path,default=Path('results/highell/lensing_qe_sims'))
-    p.add_argument('--fine',type=Path,default=Path('results/highell/lensing_qe_resolution'))
-    p.add_argument('--prediction',type=Path,default=Path('results/lensing_qe_report/mean_prediction.npz'))
-    p.add_argument('--out',type=Path,default=Path('results/lensing_qe_resolution_report/paired.json'))
-    a=p.parse_args()
-    prediction=np.load(a.prediction)
+def report(coarse_dir,fine_dir,prediction):
+    """Per projection, the paired coarse/fine response and template fits;
+    each fine seed is paired with the coarse seed of the same file name."""
     result={}
     for proj in PROJS:
-        fine_files=sorted(a.fine.glob(f'qe_{proj}_*.npz'))
-        assert len(fine_files)==4,(proj,len(fine_files))
-        coarse=[np.load(a.coarse/f.name) for f in fine_files]
+        fine_files=sorted(fine_dir.glob(f'qe_{proj}_*.npz'))
+        coarse=[np.load(coarse_dir/f.name) for f in fine_files]
         fine=[np.load(f) for f in fine_files]
         x,y=np.meshgrid(coarse[0]['lx'],coarse[0]['ly'])
         ls=np.hypot(x,y)
@@ -79,10 +72,4 @@ def main():
         result[proj]={'seeds':[int(f.stem.rsplit('_',1)[1]) for f in fine_files],
                       'input_kappa_max_absolute_difference_after_phase':max_error,
                       'response':rows,'mean_field_template_fit_L2_30':fits}
-    a.out.parent.mkdir(parents=True,exist_ok=True)
-    a.out.write_text(json.dumps(result,indent=2)+'\n')
-    print(json.dumps(result,indent=2))
-
-
-if __name__=='__main__':
-    main()
+    return result

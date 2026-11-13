@@ -1,7 +1,8 @@
-"""Summarize projected-sky TT-QE mean fields and signed-injection responses."""
-import argparse
-import json
-from pathlib import Path
+"""Summarize projected-sky TT-QE mean fields and signed-injection responses.
+
+`report` reads the lensing_qe_sims output and the squeezed metric
+prediction (`lensing_mean_prediction.predict`); `lensing_summary.py` runs it.
+"""
 import numpy as np
 from scipy import fft
 from paper_style import PROJS,PROJ_LABEL,PROJ_COLORS,PROJ_MARKERS
@@ -27,25 +28,14 @@ def power_error(x):
     return float(value),float(np.sqrt((len(x)-1)*np.mean((jack-jack.mean())**2)))
 
 
-def main():
-    p=argparse.ArgumentParser()
-    p.add_argument('--inputs',type=Path,default=Path('results/highell/lensing_qe_sims'))
-    p.add_argument('--out',type=Path,required=True)
-    p.add_argument('--allow-partial',action='store_true')
-    p.add_argument('--prediction',type=Path,help='Squeezed affine metric prediction NPZ')
-    p.add_argument('--expected-seeds',type=int,default=20)
-    a=p.parse_args()
-    result={}; arrays={}; files={}
+def report(sims,prediction,out):
+    """The QE summary per projection; writes the ensemble-mean mean fields
+    (summary.npz) and the figures response.png and mean_fields.png to `out`."""
+    result={}; arrays={}
     for proj in PROJS:
-        matches=sorted(a.inputs.rglob(f'qe_{proj}_*.npz'))
-        if a.allow_partial:
-            matches=[f for f in matches if (f.parent/'.lightcone-manifest.json').exists()]
-        if not a.allow_partial:
-            assert len(matches)==a.expected_seeds,(proj,len(matches))
-        if len(matches)<3:
-            continue
+        matches=sorted(sims.glob(f'qe_{proj}_*.npz'))
+        assert [int(f.stem.rsplit('_',1)[1]) for f in matches]==list(range(len(matches))),proj
         d=[np.load(f) for f in matches]
-        files[proj]=matches
         xx,yy=np.meshgrid(d[0]['lx'],d[0]['ly'])
         ls=np.hypot(xx,yy)
         kinj=d[0]['input_kappa']
@@ -98,33 +88,28 @@ def main():
                       'metric_pseudo_B_fraction':None if proj=='ProjSTG' else float(pb/(pe+pb)),
                       'mean_field':rows,'response':responses,
                       'low_L_mean_field_power':[power_error(mf[:,i,keep]/np.sqrt(w4)) for i in range(2)]}
-        if a.prediction:
-            predfile=np.load(a.prediction)
-            prediction=predfile[proj]*np.exp(.5j*(xx+yy)*(float(d[0]['pixel_rad'])-float(predfile['pixel_rad'])))
-            fits=[]
-            for lo,hi in ((2,10),(10,30),(2,30),(30,60)):
-                band=(ls>=lo)&(ls<hi)
-                estimates=[]
-                for i in range(2):
-                    if proj=='ProjSTG' and i==1:
-                        estimates.append(None)  # model is numerical zero
-                        continue
-                    model=prediction[i,band]
-                    observed=mf[:,i,band]
-                    slopes=np.einsum('k,sk->s',model.conj(),observed).real/np.sum(abs(model)**2)
-                    avg=observed.mean(axis=0)
-                    rho=np.vdot(model,avg).real/np.sqrt(np.vdot(model,model).real*np.vdot(avg,avg).real)
-                    estimates.append({'amplitude':float(slopes.mean()),
-                                      'SE':float(slopes.std(ddof=1)/np.sqrt(len(slopes))),
-                                      'correlation':float(rho)})
-                fits.append({'L':[lo,hi],'gradient_curl':estimates})
-            result[proj]['squeezed_metric_prediction_fit']=fits
+        predicted=prediction[proj]*np.exp(.5j*(xx+yy)*(float(d[0]['pixel_rad'])-float(prediction['pixel_rad'])))
+        fits=[]
+        for lo,hi in ((2,10),(10,30),(2,30),(30,60)):
+            band=(ls>=lo)&(ls<hi)
+            estimates=[]
+            for i in range(2):
+                if proj=='ProjSTG' and i==1:
+                    estimates.append(None)  # model is numerical zero
+                    continue
+                model=predicted[i,band]
+                observed=mf[:,i,band]
+                slopes=np.einsum('k,sk->s',model.conj(),observed).real/np.sum(abs(model)**2)
+                avg=observed.mean(axis=0)
+                rho=np.vdot(model,avg).real/np.sqrt(np.vdot(model,model).real*np.vdot(avg,avg).real)
+                estimates.append({'amplitude':float(slopes.mean()),
+                                  'SE':float(slopes.std(ddof=1)/np.sqrt(len(slopes))),
+                                  'correlation':float(rho)})
+            fits.append({'L':[lo,hi],'gradient_curl':estimates})
+        result[proj]['squeezed_metric_prediction_fit']=fits
         arrays[proj+'_mean_field']=mf.mean(axis=0)
         arrays[proj+'_metric']=d[0]['metric_W2']
-    a.out.mkdir(parents=True,exist_ok=True)
-    (a.out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
-    np.savez_compressed(a.out/'summary.npz',**arrays,lx=d[0]['lx'],ly=d[0]['ly'])
-    print(json.dumps(result,indent=2))
+    np.savez_compressed(out/'summary.npz',**arrays,lx=d[0]['lx'],ly=d[0]['ly'])
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -143,7 +128,7 @@ def main():
         ax.axhline(1,color='.6',lw=1,ls='--')
         ax.set(xlabel='$L$',ylabel=label,xscale='log')
     axs[0].legend(ncol=2,frameon=False)
-    fig.tight_layout(); fig.savefig(a.out/'response.png',dpi=160); plt.close(fig)
+    fig.tight_layout(); fig.savefig(out/'response.png',dpi=160); plt.close(fig)
     fig,axs=plt.subplots(2,len(result),figsize=(12,5),sharex=True,sharey=True)
     for col,(proj,r) in enumerate(result.items()):
         m=arrays[proj+'_mean_field'].copy()
@@ -160,8 +145,5 @@ def main():
     fig.subplots_adjust(left=.06,right=.88,bottom=.11,top=.98,wspace=.08,hspace=.12)
     cax=fig.add_axes([.90,.18,.015,.66])
     fig.colorbar(im,cax=cax,label='Reconstruction (convergence units)')
-    fig.savefig(a.out/'mean_fields.png',dpi=160);plt.close(fig)
-
-
-if __name__=='__main__':
-    main()
+    fig.savefig(out/'mean_fields.png',dpi=160);plt.close(fig)
+    return result

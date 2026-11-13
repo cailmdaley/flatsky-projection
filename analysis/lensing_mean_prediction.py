@@ -4,9 +4,10 @@ Keep the exact nonlinear affine power det(J) C(|J.T l|), then apply the
 squeezed TT score and the estimator's exact finite-grid normalization.
 This tests the L << ell approximation, not a TAN-relative displacement.
 The mask enters as W²; nonlocal filtering at its boundary is approximate.
+`predict` uses the estimator of the lensing_qe_sims output (its grid,
+pixel and legs, from one of its seeds) and evaluates the metric on a
+15-arcmin grid under the 1500d field mask; `lensing_summary.py` runs it.
 """
-import argparse
-from pathlib import Path
 import numpy as np
 from scipy import fft
 from lensing_qe import TTQE
@@ -16,21 +17,24 @@ import geometry as G
 from spt3g import core
 
 
-def main():
-    p=argparse.ArgumentParser()
-    p.add_argument('--out',type=Path,required=True)
-    a=p.parse_args()
-    theory=np.load(Path(__file__).resolve().parents[1]/'data/theory_spectra.npz')
+def predict(theory,apodization,shape,pixel,lmin,lmax):
+    """Per projection, the predicted gradient and curl mean field on the
+    estimator's low-L modes, with their lx, ly and the estimator's pixel.
+
+    `theory` is the theory_spectra path, `apodization` a
+    `parse_apodization` dict; `shape`, `pixel` (radians), `lmin` and
+    `lmax` are the estimator's.
+    """
+    theory=np.load(theory)
     ell,cl=theory['ell'],theory['unlensed_TT']
-    pixel=np.deg2rad(4/60)
-    qe=TTQE((900,1350),pixel,ell,cl,300,1200)
+    qe=TTQE(shape,pixel,ell,cl,lmin,lmax)
     iy=np.flatnonzero(abs(qe.y[:,0])<=300)
     ix=np.flatnonzero(abs(qe.x[0,:])<=300)
     lx,ly=np.meshgrid(qe.x[0,ix],qe.y[iy,0])
     ls2=lx*lx+ly*ly
     c=np.divide(lx*lx-ly*ly,ls2,out=np.zeros_like(ls2),where=ls2>0)
     s=np.divide(2*lx*ly,ls2,out=np.zeros_like(ls2),where=ls2>0)
-    radial=np.arange(305.,1200.,10.)
+    radial=np.arange(lmin+5.,lmax,10.)   # 10-wide cells across the legs
     theta=(np.arange(64)+.5)*2*np.pi/64
     dirs=np.stack([np.cos(theta),np.sin(theta)])
     fid=np.interp(radial,ell,cl)
@@ -40,7 +44,7 @@ def main():
                     n[:,None]*np.cos(2*theta),n[:,None]*np.sin(2*theta)])*.25*quadrature
     arrays={}
     for proj in PROJS:
-        dp,k,g1,g2,w,_=geometry(proj,res_arcmin=15.)
+        dp,k,g1,g2,w,_=geometry(proj,apodization,res_arcmin=15.)
         shape=w.shape
         y,x=np.meshgrid((np.arange(shape[0])-(shape[0]-1)/2)*dp,
                         (np.arange(shape[1])-(shape[1]-1)/2)*dp,indexing='ij')
@@ -75,9 +79,4 @@ def main():
         predc=np.divide(.5*ls2**2*(rgg*ac-rgc*ag),det,out=np.zeros_like(ac),where=good)
         arrays[proj]=np.stack([predg,predc])
         print(proj,'predicted masked RMS below L30',np.sqrt(np.sum(abs(arrays[proj][:,(ls2>0)&(ls2<900)])**2,axis=-1)),flush=True)
-    a.out.parent.mkdir(parents=True,exist_ok=True)
-    np.savez_compressed(a.out,**arrays,lx=qe.x[0,ix],ly=qe.y[iy,0],pixel_rad=pixel)
-
-
-if __name__=='__main__':
-    main()
+    return dict(arrays,lx=qe.x[0,ix],ly=qe.y[iy,0],pixel_rad=pixel)
