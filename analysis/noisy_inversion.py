@@ -1,7 +1,7 @@
 """Invert the projection response on noisy SPT-3G-like 1500d bandpowers.
 
-Reads `noisy_inversion_sims`: lensed skies, a 1.2' Gaussian beam, 5 uK-arcmin
-polarization noise (5/sqrt(2) in T) drawn white on the grid in two splits.
+Reads `noisy_inversion_sims`: lensed skies, a Gaussian beam and white grid
+noise in two splits, the beam and depths as the sims record them.
 Spectra are split cross-spectra, so noise adds scatter and no bias; the same
 skies' noise-free spectra separate what the noise adds.
 
@@ -19,54 +19,69 @@ measured scatter of SFL's noisy BB bandpowers, per band of width 50 and summed
 in quadrature over bands.
 
 Run:  bash env.sh python3 analysis/noisy_inversion.py
-Out:  analysis/figures/noisy_inversion_summary.json, and plots under --plots
+          --noisy-inversion-sims results/fiducial/noisy_inversion_sims
+          --fine-coupling-matrices results/fiducial/fine_coupling_matrices
+          --flatsky-masks results/fiducial/flatsky_masks
+          --bandpowers results/fiducial/bandpowers
+          --simulation-windows results/fiducial/simulation_windows
+          --theory-spectra data/theory_spectra.npz
+          --shear-moments results/fiducial/shear_moments --out <dir>
+Out:  <out>/noisy_inversion_summary.json, <out>/amplitudes.npz (per-sky
+      amplitudes) and the diagnostic plots inversion.png and sfl_detectability.png.
 """
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import shear_leakage as SL
 import spectra as S
 import theory as T
-from validate_fine_spectra import read_matrix, decouple_many
+from compare_bin_covariance import decouple_many, read_matrix
 
-DIR = S.ROOT/'results/highell/noisy_inversion_sims'
-OUT = Path(__file__).resolve().parent/'figures/noisy_inversion_summary.json'
 PROJS = ('ProjZEA', 'ProjSTG', 'ProjSFL')
 EDGES = np.arange(500, 4001, 500)
-NB = len(S.ELL)
 
 
-def load(proj, directory=DIR):
-    """Decoupled width-50 cross and signal spectra, windows divided out."""
-    paths = sorted(directory.rglob(f'noisy_{proj}_seed*.npz'))
-    with np.load(paths[0]) as z:
-        counts, beam = z['counts'].copy(), float(z['beam_fwhm_arcmin'])
+def res_arcmin(flatsky_masks):
+    """The flat-sky pixel size the masks' index files record."""
+    (value,) = {json.loads(p.read_text())['res_arcmin']
+                for p in Path(flatsky_masks).glob('index_*.json')}
+    return value
+
+
+def load(run, proj, sims, workspaces, pixel_arcmin):
+    """Decoupled cross and signal spectra on the bandpowers' bins, windows divided out.
+
+    Also returns the seeds and the configuration the sims record: beam FWHM
+    and polarization noise depth, the same in every file.
+    """
+    paths = sorted(Path(sims).glob(f'noisy_{proj}_seed*.npz'))
     raw = {k: [] for k in ('tt_cross', 'pol_cross', 'tt_signal', 'pol_signal')}
-    seeds = []
+    seeds, config = [], set()
     for path in paths:
         with np.load(path) as z:
             for k in raw:
                 raw[k].append(z[k])
             seeds.append(int(z['seed']))
+            config.add((float(z['beam_fwhm_arcmin']), float(z['noise_pol_uk_arcmin'])))
+            counts = z['counts']
+    (config,) = config
     j = S.PROJS.index(proj)
-    pix = S.flat_pixwin(S.ELL)
+    pix = S.flat_pixwin(run.ell, pixel_arcmin)
     out = {}
-    edges = np.arange(0, 6001, 50)
+    edges = np.arange(0, len(counts)+1, run.delta_l)
     for spin, ncls, specs in ((0, 1, [('TT', 0)]), (2, 4, [('EE', 0), ('BB', 3)])):
-        matrix, old = read_matrix(S.ROOT/'results/highell/fine_field_coupling', proj, 0, spin)
+        matrix, old = read_matrix(workspaces, proj, S.FIELD, spin)
         response = S.rebin_flat_response(matrix, old, edges, counts, ncls)
         for kind in ('cross', 'signal'):
             coupled = S.rebin_pseudo(np.asarray(raw[('tt_' if spin == 0 else 'pol_')+kind]), counts, edges)
             cl, _ = decouple_many(response, coupled)
             for spec, i in specs:
-                window = S.simulation_window(spec, field=True)[j]
-                out[spec, kind] = cl[:, i, :NB]/(pix*window)
-    return out, seeds, beam
+                window = run.simulation_window(spec, field=True)[j]
+                out[spec, kind] = cl[:, i, :run.nbins]/(pix*window)
+    return out, seeds, config
 
 
 def design(r, lp, shapes, spin):
@@ -105,28 +120,32 @@ def jackknife_ratio(x, y, stat):
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--dir', type=Path, default=DIR)
-    p.add_argument('--plots', type=Path, default=Path('/sptlocal/user/cailmdaley/pol_project/noisy_inversion'))
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(p, 'noisy_inversion_sims', 'fine_coupling_matrices', 'flatsky_masks',
+                 'bandpowers', 'simulation_windows', 'theory_spectra', 'shear_moments')
+    p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()
-    th = T.load()
+    run = S.Run.from_args(args)
+    pixel_arcmin = res_arcmin(args.flatsky_masks)
+    th = T.load(run.theory_spectra)
     lp = th['ell'].astype(float)
-    mom = SL.field_moments()
-    select = (S.ELL >= 500) & (S.ELL < 4000)
+    mom = run.field_moments()
+    select = (run.ell >= 500) & (run.ell < 4000)
     amps, data, seeds, extra = {}, {}, {}, {}
     for proj in PROJS:
-        d, seeds[proj], fwhm = load(proj, args.dir)
+        d, seeds[proj], (fwhm, noise_pol) = load(run, proj, args.noisy_inversion_sims,
+                                                 args.fine_coupling_matrices, pixel_arcmin)
         data[proj] = d
         b2 = np.exp(-lp*(lp+1)*(np.deg2rad(fwhm/60)/np.sqrt(8*np.log(2)))**2)
         shapes = {s: th[f'lensed_{s}']*b2 for s in ('TT', 'EE', 'BB')}
-        r = SL.coupling_matrix(mom, 0, S.PROJS.index(proj), S.ELL, lp, band_limit=S.LMAX)
+        r = SL.coupling_matrix(mom, 0, S.PROJS.index(proj), run.ell, lp, band_limit=run.lmax)
         extra[proj] = dict(leak=r['BB<-EE'] @ shapes['EE'], lensed=r['BB<-BB'] @ shapes['BB'],
                            ee=r['EE<-EE'] @ shapes['EE'])
         for spec, spin in (('TT', False), ('POL', True)):
             a, expected = design(r, lp, shapes, spin)
             keep = np.tile(select, 2) if spin else select
-            ref = np.r_[S.bin_theory(shapes['EE']), S.bin_theory(shapes['BB'])] if spin \
-                else S.bin_theory(shapes['TT'])
+            ref = np.r_[run.bin_theory(shapes['EE']), run.bin_theory(shapes['BB'])] if spin \
+                else run.bin_theory(shapes['TT'])
             for kind in ('cross', 'signal'):
                 x = np.c_[d['EE', kind], d['BB', kind]] if spin else d['TT', kind]
                 for est, weight in (('equal', ref), ('weighted', x.std(0, ddof=1))):
@@ -161,24 +180,24 @@ def main():
     sd = sfl['BB', 'cross'].std(0, ddof=1)
     snr = extra['ProjSFL']['leak']/sd
     measured_leak = sfl['BB', 'cross'].mean(0) - extra['ProjSFL']['lensed']
-    detect = dict(ell=S.ELL.tolist(), leak_model=extra['ProjSFL']['leak'].tolist(),
+    detect = dict(ell=run.ell.tolist(), leak_model=extra['ProjSFL']['leak'].tolist(),
                   lensed_model=extra['ProjSFL']['lensed'].tolist(),
                   measured_leak=measured_leak.tolist(), sd=sd.tolist(), snr=snr.tolist())
     leak, lensed = extra['ProjSFL']['leak'], extra['ProjSFL']['lensed']
-    above = S.ELL > 1000
-    detect['ell_leak_below_lensed'] = float(S.ELL[above][np.argmax(leak[above] < lensed[above])])
+    above = run.ell > 1000
+    detect['ell_leak_below_lensed'] = float(run.ell[above][np.argmax(leak[above] < lensed[above])])
     for lo, hi in ([(a, a+500) for a in range(500, 5000, 500)] + [(500, 4000)]):
-        s = (S.ELL >= lo) & (S.ELL < hi)
+        s = (run.ell >= lo) & (run.ell < hi)
         detect[f'snr_{lo}_{hi}'] = float(np.sqrt(np.sum(snr[s]**2)))
         detect[f'leak_over_lensed_{lo}_{hi}'] = float(np.mean(extra['ProjSFL']['leak'][s]/extra['ProjSFL']['lensed'][s]))
     result = dict(nsky=nsky, bands=EDGES.tolist(), beam_fwhm_arcmin=fwhm,
-                  noise_pol_uk_arcmin=5., rows=rows, sfl_detectability=detect,
+                  noise_pol_uk_arcmin=noise_pol, rows=rows, sfl_detectability=detect,
                   caveat='Known-shape band amplitudes, exterior at its model; lensed sky drawn Gaussian; '
                          'white grid noise at fixed depth per sky area; BB in units of input lensed BB.')
-    OUT.write_text(json.dumps(result, indent=2)+'\n')
-    args.plots.mkdir(parents=True, exist_ok=True)
-    np.savez(args.plots/'amplitudes.npz', **{'_'.join(k): v for k, v in amps.items()})
-    plot(result, data, extra, args.plots)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out/'noisy_inversion_summary.json').write_text(json.dumps(result, indent=2)+'\n')
+    np.savez(args.out/'amplitudes.npz', **{'_'.join(k): v for k, v in amps.items()})
+    plot(result, data, extra, args.out)
     for r in rows:
         if r['estimator'] == 'weighted':
             print(f"{r['projection']} {r['spectrum']} {r['spectra']:6s} bias {r['combined_bias']:+.2e} ± {r['combined_bias_se']:.1e} band-mean {r['mean_bias']:+.2e}"

@@ -25,5 +25,5 @@ SFL's uncorrected leaked BB: 111σ over 500–4000, 7σ over 2500–3000, 1.8σ 
 Choose-not-correct survives: correcting STG is nearly free at SPT-3G depth, correcting SFL is not, and for B modes the cost is a factor ~50 in variance.
 Caveats: Gaussian lensed sky (no lensing non-Gaussianity), white noise with no scan-synchronous or 1/f component, no filtering, diagonal bin weighting.
 
-Reproduce: `lc run --executor htcondor --profile htcondor9 noisy_inversion_sims -u highell`; `bash env.sh python3 analysis/noisy_inversion.py`; `bash env.sh python3 analysis/paper_numbers.py --noisy-only`.
-Plots: `/sptlocal/user/cailmdaley/pol_project/noisy_inversion/{inversion,sfl_detectability}.png`.
+Reproduce: `lc run --executor htcondor --profile htcondor9 noisy_inversion_sims`, then `lc run noisy_numbers`.
+The `noisy_inversion_summary` output holds the summary, the per-sky amplitudes and the plots `inversion.png` and `sfl_detectability.png`.

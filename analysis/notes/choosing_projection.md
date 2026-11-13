@@ -87,10 +87,8 @@ Do not quote the large SFL variance ratios without specifying the estimator.
 ## Reproduction and outputs
 
 Run `bash env.sh python3 analysis/check_choosing_projection.py` for exact scalar and joint-polarization injection tests and geometry/noise checks.
-Run `bash env.sh python3 analysis/choosing_projection.py --out /sptlocal/user/cailmdaley/pol_project/choosing_projection` to regenerate the measured results and diagnostic figure.
-The compact result is versioned at `analysis/figures/choosing_projection_summary.json`.
-The per-seed amplitudes, full JSON, PNG and PDF are in that output directory.
-Run `bash env.sh python3 analysis/paper_numbers.py --choosing-only` for `paper/choosing_numbers.tex`; the paper owner can import only the macros whose caveats fit the text.
+The `choosing_projection` output (`lc run choosing_projection`) holds the result, `choosing_projection.json`, with the per-seed amplitudes and the diagnostic figure.
+The `choosing_numbers` output formats it, with `stg_correction_variance`, as `choosing_numbers.tex`; the paper quotes only the macros whose caveats fit the text.
 
 ## Independent review
 

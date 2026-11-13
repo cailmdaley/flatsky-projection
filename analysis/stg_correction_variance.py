@@ -1,7 +1,7 @@
-"""What correcting STG's magnification costs against ZEA, on 260 skies.
+"""What correcting STG's magnification costs against ZEA, on the covariance skies.
 
 Three estimators of one amplitude per 500-wide band over 500 < l < 4000, each
-from the matched `bin_covariance` skies (noise-free, unlensed, 1500d field):
+from the matched `bin_covariance_sims` skies (noise-free, unlensed, 1500d field):
 
   equal     the conditional inverse of `choosing_projection.fit_amplitudes`,
             which weights every bin equally in fractional error;
@@ -9,43 +9,54 @@ from the matched `bin_covariance` skies (noise-free, unlensed, 1500d field):
   direct    Fourier-cell-weighted bandpowers, with STG's edges moved by its
             mean linear magnification and no inverse.
 
-The ratio is the band-averaged STG fractional variance over ZEA's, with a
-whole-sky bootstrap error. No noise, lensing or off-diagonal weighting enters,
-so this bounds the two-point cost of the correction in those conditions only.
+The mean linear magnification is <sqrt(det J)> of STG over the field under the
+squared mask, from the field's shear moments; STG is conformal, so sqrt(det J)
+is its local scale factor. The ratio is the band-averaged STG fractional
+variance over ZEA's, with a whole-sky bootstrap error. No noise, lensing or
+off-diagonal weighting enters, so this bounds the two-point cost of the
+correction in those conditions only.
 
 Run:  bash env.sh python3 analysis/stg_correction_variance.py
-Out:  analysis/figures/stg_correction_variance.json
+          --bin-covariance-sims results/fiducial/bin_covariance_sims
+          --fine-coupling-matrices results/fiducial/fine_coupling_matrices
+          --bandpowers results/fiducial/bandpowers
+          --simulation-windows results/fiducial/simulation_windows
+          --theory-spectra data/theory_spectra.npz
+          --shear-moments results/fiducial/shear_moments --out <dir>
+Out:  <out>/stg_correction_variance.json
 """
+import argparse
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import choosing_projection as CP
 import compare_bin_covariance as CB
 import shear_leakage as SL
 import spectra as S
 import theory as T
 
-OUT = Path(__file__).resolve().parent / 'figures' / 'stg_correction_variance.json'
-DIRS = [S.ROOT / 'results/highell/bin_covariance_pilot', S.ROOT / 'results/highell/bin_covariance_sims']
 EDGES = np.arange(500, 4001, 500)
-STG_SCALE = 1 / 1.0222
 PROJS = ('ProjZEA', 'ProjSTG')
 
 
-def direct(proj):
+def linear_magnification(mom, proj):
+    """Mean sqrt(det J) of one chart over the field, weighted by the squared mask."""
+    s1, s2, w = SL._cells(mom, 0, S.PROJS.index(proj))
+    return float(np.sum(w * np.sqrt(s1 * s2)) / np.sum(w))
+
+
+def direct(sims, proj, magnification):
     """Per-sky fractional bandpowers of the unit-width pseudo-spectra."""
-    paths = sorted(p for d in DIRS for p in d.glob(f'pseudo_{proj}_seed*_mask0.npz'))
+    paths = sorted(Path(sims).glob(f'pseudo_{proj}_seed*_mask0.npz'))
     tt, ee = [], []
     for path in paths:
         with np.load(path) as z:
             tt.append(z['tt'][0])
             ee.append(z['pol'][0])
             counts = z['counts']
-    scale = STG_SCALE if proj == 'ProjSTG' else 1.
+    scale = 1 / magnification
     index = np.arange(len(counts))
 
     def bands(a):
@@ -60,26 +71,25 @@ def direct(proj):
     return {'TT': bands(tt), 'EE': bands(ee)}
 
 
-def inverses():
-    """Fitted band amplitudes per sky, for both bin weights."""
-    CB.PROJS = PROJS
-    arrays, seeds = CB.load_ensemble(DIRS, (50,))
+def inverses(run, sims, workspaces, mom):
+    """Fitted band amplitudes per sky, for both bin weights, on the bandpowers' bins."""
+    arrays, seeds = CB.load_ensemble(sims, workspaces, (run.delta_l,), PROJS)
     assert seeds['ProjZEA'] == seeds['ProjSTG']
-    th = T.load()
+    th = T.load(run.theory_spectra)
     lp = th['ell'].astype(float)
-    mom = SL.field_moments()
-    select = (S.ELL >= 500) & (S.ELL < 4000)
+    select = (run.ell >= 500) & (run.ell < 4000)
     result = {}
     for proj in PROJS:
         j = S.PROJS.index(proj)
-        r = SL.coupling_matrix(mom, 0, j, S.ELL, lp, band_limit=S.LMAX)
-        data = {s: arrays[proj, 50, s.lower(), 'decoupled'][:, :120] / S.simulation_window(s, field=True)[j]
+        r = SL.coupling_matrix(mom, 0, j, run.ell, lp, band_limit=run.lmax)
+        data = {s: arrays[proj, run.delta_l, s.lower(), 'decoupled'][:, :run.nbins]
+                / run.simulation_window(s, field=True)[j]
                 for s in ('TT', 'EE', 'BB')}
         joint = np.c_[data['EE'], data['BB']]
         for spec, matrix, fit, shape, spin in (
                 ('TT', r['TT<-TT'], data['TT'], th['unlensed_TT'], False),
                 ('EE', r, joint, th['unlensed_EE'], True)):
-            amplitude, _, _ = CP.fit_amplitudes(matrix, fit, S.bin_theory(shape), select,
+            amplitude, _, _ = CP.fit_amplitudes(matrix, fit, run.bin_theory(shape), select,
                                                 EDGES, lp, shape, spin)
             result[proj, spec, 'equal'] = amplitude[:, :len(EDGES) - 1]
         for spec, block in (('TT', 'TT<-TT'), ('EE', 'EE<-EE')):
@@ -100,19 +110,28 @@ def ratio(stg, zea, draws):
 
 
 def main():
-    estimates = inverses()
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, 'bin_covariance_sims', 'fine_coupling_matrices', 'bandpowers',
+                 'simulation_windows', 'theory_spectra', 'shear_moments')
+    ap.add_argument('--out', type=Path, required=True)
+    args = ap.parse_args()
+    run = S.Run.from_args(args)
+    mom = run.field_moments()
+    magnification = linear_magnification(mom, 'ProjSTG')
+    estimates = inverses(run, args.bin_covariance_sims, args.fine_coupling_matrices, mom)
     for proj in PROJS:
-        for spec, value in direct(proj).items():
+        scale = magnification if proj == 'ProjSTG' else 1.
+        for spec, value in direct(args.bin_covariance_sims, proj, scale).items():
             estimates[proj, spec, 'direct'] = value
     n = estimates['ProjZEA', 'TT', 'equal'].shape[0]
-    assert n == 260
     draws = np.random.default_rng(2).integers(0, n, (1500, n))
-    summary = {'nsky': n, 'bands': EDGES.tolist()}
+    summary = {'nsky': n, 'bands': EDGES.tolist(), 'stg_linear_magnification': magnification}
     for spec in ('TT', 'EE'):
         for estimator in ('equal', 'weighted', 'direct'):
             summary[f'{spec}_{estimator}'] = ratio(estimates['ProjSTG', spec, estimator],
                                                    estimates['ProjZEA', spec, estimator], draws)
-    OUT.write_text(json.dumps(summary, indent=2) + '\n')
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / 'stg_correction_variance.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps(summary, indent=2))
 
 

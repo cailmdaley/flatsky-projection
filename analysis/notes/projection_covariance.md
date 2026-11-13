@@ -137,14 +137,14 @@ Across the eight non-floor auto-spectra in each band, the largest fractional dif
 These are bounds on those sixteen **band-averaged summaries**, not on every covariance-matrix element or every multipole.
 For high-ell SFL TT/EE/BB, predicted coupled variance ratios are3.525/3.820/5.036 against measured3.670±0.088/3.945±0.098/5.185±0.128; predicted adjacent correlations are0.145/0.154/0.226 against0.130±0.013/0.142±0.014/0.226±0.013.
 The wide-bin approximation instead gives4.336/4.779/7.110, demonstrating why finite annuli matter.
-`analysis/summarize_bin_covariance.py` generates the full family table and maxima in `results/highell/bin_covariance_comparison/local_summary.{json,md}`.
-The predictions use stride8/nchi128, with source-content hashes in `results/highell/bin_covariance_local_prediction/prediction.json`.
+`analysis/paper_numbers/covariance_numbers.py` computes these maxima (`covLocal*`) from the `bin_covariance_comparison` and `bin_covariance_local_prediction` outputs.
+The predictions use stride8/nchi128, as the `bin_covariance_local_prediction` recipe states.
 A stride16/nchi64 sweep changes TT/EE variances by at most0.14% and correlations by0.0011; SFLBB's worst per-bin changes are1.8% and0.003.
 
 ## Complete projected and homogeneous ensembles
 
 The final measurement uses260 newly synthesized independent Gaussian skies per chart, not the old production20.
-`bin_covariance_pilot` contains seeds0..3 and `bin_covariance_sims` contains4..259, all synthesized at Nside8192/lmax6000, reprojected with production rebin8/FlattenPol, and measured with the same1500d mask and pure-B estimator.
+`bin_covariance_sims` contains seeds0..259, all synthesized at Nside8192/lmax6000, reprojected with production rebin8/FlattenPol, and measured with the same1500d mask and pure-B estimator.
 T and E are independent draws, so these runs test each auto-spectrum covariance, not TE or TT–EE cross-covariance.
 All gathered and unit content hashes passed direct verification against their manifests: pilot4 units, extension256 units and controls16 batches.
 
@@ -187,11 +187,8 @@ An estimator E-to-B residual is plausible but not isolated; exclude this numeric
 The ensembles are unlensed and noise-free, without source holes or time-domain filtering.
 They test the covariance consequences of position/direction dependence under the same simple mask, not SPT's complete pipeline.
 
-Final artifacts are `results/highell/bin_covariance_comparison/{comparison.json,moments.npz,comparison.png,binwise.png}`.
-The old20,13-sky and44-sky artifacts are superseded for final measurement claims.
-Run `analysis/paper_numbers.py --covariance-only` for the generated `paper/covariance_numbers.tex`; it refuses incomplete or old seed sets.
-The central writer emits only macros cited by `paper/main.tex`, so add the intended macro references there and regenerate; an unquoted covariance result is deliberately omitted from the LaTeX file.
-`analysis/bin_covariance_numbers.py:numbers()` returns the complete validated dictionary independently of that publication filter.
+The `bin_covariance_comparison` output holds `bin_covariance_comparison.json`, `moments.npz`, `comparison.png` and `binwise.png`.
+The `covariance_numbers` output (`analysis/paper_numbers/covariance_numbers.py`) formats it as `covariance_numbers.tex`; it refuses incomplete seed sets.
 
 ## The SPT references
 

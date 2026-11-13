@@ -1,41 +1,80 @@
 """Compare projected and matched homogeneous Gaussian covariance ensembles.
 
-Raw unit-width pseudo-spectra are rebinned before decoupling, using the same
-width-five response in both ensembles. Each error deletes whole skies, not
-individual bin pairs. The ensembles must be independent; projection charts
-within the projected ensemble need not be independent of one another.
+The 260 projected 1500d skies (`bin_covariance_sims`) against the 256
+homogeneous controls (`bin_covariance_flat_controls`), per chart, spectrum and
+bin width. Raw unit-width pseudo-spectra are rebinned before decoupling, using
+the same width-five response (`fine_coupling_matrices`) in both ensembles.
+Each error deletes whole skies, not individual bin pairs. The ensembles must
+be independent; projection charts within the projected ensemble need not be
+independent of one another.
 
-Run through bash env.sh python3 analysis/compare_bin_covariance.py.
+`--widths` are the bin widths compared over the ell ranges `RANGES`;
+`--binwise-widths` the ones also compared bin pair by bin pair, the first of
+which the two diagnostic plots show.
+
+Run:  bash env.sh python3 analysis/compare_bin_covariance.py
+          --bin-covariance-sims results/fiducial/bin_covariance_sims
+          --bin-covariance-flat-controls results/fiducial/bin_covariance_flat_controls
+          --fine-coupling-matrices results/fiducial/fine_coupling_matrices
+          --widths 30 50 100 --binwise-widths 50 100 --out <dir>
+Out:  <out>/bin_covariance_comparison.json, <out>/moments.npz (per-ensemble
+      means, covariances and correlations), comparison.png and binwise.png.
 """
 import argparse
 import json
 from pathlib import Path
 
 import numpy as np
+from astropy.io import fits
+from scipy.linalg import get_lapack_funcs, lu_factor, lu_solve
 
 import spectra as sp
-from projection_covariance import PROJS, SPECS, correlation
-from validate_fine_spectra import read_matrix, decouple_many
 
-# The 2018 SPT spectra stop at3000; keep that comparison separate from our
-# extension to4800 rather than calling the latter a reproduction of SPT.
+PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
+SPECS = ('tt', 'ee', 'bb')
+# The 2018 SPT spectra stop at 3000; keep that comparison separate from our
+# extension to 4800 rather than calling the latter a reproduction of SPT.
 RANGES = ((500, 2000), (2000, 3000), (2000, 3500), (3500, 4800), (500, 4800))
 
 
-def load_ensemble(directories, widths):
+def read_matrix(directory, proj, footprint, spin):
+    """Binned NaMaster response and its bin edges, from a workspace FITS file."""
+    path = Path(directory) / f'w{spin}{spin}_{proj}_{footprint}.fits'
+    with fits.open(path) as h:
+        edges = np.r_[h['BINS_SUMMARY'].data.field(0), h['BINS_SUMMARY'].data.field(1)[-1]]
+        return h['MCM_BINNED'].data.copy(), edges
+
+
+def decouple_many(matrix, coupled):
+    """One factorization for all seeds, NaMaster's bin-major FITS ordering."""
+    lu, piv = lu_factor(matrix)
+    rcond, info = get_lapack_funcs('gecon', (lu,))(lu, np.linalg.norm(matrix, 1))
+    if info or rcond == 0:
+        raise np.linalg.LinAlgError('singular response')
+    nseed, ncls, nband = coupled.shape
+    rhs = coupled.transpose(2, 1, 0).reshape(nband*ncls, nseed)
+    cl = lu_solve((lu, piv), rhs).reshape(nband, ncls, nseed).transpose(2, 1, 0)
+    return cl, float(1/rcond)
+
+
+def correlation(data):
+    c = np.cov(data, rowvar=False)
+    sd = np.sqrt(np.diag(c))
+    return c / sd[:, None] / sd[None, :]
+
+
+def load_ensemble(directory, workspaces, widths, projs=PROJS):
     """Return actual coupled and decoupled bandpowers, without window division.
 
     A positive deterministic per-bin window cancels from correlations and
     fractional variances. Omitting it keeps the means comparable to the native
     control spectra, which already contain the projection sampling window.
+    Bins run from zero to the pseudo-spectra's stored lmax.
     """
     arrays, seeds = {}, {}
-    for proj in PROJS:
-        paths = sorted(path for directory in directories
-                       for path in directory.glob(f'pseudo_{proj}_seed*_mask0.npz'))
+    for proj in projs:
+        paths = sorted(Path(directory).glob(f'pseudo_{proj}_seed*_mask0.npz'))
         ids = [int(path.stem.split('_seed')[1].split('_')[0]) for path in paths]
-        if len(ids) != len(set(ids)):
-            raise ValueError(f'{proj}: duplicate realization IDs across directories')
         if len(ids) < 4:
             raise ValueError(f'{proj}: need at least four independent skies')
         seeds[proj] = ids
@@ -48,10 +87,10 @@ def load_ensemble(directories, widths):
                 for key in raw:
                     raw[key].append(z[key])
         for spin, key in ((0, 'tt'), (2, 'pol')):
-            matrix, old_edges = read_matrix(sp.ROOT/'results/highell/fine_field_coupling', proj, 0, spin)
+            matrix, old_edges = read_matrix(workspaces, proj, sp.FIELD, spin)
             ncls = 1 if spin == 0 else 4
             for width in widths:
-                edges = np.arange(0, 6001, width)
+                edges = np.arange(0, len(counts)+1, width)
                 response = sp.rebin_flat_response(matrix, old_edges, edges, counts, ncls)
                 coupled = sp.rebin_pseudo(np.asarray(raw[key]), counts, edges)
                 decoupled, _ = decouple_many(response, coupled)
@@ -82,14 +121,14 @@ def lag_statistic(values, lag):
     return np.mean(binwise_lag(values, lag))
 
 
-def binwise_comparison(projected, control):
+def binwise_comparison(projected, control, widths):
     """Individual pairs, so a range average cannot conceal localized structure.
 
     Errors are pointwise, not simultaneous confidence limits for the curve.
     """
     rows = []
     for (proj, width, spec, estimator), a in projected.items():
-        if width not in (50, 100):
+        if width not in widths:
             continue
         b = control[proj, width, spec, estimator]
         ell = np.arange(a.shape[1])*width+width/2
@@ -124,12 +163,12 @@ def independent_ratio_error(a, b):
     return value, float(np.hypot(ea, eb))
 
 
-def compare(projected, control, widths):
+def compare(projected, control):
     correlations, variances, means = [], [], []
     for key, a in projected.items():
         proj, width, spec, estimator = key
         b = control[key]
-        ell = np.arange(width/2, 6000, width)
+        ell = np.arange(a.shape[1])*width+width/2
         for lo, hi in RANGES:
             select = (ell >= lo) & (ell < hi)
             x, y = a[:, select], b[:, select]
@@ -152,12 +191,10 @@ def compare(projected, control, widths):
                            control_rho=rb, control_se=eb,
                            excess_rho=ra-rb, excess_se=float(np.hypot(ea, eb)))
                 correlations.append(row)
-                if width == 50 and lo == 3500 and estimator == 'decoupled':
-                    print(row, flush=True)
     return dict(correlations=correlations, variances=variances, means=means)
 
 
-def plot_comparison(rows, out):
+def plot_comparison(rows, width, out):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -169,7 +206,7 @@ def plot_comparison(rows, out):
         for j, spec in enumerate(SPECS):
             ax = axes[i, j]
             sel = [r for r in rows['correlations'] if r['projection'] == proj
-                   and r['spectrum'] == spec and r['width'] == 50
+                   and r['spectrum'] == spec and r['width'] == width
                    and r['estimator'] == 'decoupled' and r['ell_lo'] == 3500
                    and r['ell_hi'] == 4800]
             ax.axhline(0, color='.8', lw=.7)
@@ -190,7 +227,7 @@ def plot_comparison(rows, out):
     plt.close(fig)
 
 
-def plot_binwise(rows, out):
+def plot_binwise(rows, width, out):
     import matplotlib.pyplot as plt
     import paper_style as ps
     ps.rc()
@@ -200,8 +237,9 @@ def plot_binwise(rows, out):
         for j, spec in enumerate(SPECS):
             ax = axes[i, j]
             row = next(r for r in rows if r['projection'] == proj and r['spectrum'] == spec
-                       and r['estimator'] == 'decoupled' and r['separation'] == 50)
-            ell = np.asarray(row['ell_left'])+25
+                       and r['estimator'] == 'decoupled' and r['width'] == width
+                       and r['separation'] == width)
+            ell = np.asarray(row['ell_left'])+width/2
             ax.axhline(0, color='.8', lw=.7)
             for source, color in (('projected', ps.PROJ_COLORS[proj]), ('control', '.3')):
                 rho, se = np.array(row[source+'_rho']), np.array(row[source+'_se'])
@@ -219,24 +257,24 @@ def plot_binwise(rows, out):
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    root = sp.ROOT/'results/highell'
-    p.add_argument('--projected', type=Path, nargs='+',
-                   default=[root/'bin_covariance_pilot', root/'bin_covariance_sims'])
-    p.add_argument('--control', type=Path, nargs='+', default=[root/'bin_covariance_flat_controls'])
-    p.add_argument('--widths', type=int, nargs='+', default=[30, 50, 100])
-    p.add_argument('--out', type=Path, default=root/'bin_covariance_comparison')
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sp.add_inputs(p, 'bin_covariance_sims', 'bin_covariance_flat_controls',
+                  'fine_coupling_matrices')
+    p.add_argument('--widths', type=int, nargs='+', required=True)
+    p.add_argument('--binwise-widths', type=int, nargs='+', required=True)
+    p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    a, a_seeds = load_ensemble(args.projected, args.widths)
-    b, b_seeds = load_ensemble(args.control, args.widths)
-    result = compare(a, b, args.widths)
-    result['binwise'] = binwise_comparison(a, b)
-    result['inputs'] = dict(projected=[str(d) for d in args.projected],
-                            control=[str(d) for d in args.control],
+    a, a_seeds = load_ensemble(args.bin_covariance_sims, args.fine_coupling_matrices, args.widths)
+    b, b_seeds = load_ensemble(args.bin_covariance_flat_controls, args.fine_coupling_matrices,
+                               args.widths)
+    result = compare(a, b)
+    result['binwise'] = binwise_comparison(a, b, args.binwise_widths)
+    result['inputs'] = dict(projected=[str(args.bin_covariance_sims)],
+                            control=[str(args.bin_covariance_flat_controls)],
                             projected_seeds=a_seeds, control_seeds=b_seeds,
                             errors='delete-one-whole-sky jackknife; independent ensembles')
-    (args.out/'comparison.json').write_text(json.dumps(result, indent=2)+'\n')
+    (args.out/'bin_covariance_comparison.json').write_text(json.dumps(result, indent=2)+'\n')
     moments = {}
     for label, ensemble in (('projected', a), ('control', b)):
         for (proj, width, spec, estimator), values in ensemble.items():
@@ -245,9 +283,8 @@ def main():
             moments[prefix+'_covariance'] = np.cov(values, rowvar=False)
             moments[prefix+'_correlation'] = correlation(values)
     np.savez_compressed(args.out/'moments.npz', **moments)
-    plot_comparison(result, args.out)
-    if any(r['width'] == 50 for r in result['binwise']):
-        plot_binwise(result['binwise'], args.out)
+    plot_comparison(result, args.binwise_widths[0], args.out)
+    plot_binwise(result['binwise'], args.binwise_widths[0], args.out)
 
 
 if __name__ == '__main__':
