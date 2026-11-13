@@ -79,8 +79,7 @@ Three places, all real and all reported rather than smoothed over.
      the floor is removed, and the 20x-above-floor cut drops it anyway.
 
   2. The 10% mask does not test the law for SFL or BICEP. Its spectra are
-     finite in the highell run -- the 2021 run lost them to NaN and overflow,
-     and that is fixed -- but they sit at 1.72 and 1.14 times 2<g^2> against
+     finite, but they sit at 1.72 and 1.14 times 2<g^2> against
      per-mille agreement on every other disk, and the reason is geometric, not
      numerical: the disk runs off the 2 arcmin analysis grid in x for both
      cylindrical projections. Those two pairs are the `CLIPPED` set, excluded
@@ -177,7 +176,7 @@ DEG = core.G3Units.deg
 
 # Bands to test the law in. The first is the headline band average; the rest
 # resolve the l dependence the average hides. The band-by-band set runs to
-# l = 4500 -- the highell run carries sky power to 6000, and 4800 is where the
+# l = 4500 -- the run carries sky power to its lmax, and 4800 is where the
 # 2 arcmin pixel takes over, so 4000-4500 is the last band that is still a
 # measurement of the projection.
 BANDS = [(1000, 3000), (1000, 1500), (1500, 2000), (2000, 2500),
@@ -248,8 +247,7 @@ def measured_ratios(run, bands=BANDS):
     Averages the numerator and the denominator separately -- that is what the
     quoted ratio means, and it weights low l more heavily because EE falls.
     Any NaN inside a band poisons that entry rather than being nan-meaned
-    around. The highell run has no NaNs: every mask is finite for every
-    projection, including the 10% disk that the 2021 run lost.
+    around. The run has no NaNs: every mask is finite for every projection.
     """
     ee, bb = run.load("EE"), run.load("BB")
     ell = run.ell
