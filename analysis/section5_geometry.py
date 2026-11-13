@@ -1,7 +1,8 @@
 """Small reproducible geometry calculations for the paper's Section 5.
 
-Run under ``bash env.sh python3 analysis/section5_geometry.py``. The synthetic
-anisotropic sky is specified in the local east/north Fourier frame.
+Run under ``bash env.sh python3 analysis/section5_geometry.py --healpix-masks DIR``
+to print them. The synthetic anisotropic sky is specified in the local
+east/north Fourier frame.
 """
 
 import numpy as np
@@ -114,17 +115,18 @@ def local_check():
               f"claimed n/2={-1.5:.5f}")
 
 
-def footprint_samples(nside=128):
+def footprint_samples(healpix_masks, nside=128):
     """Sky points with the production mask's analytic taper squared.
 
     The 5% disk and the 1500d field, shaped by `_footprints.FOOTPRINTS` and
-    tapered with the apodization the `healpix_masks` run recorded, evaluated
-    at a quadrature Nside rather than read from the Nside-8192 maps.
+    tapered with the apodization recorded in the index files of the
+    `healpix_masks` directory, evaluated at a quadrature Nside rather than
+    read from the Nside-8192 maps.
     """
     import json
     import healpy as hp
     from _footprints import DEC_DEG, FOOTPRINTS, RA_DEG
-    masks = Path(__file__).resolve().parents[1]/'results'/'fiducial'/'healpix_masks'
+    masks = Path(healpix_masks)
     out = {}
     for key, name in (('disk5', 'disk_5'), ('field1500d', 'field_1500d')):
         index = json.loads((masks/f'index_{name}.json').read_text())
@@ -145,9 +147,9 @@ def footprint_samples(nside=128):
     return out
 
 
-def footprint_response(verbose=True, nside=128, attachment='sky'):
+def footprint_response(healpix_masks, nside=128, attachment='sky', verbose=False):
     out = {}
-    for name,(ra_,dec_,w) in footprint_samples(nside).items():
+    for name,(ra_,dec_,w) in footprint_samples(healpix_masks, nside).items():
         for projection in ("ProjSFL", "ProjZEA"):
             jac = G.jacobian(projection, ra_, dec_)
             s1, s2 = G.singular_values(jac)
@@ -175,9 +177,9 @@ def beam_response(jac, weight, ell=3000., fwhm_arcmin=1., nchi=180):
     return direct, mean.mean(), mean.min(), mean.max()
 
 
-def beam_footprints(verbose=True, nside=128):
+def beam_footprints(healpix_masks, nside=128, verbose=False):
     out = {}
-    for name,(ra,dec,w) in footprint_samples(nside).items():
+    for name,(ra,dec,w) in footprint_samples(healpix_masks, nside).items():
         if name=='fieldEast':
             continue
         for projection in ("ProjSFL", "ProjZEA"):
@@ -189,7 +191,7 @@ def beam_footprints(verbose=True, nside=128):
     return out
 
 
-def beam_target_prediction(ell, chi, target='ProjZEA', nside=128,
+def beam_target_prediction(ell, chi, theory, healpix_masks, target='ProjZEA', nside=128,
                             fwhm_arcmin=1., source_pixel_arcmin=2.):
     """Numerator/denominator integrals in target-plane Fourier modes.
 
@@ -197,14 +199,13 @@ def beam_target_prediction(ell, chi, target='ProjZEA', nside=128,
     SFL window includes its top-hat pixel and the subsequent bilinear
     interpolation, whose coherent amplitude is sinc³ per axis. This local
     model omits aliasing, mask convolution, and gradients of the Jacobian.
+    `theory` is the dict `theory.load` returns.
     """
-    import theory as T
-    theory=T.load()
     sigma=np.deg2rad(fwhm_arcmin/60)/np.sqrt(8*np.log(2))
     pixel=np.deg2rad(source_pixel_arcmin/60)
     direction=np.stack((np.cos(chi),np.sin(chi)))
     out={}
-    for name,(ra,dec,w) in footprint_samples(nside).items():
+    for name,(ra,dec,w) in footprint_samples(healpix_masks, nside).items():
         if name=='fieldEast':
             continue
         jt=G.jacobian(target,ra,dec)
@@ -229,10 +230,14 @@ def beam_target_prediction(ell, chi, target='ProjZEA', nside=128,
 
 
 if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--healpix-masks', type=Path, required=True)
+    masks = ap.parse_args().healpix_masks
     for name, g2 in literature_footprints().items():
         print(f"{name}: <g²>={g2:.8g}, 2<g²>={2*g2:.8g}")
     g2 = healpix_face_g2()
     print(f"HEALPixFaceNested: <g²>={g2:.8g}, 2<g²>={2*g2:.8g}")
     local_check()
-    footprint_response()
-    beam_footprints()
+    footprint_response(masks, verbose=True)
+    beam_footprints(masks, verbose=True)

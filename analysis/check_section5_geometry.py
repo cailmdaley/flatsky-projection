@@ -1,11 +1,19 @@
-"""Physical invariants and quadrature convergence for Section 5 geometry."""
+"""Physical invariants and quadrature convergence for Section 5 geometry.
+
+Run:  bash env.sh python3 analysis/check_section5_geometry.py
+          --healpix-masks <dir> --theory-spectra <npz>
+"""
+
+import argparse
 
 import numpy as np
 
 import section5_geometry as G5
+import spectra as S
+import theory as T
 
 
-def run():
+def run(masks, theory):
     for g in (.001, .05, .3):
         s1 = np.sqrt((1+g)/(1-g))
         jac = np.diag((s1,1/s1))[None]
@@ -22,7 +30,7 @@ def run():
     np.testing.assert_allclose([mean,low,high],direct,atol=1e-14)
     ls=np.array([1000.,3000.])
     chi=np.arange(8)*np.pi/8
-    same_grid=G5.beam_target_prediction(ls,chi,target='ProjSFL',nside=32)
+    same_grid=G5.beam_target_prediction(ls,chi,theory,masks,target='ProjSFL',nside=32)
     sigma=np.deg2rad(1/60)/np.sqrt(8*np.log(2))
     for ns,ds,_,_ in same_grid.values():
         source=ns/ds
@@ -37,8 +45,8 @@ def run():
     np.testing.assert_allclose(measured/g,.15,rtol=1e-6)
     measured=G5.anisotropic_response(jac,[1.],n=-3,a2=.3,attachment='grid')
     np.testing.assert_allclose(measured/g,-.45,rtol=1e-6)
-    low = G5.footprint_response(verbose=False,nside=128)
-    high = G5.footprint_response(verbose=False,nside=256)
+    low = G5.footprint_response(masks,nside=128)
+    high = G5.footprint_response(masks,nside=256)
     for key in low:
         a,b=np.array(low[key]),np.array(high[key])
         print(key, 'Nside256', b, 'change from128', b-a)
@@ -55,4 +63,7 @@ def run():
 
 
 if __name__=='__main__':
-    run()
+    ap=argparse.ArgumentParser()
+    S.add_inputs(ap,'healpix_masks','theory_spectra')
+    args=ap.parse_args()
+    run(args.healpix_masks,T.load(args.theory_spectra))
