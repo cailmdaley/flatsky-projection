@@ -34,6 +34,7 @@ from _decisions import (
     set_threads,
     write_index,
 )
+from _footprints import DEC_DEG, RA_DEG
 
 __all__ = [
     "PROJECTIONS_DEFAULT",
@@ -64,7 +65,7 @@ ALPHA_CENTER_DEG_DEFAULT = 0.0
 class Leg:
     """One projection leg. ``name`` doubles as the output filename prefix."""
 
-    name: str        # "qu" | "eb"
+    name: str        # "qu" | "eb" | "tt" | "white"
     keys: tuple       # frame keys this leg synthesizes, e.g. ("Q", "U")
 
 
@@ -79,8 +80,8 @@ def add_project_cli(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--nside", required=True)
     parser.add_argument("--res-arcmin", type=float, default=2.0)
     parser.add_argument("--size-deg", type=float, default=110.0)
-    parser.add_argument("--ra-deg", type=float, default=0.0)
-    parser.add_argument("--dec-deg", type=float, default=-56.0)
+    parser.add_argument("--ra-deg", type=float, default=RA_DEG)
+    parser.add_argument("--dec-deg", type=float, default=DEC_DEG)
     add_common_args(parser, seeds=True)
 
 
@@ -121,7 +122,8 @@ def project_frame(frame, proj: str, *, res_arcmin: float, dec_deg: float,
     return flatsky_frame
 
 
-def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) -> dict:
+def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
+            index_tag=None) -> dict:
     """Drive one projection leg end to end. Called by project_qu.py / project_eb.py.
 
     ``synthesize(alm_file, nside) -> {key: HealpixSkyMap, ...}`` builds this
@@ -131,6 +133,9 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) ->
     place -- ``maps.FlattenPol`` for the QU leg, nothing at all for the EB
     leg. See the comment at each call site in project_qu.py / project_eb.py
     for why.
+
+    ``index_tag`` prefixes a unit's index name, for an output that holds
+    several legs.
 
     Resumable: a (projection, seed) whose output file already exists is
     skipped, and the (expensive) alm synthesis for a seed is skipped
@@ -214,6 +219,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None) ->
         "files": files,
     }
     write_index(
-        out_dir, manifest, name=index_name(args.seeds, args.projections if args.seeds else None)
+        out_dir, manifest,
+        name=index_name(args.seeds, args.projections if args.seeds else None, tag=index_tag),
     )
     return manifest

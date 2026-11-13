@@ -11,6 +11,7 @@ from pathlib import Path
 import argparse
 
 from _decisions import set_threads, write_index
+from _footprints import FIELD
 from namaster_spectra import load_mask, atomic_save
 
 PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
@@ -28,7 +29,7 @@ def prepare(args):
     from scipy.linalg import solve
     data = {}
     for proj in PROJS:
-        raw = [np.load(args.pseudos/f'pseudo_{proj}_seed{s:04d}_mask0.npz') for s in range(20)]
+        raw = [np.load(args.pseudos/f'pseudo_{proj}_{FIELD}_seed{s:04d}.npz') for s in range(20)]
         counts = raw[0]['counts']
         weight = counts.reshape(120, 50)
         total = weight.sum(-1)
@@ -41,7 +42,7 @@ def prepare(args):
             # Aggregate the existing width-five response exactly to width50.
             # P M Q uses mode-count-weighted rows and constant input columns,
             # as in analysis/spectra.py:rebin_flat_response.
-            with fits.open(args.workspaces/f'w{spin}{spin}_{proj}_0.fits') as h:
+            with fits.open(args.workspaces/f'w{spin}{spin}_{proj}_{FIELD}.fits') as h:
                 np.testing.assert_array_equal(h['BINS_SUMMARY'].data.field(0), np.arange(0, 6000, 5))
                 matrix = h['MCM_BINNED'].data.copy()
             columns = matrix.reshape(120, 10, ncls, 120, 10, ncls).sum(axis=4)
@@ -78,7 +79,7 @@ def simulate(args):
     records = []
     with np.load(args.spectra/'control_spectra.npz') as z:
         for j, proj in enumerate(PROJS):
-            mask, _, lx, ly = load_mask(args.masks, proj, 0)
+            mask, _, lx, ly = load_mask(args.masks, proj, FIELD)
             ny, nx = mask.shape
             tt, ee, bb = [np.interp(ell, z['ell'], z[f'{proj}_{spec}'])
                           for spec in ('tt', 'ee', 'bb')]

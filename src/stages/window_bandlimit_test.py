@@ -7,6 +7,7 @@ its own alms truncated before synthesis, retaining Nside8192, 2' pixels,
 from pathlib import Path
 import argparse
 from _decisions import set_threads
+from _footprints import DEC_DEG, FIELD
 
 
 def main():
@@ -41,14 +42,14 @@ def main():
     del q
     frame['U']=maps.HealpixSkyMap(u,pol_conv=maps.MapPolConv.COSMO)
     del u
-    flat=project_frame(frame,args.projection,res_arcmin=2,dec_deg=-56,
+    flat=project_frame(frame,args.projection,res_arcmin=2,dec_deg=DEC_DEG,
                        size_deg=110,interp=True,rebin=8)
     del frame
     maps.flatten_pol(flat['Q'],flat['U'])
-    mask,window,lx,ly=load_mask(Path(args.masks),args.projection,0)
+    mask,window,lx,ly=load_mask(Path(args.masks),args.projection,FIELD)
     _,ws,_=load_workspace_manifest(Path(args.workspaces),[args.projection])
     workspace=nmt.NmtWorkspaceFlat()
-    workspace.read_from(str(Path(args.workspaces)/ws[args.projection][0]['w22']))
+    workspace.read_from(str(Path(args.workspaces)/ws[args.projection][FIELD]['w22']))
     edges=np.arange(0,6050,50,dtype=float)
     bins=nmt.NmtBinFlat(edges[:-1],edges[1:])
     ell_eff=bins.get_effective_ells()

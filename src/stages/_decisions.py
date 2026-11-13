@@ -159,25 +159,28 @@ def resolve_seeds(args) -> list:
     return list(range(args.seed_start, args.seed_stop))
 
 
-def index_name(seeds=None, projections=None, masks=None) -> str:
+def index_name(seeds=None, projections=None, footprints=None, tag=None) -> str:
     """Name of the stage's index file.
 
     ``index.json`` for a whole-output run; a per-shard run (a unit job,
     which names its coordinates explicitly -- ``--seeds`` and/or
-    ``--mask-indices``) gets a name keyed by those coordinates so shard
-    indexes never collide when the unit gather assembles the canonical
-    directory. Consumers that need the whole picture read every shard
-    with :func:`read_index_entries`.
+    ``--footprint``) gets a name keyed by those coordinates, prefixed by
+    ``tag`` when one output carries several products (the scalar
+    spectra), so shard indexes never collide when the unit gather
+    assembles the canonical directory. Consumers that need the whole
+    picture read every shard with :func:`read_index_entries`.
     """
-    if seeds is None and masks is None:
+    if seeds is None and footprints is None:
         return "index.json"
     parts = ["index"]
+    if tag is not None:
+        parts.append(tag)
     if seeds is not None:
         parts += [f"{s:04d}" for s in seeds]
     if projections:
         parts += list(projections)
-    if masks is not None:
-        parts += [f"mask{m}" for m in masks]
+    if footprints is not None:
+        parts += list(footprints)
     return "_".join(parts) + ".json"
 
 

@@ -11,7 +11,8 @@ import argparse
 import hashlib
 from pathlib import Path
 
-from _decisions import parse_lmax, parse_purify_b, set_threads, write_index
+from _decisions import index_name, parse_lmax, parse_purify_b, set_threads, write_index
+from _footprints import FOOTPRINTS
 from namaster_spectra import atomic_save, finite_in_mask, load_mask
 
 
@@ -33,6 +34,7 @@ def main():
     p.add_argument('--masks', type=Path, required=True)
     p.add_argument('--tt-maps', type=Path, required=True)
     p.add_argument('--projection', required=True)
+    p.add_argument('--footprint', required=True, choices=list(FOOTPRINTS))
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--purify-b', type=parse_purify_b, required=True)
     p.add_argument('--lmax', type=parse_lmax, required=True)
@@ -43,41 +45,37 @@ def main():
     import numpy as np
     import pymaster as nmt
     from spt3g import core, maps  # noqa: F401
-    from coupling_matrices import discover_mask_indices_by_glob
 
-    proj, seed = args.projection, args.seed
+    proj, seed, fp = args.projection, args.seed, args.footprint
     frame = next(core.G3File(str(args.qu_maps / f'qu_{proj}_seed{seed:04d}.g3')))
-    tframe = next(core.G3File(str(args.tt_maps / f'scalar_{proj}_seed{seed:04d}.g3')))
+    tframe = next(core.G3File(str(args.tt_maps / f'tt_{proj}_seed{seed:04d}.g3')))
     bins = nmt.NmtBinFlat(np.arange(args.lmax, dtype=float),
                           np.arange(1, args.lmax + 1, dtype=float))
     args.out.mkdir(parents=True, exist_ok=True)
-    records = []
-    for i in discover_mask_indices_by_glob(args.masks, proj):
-        mask, window, lx, ly = load_mask(args.masks, proj, i)
-        path = args.out / f'pseudo_{proj}_seed{seed:04d}_mask{i}.npz'
-        q, u = [finite_in_mask(np.asarray(frame[k], dtype=float)[window], mask)
-                for k in ('Q', 'U')]
-        t = finite_in_mask(np.asarray(tframe['T'], dtype=float)[window], mask)
-        f2 = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b,
-                              lite=True)
-        pol = nmt.compute_coupled_cell_flat(f2, f2, bins)
-        del f2, q, u
-        f0 = nmt.NmtFieldFlat(lx, ly, mask, [t], lite=True)
-        tt = nmt.compute_coupled_cell_flat(f0, f0, bins)
-        del f0, t
-        atomic_save(path, pol=pol, tt=tt,
-                    counts=mode_counts(mask.shape, lx, ly, args.lmax),
-                    ell_lo=np.arange(args.lmax), ell_hi=np.arange(1, args.lmax+1),
-                    projection=proj, seed=seed, mask_index=i,
-                    purify_b=args.purify_b, pixel_window='none',
-                    nx=mask.shape[1], ny=mask.shape[0], lx_rad=lx, ly_rad=ly,
-                    mask_sha256=hashlib.sha256(mask.tobytes()).hexdigest())
-        records.append(path.name)
-        print(f'{proj} seed{seed:04d} mask{i} saved', flush=True)
-    write_index(args.out, dict(pseudo_spectra=records, projection=proj, seed=seed,
-                              delta_ell=1, lmax=args.lmax,
+    mask, window, lx, ly = load_mask(args.masks, proj, fp)
+    path = args.out / f'pseudo_{proj}_{fp}_seed{seed:04d}.npz'
+    q, u = [finite_in_mask(np.asarray(frame[k], dtype=float)[window], mask)
+            for k in ('Q', 'U')]
+    t = finite_in_mask(np.asarray(tframe['T'], dtype=float)[window], mask)
+    f2 = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b,
+                          lite=True)
+    pol = nmt.compute_coupled_cell_flat(f2, f2, bins)
+    del f2, q, u
+    f0 = nmt.NmtFieldFlat(lx, ly, mask, [t], lite=True)
+    tt = nmt.compute_coupled_cell_flat(f0, f0, bins)
+    del f0, t
+    atomic_save(path, pol=pol, tt=tt,
+                counts=mode_counts(mask.shape, lx, ly, args.lmax),
+                ell_lo=np.arange(args.lmax), ell_hi=np.arange(1, args.lmax+1),
+                projection=proj, seed=seed, footprint=fp,
+                purify_b=args.purify_b, pixel_window='none',
+                nx=mask.shape[1], ny=mask.shape[0], lx_rad=lx, ly_rad=ly,
+                mask_sha256=hashlib.sha256(mask.tobytes()).hexdigest())
+    print(f'{proj} {fp} seed{seed:04d} saved', flush=True)
+    write_index(args.out, dict(pseudo_spectra=[path.name], projection=proj, seed=seed,
+                              footprint=fp, delta_ell=1, lmax=args.lmax,
                               purify_b=args.purify_b, pixel_window='none'),
-                name=f'index_{proj}_seed{seed:04d}.json')
+                name=index_name([seed], [proj], [fp]))
 
 
 if __name__ == '__main__':

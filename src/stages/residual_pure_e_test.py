@@ -9,6 +9,7 @@ precision calibration. Unmasked periodic controls gate the zero-B input.
 """
 from pathlib import Path
 import argparse
+from _footprints import FIELD
 from _decisions import set_threads, write_index
 
 
@@ -32,7 +33,7 @@ def main():
     from namaster_spectra import load_mask, atomic_save
     from scipy.ndimage import map_coordinates
 
-    mask, _, lx, ly = load_mask(args.masks, args.projection, 0)
+    mask, _, lx, ly = load_mask(args.masks, args.projection, FIELD)
     ny, nx = mask.shape
     # Reflect original sampling locations exactly, rather than changing the
     # physical support or taper. Padding is already in the production mask.
@@ -45,7 +46,7 @@ def main():
         ee = z['unlensed_EE'][:len(ell)]
     bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
     ws = nmt.NmtWorkspaceFlat()
-    ws.read_from(str(args.workspaces/f'w22_{args.projection}_0.fits'))
+    ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     output = {'ell': bins.get_effective_ells(), 'projection': args.projection,
               'seed': args.seed, 'mask_shape': mask.shape}
     for cutoff in (4000, 6000):

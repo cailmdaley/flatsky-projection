@@ -19,8 +19,7 @@ import time
 from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 from bin_covariance_sims import mask_stub, project_array
-
-CENTRE_DEC = -56.
+from _footprints import DEC_DEG, FIELD
 
 
 def area_magnification(proj, stub):
@@ -30,7 +29,7 @@ def area_magnification(proj, stub):
     if proj != 'ProjSTG':
         return np.ones(stub.shape)  # ZEA and SFL preserve area.
     ra, dec = (np.asarray(a)/core.G3Units.rad for a in maps.get_ra_dec_map(stub))
-    d0 = np.deg2rad(CENTRE_DEC)
+    d0 = np.deg2rad(DEC_DEG)
     cos_theta = np.sin(dec)*np.sin(d0) + np.cos(dec)*np.cos(d0)*np.cos(ra)
     # STG: r = 2 tan(theta/2), area scale sec^4(theta/2) = (2/(1+cos theta))^2.
     return (2/(1+cos_theta))**2
@@ -54,7 +53,7 @@ def run(args):
     pixel_arcmin = 2.
     setup = {}
     for proj in args.projections:
-        mask, window, lx, ly = load_mask(args.masks, proj, 0)
+        mask, window, lx, ly = load_mask(args.masks, proj, FIELD)
         stub = mask_stub(proj, window)
         setup[proj] = (mask, stub, lx, ly, np.sqrt(area_magnification(proj, stub)))
 

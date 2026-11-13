@@ -7,6 +7,7 @@ interpolation/averaging B that a coherent multiplicative window cannot remove.
 """
 from pathlib import Path
 import argparse
+from _footprints import FIELD
 from _decisions import set_threads, write_index
 
 
@@ -31,11 +32,11 @@ def main():
     hq = maps.HealpixSkyMap(q, pol_conv=maps.MapPolConv.COSMO)
     hu = maps.HealpixSkyMap(u, pol_conv=maps.MapPolConv.COSMO)
     del q, u
-    mask, window, lx, ly = load_mask(args.masks, args.projection, 0)
+    mask, window, lx, ly = load_mask(args.masks, args.projection, FIELD)
     stub = mask_stub(args.projection, window)
     bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
     ws = nmt.NmtWorkspaceFlat()
-    ws.read_from(str(args.workspaces/f'w22_{args.projection}_0.fits'))
+    ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     result = dict(ell=bins.get_effective_ells(), seed=args.seed, projection=args.projection)
     for rebin in (8, 16):
         # Exact same production pixel centres. Only subsample density changes.

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-"""Build NaMaster flat-sky mode-coupling workspaces, per (projection, mask).
+"""Build NaMaster flat-sky mode-coupling workspaces, per (projection, footprint).
 
 The 2021 pipeline never had a rule for this. Its 35 ``w22_{proj}_disk{i}.fits``
 files under ``resources/masks/coupling_matrices/`` were built by hand, off the
 DAG, and the generating script is gone. This stage is that missing rule,
-reading the flat-sky masks (``project_masks.py``'s ``mask_{proj}_{i}.npz``
-outputs) instead of the pickled arrays the 2021 code read directly off disk.
+reading the flat-sky masks (``project_masks.py``'s
+``mask_{proj}_{footprint}.npz`` outputs) instead of the pickled arrays the 2021 code read directly off disk.
 
-Two workspaces per (projection, mask), not one
-------------------------------------------------
+Two workspaces per (projection, footprint), not one
+-----------------------------------------------------
 ``namaster_spectra.py`` computes two legs. The Q/U leg builds a genuine
 spin-2 field from Q and U and needs the spin-2 coupling matrix (EE, EB, BE,
 BB) -- that is the ``w22`` file the 2021 script already wrote and read.
@@ -37,8 +37,8 @@ which is a different linear operator from the spin-2 one (different `ncls`:
 1 vs. 4; different mixing kernel -- confirmed empirically against pymaster
 2.0 on a toy grid before writing this).
 
-That is why this stage writes ``w00_{proj}_{i}.fits`` alongside every
-``w22_{proj}_{i}.fits``: the EB leg cannot be decoupled without it. Both
+That is why this stage writes ``w00_{proj}_{footprint}.fits`` alongside every
+``w22_{proj}_{footprint}.fits``: the EB leg cannot be decoupled without it. Both
 workspaces are built from a dummy zero-valued field over the same mask, lx,
 ly and binning -- the coupling matrix depends only on the mask and the field
 spin, never on the map values (this is also why the 2021 script could use an
@@ -50,12 +50,12 @@ truncated FITS that a later run mistakes for done.
 
 One pair per grid job
 ---------------------
-The build cost spans three orders of magnitude across the mask set (the
-raw ``grid/coupling`` logs: 11 min on 8 cores for mask 0, 33 h on 32 cores
-for mask 6), so the 35 pairs never share a job. ``--mask-indices`` names
-the pair(s) a unit builds (``astra.yaml`` says ``--projections
-{units.projection} --mask-indices {units.mask}``); such a run writes its
-manifest under a coordinate-keyed name so the shards do not collide at the
+The build cost spans three orders of magnitude across the footprints (the
+raw ``grid/coupling`` logs: 11 min on 8 cores for disk_0p75, 33 h on 32
+cores for disk_10), so the pairs never share a job. ``--footprint`` names
+the footprint(s) a unit builds (``astra.yaml`` says ``--projections
+{units.projection} --footprint {units.footprint}``); the manifest is
+written under a coordinate-keyed name so the shards do not collide at the
 gather, and ``namaster_spectra.py`` reads them all back through
 ``read_index_entries``.
 """
@@ -63,7 +63,6 @@ gather, and ``namaster_spectra.py`` reads them all back through
 from __future__ import annotations
 
 import argparse
-import re
 from pathlib import Path
 
 from _decisions import (
@@ -72,10 +71,10 @@ from _decisions import (
     parse_delta_ell,
     parse_lmax,
     parse_purify_b,
-    read_index,
     set_threads,
     write_index,
 )
+from _footprints import FOOTPRINTS, ordered
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -83,51 +82,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--masks", required=True, help="flatsky_masks output directory")
     p.add_argument("--projections", nargs="+", required=True)
     p.add_argument(
-        "--mask-indices",
-        type=int,
-        nargs="+",
-        default=None,
-        help="build only these mask indices (a unit job); default: every "
-        "mask the flatsky_masks manifest lists for each projection",
+        "--footprint", nargs="+", required=True, choices=list(FOOTPRINTS),
+        help="footprints to build workspaces for",
     )
     p.add_argument("--purify-b", required=True, help="purify | standard | true | false")
     p.add_argument("--lmax", required=True, help="l4000 | l6000 | bare integer")
     p.add_argument("--delta-ell", type=parse_delta_ell, default=10)
     add_common_args(p)
     return p
-
-
-def discover_mask_indices_by_glob(masks_dir: Path, proj: str) -> list[int]:
-    """Mask indices for `proj`, from the ``mask_{proj}_{i}.npz`` filename contract."""
-    pattern = re.compile(rf"^mask_{re.escape(proj)}_(\d+)\.npz$")
-    indices = []
-    for path in Path(masks_dir).glob(f"mask_{proj}_*.npz"):
-        m = pattern.match(path.name)
-        if m:
-            indices.append(int(m.group(1)))
-    return sorted(indices)
-
-
-def discover_masks(masks_dir: Path) -> dict[str, list[int]]:
-    """proj -> sorted mask indices, preferring project_masks.py's own manifest.
-
-    Rule 2 of the README wants downstream stages reading the manifest rather
-    than reconstructing filenames; ``project_masks.py``'s ``index.json``
-    carries a ``records`` list of ``{"projection", "mask", ...}`` entries for
-    exactly this. Falls back to the ``mask_{proj}_{i}.npz`` filename contract
-    for any projection the manifest doesn't mention (including the case
-    where there is no manifest at all), so a hand-built ``--masks``
-    directory still works.
-    """
-    by_proj: dict[str, list[int]] = {}
-    manifest_path = Path(masks_dir) / "index.json"
-    if manifest_path.exists():
-        manifest = read_index(masks_dir)
-        for rec in manifest.get("records", []):
-            by_proj.setdefault(rec["projection"], []).append(rec["mask"])
-        for proj in by_proj:
-            by_proj[proj] = sorted(set(by_proj[proj]))
-    return by_proj
 
 
 def atomic_write_workspace(workspace, path: Path) -> None:
@@ -166,34 +128,20 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     masks_dir = Path(args.masks)
 
-    manifest_masks = discover_masks(masks_dir)
+    footprints = ordered(args.footprint)
 
     entries = []
     for proj in args.projections:
-        indices = manifest_masks.get(proj) or discover_mask_indices_by_glob(masks_dir, proj)
-        if not indices:
-            raise FileNotFoundError(
-                f"no masks for projection {proj!r} found under {masks_dir} "
-                "(checked its index.json and mask_{proj}_*.npz)"
-            )
-        if args.mask_indices is not None:
-            absent = sorted(set(args.mask_indices) - set(indices))
-            if absent:
-                raise FileNotFoundError(
-                    f"mask indices {absent} requested for {proj!r} but not present "
-                    f"under {masks_dir} (available: {indices})"
-                )
-            indices = list(dict.fromkeys(args.mask_indices))
-        for i in indices:
-            mask_path = masks_dir / f"mask_{proj}_{i}.npz"
+        for name in footprints:
+            mask_path = masks_dir / f"mask_{proj}_{name}.npz"
             data = np.load(mask_path)
             mask = np.asarray(data["mask"], dtype=np.float64)
             lx_rad = float(data["lx_rad"])
             ly_rad = float(data["ly_rad"])
             zeros = np.zeros_like(mask)
 
-            w22_path = out_dir / f"w22_{proj}_{i}.fits"
-            w00_path = out_dir / f"w00_{proj}_{i}.fits"
+            w22_path = out_dir / f"w22_{proj}_{name}.fits"
+            w00_path = out_dir / f"w00_{proj}_{name}.fits"
 
             if not w22_path.exists():
                 f2 = nmt.NmtFieldFlat(
@@ -218,7 +166,7 @@ def main() -> None:
             entries.append(
                 {
                     "projection": proj,
-                    "mask_index": i,
+                    "footprint": name,
                     "w22": w22_path.name,
                     "w00": w00_path.name,
                     "nx": int(mask.shape[1]),
@@ -238,7 +186,7 @@ def main() -> None:
             "purify_b": purify_b,
             "workspaces": entries,
         },
-        name=index_name(projections=args.projections, masks=args.mask_indices),
+        name=index_name(projections=args.projections, footprints=footprints),
     )
 
 

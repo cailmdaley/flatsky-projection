@@ -107,9 +107,11 @@ def regions(ntheta):
     ra = np.degrees(np.arange(2*ntheta)*np.pi/ntheta)
     dra = (ra+180)%360-180
     # Same C2 2.5-degree boundary taper as production's field mask.
-    d = np.minimum(np.minimum(dec[:, None]+70, -42-dec[:, None]),
+    from _footprints import FIELD, FOOTPRINTS
+    half, dec_min, dec_max = FOOTPRINTS[FIELD].box
+    d = np.minimum(np.minimum(dec[:, None]-dec_min, dec_max-dec[:, None]),
         np.degrees(np.arcsin(np.cos(np.radians(dec[:, None]))*
-                             np.sin(np.radians(50-np.abs(dra)[None, :])))))
+                             np.sin(np.radians(half-np.abs(dra)[None, :])))))
     from make_masks import taper
     mask = taper(np.radians(np.maximum(d, 0)), 'C2', 2.5)**2
     result = {'field1500': mask, 'fullsky': np.ones_like(mask)}

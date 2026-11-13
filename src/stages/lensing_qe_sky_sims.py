@@ -46,7 +46,8 @@ def main():
                           core.DoubleVector((31.5+y/pixel).ravel()))
     ra=np.asarray(ra).reshape(shape); dec=np.asarray(dec).reshape(shape)
     ra=(ra+np.pi)%(2*np.pi)-np.pi
-    dmin,dmax,half=np.deg2rad([-70,-42,50])
+    from _footprints import FIELD, FOOTPRINTS
+    half,dmin,dmax=np.deg2rad(FOOTPRINTS[FIELD].box)
     inside=(abs(ra)<half)&(dec>dmin)&(dec<dmax)
     distance=np.minimum(dec-dmin,dmax-dec)
     for edge in (-half,half):

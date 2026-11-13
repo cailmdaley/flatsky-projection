@@ -14,19 +14,13 @@ import sys
 import time
 
 from _decisions import set_threads
+from _footprints import FIELD
+from namaster_spectra import load_mask
 
 
 def log(text):
     print(f"[{time.strftime('%H:%M:%S')}] {text}", flush=True)
 
-
-def mask_slices(metadata):
-    """Production masks store their crop in the original full target map."""
-    if 'lo' in metadata:
-        lo, hi = int(metadata['lo']), int(metadata['hi'])
-        return slice(lo, hi), slice(lo, hi)
-    return (slice(int(metadata['ylo']), int(metadata['yhi'])),
-            slice(int(metadata['xlo']), int(metadata['xhi'])))
 
 
 def run(args):
@@ -105,14 +99,10 @@ def run(args):
     for proj in projections:
         pairs = {tag: np.load(out/f'{tag}_{proj}.npy') for tag in
                  ('sfl_base','sfl_beam','sphere_base','sphere_beam')}
-        for footprint, directory, mi in (('disk5',args.disk_masks,5),
-                                          ('field1500d',args.field_masks,0)):
-            metadata = np.load(Path(directory)/f'mask_{proj}_{mi}.npz')
-            mask = metadata['mask']
-            ys, xs = mask_slices(metadata)
+        for footprint, name in (('disk5', 'disk_5'), ('field1500d', FIELD)):
+            mask, (ys, xs), lx, ly = load_mask(args.masks, proj, name)
             cropped = {tag: pair[:, ys, xs] for tag, pair in pairs.items()}
             my, mx = mask.shape
-            lx, ly = float(metadata['lx_rad']), float(metadata['ly_rad'])
             ky = np.fft.fftfreq(my, res)[:, None]*2*np.pi
             kx = np.fft.rfftfreq(mx, res)[None, :]*2*np.pi
             ell = np.hypot(kx, ky)
@@ -165,8 +155,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--qu',required=True)
     p.add_argument('--alms',required=True)
-    p.add_argument('--disk-masks',required=True)
-    p.add_argument('--field-masks',required=True)
+    p.add_argument('--masks',required=True,help='flatsky_masks output directory')
     p.add_argument('--out',required=True)
     p.add_argument('--fwhm',type=float,default=1.)
     p.add_argument('--nside',type=int,default=4096)

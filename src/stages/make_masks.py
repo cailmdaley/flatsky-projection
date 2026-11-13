@@ -2,10 +2,10 @@
 """Build apodized Healpix masks marking each analysis footprint.
 
 Every projection is tested against the same set of sky cuts, so the masks
-live on the sphere rather than on any one flat-sky grid: either a circular
-disk around the patch centre at each of several radii (`--radii-rad`, the
-seven-disk suite), or one RA/dec rectangle (`--rect`, SPT's 1500d field),
-apodized with NaMaster's C1 or C2 taper. Building them on the sphere -- on the same intermediate
+live on the sphere rather than on any one flat-sky grid. Each `--footprint`
+names an entry of `_footprints.FOOTPRINTS`: a circular disk around the patch
+centre, or an RA/dec box (SPT's 1500d field), apodized with NaMaster's C1 or
+C2 taper. Building them on the sphere -- on the same intermediate
 Healpix grid the maps are synthesized onto -- means mask and map share a
 pixelization before either one is resampled onto the flat sky, so the
 projection stage introduces no mismatch between the two.
@@ -31,12 +31,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _decisions import add_common_args, parse_apodization, parse_nside, set_threads, write_index  # noqa: E402
+from _decisions import (  # noqa: E402
+    add_common_args, index_name, parse_apodization, parse_nside, set_threads, write_index,
+)
+from _footprints import DEC_DEG, FOOTPRINTS, RA_DEG, ordered  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build apodized Healpix masks: disks at several radii, or one RA/dec rectangle.",
+        description="Build apodized Healpix masks, one per named footprint.",
     )
     parser.add_argument(
         "--nside", required=True, type=parse_nside,
@@ -47,17 +50,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--apodization", required=True, type=parse_apodization,
         help="apodization kernel and scale (accepts c2_2p5deg/c1_2p5deg/c2_5deg)",
     )
-    parser.add_argument("--ra-deg", required=True, type=float, help="patch centre, RA")
-    parser.add_argument("--dec-deg", required=True, type=float, help="patch centre, dec")
-    shape = parser.add_mutually_exclusive_group(required=True)
-    shape.add_argument(
-        "--radii-rad", type=float, nargs="+",
-        help="disk radii in radians, one mask per value, in the order given",
-    )
-    shape.add_argument(
-        "--rect", type=float, nargs=3, metavar=("RA_HALF", "DEC_MIN", "DEC_MAX"),
-        help="one RA/dec rectangle, degrees: |RA - ra_deg| <= RA_HALF and "
-             "DEC_MIN <= dec <= DEC_MAX (written as mask_0)",
+    parser.add_argument(
+        "--footprint", required=True, nargs="+", choices=list(FOOTPRINTS),
+        help="footprints to build, each written as mask_<footprint>.g3.gz",
     )
     add_common_args(parser)
     return parser
@@ -72,18 +67,6 @@ def disk_mask(nside, center_vec, radius_rad):
     mask = np.zeros(hp.nside2npix(nside))
     mask[disk_pixels] = 1.0
     return mask
-
-
-def apodize(binary_mask, apotype, aposize_deg):
-    """Taper a binary mask's edge with NaMaster's C1/C2 kernel.
-
-    aposize is in degrees -- NmtWorkspaceFlat, mask_apodization and the
-    decisions table all agree on that unit, but it is easy to pass arcmin
-    by habit, so this wrapper exists mainly to name the unit at the call site.
-    """
-    import pymaster as nmt
-
-    return nmt.mask_apodization(binary_mask, aposize=aposize_deg, apotype=apotype)
 
 
 def apodize_disk_analytic(nside, center_vec, radius_rad, apotype, aposize_deg):
@@ -224,6 +207,31 @@ def write_mask_g3(apodized_mask, out_path: Path) -> None:
     tmp_path.replace(out_path)
 
 
+def build_mask(fp, nside, apotype, aposize_deg):
+    """(apodized mask, sky fractions, shape record) for one footprint."""
+    import healpy as hp
+    import numpy as np
+
+    if fp.shape == "disk":
+        center_vec = hp.ang2vec(RA_DEG, DEC_DEG, lonlat=True)
+        binary_mask = disk_mask(nside, center_vec, fp.radius_rad)
+        apodized_mask = apodize_disk_analytic(
+            nside, center_vec, fp.radius_rad, apotype, aposize_deg)
+        return apodized_mask, realized_fsky(binary_mask, apodized_mask), {
+            "radius_rad": fp.radius_rad}
+
+    ra_half, dec_min, dec_max = fp.box
+    pix, w = rect_mask_analytic(nside, RA_DEG, ra_half, dec_min, dec_max, apotype, aposize_deg)
+    npix = hp.nside2npix(nside)
+    fsky = {"fsky_binary": pix.size / npix,
+            "fsky_w1": float(w.sum()) / npix,
+            "fsky_w2": float((w * w).sum()) / npix}
+    apodized_mask = np.zeros(npix)
+    apodized_mask[pix] = w
+    return apodized_mask, fsky, {
+        "ra_half_deg": ra_half, "dec_min_deg": dec_min, "dec_max_deg": dec_max}
+
+
 def main(argv=None) -> None:
     args = build_parser().parse_args(argv)
 
@@ -231,69 +239,29 @@ def main(argv=None) -> None:
     # bounds the threaded runtimes those libraries spin up.
     set_threads(args.max_procs)
 
-    import healpy as hp
-    import numpy as np
-
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    center_vec = hp.ang2vec(args.ra_deg, args.dec_deg, lonlat=True)
     apotype = args.apodization["apotype"]
     aposize_deg = args.apodization["aposize"]
-
-    if args.rect is not None:
-        ra_half, dec_min, dec_max = args.rect
-        t_start = time.time()
-        pix, w = rect_mask_analytic(
-            args.nside, args.ra_deg, ra_half, dec_min, dec_max, apotype, aposize_deg)
-        npix = hp.nside2npix(args.nside)
-        fsky = {"fsky_binary": pix.size / npix,
-                "fsky_w1": float(w.sum()) / npix,
-                "fsky_w2": float((w * w).sum()) / npix}
-        apodized_mask = np.zeros(npix)
-        apodized_mask[pix] = w
-        del pix, w
-        out_path = out_dir / "mask_0.g3.gz"
-        write_mask_g3(apodized_mask, out_path)
-        print(f"rect RA {args.ra_deg:+.1f} +- {ra_half} dec [{dec_min}, {dec_max}] -> "
-              f"fsky_binary {fsky['fsky_binary']:.5f}  fsky_w1 {fsky['fsky_w1']:.5f}  "
-              f"fsky_w2 {fsky['fsky_w2']:.5f}  ({time.time() - t_start:.1f}s)", flush=True)
-        write_index(out_dir, {
-            "stage": "make_masks", "shape": "rect", "nside": args.nside,
-            "apotype": apotype, "aposize_deg": aposize_deg,
-            "ra_deg": args.ra_deg, "dec_deg": args.dec_deg,
-            "max_procs": args.max_procs,
-            "masks": [{"index": 0, "file": out_path.name, "ra_half_deg": ra_half,
-                       "dec_min_deg": dec_min, "dec_max_deg": dec_max, **fsky}],
-        })
-        return
+    footprints = ordered(args.footprint)
 
     mask_records = []
-    for index, radius_rad in enumerate(args.radii_rad):
+    for name in footprints:
+        fp = FOOTPRINTS[name]
         t_start = time.time()
-
-        binary_mask = disk_mask(args.nside, center_vec, radius_rad)
-        apodized_mask = apodize_disk_analytic(
-            args.nside, center_vec, radius_rad, apotype, aposize_deg)
-        fsky = realized_fsky(binary_mask, apodized_mask)
-
-        out_path = out_dir / f"mask_{index}.g3.gz"
+        apodized_mask, fsky, shape = build_mask(fp, args.nside, apotype, aposize_deg)
+        out_path = out_dir / f"mask_{name}.g3.gz"
         write_mask_g3(apodized_mask, out_path)
-
-        wall_time = time.time() - t_start
+        del apodized_mask
         print(
-            f"mask {index}: radius {radius_rad:.4f} rad -> "
-            f"fsky_binary {fsky['fsky_binary']:.5f}  "
+            f"{name}: fsky_binary {fsky['fsky_binary']:.5f}  "
             f"fsky_w1 {fsky['fsky_w1']:.5f}  fsky_w2 {fsky['fsky_w2']:.5f}  "
-            f"({wall_time:.1f}s)"
+            f"({time.time() - t_start:.1f}s)",
+            flush=True,
         )
-        sys.stdout.flush()
-
         mask_records.append({
-            "index": index,
-            "file": out_path.name,
-            "radius_rad": radius_rad,
-            **fsky,
+            "footprint": name, "file": out_path.name, "shape": fp.shape, **shape, **fsky,
         })
 
     write_index(out_dir, {
@@ -301,11 +269,10 @@ def main(argv=None) -> None:
         "nside": args.nside,
         "apotype": apotype,
         "aposize_deg": aposize_deg,
-        "ra_deg": args.ra_deg,
-        "dec_deg": args.dec_deg,
-        "max_procs": args.max_procs,
+        "ra_deg": RA_DEG,
+        "dec_deg": DEC_DEG,
         "masks": mask_records,
-    })
+    }, name=index_name(footprints=footprints))
 
 
 if __name__ == "__main__":

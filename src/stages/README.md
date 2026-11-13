@@ -54,14 +54,18 @@ with `spt3g.maps.fitsio.load_skymap_fits(..., keys="TQU")`, runs
 `hp.almxfl`, writes `hp.write_alm` to `<out>/alms_seed{N:04d}.fits` (3 HDUs: T, E, B).
 
 ### `make_masks.py`
-`--nside --apodization --ra-deg --dec-deg --radii-rad --out`
+`--nside --apodization --footprint NAME… --out`
 
-`hp.query_disc` at each radius, then `nmt.mask_apodization(mask, aposize, apotype)`.
-Writes `<out>/mask_{i}.g3` (a `G3Frame` with key `T` holding a `HealpixSkyMap`).
-Records in `index.json`, per mask: radius, `fsky_binary = mean(mask_binary)`,
-`fsky_w2 = mean(mask_apodized**2)`, `fsky_w1 = mean(mask_apodized)`. The 2021 config
-labelled these 0.75…10 % from the *unapodized* disk area; the realized `fsky_w2` is
-smaller and is the number downstream code and the paper must use.
+Footprints are named in `_footprints.py`, the one registry of the analysis
+footprints: seven disks (`disk_0p75` … `disk_10`) and SPT's 1500d field
+(`field_1500d`), with each one's shape, flat-sky cut and nominal sky fraction, and
+the patch centre. Each footprint is apodized analytically on the sphere with
+NaMaster's C1/C2 kernel and written as `<out>/mask_{footprint}.g3.gz` (a `G3Frame`
+with key `T` holding a ring-sparse `HealpixSkyMap`). `index_{footprint}.json`
+records, per mask: its shape, `fsky_binary = mean(mask_binary)`,
+`fsky_w1 = mean(mask_apodized)`, `fsky_w2 = mean(mask_apodized**2)`. The disks'
+nominal 0.75…10 % labels come from the *unapodized* disk area; the realized
+`fsky_w2` is smaller and is the number downstream code and the paper must use.
 
 ### `project_qu.py` / `project_eb.py`
 `--alms --projections --interpolation --nside --res-arcmin --size-deg --ra-deg --dec-deg --seed-start --seed-stop --max-procs --out`
@@ -74,47 +78,39 @@ same way, with *no* `FlattenPol` — this leg is leakage-free by construction.
 Write `<out>/qu_{proj}_seed{N:04d}.g3` and `<out>/eb_{proj}_seed{N:04d}.g3`.
 
 ### `project_masks.py`
-`--healpix-masks --projections --interpolation --res-arcmin --size-deg --ra-deg --dec-deg [--cut-bounds …] --out`
+`--healpix-masks --footprint NAME… --projections --interpolation --res-arcmin --size-deg --out`
 
-Projects each Healpix mask into each projection, `ApplyMapThreshold` to remove NaNs,
-then **cuts a centred square sub-window** — NaMaster analyses that window, not the full
-3300². Two modes:
-
-* derived (default): smallest centred square containing every pixel with mask > 1e-6,
-  rounded up to an even side.
-* `--cut-bounds lo:hi lo:hi …`, one per mask, to force the 2021 hand-maintained table
-  `1320:1980 1290:2010 1230:2070 1140:2160 960:2340 780:2520 300:3000`. **The baseline
-  universe must pass this table**, because it changes the Fourier grid and therefore
-  the bandpowers; it is what reproduces the 2021 numbers. Note the 2021 windows clip
-  the outer part of the apodization taper on the small masks.
-
-Writes `<out>/mask_{proj}_{i}.npz` with `mask` (2-D float64), `lo`, `hi`,
-`lx_rad`, `ly_rad` where `lx_rad = (hi-lo) * res_arcmin/60 * pi/180`.
+Projects each footprint's Healpix mask into each projection, zeroes NaNs, then cuts
+the window NaMaster analyses. A disk's window is its square `lo:hi` from the registry
+(the 2021 hand-maintained table, which sets the Fourier grid and therefore the
+bandpowers); the field's is the tightest even-sided rectangle around its support.
+Writes `<out>/mask_{proj}_{footprint}.npz` with `mask` (2-D float64), `lx_rad`,
+`ly_rad` and the window bounds `ylo yhi xlo xhi` (plus `lo hi` for a square), and
+`index_{footprint}.json`.
 
 ### `coupling_matrices.py`
-`--masks --projections --purify-b --lmax --delta-ell --max-procs --out`
+`--masks --projections --footprint NAME… --purify-b --lmax --delta-ell --max-procs --out`
 
-Per (projection, mask): `nmt.NmtBinFlat(l0, lf)` with `l0 = arange(nbins)*delta_ell`,
-`lf = (arange(nbins)+1)*delta_ell`, `nbins = lmax // delta_ell`; a dummy
-`nmt.NmtFieldFlat(lx, ly, mask, [zeros, zeros], purify_b=…)`; then
-`w = nmt.NmtWorkspaceFlat(); w.compute_coupling_matrix(f, f, b)`;
-`w.write_to(<out>/w22_{proj}_{i}.fits)`.
+Per (projection, footprint): `nmt.NmtBinFlat(l0, lf)` with `l0 = arange(nbins)*delta_ell`,
+`lf = (arange(nbins)+1)*delta_ell`, `nbins = lmax // delta_ell`; dummy spin-2 and
+spin-0 fields over the mask; `w.compute_coupling_matrix(f, f, b)`, written to
+`<out>/w22_{proj}_{footprint}.fits` and `<out>/w00_{proj}_{footprint}.fits`.
 
 ### `namaster_spectra.py`
-`--qu-maps --eb-maps --masks --workspaces --projections --seed-start --seed-stop --purify-b --pixel-window --lmax --delta-ell --max-procs --out`
+`--qu-maps --eb-maps --masks --workspaces --projections --seeds --purify-b --pixel-window --lmax --delta-ell --max-procs --out`
 
-For each leg, projection, mask, seed: cut the map to that mask's window, build
-`nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=…)`, then
-`w.decouple_cell(nmt.compute_coupled_cell_flat(f, f, b))` and keep index 0 (EE) and
-3 (BB).
+For each leg, projection, footprint the workspaces index lists, and seed: cut the map
+to that footprint's window, build `nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=…)`
+(Q/U leg) or two spin-0 fields (E/B leg), then
+`w.decouple_cell(nmt.compute_coupled_cell_flat(f, f, b))`.
 
-Writes one `<out>/bandpowers.npz`:
+Writes `<out>/bandpowers_{proj}_seed{N:04d}.npz` per unit:
 
 ```
-ell_eff   (nbins,)
-ee        (nleg=2, nproj, nmask, nseed, nbins)
-bb        (same shape)
-legs      ['qu', 'eb']  projections  masks(index)  seeds
+ell_eff     (nbins,)
+ee          (nleg=2, nproj, nfootprint, nseed, nbins)
+bb          (same shape)
+legs        ['qu', 'eb']  projections  footprints (names, registry order)  seeds
 ```
 
 One array, explicitly indexed. The 2021 script assigned `cl_flat_EE[ii]` inside the
@@ -130,6 +126,12 @@ bandpowers, squared; `healpix_and_flat` divides by both. The healpix modes
 over-correct — the unlensed_TQU inputs carry no Healpix window (Cl of the
 preprocessed alms matches theory flat to ell = 6000) — and exist only for the
 explicit comparison.
+
+### `scalar_project.py` / `scalar_spectra.py`
+`--spectrum tt|white` selects the scalar sky (the preprocessed T alms, or unit-C_l
+white alms). Maps are `<out>/{spectrum}_{proj}_seed{N:04d}.g3`; bandpowers are
+`<out>/bandpowers_{spectrum}_{proj}_seed{N:04d}.npz` with `cl` of shape
+`(nfootprint, nbins)` and `footprints`.
 
 ### `eb_residuals.py`, `covariance.py`, `leakage_summary.py`
 Downstream reductions; see `astra.yaml` for their flags. They read `bandpowers.npz`

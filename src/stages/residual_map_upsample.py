@@ -7,6 +7,7 @@ Native results must reproduce production before any interpretation.
 """
 from pathlib import Path
 import argparse
+from _footprints import FIELD
 from _decisions import set_threads, write_index
 from residual_pure_e_test import refine_periodic
 
@@ -25,14 +26,14 @@ def main():
     from scipy.ndimage import map_coordinates
     from namaster_spectra import load_mask, atomic_save, finite_in_mask
 
-    mask, window, lx, ly = load_mask(args.masks, args.projection, 0)
+    mask, window, lx, ly = load_mask(args.masks, args.projection, FIELD)
     ny, nx = mask.shape
     frame = next(core.G3File(str(args.maps/f'qu_{args.projection}_seed{args.seed:04d}.g3')))
     full = [np.asarray(frame[key], dtype=float).copy() for key in ('Q', 'U')]
     del frame
     bins = nmt.NmtBinFlat(np.arange(0., 6000., 50.), np.arange(50., 6050., 50.))
     ws = nmt.NmtWorkspaceFlat()
-    ws.read_from(str(args.workspaces/f'w22_{args.projection}_0.fits'))
+    ws.read_from(str(args.workspaces/f'w22_{args.projection}_{FIELD}.fits'))
     result = dict(ell=bins.get_effective_ells(), projection=args.projection, seed=args.seed)
     for pad in (0, 64, 128):
         ys, xs = window

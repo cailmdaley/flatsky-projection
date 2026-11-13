@@ -53,7 +53,8 @@ def main():
         return np.asarray(ra).reshape(shape),np.asarray(dec).reshape(shape)
     ra,dec=angles(x,y)
     ra=(ra+np.pi)%(2*np.pi)-np.pi
-    dmin,dmax,half=np.deg2rad([-70,-42,50])
+    from _footprints import FIELD, FOOTPRINTS
+    half,dmin,dmax=np.deg2rad(FOOTPRINTS[FIELD].box)
     inside=(np.abs(ra)<half)&(dec>dmin)&(dec<dmax)
     distance=np.minimum(dec-dmin,dmax-dec)
     for edge in (-half,half):

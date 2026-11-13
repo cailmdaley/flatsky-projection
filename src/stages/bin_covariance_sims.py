@@ -11,6 +11,7 @@ import argparse
 import time
 
 from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
+from _footprints import DEC_DEG, FIELD
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 
 
@@ -20,7 +21,7 @@ def mask_stub(proj, window):
     rows, cols = window
     template = maps.FlatSkyMap(3300, 3300, 2*core.G3Units.arcmin,
                                proj=maps.MapProjection.names[proj],
-                               delta_center=-56*core.G3Units.deg,
+                               delta_center=DEC_DEG*core.G3Units.deg,
                                pol_conv=maps.MapPolConv.COSMO)
     nx, ny = cols.stop-cols.start, rows.stop-rows.start
     return template.extract_patch(cols.start+nx//2, rows.start+ny//2, nx, ny)
@@ -47,7 +48,7 @@ def run(args):
     interpolation = parse_interpolation(args.interpolation)
     setup = {}
     for proj in args.projections:
-        mask, window, lx, ly = load_mask(args.masks, proj, 0)
+        mask, window, lx, ly = load_mask(args.masks, proj, FIELD)
         stub = mask_stub(proj, window)
         setup[proj] = (mask, stub, lx, ly)
 

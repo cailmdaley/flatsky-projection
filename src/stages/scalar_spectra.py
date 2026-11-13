@@ -1,4 +1,9 @@
-"""Spin-zero auto-bandpowers on the disk masks or the 1500d field."""
+"""Spin-zero auto-bandpowers of projected scalar maps, on every footprint.
+
+`--spectrum` names the scalar sky (`tt` or `white`); it prefixes the map
+files read and the bandpower and index files written, so both spectra can
+share one output directory.
+"""
 import argparse
 from pathlib import Path
 from _decisions import (add_common_args, parse_lmax, parse_delta_ell,
@@ -12,6 +17,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('maps', 'masks', 'workspaces', 'pixel-window'):
         p.add_argument('--' + name, required=True)
+    p.add_argument('--spectrum', choices=['tt', 'white'], required=True)
     p.add_argument('--projections', nargs='+', required=True)
     p.add_argument('--lmax', type=parse_lmax, required=True)
     p.add_argument('--delta-ell', type=parse_delta_ell, required=True)
@@ -20,9 +26,9 @@ def main():
     set_threads(args.max_procs)
     import numpy as np
     import pymaster as nmt
-    from spt3g import core, maps
+    from spt3g import core, maps  # noqa: F401
     seeds = resolve_seeds(args)
-    meta, entries, masks = load_workspace_manifest(Path(args.workspaces), args.projections)
+    meta, entries, footprints = load_workspace_manifest(Path(args.workspaces), args.projections)
     if (meta['lmax'], meta['delta_ell']) != (args.lmax, args.delta_ell):
         raise ValueError('Scalar workspace binning does not match requested bins')
     lo = np.arange(args.lmax // args.delta_ell) * args.delta_ell
@@ -34,21 +40,23 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     for proj in args.projections:
         for seed in seeds:
-            frame = next(core.G3File(str(Path(args.maps) / f'scalar_{proj}_seed{seed:04d}.g3')))
+            name = f'{args.spectrum}_{proj}_seed{seed:04d}'
+            frame = next(core.G3File(str(Path(args.maps) / f'{name}.g3')))
             sky = np.asarray(frame['T'], dtype=np.float64)
             cl = []
-            for i in masks:
-                mask, window, lx, ly = load_mask(Path(args.masks), proj, i)
+            for fp in footprints:
+                mask, window, lx, ly = load_mask(Path(args.masks), proj, fp)
                 field = nmt.NmtFieldFlat(lx, ly, mask, [finite_in_mask(sky[window], mask)])
                 workspace = nmt.NmtWorkspaceFlat()
-                workspace.read_from(str(Path(args.workspaces) / entries[proj][i]['w00']))
+                workspace.read_from(str(Path(args.workspaces) / entries[proj][fp]['w00']))
                 cl.append(workspace.decouple_cell(nmt.compute_coupled_cell_flat(field, field, bins))[0] / correction)
-            atomic_save(out / f'bandpowers_{proj}_seed{seed:04d}.npz',
-                        cl=np.asarray(cl), ell_eff=ell, masks=np.asarray(masks), seed=seed)
-            print(f'{proj} seed{seed:04d} done', flush=True)
-    write_index(out, {'projections': args.projections, 'seeds': seeds, 'masks': masks,
+            atomic_save(out / f'bandpowers_{name}.npz',
+                        cl=np.asarray(cl), ell_eff=ell, footprints=np.asarray(footprints), seed=seed)
+            print(f'{name} done', flush=True)
+    write_index(out, {'spectrum': args.spectrum, 'projections': args.projections,
+                      'seeds': seeds, 'footprints': footprints,
                       'lmax': args.lmax, 'delta_ell': args.delta_ell, 'pixel_window': mode},
-                name=index_name(seeds, args.projections))
+                name=index_name(seeds, args.projections, tag=args.spectrum))
 
 
 if __name__ == '__main__':

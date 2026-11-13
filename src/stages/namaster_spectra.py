@@ -8,7 +8,7 @@ spin-2 field: Q and U were built from the sky's actual polarization tensor,
 flattened with ``FlattenPol`` in ``project_qu.py`` (already applied -- this
 stage must *not* call it again). It goes into
 ``NmtFieldFlat(lx, ly, mask, [q, u], purify_b=...)`` and is decoupled with the
-spin-2 workspace (``w22_{proj}_{i}.fits``, ``ncls=4``, order EE/EB/BE/BB);
+spin-2 workspace (``w22_{proj}_{footprint}.fits``, ``ncls=4``, order EE/EB/BE/BB);
 this leg carries the projection's E-to-B leakage, which is the thing the
 whole analysis measures.
 
@@ -30,7 +30,7 @@ pymaster's ``field.py`` before writing this).
 So the E/B leg is two independent spin-0 auto-spectra:
 ``NmtFieldFlat(lx, ly, mask, [E])`` and ``NmtFieldFlat(lx, ly, mask, [B])``,
 each with ``purify_e=purify_b=False`` (undefined for spin-0), each decoupled
-through the *scalar* workspace ``w00_{proj}_{i}.fits`` that
+through the *scalar* workspace ``w00_{proj}_{footprint}.fits`` that
 ``coupling_matrices.py`` now also writes for exactly this reason. "ee" for
 this leg is the E-field's own auto-power; "bb" is the B-field's. Both
 ``compute_coupled_cell_flat`` calls return a single row (``ncls=1``), so no
@@ -62,8 +62,14 @@ README's "Grid and geometry" section and ``astra.yaml``'s resolution-chain
 note), not per-run decisions, so ``INPUT_HEALPIX_NSIDE`` and ``RES_ARCMIN``
 below are constants rather than flags.
 
-Resumable: bandpowers are checkpointed per (leg, projection, mask) into
-``<out>/partial/{leg}_{proj}_mask{i}.npy``, an array of shape
+Footprints
+----------
+Every footprint the workspaces index lists is measured, in registry order
+(``_footprints.FOOTPRINTS``), and the output arrays carry a footprint axis
+whose names are stored as ``footprints``.
+
+Resumable: bandpowers are checkpointed per (leg, projection, footprint) into
+``<out>/partial/{leg}_{proj}_{footprint}.npy``, an array of shape
 ``(2, nseed, nbins)`` (axis 0 = ee, bb) written after every seed, atomically
 (temp file + rename) so a kill mid-seed leaves the previous seed's result
 intact rather than a truncated file. ``bandpowers.npz`` is assembled from the
@@ -87,6 +93,7 @@ from _decisions import (
     set_threads,
     write_index,
 )
+from _footprints import ordered
 
 LEGS = ("qu", "eb")
 
@@ -135,17 +142,18 @@ def atomic_save(path: Path, **arrays) -> None:
 
 
 def load_workspace_manifest(workspaces_dir: Path, projections: list[str]):
-    """Group the coupling_matrices manifest by projection; verify uniform masks.
+    """(manifest scalars, {proj: {footprint: entry}}, footprints in registry order).
 
-    The workspaces arrive either as one ``index.json`` or as one
-    ``index_<proj>_mask<i>.json`` per grid unit; ``read_index_entries``
-    merges them and checks they agree on binning and purification.
+    The workspaces arrive as one ``index_<proj>_<footprint>.json`` per grid
+    unit; ``read_index_entries`` merges them and checks they agree on
+    binning and purification. Every projection must carry the same set of
+    footprints.
     """
     manifest, workspaces = read_index_entries(workspaces_dir, "workspaces")
-    by_proj: dict[str, dict[int, dict]] = {}
+    by_proj: dict[str, dict[str, dict]] = {}
     for entry in workspaces:
         if entry["projection"] in projections:
-            by_proj.setdefault(entry["projection"], {})[entry["mask_index"]] = entry
+            by_proj.setdefault(entry["projection"], {})[entry["footprint"]] = entry
 
     missing = [p for p in projections if p not in by_proj]
     if missing:
@@ -153,33 +161,23 @@ def load_workspace_manifest(workspaces_dir: Path, projections: list[str]):
             f"no workspaces found for projection(s) {missing} under {workspaces_dir}"
         )
 
-    index_sets = {p: frozenset(by_proj[p]) for p in projections}
-    first = index_sets[projections[0]]
-    mismatched = {p: s for p, s in index_sets.items() if s != first}
-    if mismatched:
+    sets = {p: frozenset(by_proj[p]) for p in projections}
+    if len(set(sets.values())) > 1:
         raise ValueError(
-            "projections do not share the same set of mask indices: "
-            f"{ {p: sorted(s) for p, s in index_sets.items()} }"
+            "projections do not share the same set of footprints: "
+            f"{ {p: sorted(s) for p, s in sets.items()} }"
         )
-    mask_indices = sorted(first)
-    return manifest, by_proj, mask_indices
+    return manifest, by_proj, ordered(sets[projections[0]])
 
 
-def load_mask(masks_dir: Path, proj: str, i: int):
-    """(mask, window, lx_rad, ly_rad); `window` slices the cut out of a full map.
-
-    Cuts carry row and column bounds (`ylo:yhi`, `xlo:xhi`); a square cut
-    written with only `lo:hi` uses those on both axes.
-    """
+def load_mask(masks_dir: Path, proj: str, footprint: str):
+    """(mask, window, lx_rad, ly_rad); `window` slices the cut out of a full map."""
     import numpy as np
 
-    d = np.load(masks_dir / f"mask_{proj}_{i}.npz")
+    d = np.load(Path(masks_dir) / f"mask_{proj}_{footprint}.npz")
     mask = np.asarray(d["mask"], dtype=np.float64)
-    if "ylo" in d.files:
-        rows = slice(int(d["ylo"]), int(d["yhi"]))
-        cols = slice(int(d["xlo"]), int(d["xhi"]))
-    else:
-        rows = cols = slice(int(d["lo"]), int(d["hi"]))
+    rows = slice(int(d["ylo"]), int(d["yhi"]))
+    cols = slice(int(d["xlo"]), int(d["xhi"]))
     lx_rad, ly_rad = float(d["lx_rad"]), float(d["ly_rad"])
     return mask, (rows, cols), lx_rad, ly_rad
 
@@ -304,7 +302,7 @@ def main() -> None:
     ell_eff = b.get_effective_ells()
 
     workspaces_dir = Path(args.workspaces)
-    ws_manifest, ws_by_proj, mask_indices = load_workspace_manifest(
+    ws_manifest, ws_by_proj, footprints = load_workspace_manifest(
         workspaces_dir, list(args.projections)
     )
     if ws_manifest["lmax"] != lmax or ws_manifest["delta_ell"] != delta_ell:
@@ -345,10 +343,10 @@ def main() -> None:
 
     for leg in LEGS:
         for proj in projections:
-            for i in mask_indices:
-                mask, window, lx_rad, ly_rad = load_mask(masks_dir, proj, i)
+            for fp in footprints:
+                mask, window, lx_rad, ly_rad = load_mask(masks_dir, proj, fp)
 
-                ws_path = workspaces_dir / ws_by_proj[proj][i]["w22" if leg == "qu" else "w00"]
+                ws_path = workspaces_dir / ws_by_proj[proj][fp]["w22" if leg == "qu" else "w00"]
                 w = nmt.NmtWorkspaceFlat()
                 w.read_from(str(ws_path))
                 if w.wsp.bin.n_bands != nbins:
@@ -357,7 +355,7 @@ def main() -> None:
                         f"{nbins} -- built with a different --lmax/--delta-ell"
                     )
 
-                partial_path = partial_dir / f"{leg}_{proj}_mask{i}.npy"
+                partial_path = partial_dir / f"{leg}_{proj}_{fp}.npy"
                 arr = load_partial(partial_path, (2, nseed, nbins))
 
                 for si, seed in enumerate(seeds):
@@ -393,7 +391,7 @@ def main() -> None:
                     arr[1, si] = bb / pixwin_correction
                     atomic_save(partial_path, value=arr)
                     print(
-                        f"{leg} {proj} mask{i} seed{seed:04d} done", flush=True
+                        f"{leg} {proj} {fp} seed{seed:04d} done", flush=True
                     )
 
                 assert not np.isnan(arr).any(), (
@@ -402,14 +400,14 @@ def main() -> None:
                 )
 
     # Assemble the one canonical output from the (now-complete) partials.
-    ee = np.empty((len(LEGS), len(projections), len(mask_indices), nseed, nbins))
+    ee = np.empty((len(LEGS), len(projections), len(footprints), nseed, nbins))
     bb = np.empty_like(ee)
     for li, leg in enumerate(LEGS):
         for pi, proj in enumerate(projections):
-            for mi, i in enumerate(mask_indices):
-                arr = np.load(partial_dir / f"{leg}_{proj}_mask{i}.npy")
-                ee[li, pi, mi] = arr[0]
-                bb[li, pi, mi] = arr[1]
+            for fi, fp in enumerate(footprints):
+                arr = np.load(partial_dir / f"{leg}_{proj}_{fp}.npy")
+                ee[li, pi, fi] = arr[0]
+                bb[li, pi, fi] = arr[1]
 
     atomic_save(
         out_dir / f"{stem}.npz",
@@ -418,7 +416,7 @@ def main() -> None:
         bb=bb,
         legs=np.array(LEGS),
         projections=np.array(projections),
-        masks=np.array(mask_indices),
+        footprints=np.array(footprints),
         seeds=np.array(seeds),
     )
 
@@ -433,7 +431,7 @@ def main() -> None:
             "bandpowers": f"{stem}.npz",
             "legs": list(LEGS),
             "projections": projections,
-            "masks": mask_indices,
+            "footprints": footprints,
             "seeds": seeds,
             "lmax": lmax,
             "delta_ell": delta_ell,
