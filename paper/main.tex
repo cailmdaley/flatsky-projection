@@ -309,8 +309,7 @@ These are factors of a few and do not change the choice of class.
 \subsection{Decoupling} \label{subsec:correct}
 
 A pseudo-$C_\ell$ estimator already inverts the coupling of modes by its mask.
-$\mathcal{R}$ composes with that coupling, so an analysis on any grid can decouple the projection in the same step, and we provide code that builds $\mathcal{R}$ for a projection and mask and does so with NaMaster.
-\CD{Package and its name to add.}
+$\mathcal{R}$ composes with that coupling, so an analysis on any grid can decouple the projection in the same step, and we provide \texttt{projcoupling}, which builds $\mathcal{R}$ from the sky coordinates of any grid's pixels and a mask in about a second for the 1500d field, and decouples it after NaMaster.
 It must be the full matrix.
 A diagonal transfer function calibrated on CMB simulations absorbs the projection as the CMB's own response, which carries the CMB's slope and acoustic phase, and corrects any other spectrum wrongly: for the white skies through the $T$ leg on the 1500d field it leaves SFL's bandpowers low by \tfSFLmean\ on average and by up to \tfSFLworst, STG's off by up to \tfSTGworst, and ZEA's within \tfZEAworst\ (Fig.~\ref{fig:transfer_error}).
 $\mathcal{R}$ applied to the white input matches the measured bandpowers to \tfclosureworst\ in every band.
