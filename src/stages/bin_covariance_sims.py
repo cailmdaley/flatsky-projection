@@ -1,7 +1,7 @@
 """Field-only Gaussian MC for TT, EE and projection-induced BB covariance.
 
 Synthesizes an independent unlensed sky per unit, using the production
-Nside, interpolation, FlattenPol, mask and pure-B estimator. No projected
+Nside, interpolation, flattening, mask and pure-B estimator. No projected
 maps are retained. Unit-width coupled spectra permit later arbitrary binning.
 T and E are independent draws: this output tests auto-spectrum covariance,
 not TE or covariance between TT and EE. The true sky B is exactly zero.

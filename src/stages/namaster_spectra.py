@@ -5,8 +5,8 @@ Two legs, two different NaMaster objects
 -----------------------------------------
 The Q/U leg (``qu_{proj}_seed{N:04d}.g3``, keys ``Q``/``U``) is a genuine
 spin-2 field: Q and U were built from the sky's actual polarization tensor,
-flattened with ``FlattenPol`` in ``project_qu.py`` (already applied -- this
-stage must *not* call it again). It goes into
+flattened in ``project_qu.py`` (already applied -- this stage must *not*
+flatten again). It goes into
 ``NmtFieldFlat(lx, ly, mask, [q, u], purify_b=...)`` and is decoupled with the
 spin-2 workspace (``w22_{proj}_{footprint}.fits``, ``ncls=4``, order EE/EB/BE/BB);
 this leg carries the projection's E-to-B leakage, which is the thing the
@@ -15,7 +15,7 @@ whole analysis measures.
 The E/B leg (``eb_{proj}_seed{N:04d}.g3``, keys ``E``/``B``) is *not* a
 second spin-2 field with a confusingly-named ``[E, B]`` pair. Its maps were
 synthesized directly from the E- and B-mode alms with ``hp.alm2map`` used as
-a spin-0 transform and projected with no ``FlattenPol`` (see
+a spin-0 transform and projected with no flattening (see
 ``project_eb.py``): there is no Q/U tensor in this leg's history for a spin-2
 decomposition to act on. Handing ``[E, B]`` to a spin-2 field would ask
 NaMaster to E/B-decompose two maps that were never a polarization tensor,
@@ -31,7 +31,7 @@ So the E/B leg is two independent spin-0 auto-spectra:
 ``NmtFieldFlat(lx, ly, mask, [E])`` and ``NmtFieldFlat(lx, ly, mask, [B])``,
 each with ``purify_e=purify_b=False`` (undefined for spin-0), each decoupled
 through the *scalar* workspace ``w00_{proj}_{footprint}.fits`` that
-``coupling_matrices.py`` now also writes for exactly this reason. "ee" for
+``coupling_matrices.py`` writes for exactly this reason. "ee" for
 this leg is the E-field's own auto-power; "bb" is the B-field's. Both
 ``compute_coupled_cell_flat`` calls return a single row (``ncls=1``), so no
 index-0-vs-3 split is needed the way it is for the Q/U leg.
@@ -230,8 +230,7 @@ def compute_qu_bandpowers(q, u, mask, lx_rad, ly_rad, purify_b, b, w):
     """EE, BB from a genuine spin-2 (Q, U) field, decoupled through a w22 workspace.
 
     Factored out of the main loop so the exact same call sequence can be
-    exercised directly -- e.g. by ``tmp_verify`` scripts feeding it 2021
-    reference maps -- without going through the directory/manifest plumbing.
+    exercised directly, without the directory/manifest plumbing.
     """
     import pymaster as nmt
 

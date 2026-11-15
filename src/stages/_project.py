@@ -8,7 +8,7 @@ This module holds everything that is identical between the two legs -- the
 check, and the ``index.json`` manifest.
 
 What differs between the legs -- which alm components get synthesized, and
-whether ``FlattenPol`` runs afterwards -- is deliberately *not* abstracted
+whether flattening runs afterwards -- is deliberately *not* abstracted
 away behind a flag here. It stays in ``project_qu.py`` / ``project_eb.py`` as
 an explicit function each script supplies, so the one line that makes the
 Q/U leg leaky and the E/B leg leakage-free is visible at its call site
@@ -180,7 +180,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
     leg's intermediate Healpix maps from one seed's alms.
 
     ``postprocess(flatsky_frame)`` mutates the freshly projected frame in
-    place -- ``maps.FlattenPol`` for the QU leg, nothing at all for the EB
+    place -- ``flatten`` for the QU leg, nothing at all for the EB
     leg. See the comment at each call site in project_qu.py / project_eb.py
     for why.
 

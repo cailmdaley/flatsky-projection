@@ -36,37 +36,31 @@ description: |
   squared shear under the squared mask. This analysis measures both effects
   on simulations and tests a forward model built from the local geometry.
 
-  The inputs are unlensed HEALPix TQU realizations of the Planck 2018
-  best-fit cosmology at Nside 8192, which contain no B modes, so every
-  recovered BB bandpower is leakage. Each is transformed to spherical
-  harmonics band-limited at ell_max, synthesized on an intermediate HEALPix
-  grid, and projected by bilinear interpolation with oversampling onto a
-  3300 x 3300 grid of 2 arcmin pixels centred on (RA, dec) = (0, -56 deg),
-  in the stereographic (STG), Lambert zenithal equal-area (ZEA), BICEP-style
+  The pipeline has no data inputs. CAMB spectra of the cosmology decision
+  set the input power, and one unlensed Gaussian sky is drawn per seed with
+  B = 0, so every recovered BB bandpower is leakage. Each sky is
+  band-limited at ell_max, synthesized on an intermediate HEALPix grid, and
+  projected by bilinear interpolation with oversampling onto a 4500 x 4500
+  grid of 2 arcmin pixels centred on (RA, dec) = (0, -56 deg), in the
+  stereographic (STG), Lambert zenithal equal-area (ZEA), BICEP-style
   equidistant cylindrical (BICEP) and Sanson-Flamsteed (SFL) projections.
-  Three legs pass each
-  sky through the pipeline: the Q/U leg projects Q and U, flattens them and
-  decomposes into E and B on the plane, as a real analysis does; the E/B leg
-  decomposes on the sphere and projects E and B as scalars, so it cannot
-  leak; the T leg projects temperature as a scalar. Twenty white-spectrum
-  skies also pass through the T leg, to test the coupling matrix on a
-  spectrum other than the CMB's.
+  Three legs pass each sky through the pipeline: the Q/U leg projects Q and
+  U, flattens them by the polar-decomposition angle of the Jacobian and
+  decomposes into E and B on the plane, as a real analysis does; the E/B
+  leg decomposes on the sphere and projects E and B as scalars, so it
+  cannot leak; the T leg projects temperature as a scalar. Twenty
+  white-spectrum skies also pass through the T leg, to test the coupling
+  matrix on a spectrum other than the CMB's.
 
   Spectra are NaMaster flat-sky bandpowers, with B-mode purification on the
   spin-two field, of width 50 up to ell_max 6000, divided by the 2 arcmin
-  flat-sky pixel window. Eight footprints share one C2 2.5 deg apodization:
-  SPT's 1500d field, the reference, and seven disks concentric with the grid
-  from 0.75% to 10% of the sky.
+  flat-sky pixel window. Seven RA/dec rectangles share one C2 2.5 deg
+  apodization: SPT's 1500d field, the reference, and six self-similar
+  rectangles about the same centre, together 0.77% to 10.06% of the sky.
 
-  Further simulation suites support the paper's later sections: 260
-  independent skies through the field pipeline and 256 homogeneous controls
-  for the bandpower covariance; 260 noisy SPT-3G-like lensed skies for
-  inverting the response; controls that isolate the pipeline's own BB floor
-  (sky band limit, synthesis grid, estimator sampling); a masked E-mode
-  template; a temperature lensing quadratic estimator on projected skies;
-  compact-source matched filters; a Gaussian beam applied before
-  reprojection; spherical HEALPix and CAR pixel tests; and lognormal
-  filtering controls for statistics beyond the power spectrum.
+  Two field suites support the bandpower-covariance and inversion results:
+  260 independent skies through the 1500d field pipeline with 256
+  homogeneous controls, and 260 noisy SPT-3G-like lensed skies.
 
 tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 
@@ -169,9 +163,10 @@ outputs:
     description: |
       Q and U synthesized from the alms on the intermediate HEALPix grid,
       projected onto the 4500 x 4500, 2 arcmin flat-sky grid centred on
-      (0, -56 deg) in each of the four projections, then flattened. This is the
-      leg a real flat-sky polarization analysis produces, and the leg that
-      carries the E-to-B leakage.
+      (0, -56 deg) in each of the four projections, then flattened by the
+      flattening decision. This is the leg a real flat-sky polarization
+      analysis produces, and the leg that carries the E-to-B leakage the
+      paper measures.
     inputs: [sky_alms]
     decisions: [interpolation, intermediate_nside, flattening]
     units:
@@ -191,8 +186,10 @@ outputs:
         --out {output}
       resources:
         cpus: 4
-        # 19.1 GB peak and 8.6 min wall per unit at Nside 8192 (/usr/bin/time
-        # -v). condor's sampled MemoryUsage underreports the peak 2-3x.
+        # 19.1 GB peak at Nside 8192 (/usr/bin/time -v); about 3 min of
+        # synthesis plus 11 min per projection on the 4500 grid, 30 s of it
+        # the polar flattening angle. Each map file is 324 MB. condor's
+        # sampled MemoryUsage underreports the peak 2-3x.
         memory: 24Gi
         disk: 8Gi
         time_limit: 2h
@@ -223,7 +220,7 @@ outputs:
         --out {output}
       resources:
         cpus: 4
-        # 19.1 GB peak, 7.7 min wall per unit.
+        # 19.1 GB peak, about 3 + 11 min wall per unit; 162 MB per file.
         memory: 24Gi
         disk: 8Gi
         time_limit: 2h
@@ -339,12 +336,12 @@ outputs:
       decision names. Each file holds one (seed, projection) as
       ee[leg, projection, footprint, seed, bin] and the same for bb, with the
       leg, projection and footprint names stored alongside. These are the
-      measured spectra of Sect. 4 and the sky-fraction sweep.
+      measured spectra of the paper and its sky-fraction sweep.
     inputs: [projected_qu, projected_eb, flatsky_masks, coupling_matrices]
     decisions: [b_purification, pixel_window, ell_max, bandpower_width]
     # One unit is one (seed, projection) over every footprint and both legs,
     # the axes shared with projected_{qu,eb}, so each grid job is staged only
-    # its own ~350 MB of maps. Splitting by footprint would re-ship the same
+    # its own ~490 MB of maps. Splitting by footprint would re-ship the same
     # maps seven times.
     units:
       seed: 0..20
@@ -420,6 +417,8 @@ outputs:
         --max-procs 4 --out {output}
       resources:
         cpus: 4
+        # 13.0 GB peak; about 1 min of synthesis plus 6 min per projection
+        # on the 4500 grid; 162 MB per map.
         memory: 20Gi
         disk: 4Gi
         time_limit: 2h
@@ -431,7 +430,7 @@ outputs:
       Decoupled spin-zero auto-bandpowers of the scalar maps on every
       footprint, with the polarization bins and pixel-window treatment. Each
       file holds one (spectrum, seed, projection) as cl[footprint, bin]. The
-      measured TT and the white-spectrum transfer-error test read these.
+      paper's measured TT and its white-spectrum transfer test read these.
     inputs: [scalar_maps, flatsky_masks, coupling_matrices]
     decisions: [pixel_window, ell_max, bandpower_width]
     units:
@@ -524,7 +523,7 @@ outputs:
       STG and ZEA. T and E are drawn independently and true B is zero, so the
       output tests auto-spectrum covariance, not TE or TT-EE covariance.
       Unit-width coupled pseudo-spectra only; no maps are kept. They set the
-      band means and covariances of Sect. 4.
+      band means and covariances the paper reports.
     inputs: [flatsky_masks, theory_spectra]
     decisions: [intermediate_nside, interpolation, b_purification, ell_max, flattening]
     units:
@@ -611,7 +610,7 @@ outputs:
       rising with STG's area magnification. The beam and depth are written
       literally in the recipe as the SPT-3G-like configuration the paper
       states. Unit-width split-cross and noise-free pseudo-spectra; no maps.
-      They test the cost of inverting the response (Sect. 5).
+      They test the cost of inverting the response.
     inputs: [flatsky_masks, theory_spectra]
     decisions: [intermediate_nside, interpolation, b_purification, ell_max, flattening]
     units:

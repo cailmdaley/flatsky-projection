@@ -3,7 +3,5 @@ remote_payload:
   - .lightcone/snakefile-config.json
   - env.sh
   - src
-  - analysis/geometry.py
-  - analysis/template_geometry.py
   - spt3g_build.tar.gz
   - lightcone_py.tar.gz

@@ -1,12 +1,13 @@
 id: fiducial
 description: >
-  The paper's configuration. The Nside 8192 input skies are band-limited at
-  ell_max 6000 and resynthesized on an Nside 8192 grid, then projected by
-  bilinear interpolation, oversampled 8x and averaged, onto 2 arcmin pixels.
-  Every footprint carries a C2 apodization of 2.5 deg. NaMaster estimates
-  bandpowers of width 50 with B-mode purification on the spin-two field, and
-  divides them by the 2 arcmin flat-sky pixel window, the only pixel window
-  the maps carry.
+  The paper's configuration. Gaussian skies are drawn from the Planck 2018
+  best-fit spectra, band-limited at ell_max 6000 and synthesized on an
+  Nside 8192 grid, then projected by bilinear interpolation, oversampled 8x
+  and averaged, onto 2 arcmin pixels, and Q/U are flattened by the
+  polar-decomposition angle. Every footprint carries a C2 apodization of
+  2.5 deg. NaMaster estimates bandpowers of width 50 with B-mode
+  purification on the spin-two field, and divides them by the 2 arcmin
+  flat-sky pixel window, the only pixel window the maps carry.
 decisions:
   cosmology: planck2018
   intermediate_nside: nside8192

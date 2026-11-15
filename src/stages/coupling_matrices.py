@@ -12,7 +12,7 @@ BB) -- the ``w22`` file.
 
 The E/B leg is different in kind, not just in name. Its "E" and "B" maps were
 synthesized *directly* from the E- and B-mode alms with ``hp.alm2map`` used as
-a spin-0 (scalar) transform and projected with no ``FlattenPol`` -- see
+a spin-0 (scalar) transform and projected with no flattening -- see
 ``project_eb.py`` in the README. There is no Q/U tensor anywhere in that leg's
 history, so there is nothing for a spin-2 ``NmtFieldFlat`` to decompose: the
 "E" map already *is* a scalar field whose auto-power is what a real analysis

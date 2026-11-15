@@ -10,10 +10,15 @@ either of us.
 
 This is an ASTRA project orchestrated by `lightcone-cli`. `astra.yaml` is
 hand-written and real: it encodes the polarization projection-effects
-pipeline (preprocess healpix sims → project QU/EB legs → masks → NaMaster
-spectra, plus the simulation suites behind the paper's later sections).
-The paper's configuration is the universe `universes/fiducial.yaml`. Stage scripts are `src/stages/*.py`; shared decisions in
-`src/stages/_decisions.py`. Everything scientific runs under the SPT CVMFS
+pipeline, which has no data inputs: CAMB theory spectra from the cosmology
+decision → Gaussian skies drawn per seed (`sky_alms`) → projected Q/U, E/B
+and T legs on a 4500-pixel, 2' grid → masks of seven RA/dec rectangles →
+NaMaster spectra, plus the field suites for the bandpower covariance and the
+noisy inversion. The paper's configuration is the universe
+`universes/fiducial.yaml`. Stage scripts are `src/stages/*.py`; shared
+decisions, the cosmology's parameters included, in
+`src/stages/_decisions.py`; the grid and footprints in
+`src/stages/_footprints.py`. Everything scientific runs under the SPT CVMFS
 environment (see the `spt3g-software` skill). Heavy runs go to OSG — see
 "Running production on the grid" below.
 

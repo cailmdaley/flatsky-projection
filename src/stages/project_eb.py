@@ -6,9 +6,6 @@ into the four flat sky projections with no further processing. A spin-0
 field cannot mix into another spin-0 field under reprojection, so this leg
 has no projection-induced E-to-B leakage by construction. It is the
 reference project_qu.py's (leaky) EE/BB is differenced against.
-
-Ported from
-/sptlocal/analysis/pol_project2020/workflow/scripts/project_EB_fullsky.py.
 """
 
 from __future__ import annotations
@@ -21,8 +18,7 @@ LEG = Leg(name="eb", keys=("E", "B"))
 def _synthesize(alm_file, nside):
     """E, B on the intermediate Healpix grid, each as an independent spin-0 scalar.
 
-    Matches the 2021 project_EB_fullsky.py exactly: hp.alm2map(alm, nside)
-    is called once per component with a *single* alm array (not the
+    hp.alm2map(alm, nside) is called once per component with a *single* alm array (not the
     3-element T/E/B list project_qu.py passes), which makes healpy perform a
     plain spin-0 synthesis rather than a polarized (spin-2) one.
     """
@@ -49,11 +45,11 @@ def _postprocess(flatsky_frame):
     # EB leg: E and B were synthesized on the sphere as independent spin-0
     # scalars (see _synthesize above) and projected the same way -- no
     # polarization basis is ever constructed for this leg, so there is
-    # nothing for FlattenPol to undo, and it is deliberately not called
+    # nothing to flatten, and flattening is deliberately not applied
     # here. That is exactly what makes this leg leakage-free by
     # construction: reprojecting a spin-0 field cannot mix E and B, no
     # matter how sheared the projection is. Compare project_qu.py, whose
-    # spin-2 Q/U leg does call FlattenPol and does leak.
+    # spin-2 Q/U leg is flattened and does leak.
     pass
 
 
