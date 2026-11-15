@@ -19,7 +19,7 @@ bin centres and `--widths` the bin widths evaluated.
 Run:  bash env.sh python3 analysis/local_bin_covariance.py
           --flatsky-masks results/fiducial/flatsky_masks
           --healpix-masks results/fiducial/healpix_masks
-          --theory-spectra data/theory_spectra.npz --lmax l6000
+          --theory-spectra results/fiducial/theory_spectra --lmax l6000
           --stride 8 --nchi 128 --ells 2025 2075 ... --widths 50 100 --out <dir>
 Out:  <out>/bin_covariance_local_prediction.json
 """

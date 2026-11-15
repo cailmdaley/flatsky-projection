@@ -18,7 +18,7 @@ Run:  bash env.sh python3 analysis/choosing_projection.py
           --bandpowers results/fiducial/bandpowers
           --scalar-bandpowers results/fiducial/scalar_bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments
           --healpix-masks results/fiducial/healpix_masks --out <dir>
 Out:  <out>/choosing_projection.json, <out>/amplitudes.npz (per-sky band

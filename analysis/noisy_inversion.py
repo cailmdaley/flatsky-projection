@@ -24,7 +24,7 @@ Run:  bash env.sh python3 analysis/noisy_inversion.py
           --flatsky-masks results/fiducial/flatsky_masks
           --bandpowers results/fiducial/bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 Out:  <out>/noisy_inversion_summary.json, <out>/amplitudes.npz (per-sky
       amplitudes) and the diagnostic plots inversion.png and sfl_detectability.png.

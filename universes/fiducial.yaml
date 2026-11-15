@@ -8,6 +8,7 @@ description: >
   divides them by the 2 arcmin flat-sky pixel window, the only pixel window
   the maps carry.
 decisions:
+  cosmology: planck2018
   intermediate_nside: nside8192
   ell_max: l6000
   interpolation: interp_rebin8

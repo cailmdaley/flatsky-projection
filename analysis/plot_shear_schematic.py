@@ -19,7 +19,7 @@ it holds for a patch small enough that J is constant.
 One colour rule across the panels: teal is the sky, ink is the grid.
 
 Run:  bash env.sh python3 analysis/plot_shear_schematic.py
-          --theory-spectra data/theory_spectra.npz --out <dir>
+          --theory-spectra results/fiducial/theory_spectra --out <dir>
 Out:  <out>/shear_schematic.pdf, which the paper includes, and
       <out>/fig_shear_schematic.png
 """

@@ -31,7 +31,7 @@ Run:  bash env.sh python3 analysis/plot_projection_spectra.py
           --bandpowers results/fiducial/bandpowers
           --scalar-bandpowers results/fiducial/scalar_bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz --out <dir>
+          --theory-spectra results/fiducial/theory_spectra --out <dir>
 Out:  <out>/projection_spectra.pdf, which the paper includes, and
       <out>/fig_projection_spectra.png
 """

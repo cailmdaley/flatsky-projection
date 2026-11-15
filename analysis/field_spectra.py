@@ -24,7 +24,7 @@ The model reads the shear moments of the pipeline's own field mask,
 Run:  bash env.sh python3 analysis/field_spectra.py
           --bandpowers results/fiducial/bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 Out:  <out>/field_spectra.npz (read it with `load`), and the diagnostic
       figure <out>/field_1500d.{pdf,png}.

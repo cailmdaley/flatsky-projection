@@ -23,7 +23,7 @@ covariance between bands of one realization. This output feeds
 Run:  bash env.sh python3 analysis/scalar_summary.py
           --scalar-bandpowers results/fiducial/scalar_bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 Out:  <out>/scalar_summary.npz and <out>/scalar_summary.csv. Arrays are
       (footprint, sky, projection, seed, band), footprints disk then field,

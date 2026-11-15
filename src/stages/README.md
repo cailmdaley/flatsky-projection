@@ -34,7 +34,7 @@ on the grid, or by hand.
    skip it. Long stages must be resumable after a kill.
 7. **No `snakemake`, no `spt3g_plotting`, no relative-path magic.** Every path arrives
    through a flag, theory spectra included (`--theory`, the `theory_spectra` input,
-   `data/theory_spectra.npz`); a stage slices the multipoles it needs itself.
+   a directory holding `theory_spectra.npz`); a stage slices the multipoles it needs itself.
 
 ## Grid and geometry, fixed for every stage
 

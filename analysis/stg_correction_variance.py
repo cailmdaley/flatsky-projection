@@ -21,7 +21,7 @@ Run:  bash env.sh python3 analysis/stg_correction_variance.py
           --fine-coupling-matrices results/fiducial/fine_coupling_matrices
           --bandpowers results/fiducial/bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 Out:  <out>/stg_correction_variance.json
 """

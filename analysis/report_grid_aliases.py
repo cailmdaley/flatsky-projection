@@ -12,7 +12,7 @@ intervention. Only complete Fourier circles are predicted, so the bins run
 from 3000 to the axis Nyquist multipole.
 
 Run:  bash env.sh python3 analysis/report_grid_aliases.py
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --healpix-masks results/fiducial/healpix_masks
           --flatsky-masks results/fiducial/flatsky_masks
           --lmax l6000 --delta-ell d50 --test-cutoff 5000 --out <dir>

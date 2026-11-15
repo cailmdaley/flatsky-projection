@@ -19,7 +19,7 @@ STG's, and above L_WALL STG itself contains aliases.
 The paper's production file is made with `--nside 64 --aliases`.
 
 Run:  bash env.sh python3 analysis/report_pipeline_windows.py
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --healpix-masks results/fiducial/healpix_masks
           --flatsky-masks results/fiducial/flatsky_masks
           --shear-moments results/fiducial/shear_moments

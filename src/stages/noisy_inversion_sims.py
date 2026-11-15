@@ -45,7 +45,7 @@ def run(args):
 
     start = time.monotonic()
     args.out.mkdir(parents=True, exist_ok=True)
-    with np.load(args.theory) as z:
+    with np.load(args.theory / 'theory_spectra.npz') as z:
         cls = [z[f'lensed_{k}'][:args.lmax+1] for k in ('TT', 'EE', 'BB', 'TE')]
     beam = hp.gauss_beam(np.deg2rad(args.beam_fwhm/60), lmax=args.lmax)
     bins = nmt.NmtBinFlat(np.arange(args.lmax, dtype=float), np.arange(1, args.lmax+1, dtype=float))
@@ -116,7 +116,7 @@ def run(args):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--masks', type=Path, required=True)
-    p.add_argument('--theory', type=Path, required=True, help='theory_spectra npz')
+    p.add_argument('--theory', type=Path, required=True, help='theory_spectra output directory')
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--nside', type=parse_nside, required=True)
     p.add_argument('--lmax', type=parse_lmax, required=True)

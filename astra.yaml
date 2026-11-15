@@ -96,24 +96,32 @@ inputs:
       each) is passed to the recipe as literal text.
     source: /sptgrid/simulation/lensing_maps/unlensed_TQU1/TQU1_planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_seed0.fits
 
-  - id: theory_spectra
-    type: data
-    label: "CAMB theory spectra"
-    description: |
-      Lensed and unlensed TT, EE, BB and TE from CAMB 1.5.4 in the input
-      simulations' cosmology (the Planck 2018 base-plikHM-TTTEEE-lowl-lowE-
-      lensing best fit; lens_potential_accuracy 2, no tensors), as raw C_ell
-      in uK^2 indexed by multipole from ell = 0 to 10050, with the run's
-      parameters in a pickled `header`. analysis/theory.py generates it. Every
-      stage that needs a theory curve reads this file and slices what it
-      uses.
-    source: data/theory_spectra.npz
-
 # ---------------------------------------------------------------------------
 # OUTPUTS
 # ---------------------------------------------------------------------------
 outputs:
-  # --- The main chain: alms, maps, masks, couplings, bandpowers -----------
+  # --- The main chain: theory, alms, maps, masks, couplings, bandpowers -----
+  - id: theory_spectra
+    type: data
+    label: "CAMB theory spectra"
+    description: |
+      Lensed and unlensed TT, EE, BB and TE from CAMB 1.5.4 in the cosmology
+      decision's parameters (lens_potential_accuracy 2, no tensors), as raw
+      C_ell in uK^2 indexed by multipole from ell = 0 to 10000, in
+      theory_spectra.npz with the run's parameters in a pickled `header`. The
+      skies are drawn from its unlensed spectra, and every comparison with
+      theory in the paper reads it.
+    decisions: [cosmology]
+    recipe:
+      command: >-
+        bash env.sh python3 src/stages/theory_spectra.py
+        --cosmology {decisions.cosmology} --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 1h
+
   - id: preprocessed_alms
     type: data
     label: "Band-limited input alms"
@@ -642,6 +650,24 @@ outputs:
 # DECISIONS
 # ---------------------------------------------------------------------------
 decisions:
+  cosmology:
+    label: "Cosmology of the simulated skies"
+    tags: [theory]
+    rationale: |
+      The skies are Gaussian draws from CAMB spectra, so the cosmology sets
+      the input power every measured spectrum is compared with. Projection
+      effects are relative distortions of that power: they depend on its
+      shape (the slope of the damping tail, the acoustic phases) and not on
+      the precise parameters, so one standard cosmology suffices. Planck 2018
+      base-plikHM-TTTEEE-lowl-lowE-lensing best fit, the parameters of
+      SPT's own simulation parameter file; src/stages/_decisions.py holds
+      them.
+    default: planck2018
+    options:
+      planck2018:
+        label: "Planck 2018 best fit"
+        description: "base-plikHM-TTTEEE-lowl-lowE-lensing chi^2 minimum; no tensors, one 0.06 eV neutrino."
+
   intermediate_nside:
     label: "Intermediate HEALPix synthesis resolution"
     tags: [resolution]

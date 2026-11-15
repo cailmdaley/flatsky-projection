@@ -107,9 +107,8 @@ def _rows(z, footprints):
 class Run:
     """The upstream outputs one analysis step reads, by output id.
 
-    Each attribute is the output's directory (for `theory_spectra`, the
-    file), or None when the step does not read it. The binning comes from
-    `bandpowers`, or `scalar_bandpowers` when only the scalar leg is read.
+    Each attribute is the output's directory, or None when the step does not
+    read it. The binning comes from `bandpowers`, or `scalar_bandpowers` when only the scalar leg is read.
     """
     bandpowers: Path | None = None
     scalar_bandpowers: Path | None = None
@@ -258,7 +257,7 @@ class Run:
         the projected EE must be compared against; lensed_BB is the floor any
         claimed leakage has to be stated relative to.
         """
-        with np.load(self.theory_spectra) as data:
+        with np.load(self.theory_spectra / "theory_spectra.npz") as data:
             ell = data["ell"]
             cl = data[spec]
         full = np.zeros(int(ell.max()) + 1)

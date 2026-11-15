@@ -149,7 +149,7 @@ report and draws `shear_leakage.pdf` (and `fig_shear_leakage.png`) under
 Run:  bash env.sh python3 analysis/shear_leakage.py
           --bandpowers results/fiducial/bandpowers
           --simulation-windows results/fiducial/simulation_windows
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 
 Cost

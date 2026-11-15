@@ -9,7 +9,7 @@ factor) and the footprints' shapes and apodization come from the masks' index
 files; the binning from the band limit and bin width passed in.
 
 Run:  bash env.sh python3 analysis/simulation_windows.py
-          --theory-spectra data/theory_spectra.npz
+          --theory-spectra results/fiducial/theory_spectra
           --healpix-masks results/fiducial/healpix_masks
           --flatsky-masks results/fiducial/flatsky_masks
           --lmax l6000 --delta-ell d50 --out results/fiducial/simulation_windows

@@ -180,7 +180,8 @@ class Grid:
     def __init__(self, proj, qu_path, disk_mask_path, theory_path):
         """`qu_path`: any one projected Q/U map of `proj` (only its grid is
         used); `disk_mask_path`: the flatsky_masks npz of the disk the
-        template covers besides the field; `theory_path`: theory_spectra."""
+        template covers besides the field; `theory_path`: the theory_spectra
+        output directory."""
         self.proj = proj
         fr = next(core.G3File(str(qu_path)))
         fsm = fr["Q"]
@@ -235,7 +236,7 @@ class Grid:
         # SFL and ZEA are equal-area, so l on the grid is l on the sky up to
         # the shear; the bilinear-interpolation transfer is left out.
         ell = 2 * np.pi * np.hypot(ky, kx) / fsm.res
-        th = np.load(theory_path)
+        th = np.load(Path(theory_path) / "theory_spectra.npz")
         self.c_ee = (np.interp(ell, th["ell"].astype(float), th["unlensed_EE"])
                      * (np.sinc(ky) * np.sinc(kx)) ** 2)
 

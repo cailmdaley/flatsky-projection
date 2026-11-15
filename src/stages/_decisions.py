@@ -19,6 +19,7 @@ __all__ = [
     "parse_apodization",
     "parse_purify_b",
     "parse_pixel_window",
+    "parse_cosmology",
     "add_common_args",
     "set_threads",
 ]
@@ -109,6 +110,39 @@ def parse_pixel_window(value: str) -> str:
     if text in allowed:
         return text
     raise _bad("--pixel-window", value, allowed)
+
+
+# Planck 2018 base_plikHM_TTTEEE_lowl_lowE_lensing best fit: the chi^2
+# minimum of that chain, not its posterior mean (mean ombh2 = 0.02237 against
+# the best fit's 0.0223828). The numbers are those of
+# planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_params.ini, the CAMB
+# parameter file in spt3g_software's simulations/ tree; CAMB 1.5.4 at
+# default accuracy with them reproduces that file's unlensed EE to 0.03%
+# over 100 < ell < 3000. One massive neutrino of 0.06 eV is omnuh2 =
+# 6.451439e-4.
+COSMOLOGIES = {
+    "planck2018": dict(
+        H0=67.32117,
+        ombh2=0.0223828,
+        omch2=0.1201075,
+        omk=0.0,
+        tau=0.05430842,
+        mnu=0.06,
+        num_massive_neutrinos=1,
+        nnu=3.046,
+        As=2.100549e-9,
+        ns=0.9660499,
+        pivot_scalar=0.05,
+    ),
+}
+
+
+def parse_cosmology(value: str) -> dict:
+    """``planck2018`` -> its CAMB parameters, a fresh dict."""
+    text = str(value).strip()
+    if text in COSMOLOGIES:
+        return dict(COSMOLOGIES[text])
+    raise _bad("--cosmology", value, COSMOLOGIES)
 
 
 def set_threads(max_procs: int) -> None:
