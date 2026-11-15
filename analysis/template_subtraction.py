@@ -73,7 +73,6 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paper_style as PS
-import polar_flatten as PF
 import shear_leakage as SL
 import spectra as S
 import theory as T
@@ -90,7 +89,7 @@ CACHE_DIR = SL.CACHE_DIR
 FIGURE = ROOT / "figures" / "template_subtraction"
 MASK = 5
 NOISE_LEVELS = (2.5, 5.0)   # uK-arcmin on E: SPT-3G-like, and the paper's nominal
-L_CLEAN = PF.L_CLEAN
+L_CLEAN = (1000, 4000)
 L_REF = (900, 1100)         # the paper's l = 1000 reference, four 50-wide bins
 
 
@@ -256,7 +255,9 @@ def summary(res):
 
 
 def _wide(x, ell, edges):
-    return PF._wide(x, ell, edges)
+    """Band means of the 50-wide bins over `edges`, along the last axis."""
+    return np.stack([x[..., (ell > lo) & (ell < hi)].mean(-1)
+                     for lo, hi in zip(edges[:-1], edges[1:])], -1)
 
 
 def figure(res_by_proj, path=FIGURE, level=NOISE_LEVELS[0]):

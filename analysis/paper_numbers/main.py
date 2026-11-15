@@ -150,27 +150,6 @@ def main():
         d = float(((m_bb[j] / m_ee[j]) / (b0 / e0))[cband].mean() - 1)
         M.add(f"flatten{short[p]}", pct(d, nd))
 
-    # Flattening by the polar angle instead (`polar_flatten`): the production
-    # SFL maps reflattened, 20 sims. `flattenSFLmaps` is the BB/EE drop on the
-    # 5% disk (to compare with `flattenSFL`), `flattenSFLfield` the forward
-    # model's on the 1500d field; `EBhalfStock` / `EBhalfPolar` the eastern
-    # half's EB/EE from the E-only sky, stock and polar, with its error.
-    import polar_flatten as PF
-    res_pf = PF.map_test()
-    pf = PF.summary(res_pf, mom, SL.field_moments())
-    M.add("flattenSFLmaps", f"${100 * pf['disk_shift_maps']:.2f}"
-          f" \\pm {100 * pf['disk_shift_maps_err']:.2f}\\%$")
-    M.add("flattenSFLfield", pct(pf["field_shift_model"], 1))
-    M.add("EBhalfStock", pct(abs(pf["east_eb_stock"]), 1))
-    M.add("EBhalfPolar", f"${100 * pf['east_eb_polar']:.2f}"
-          f" \\pm {100 * pf['east_eb_polar_err']:.2f}\\%$")
-    # The eastern half's EB/EE under stock flattening grows with l: quoted in
-    # the first and last 500-wide band of the polar_flatten figure.
-    edges = np.arange(500, 4501, 500)
-    eb_east = (PF._wide(res_pf["east_EB_stock"], res_pf["ell"], edges)
-               / PF._wide(res_pf["east_EE_stock"], res_pf["ell"], edges)).mean(0)
-    M.add("EBeastlo", pct(abs(eb_east[0]), 1))
-    M.add("EBeasthi", pct(abs(eb_east[-1]), 1))
     M.add("cleanlo", f"{L_CLEAN[0]}")
     M.add("cleanhi", f"{L_CLEAN[1]}")
 
@@ -322,10 +301,6 @@ def main():
     M.add("tfdmeasmodel", pct(max(abs(fd["pipeline_clean"][j] - 1) for j in leak), 1))
     M.add("tfdnsims", f"{int(fd['n_sims'])}")
 
-    import lensing_numbers as LN
-    for name, value in LN.numbers().items():
-        M.add(name, value)
-    spherical_numbers(M)
 
 
     # ---- the lensed reference -------------------------------------------
@@ -674,25 +649,6 @@ def _field_1500d():
     """
     g2 = SL.field_moments()["g2"][0]
     return {S.PROJ_LABEL[p]: 2 * float(g2[j]) for j, p in enumerate(S.PROJS)}
-
-
-def spherical_numbers(M):
-    """Spherical HEALPix and CAR pixel tests, `spherical_grid_report.py`."""
-    data = json.loads((ROOT / 'analysis' / 'figures' / 'spherical_grid_summary.json').read_text())
-    tests = [r for r in data['pixel_tests'] if r['nside'] == 128]
-    M.add('sphereLo', f"{tests[0]['lo']}")
-    top = max(r['lo'] for r in tests)
-    M.add('sphereTopLo', f'{top}')
-    M.add('sphereTopHi', f"{max(r['hi'] for r in tests) - 1}")
-    for name, method in (('HEALPix', 'healpix'), ('CAR', 'car')):
-        point = max(r['bb'] for r in tests if r['method'] == method + '_point')
-        M.add(f"sphere{name}Point", f"${sci(point, 0)}$")
-        row = next(r for r in tests if r['method'] == method + '_average' and r['lo'] == top)
-        e = int(np.floor(np.log10(row['bb'])))
-        M.add(f'sphere{name}Average', rf"$({row['bb'] / 10.0**e:.2f} \pm {row['bb_sem'] / 10.0**e:.2f})"
-                                      rf"\times10^{{{e}}}$")
-    M.add('sphereCARWindowError',
-          pct(max(abs(r['amplitude'] - r['prediction']) for r in data['car_windows']), 1))
 
 
 if __name__ == "__main__":
