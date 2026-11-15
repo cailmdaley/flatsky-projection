@@ -1,6 +1,6 @@
 """Project the first alm component of a scalar sky as a temperature map.
 
-`--spectrum tt` projects the CMB temperature from the preprocessed alms;
+`--spectrum tt` projects the CMB temperature of the sky_alms output;
 `--spectrum white` projects the unit-C_l white skies. The spectrum name
 prefixes every map and index file, so both share one output directory.
 """
@@ -21,7 +21,7 @@ def synthesize(path, nside):
 def main(argv=None):
     p = argparse.ArgumentParser(add_help=False)
     p.add_argument("--spectrum", choices=["tt", "white"], required=True)
-    p.add_argument("--tt-alms", required=True, help="preprocessed_alms output directory")
+    p.add_argument("--tt-alms", required=True, help="sky_alms output directory")
     p.add_argument("--white-alms", required=True, help="scalar_white_alms output directory")
     args, rest = p.parse_known_args(argv if argv is not None else sys.argv[1:])
     alms = args.tt_alms if args.spectrum == "tt" else args.white_alms

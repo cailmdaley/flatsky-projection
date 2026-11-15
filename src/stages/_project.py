@@ -73,7 +73,7 @@ def add_project_cli(parser: argparse.ArgumentParser) -> None:
     """Flags shared by project_qu.py and project_eb.py (README: project_qu.py / project_eb.py)."""
     parser.add_argument(
         "--alms", required=True,
-        help="directory of alms_seed{N:04d}.fits from preprocess_healpix.py",
+        help="sky_alms output directory, holding alms_seed{N:04d}.fits",
     )
     parser.add_argument("--projections", nargs="+", default=list(PROJECTIONS_DEFAULT))
     parser.add_argument("--interpolation", required=True)

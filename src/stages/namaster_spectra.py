@@ -49,11 +49,10 @@ squared (a window multiplies the map, so it enters C_l as window**2):
   (``NmtBinFlat.get_effective_ells()``) rather than binned from a fine grid.
 * ``healpix_only``: divides by the Nside-8192 Healpix window, tabulated on
   integer ell by ``hp.pixwin`` and top-hat-binned onto the bandpowers with
-  ``NmtBinFlat.bin_cell``. Empirically the unlensed_TQU inputs carry NO such
-  window (Cl of the preprocessed alms matches theory flat to ell = 6000,
-  incompatible with pixwin**2 at > 50 sigma) -- the sims were synthesized
-  in harmonic space without pixelization smoothing -- so this mode
-  over-corrects and exists only for the explicit comparison.
+  ``NmtBinFlat.bin_cell``. The skies are drawn in harmonic space
+  (``sky_alms.py``) and synthesized as point values, so they carry no such
+  window; this mode over-corrects and exists only for the explicit
+  comparison.
 * ``healpix_and_flat``: both of the above; over-corrects for the same
   reason.
 
@@ -213,8 +212,7 @@ def compute_pixel_window(mode: str, b, ell_eff, lmax: int):
     correction = np.ones_like(ell_eff)
 
     if mode in {"healpix_only", "healpix_and_flat"}:
-        # Empirically the unlensed_TQU inputs carry NO Nside-8192 window
-        # (Cl(alms)/Cl(theory) flat to ell=6000), so these modes over-correct;
+        # The skies carry no HEALPix window, so these modes over-correct;
         # they are kept for the explicit comparison, not for production.
         import healpy as hp
 

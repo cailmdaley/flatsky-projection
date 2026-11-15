@@ -10,15 +10,9 @@
 # never `python -c "..."`.
 #
 # MEMORY. amundsen caps memory at 60 GiB per UNIX user, shared by every process
-# the account runs. One map2alm at Nside 8192 peaks near 49 GB, so
-# preprocessed_alms nearly fills the cap by itself: run nothing else at Nside
-# 8192 beside it. An over-cap process is SIGKILLed with no traceback and an
+# the account runs. An over-cap process is SIGKILLed with no traceback and an
 # empty log; `dmesg -T | grep oom` is the only evidence. The `memory:` figures
 # below are grid requests, not a budget enforced locally.
-#
-# INPUT FINGERPRINTING. lightcone sha256s directory inputs recursively on every
-# run, so unlensed_sims (1.5 TB) is declared by one representative file and
-# its recipe is handed the full directory as literal text.
 #
 # CODE IS NOT AN INPUT. No script is declared as an input, so editing a script
 # does not mark its outputs stale. After a change that alters results, rerun
@@ -76,25 +70,7 @@ description: |
 
 tags: [cmb, polarization, b-modes, flat-sky, projection, spt-3g, namaster]
 
-# ---------------------------------------------------------------------------
-# INPUTS
-# ---------------------------------------------------------------------------
-inputs:
-  - id: unlensed_sims
-    type: data
-    label: "Unlensed TQU realizations"
-    description: |
-      HEALPix Nside 8192 unlensed TQU realizations in the Planck 2018
-      base-plikHM-TTTEEE-lowl-lowE-lensing best-fit cosmology, RING ordering,
-      stored as three-column FITS binary tables (TEMPERATURE, Q_POLARISATION,
-      U_POLARISATION). Unlensed, so the input BB power is identically zero and
-      any recovered BB is projection leakage. The maps carry no HEALPix pixel
-      window: the C_ell of their alms matches theory flat to ell = 6000.
-
-      Seed 0 is the representative fingerprint; the full directory
-      (/sptgrid/simulation/lensing_maps/unlensed_TQU1, 164 seeds at 9.7 GB
-      each) is passed to the recipe as literal text.
-    source: /sptgrid/simulation/lensing_maps/unlensed_TQU1/TQU1_planck2018_base_plikHM_TTTEEE_lowl_lowE_lensing_seed0.fits
+inputs: []
 
 # ---------------------------------------------------------------------------
 # OUTPUTS
@@ -122,31 +98,32 @@ outputs:
         disk: 1Gi
         time_limit: 1h
 
-  - id: preprocessed_alms
+  - id: sky_alms
     type: data
-    label: "Band-limited input alms"
+    label: "Gaussian CMB skies"
     description: |
-      T, E and B spherical-harmonic coefficients of each input realization,
-      truncated at ell_max with the monopole and dipole removed. Computed
-      once per seed so that every projection leg starts from the identical
-      sky, and the legs' differences are projection alone.
-    inputs: [unlensed_sims]
+      T, E and B spherical-harmonic coefficients of one unlensed Gaussian sky
+      per seed, drawn with healpy.synalm from the unlensed TT, EE and TE of
+      theory_spectra with BB = 0 and band-limited at ell_max. B is
+      identically zero, so every recovered BB bandpower is leakage. Every
+      projection leg of a seed starts from these same alms, so the legs
+      differ by projection alone.
+    inputs: [theory_spectra]
     decisions: [ell_max]
     units:
       seed: 0..20
     recipe:
       command: >-
-        bash env.sh
-        python3 src/stages/preprocess_healpix.py
-        --sims-dir /sptgrid/simulation/lensing_maps/unlensed_TQU1
-        --seeds {units.seed}
-        --lmax {decisions.ell_max}
-        --max-procs 4
-        --out {output}
+        bash env.sh python3 src/stages/sky_alms.py --spectrum cmb
+        --theory {inputs.theory_spectra}
+        --lmax {decisions.ell_max} --seeds {units.seed}
+        --max-procs 2 --out {output}
       resources:
-        cpus: 4
-        # map2alm at Nside 8192 with iter 3 peaks near 49 GB.
-        memory: 64Gi
+        cpus: 2
+        # synalm and the write at ell_max 6000: 52 s and 3.2 GB peak; the
+        # alms file is 1.1 GB.
+        memory: 6Gi
+        disk: 3Gi
         time_limit: 1h
 
   - id: healpix_masks
@@ -192,7 +169,7 @@ outputs:
       (0, -56 deg) in each of the four projections, then flattened. This is the
       leg a real flat-sky polarization analysis produces, and the leg that
       carries the E-to-B leakage.
-    inputs: [preprocessed_alms]
+    inputs: [sky_alms]
     decisions: [interpolation, intermediate_nside]
     units:
       seed: 0..20
@@ -201,7 +178,7 @@ outputs:
       command: >-
         bash env.sh
         python3 src/stages/project_qu.py
-        --alms {inputs.preprocessed_alms}
+        --alms {inputs.sky_alms}
         --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
@@ -225,7 +202,7 @@ outputs:
       intermediate grid, and projected as spin-zero scalars. No spin-two
       basis is ever projected, so this leg has no projection-induced E-to-B
       mixing: it is the leakage-free reference for the Q/U leg.
-    inputs: [preprocessed_alms]
+    inputs: [sky_alms]
     decisions: [interpolation, intermediate_nside]
     units:
       seed: 0..20
@@ -234,7 +211,7 @@ outputs:
       command: >-
         bash env.sh
         python3 src/stages/project_eb.py
-        --alms {inputs.preprocessed_alms}
+        --alms {inputs.sky_alms}
         --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
@@ -400,7 +377,7 @@ outputs:
       seed: 0..20
     recipe:
       command: >-
-        bash env.sh python3 src/stages/scalar_white_alms.py
+        bash env.sh python3 src/stages/sky_alms.py --spectrum white
         --lmax {decisions.ell_max} --seeds {units.seed}
         --max-procs 2 --out {output}
       resources:
@@ -414,9 +391,9 @@ outputs:
     label: "Projected scalar maps (T leg)"
     description: |
       Scalar skies projected exactly as the polarization maps are, in the four
-      paper projections: the CMB temperature from the preprocessed alms
-      (spectrum tt) and the white skies (spectrum white).
-    inputs: [preprocessed_alms, scalar_white_alms]
+      paper projections: the CMB temperature of sky_alms (spectrum tt) and
+      the white skies (spectrum white).
+    inputs: [sky_alms, scalar_white_alms]
     decisions: [interpolation, intermediate_nside]
     units:
       spectrum: [tt, white]
@@ -426,7 +403,7 @@ outputs:
       command: >-
         bash env.sh python3 src/stages/scalar_project.py
         --spectrum {units.spectrum}
-        --tt-alms {inputs.preprocessed_alms}
+        --tt-alms {inputs.sky_alms}
         --white-alms {inputs.scalar_white_alms}
         --projections {units.projection} --seeds {units.seed}
         --interpolation {decisions.interpolation}
@@ -680,15 +657,14 @@ decisions:
       sampled where the interpolation reads it. Interpolating between HEALPix
       rings adds a window in the sky frame and an incoherent B that no window
       removes: at Nside 4096, doubling the subsamples per flat pixel lowers
-      STG's BB/EE by 32% while EE moves by 0.7%. Nside 8192 matches the input
-      maps, so the sky is resynthesized on the grid it was drawn on, and it
-      halves the ring spacing. It costs four times the memory of Nside 4096
-      (6.4 GB per dense map).
+      STG's BB/EE by 32% while EE moves by 0.7%. Nside 8192 halves the ring
+      spacing. It costs four times the memory of Nside 4096 (6.4 GB per dense
+      map).
     default: nside8192
     options:
       nside8192:
-        label: "Nside 8192, the input resolution"
-        description: "Synthesis on the input maps' own grid; the finest sampling for the interpolation."
+        label: "Nside 8192"
+        description: "The finest sampling for the interpolation."
       nside4096:
         label: "Nside 4096"
         description: "A quarter of the memory; coarser ring spacing, so a larger interpolation window and more incoherent B."
@@ -704,10 +680,8 @@ decisions:
       to 4000 and spectra plotted up to 4800, which reaches the damping tail
       where the shear's distortion of EE is largest (SFL's EE near ell = 4000).
       A band limit of 4000 would stay clear of aliasing but stop short of
-      that range. ell_max 6000 is lossless at the input Nside of 8192. The
-      cost is in the transforms: one iter-0 map2alm at Nside 8192 takes 131 s
-      at ell_max 4000 and 243 s at 6000, and the coupling-matrix build grows
-      with it.
+      that range. The cost is in the synthesis onto the intermediate grid
+      and in the coupling-matrix build, which grow with it.
     default: l6000
     options:
       l6000:
@@ -822,10 +796,9 @@ decisions:
     label: "Pixel-window correction"
     tags: [systematics]
     rationale: |
-      The input maps carry no HEALPix pixel window: the C_ell of their alms
-      matches theory flat to ell = 6000, incompatible with an Nside-8192
-      pixwin^2 at more than 50 sigma, because they were synthesized in
-      harmonic space without pixel smoothing. The window the flat maps do
+      The skies are drawn in harmonic space and synthesized onto the
+      intermediate grid as point values of the band-limited field, so they
+      carry no HEALPix pixel window. The window the flat maps do
       carry is that of the 2 arcmin flat-sky pixel, a top-hat average whose
       transfer function is averaged over each annulus, since NaMaster bins in
       annuli; the bandpowers are divided by it. The further window of
@@ -841,8 +814,8 @@ decisions:
         label: "No correction"
         description: "Spectra roll off at high ell with the flat-sky window."
       healpix_only:
-        label: "Input HEALPix window"
-        description: "Divide by hp.pixwin at Nside 8192; over-corrects, since the inputs carry no such window."
+        label: "HEALPix window"
+        description: "Divide by hp.pixwin at Nside 8192; over-corrects, since the maps carry no such window."
       healpix_and_flat:
-        label: "Input HEALPix and flat-sky windows"
+        label: "HEALPix and flat-sky windows"
         description: "Both windows; over-corrects for the same reason."
