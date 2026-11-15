@@ -173,7 +173,7 @@ outputs:
       leg a real flat-sky polarization analysis produces, and the leg that
       carries the E-to-B leakage.
     inputs: [sky_alms]
-    decisions: [interpolation, intermediate_nside]
+    decisions: [interpolation, intermediate_nside, flattening]
     units:
       seed: 0..20
       projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
@@ -184,6 +184,7 @@ outputs:
         --alms {inputs.sky_alms}
         --projections {units.projection}
         --interpolation {decisions.interpolation}
+        --flattening {decisions.flattening}
         --nside {decisions.intermediate_nside}
         --seeds {units.seed}
         --max-procs 4
@@ -525,7 +526,7 @@ outputs:
       Unit-width coupled pseudo-spectra only; no maps are kept. They set the
       band means and covariances of Sect. 4.
     inputs: [flatsky_masks, theory_spectra]
-    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max, flattening]
     units:
       seed: 0..260
     recipe:
@@ -535,6 +536,7 @@ outputs:
         --seed {units.seed}
         --nside {decisions.intermediate_nside}
         --interpolation {decisions.interpolation}
+        --flattening {decisions.flattening}
         --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
         --max-procs {resources.cpus} --out {output}
       resources:
@@ -611,7 +613,7 @@ outputs:
       states. Unit-width split-cross and noise-free pseudo-spectra; no maps.
       They test the cost of inverting the response (Sect. 5).
     inputs: [flatsky_masks, theory_spectra]
-    decisions: [intermediate_nside, interpolation, b_purification, ell_max]
+    decisions: [intermediate_nside, interpolation, b_purification, ell_max, flattening]
     units:
       seed: 0..260
     recipe:
@@ -621,6 +623,7 @@ outputs:
         --seed {units.seed}
         --nside {decisions.intermediate_nside}
         --interpolation {decisions.interpolation}
+        --flattening {decisions.flattening}
         --purify-b {decisions.b_purification} --lmax {decisions.ell_max}
         --noise-pol 5 --beam-fwhm 1.2
         --max-procs {resources.cpus} --out {output}
@@ -777,6 +780,31 @@ decisions:
       c2_5deg:
         label: "C2, 5 deg"
         description: "Twice the width; less edge ringing, less usable sky."
+
+  flattening:
+    label: "Polarization flattening angle"
+    tags: [estimator]
+    rationale: |
+      Projecting Q/U rotates the polarization basis by a position-dependent
+      angle, which flattening undoes before E and B are formed on the plane.
+      Locally the projection is a linear map J, and its polar decomposition
+      J = R S splits it into a rotation R and the symmetric shear S; only R
+      can be undone. The polar option rotates by R's angle psi_R (paper Eq.
+      polar_angle), leaving exactly the shear. spt3g_software's flatten_pol
+      rotates by the equal-weight average of the tilts of grid north and
+      east, which equals psi_R where the projection is conformal or its
+      stretch axes lie along the sky axes or diagonals, and elsewhere misses
+      it by (g^2/2) sin 4 beta plus higher orders: up to 2.6 deg on SFL's
+      1500d field, zero for BICEP and STG. A rotation by that residual angle
+      turns E into B on top of the shear's leakage.
+    default: polar
+    options:
+      polar:
+        label: "Polar-decomposition angle"
+        description: "Removes the projection's rotation exactly; the maps carry the shear alone."
+      spt3g:
+        label: "spt3g flatten_pol"
+        description: "The library's averaged angle; adds a second-order rotation in sheared projections."
 
   b_purification:
     label: "B-mode purification"

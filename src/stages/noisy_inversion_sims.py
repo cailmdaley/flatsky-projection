@@ -16,7 +16,8 @@ from pathlib import Path
 import argparse
 import time
 
-from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
+from _decisions import parse_flattening, parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
+from _project import flatten
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 from bin_covariance_sims import mask_stub, project_array
 from _footprints import DEC_DEG, FIELD, RES_ARCMIN
@@ -85,7 +86,7 @@ def run(args):
     sigma_pol = args.noise_pol*np.sqrt(2)/pixel_arcmin  # per split, per pixel
     for proj, (mask, stub, *_) in setup.items():
         qmap, umap = [project_array(h, stub, interpolation) for h in (hq, hu)]
-        maps.flatten_pol(qmap, umap)
+        flatten(qmap, umap, args.flattening)
         comps = [finite_in_mask(np.asarray(m), mask) for m in (qmap, umap)]
         spectra(proj, comps, sigma_pol, True)
         print(f'{proj} polarization seed {args.seed}: {time.monotonic()-start:.1f}s', flush=True)
@@ -122,6 +123,7 @@ def main():
     p.add_argument('--lmax', type=parse_lmax, required=True)
     p.add_argument('--purify-b', type=parse_purify_b, required=True)
     p.add_argument('--interpolation', required=True)
+    p.add_argument('--flattening', type=parse_flattening, required=True)
     p.add_argument('--noise-pol', type=float, default=5., help='coadded polarization depth, uK-arcmin')
     p.add_argument('--beam-fwhm', type=float, default=1.2, help='arcmin')
     p.add_argument('--projections', nargs='+', default=['ProjZEA', 'ProjSFL', 'ProjSTG'])

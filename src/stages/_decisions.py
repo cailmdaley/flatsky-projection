@@ -20,6 +20,7 @@ __all__ = [
     "parse_purify_b",
     "parse_pixel_window",
     "parse_cosmology",
+    "parse_flattening",
     "add_common_args",
     "set_threads",
 ]
@@ -143,6 +144,14 @@ def parse_cosmology(value: str) -> dict:
     if text in COSMOLOGIES:
         return dict(COSMOLOGIES[text])
     raise _bad("--cosmology", value, COSMOLOGIES)
+
+
+def parse_flattening(value: str) -> str:
+    """``polar`` | ``spt3g`` -> itself."""
+    text = str(value).strip()
+    if text in {"polar", "spt3g"}:
+        return text
+    raise _bad("--flattening", value, {"polar", "spt3g"})
 
 
 def set_threads(max_procs: int) -> None:

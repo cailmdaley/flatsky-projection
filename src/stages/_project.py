@@ -40,6 +40,8 @@ __all__ = [
     "alm_path",
     "output_path",
     "project_frame",
+    "flatten",
+    "polar_angle",
     "run_leg",
 ]
 
@@ -101,8 +103,77 @@ def project_frame(frame, proj: str, *, interp: bool, rebin: int):
     return flatsky_frame
 
 
+def polar_angle(fsm, h: float = 1e-3, rows: int = 256):
+    """Twice the polar-decomposition rotation angle, 2 psi_R, at every pixel of `fsm`.
+
+    psi_R is the angle of R in J = R S, the polar decomposition of the
+    projection's local Jacobian (paper Eq. polar_angle): with delta the
+    declination and alpha the RA, as functions of the pixel coordinates (x, y),
+
+        psi_R = atan2(-dd/dx - cos(delta) da/dy, dd/dy - cos(delta) da/dx).
+
+    The derivatives are central differences of `xy_to_angle` with a step of
+    `h` pixels, RA differences wrapped, as `maps.flatten_pol` takes its own.
+    Computed `rows` grid rows at a time to bound memory.
+    """
+    import numpy as np
+    from spt3g import core
+
+    def angles(x, y):
+        a, d = fsm.xy_to_angle(core.DoubleVector(x), core.DoubleVector(y))
+        return np.asarray(a), np.asarray(d)
+
+    def wrap(v):
+        return (v + np.pi) % (2 * np.pi) - np.pi
+
+    ny, nx = fsm.shape
+    out = np.empty((ny, nx))
+    for r0 in range(0, ny, rows):
+        y, x = (v.ravel() for v in np.mgrid[r0:min(r0 + rows, ny), 0:nx].astype(float))
+        a1, d1 = angles(x - h, y)
+        a2, d2 = angles(x + h, y)
+        a3, d3 = angles(x, y - h)
+        a4, d4 = angles(x, y + h)
+        _, dec = angles(x, y)
+        cd = np.cos(dec)
+        dax, ddx = wrap(a2 - a1) / (2 * h), (d2 - d1) / (2 * h)
+        day, ddy = wrap(a4 - a3) / (2 * h), (d4 - d3) / (2 * h)
+        out[r0:r0 + rows] = (2 * np.arctan2(-ddx - cd * day, ddy - cd * dax)).reshape(-1, nx)
+    return out
+
+
+def flatten(q, u, flattening: str) -> None:
+    """Rotate projected Q, U (FlatSkyMaps of one grid) into the grid's frame, in place.
+
+    ``polar`` rotates by the angle of R in the polar decomposition of the
+    projection's Jacobian (`polar_angle`), which removes the rotation
+    exactly and leaves only the shear. ``spt3g`` is ``maps.flatten_pol``,
+    which rotates by the average of the tilts of grid north and east; the two
+    agree where the projection is conformal or its stretch axes lie along the
+    sky axes or diagonals, and elsewhere differ at second order in the shear.
+    Both apply the angle in the same sense: Q + iU -> e^{i rot} (Q + iU), with
+    rot negated for COSMO maps.
+    """
+    from spt3g import maps
+
+    if flattening == "spt3g":
+        maps.flatten_pol(q, u)
+        return
+    import numpy as np
+
+    rot = polar_angle(q)
+    if u.pol_conv == maps.MapPolConv.COSMO:
+        rot = -rot
+    c, s = np.cos(rot), np.sin(rot)
+    del rot
+    qa, ua = np.asarray(q), np.asarray(u)
+    qa[:], ua[:] = c * qa - s * ua, s * qa + c * ua
+    q.flat_pol = True
+    u.flat_pol = True
+
+
 def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
-            index_tag=None) -> dict:
+            index_tag=None, record=None) -> dict:
     """Drive one projection leg end to end. Called by project_qu.py / project_eb.py.
 
     ``synthesize(alm_file, nside) -> {key: HealpixSkyMap, ...}`` builds this
@@ -114,7 +185,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
     for why.
 
     ``index_tag`` prefixes a unit's index name, for an output that holds
-    several legs.
+    several legs; ``record`` adds the leg's own settings to the manifest.
 
     Resumable: a (projection, seed) whose output file already exists is
     skipped, and the (expensive) alm synthesis for a seed is skipped
@@ -188,6 +259,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
         "written_this_run": len(written),
         "skipped_existing": len(skipped),
         "files": files,
+        **(record or {}),
     }
     write_index(
         out_dir, manifest,

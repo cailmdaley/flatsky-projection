@@ -10,7 +10,8 @@ from pathlib import Path
 import argparse
 import time
 
-from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
+from _decisions import parse_flattening, parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
+from _project import flatten
 from _footprints import DEC_DEG, FIELD, GRID_PIX, RES_ARCMIN
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 
@@ -65,7 +66,7 @@ def run(args):
     pols = {}
     for proj, (mask, stub, lx, ly) in setup.items():
         qmap, umap = [project_array(h, stub, interpolation) for h in (hq, hu)]
-        maps.flatten_pol(qmap, umap)
+        flatten(qmap, umap, args.flattening)
         q, u = [finite_in_mask(np.asarray(m), mask) for m in (qmap, umap)]
         field = nmt.NmtFieldFlat(lx, ly, mask, [q, u], purify_b=args.purify_b, lite=True)
         pols[proj] = nmt.compute_coupled_cell_flat(field, field, bins)
@@ -108,6 +109,7 @@ def main():
     p.add_argument('--lmax', type=parse_lmax, required=True)
     p.add_argument('--purify-b', type=parse_purify_b, required=True)
     p.add_argument('--interpolation', required=True)
+    p.add_argument('--flattening', type=parse_flattening, required=True)
     p.add_argument('--projections', nargs='+', default=['ProjZEA', 'ProjSFL', 'ProjSTG'])
     p.add_argument('--max-procs', type=int, default=8)
     p.add_argument('--out', type=Path, required=True)

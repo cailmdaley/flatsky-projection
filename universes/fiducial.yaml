@@ -13,6 +13,7 @@ decisions:
   ell_max: l6000
   interpolation: interp_rebin8
   apodization: c2_2p5deg
+  flattening: polar
   b_purification: purify
   pixel_window: flat_only
   bandpower_width: d50
