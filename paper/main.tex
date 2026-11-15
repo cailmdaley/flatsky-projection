@@ -37,6 +37,7 @@
 \input{masked_template_numbers}
 \input{local_source_numbers}
 \input{beyond_two_point_numbers}
+\input{survey_numbers}
 
 
 
@@ -299,7 +300,11 @@ For $B$-mode work the conformal STG does not leak: its $BB/EE$ on the 1500d fiel
 Its magnification costs \EEboxSTGfourK\ of the input $EE$ near $\ell = 4000$, a known and invertible scalar distortion.
 For temperature and $E$ the equal-area ZEA barely distorts, staying within \EEboxZEAdev\ of the input $EE$, while leaking \ZEAoverlens\ of the lensed $BB/EE$.
 The cylindrical projections are the worst choice for both.
-\CD{Survey of other projections (conics, oblique and optimised conformal projections) for this footprint pending.}
+Within each class, the shape of the footprint sets the best projection.
+Over 127 projections in PROJ, each with its aspect and parameters optimized for the unapodized 1500d field, the conics fit a band in declination best: the Lambert conformal conic has \surveyLCCoverSTG\ times less spread in $\ln\mu$ than STG, within \surveyLCCoverOpt\ of the least-squares conformal optimum, whose Chebyshev counterpart keeps the scale constant on the boundary \citep{milnor69}; and the Albers equal-area conic has \surveyZEAoverAEA\ times less $\gsq$ than ZEA.
+Both are standard FITS projections \citep{calabretta02}.
+Aspect matters more than family: SFL with the field moved onto its equator has \surveySFLrecentre\ times less $\gsq$ than as SPT uses it.
+These are factors of a few and do not change the choice of class.
 
 \subsection{Decoupling} \label{subsec:correct}
 
