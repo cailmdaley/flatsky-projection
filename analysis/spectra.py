@@ -9,8 +9,8 @@ files; no decision value is typed here.
 The production run
 ------------------
 `bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, one file per (seed,
-projection) holding every footprint by name -- SPT's 1500d field and the seven
-disks of `src/stages/_footprints.py`. The paper studies four projections,
+projection) holding every footprint by name -- the seven RA/dec rectangles of
+`src/stages/_footprints.py`, SPT's 1500d field among them. The paper studies four projections,
 `paper_style.PROJS`, and every array here is indexed in that order; the run
 also holds a fifth, ProjSIN, which nothing in `analysis/` reads. What it did:
 
@@ -58,7 +58,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from paper_style import PROJ_LABEL, PROJS  # noqa: E402,F401
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"))
-from _footprints import DISKS, FIELD, FOOTPRINTS  # noqa: E402,F401
+from _footprints import FIELD, FOOTPRINTS, SWEEP  # noqa: E402,F401
+from _footprints import FSKY_PERCENT as _FSKY_PERCENT  # noqa: E402
 
 PROJ_KIND = {
     "ProjSFL": "pseudocylindrical, equal-area",
@@ -66,8 +67,8 @@ PROJ_KIND = {
     "ProjZEA": "zenithal equal-area",
     "ProjBICEP": "cylindrical",
 }
-# The disks' nominal sky fractions, in percent, in registry order.
-PERC = np.array([100 * FOOTPRINTS[name].fsky_nominal for name in DISKS])
+# The sweep's unapodized sky fractions, in percent, in registry order.
+FSKY_PERCENT = np.array(_FSKY_PERCENT)
 
 QU_LEG = 0
 EB_LEG = 1
@@ -180,15 +181,15 @@ class Run:
         return out
 
     def load(self, spec="EE", leg=QU_LEG, correct_windows=True):
-        """Disk bandpowers as (n_disks, n_projs, nsims, nbins), QU leg by default.
+        """Sweep bandpowers as (n_footprints, n_projs, nsims, nbins), QU leg by default.
 
-        The disks come in registry order, matching `PERC`. `leg=EB_LEG` reads
+        The footprints come in registry order, matching `FSKY_PERCENT`. `leg=EB_LEG` reads
         the E/B leg instead, whose "EE" and "BB" are the spin-0 auto-spectra
         of the sphere-decomposed E and B maps. The flat-sky top-hat is
         already divided out. By default the remaining known simulation
         windows are removed too (see the module docstring).
         """
-        out = self._load(DISKS, spec, leg)
+        out = self._load(SWEEP, spec, leg)
         if correct_windows:
             out /= self.simulation_window(spec, leg=leg)[:, :, None, :]
         return out
@@ -201,7 +202,7 @@ class Run:
         return out
 
     def load_scalar(self, spec="TT", field=False, correct_windows=True):
-        """Scalar bandpowers, (disk, projection, seed, band), or field without disk.
+        """Scalar bandpowers, (footprint, projection, seed, band) over the sweep, or the field alone.
 
         `spec` is TT or white. Both use the EE bins and flat_only window
         correction. White skies have unit input C_l from ell=2 through lmax.
@@ -209,7 +210,7 @@ class Run:
         CMB-calibrated one.
         """
         kind = {"tt": "tt", "white": "white"}[spec.lower()]
-        footprints = [FIELD] if field else DISKS
+        footprints = [FIELD] if field else SWEEP
         directory = self.scalar_bandpowers
         _index(directory)
         out = np.empty((len(footprints), len(PROJS), self.nsims, self.nbins))
@@ -230,8 +231,8 @@ class Run:
 
         Ring interpolation in the sky frame and the exact finite-subsample grid
         average, relative to the continuous top-hat already divided out in
-        production. Shape (n_projs, nbins) on the field, (n_disks, n_projs,
-        nbins) on the disks.
+        production. Shape (n_projs, nbins) on the field, (n_footprints, n_projs,
+        nbins) on the sweep.
         """
         with np.load(self.simulation_windows / "simulation_windows.npz") as z:
             if not np.array_equal(z["ell"], self.ell):
@@ -267,12 +268,12 @@ class Run:
 
     # ---- geometry -----------------------------------------------------------
 
-    def moments(self, footprints=DISKS):
+    def moments(self, footprints=SWEEP):
         """Shear moments of `footprints`, stacked (footprint, projection, ...).
 
         The `shear_moments` output (`analysis/shear_moments.py`), evaluated on
-        the pipeline's own masks. The default, the seven disks in registry
-        order, matches `PERC`, so mask index i is a disk throughout.
+        the pipeline's own masks. The default, the seven footprints in registry
+        order, matches `FSKY_PERCENT`, so mask index i is a sweep footprint throughout.
         """
         path = self.shear_moments / "shear_moments.npz"
         with np.load(path) as f:
@@ -289,7 +290,7 @@ class Run:
 
 def window_key(spec, field, leg):
     """The array name of one window in `simulation_windows.npz`."""
-    return f"{spec.upper()}_{'field' if field else 'disks'}_{('qu', 'eb')[leg]}"
+    return f"{spec.upper()}_{'field' if field else 'sweep'}_{('qu', 'eb')[leg]}"
 
 
 def flat_pixwin(ell, res_arcmin, n_phi=512):

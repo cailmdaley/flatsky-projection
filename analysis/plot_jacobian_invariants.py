@@ -6,8 +6,9 @@ the invariants introduced right after the itemization in sec:law).
 Layout: 2 rows (g, mu) x 4 columns (SFL, STG, ZEA, BICEP), one shared
 colorbar per row. The 1500d field's edge (RA +-50 deg, dec -70 to -42 deg) is
 drawn on every panel so the reader sees what the analysis footprint samples,
-with the W=0.5 contour of the 10% disk (contoured from the pipeline's
-projected mask, the `mask_contours` output) thin and dashed behind it.
+with the W=0.5 contour of the largest footprint (contoured from the
+pipeline's projected mask, the `mask_contours` output) thin and dashed
+behind it.
 
 Reachable sky. A grid pixel is drawn only if the sky point it names projects
 back onto it. That one test covers the cylindrical pair's pole and SFL's
@@ -16,7 +17,7 @@ pole, SFL's grid wraps around and samples sky it has already drawn, so
 neither its Jacobian nor its mask there is new sky. The mask contour is taken
 of W on reachable pixels only (zero elsewhere), so it closes on the footprint
 as the projection reaches it rather than tracing the wrapped copies of the
-disk.
+footprint.
 
 Run:  bash env.sh python3 analysis/plot_jacobian_invariants.py
           --mask-contours <mask_contours dir> --out <dir>
@@ -36,6 +37,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 import geometry as G
 import paper_style as PS
 import spectra as S
+from _footprints import GRID_PIX, RES_ARCMIN
 from paper_style import INK, INK_SOFT, MASK_RAMP, PROJ_COLORS, PROJ_LABEL, PROJS
 from spt3g import core, maps  # noqa: F401 -- registers FlatSkyMap / MapProjection
 from matplotlib.patches import Rectangle
@@ -62,7 +64,7 @@ MU_CMAP = LinearSegmentedColormap.from_list(
 G_VMAX = 0.6          # linear; SFL and BICEP saturate only near the pole
 LOG2MU_MAX = 1.0      # mu in [1/2, 2]
 HATCH_COLOR = "#B5B5B0"
-LIM_DEG = 55.0
+LIM_DEG = GRID_PIX * RES_ARCMIN / 120  # half the analysis grid's width
 
 # Panels that are identically trivial by construction, named in-panel so a
 # flat field reads as a property of the projection.
@@ -72,7 +74,7 @@ TRIVIAL = {
     ("mu", "ProjZEA"): r"$\mu \equiv 1$ (equal-area)",
 }
 RES_DEG = 0.5
-N = int(2 * LIM_DEG / RES_DEG) + 1  # 221, odd so pixel N//2 sits on the centre
+N = int(2 * LIM_DEG / RES_DEG) + 1  # odd, so pixel N//2 sits on the centre
 
 FIELD_HALF_RA_DEG, *FIELD_DEC_DEG = S.FOOTPRINTS[S.FIELD].box
 POLE_DEG = 0.5  # sky-frame differencing is replaced this close to the pole
@@ -176,9 +178,9 @@ def compute():
 
 
 def footprint(proj, cache):
-    """(x, y, W) of the 10% mask on its cached grid, zeroed off reachable sky."""
+    """(x, y, W) of the largest mask on its cached grid, zeroed off reachable sky."""
     w = cache[f"bg_{proj}"].astype(float)
-    ext = cache["extent"]
+    ext = cache[f"extent_{proj}"]
     x = np.linspace(ext[0], ext[1], w.shape[1])
     y = np.linspace(ext[2], ext[3], w.shape[0])
     xx, yy = np.meshgrid(x, y, indexing="xy")
@@ -269,8 +271,8 @@ def main():
             ax.set_xlim(-LIM_DEG, LIM_DEG)
             ax.set_ylim(-LIM_DEG, LIM_DEG)
             ax.set_aspect("equal")
-            ax.set_xticks([-40, -20, 0, 20, 40])
-            ax.set_yticks([-40, -20, 0, 20, 40])
+            ax.set_xticks([-60, -30, 0, 30, 60])
+            ax.set_yticks([-60, -30, 0, 30, 60])
 
         # The column is named in ink; a rule in the projection's colour sits
         # under the name and is the only place the identity hue appears.

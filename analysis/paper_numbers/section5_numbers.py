@@ -4,8 +4,10 @@
                                            charts and two HEALPix faces
   anis<Sky|Grid><footprint><proj>...       response of an anisotropic sky (a
                                            local scan quadrupole, or a filter
-                                           on the output grid) on the 5% disk,
-                                           the 1500d field and its east half
+                                           on the output grid) on the sweep's
+                                           reference footprint, the 1500d
+                                           field (the same rectangle) and its
+                                           east half
   beam<footprint><proj>Pred{Mean,Min,Max}  sky-mode response of a source-grid
                                            1 arcmin Gaussian at ell = 3000
   scanQuadrupole{OneK,MidK,ThreeK}         quadrupole of the toy scan filter
@@ -36,7 +38,7 @@ def macros(healpix_masks):
     for name, g2 in footprints.items():
         M.add(f"gSq{name}", sci(g2, 1))
         M.add(f"bbEe{name}", sci(2*g2, 1))
-    names = {'disk5': 'Disk', 'field1500d': 'Field', 'fieldEast': 'East'}
+    names = {'reference': 'Disk', 'field1500d': 'Field', 'fieldEast': 'East'}
     for attachment in ('sky', 'grid'):
         responses = G5.footprint_response(healpix_masks, attachment=attachment)
         for (footprint, projection), (g2, zero, diagonal) in responses.items():

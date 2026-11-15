@@ -19,7 +19,7 @@ import time
 from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 from bin_covariance_sims import mask_stub, project_array
-from _footprints import DEC_DEG, FIELD
+from _footprints import DEC_DEG, FIELD, RES_ARCMIN
 
 
 def area_magnification(proj, stub):
@@ -50,7 +50,7 @@ def run(args):
     beam = hp.gauss_beam(np.deg2rad(args.beam_fwhm/60), lmax=args.lmax)
     bins = nmt.NmtBinFlat(np.arange(args.lmax, dtype=float), np.arange(1, args.lmax+1, dtype=float))
     interpolation = parse_interpolation(args.interpolation)
-    pixel_arcmin = 2.
+    pixel_arcmin = RES_ARCMIN
     setup = {}
     for proj in args.projections:
         mask, window, lx, ly = load_mask(args.masks, proj, FIELD)

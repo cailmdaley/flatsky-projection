@@ -11,7 +11,7 @@ import argparse
 import time
 
 from _decisions import parse_lmax, parse_nside, parse_purify_b, parse_interpolation, set_threads, write_index
-from _footprints import DEC_DEG, FIELD
+from _footprints import DEC_DEG, FIELD, GRID_PIX, RES_ARCMIN
 from namaster_spectra import load_mask, finite_in_mask, atomic_save
 
 
@@ -19,7 +19,7 @@ def mask_stub(proj, window):
     """Production grid restricted to precisely the mask's rectangular window."""
     from spt3g import core, maps
     rows, cols = window
-    template = maps.FlatSkyMap(3300, 3300, 2*core.G3Units.arcmin,
+    template = maps.FlatSkyMap(GRID_PIX, GRID_PIX, RES_ARCMIN*core.G3Units.arcmin,
                                proj=maps.MapProjection.names[proj],
                                delta_center=DEC_DEG*core.G3Units.deg,
                                pol_conv=maps.MapPolConv.COSMO)

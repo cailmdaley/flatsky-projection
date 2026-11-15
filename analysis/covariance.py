@@ -16,7 +16,7 @@ any single configuration's correlation matrix is dominated by that noise, not
 by real structure. Do not over-read one panel. Where possible this module
 reports and plots the mean over the 5 projections x 7 masks = 35 configurations
 (per spectrum). Note the averaging gain is much less than sqrt(35): all 35
-configurations are built from the SAME 20 seeds on nested concentric disks, so
+configurations are built from the SAME 20 seeds on nested footprints, so
 their sampling fluctuations are strongly correlated -- the mean suppresses
 config-specific structure but not the shared seed noise. Treat any single
 matrix as illustrative, and the mean as qualitative rather than definitive.
@@ -116,7 +116,7 @@ def plot_diagonal_error_comparison(all_cov, spec, path):
     for proj, color in zip(S.PROJS, colors):
         stds = np.array([
             np.sqrt(np.diag(all_cov[(proj, i)]))
-            for i in range(len(S.PERC))
+            for i in range(len(S.SWEEP))
             if (proj, i) in all_cov
         ])
         mean_std = np.nanmean(stds, axis=0)
@@ -139,14 +139,12 @@ def main() -> None:
 
         cov_by_config = {}
         corr_by_config = {}
-        for i, perc in enumerate(S.PERC):
+        for i in range(len(S.SWEEP)):
             for j, proj in enumerate(S.PROJS):
                 bp = data[i, j]
-                # The 10% (mask6) runs for SFL and BICEP are broken on
-                # disk (all-NaN or overflowed to ~1e246; the disk swallows the
-                # south celestial pole -- see shear_leakage.py). Drop them
-                # entirely, matching the shear-law fit, rather than nan-meaning
-                # around partial garbage.
+                # A configuration with any non-finite or overflowed
+                # bandpower is dropped entirely rather than nan-meaned
+                # around.
                 if np.isnan(bp).any() or np.nanmax(np.abs(bp)) > 1e100:
                     continue
                 cov, corr = covariance_and_correlation(bp)
@@ -157,7 +155,7 @@ def main() -> None:
         spec_dir = OUT / "covariance" / spec
         spec_dir.mkdir(parents=True, exist_ok=True)
         for (proj, i), corr in corr_by_config.items():
-            perc = S.PERC[i]
+            perc = S.FSKY_PERCENT[i]
             title = (
                 f"{spec} correlation -- {S.PROJ_LABEL[proj]}, "
                 f"$f_{{\\rm sky}}$={perc:.2f}\\%"

@@ -1,6 +1,7 @@
 """Sky-frame window corrections and paired-seed residuals of the production bandpowers.
 
-For the 1500d field and the 5% disk, each projection and each of TT, the
+For the 1500d field, read alone, and the sweep's reference footprint, read
+from the sweep (it is the 1500d field too), each projection and each of TT, the
 white scalar sky, EE and BB, this evaluates `pipeline_windows.response` (the
 local-Jacobian forward integral with the ring-interpolation and rebin windows,
 and optionally the nearest reciprocal-grid images) at five multipoles per
@@ -27,7 +28,7 @@ Run:  bash env.sh python3 analysis/report_pipeline_windows.py
           --scalar-bandpowers results/fiducial/scalar_bandpowers
           --nside 64 --aliases --out <dir>
 Out:  <out>/pipeline_windows.npz: `ell`, `projs`, `nside`, `nchi`,
-      `aliases_enabled`, and per footprint (`field`, `disk5`), spectrum and
+      `aliases_enabled`, and per footprint (`field`, `reference`), spectrum and
       projection `_base`, `_windowed`, `_alias` (model, per band), `_raw`
       (production, seed x band), `_ratio` (raw over windowed), `_ratio_total`
       (raw over windowed plus alias), for sheared BB `_ratio_floor_subtracted`,
@@ -43,7 +44,7 @@ import spectra as S
 import theory as T
 from pipeline_windows import Sampling, response
 
-REFERENCE_DISK = 'disk_5'
+REFERENCE = S.FIELD
 L_WALL = 4800
 
 
@@ -60,7 +61,7 @@ def main():
     sampling = Sampling.read(args.healpix_masks, args.flatsky_masks)
     th = T.load(args.theory_spectra)
     ELL, nbins = run.ell, run.nbins
-    disk = S.DISKS.index(REFERENCE_DISK)
+    reference_index = S.SWEEP.index(REFERENCE)
     outputs = {'ell': ELL, 'projs': S.PROJS, 'nside': args.nside, 'nchi': args.nchi,
                'aliases_enabled': args.aliases}
     # Five samples per bandpower.
@@ -76,8 +77,8 @@ def main():
         return (x*old_fine).reshape(nbins, 5).mean(-1)/old_bin
 
     for field in (True, False):
-        name = 'field' if field else 'disk5'
-        footprint = S.FIELD if field else REFERENCE_DISK
+        name = 'field' if field else 'reference'
+        footprint = S.FIELD if field else REFERENCE
         mom = run.moments([footprint])
         reference = {}
         for j, proj in enumerate(S.PROJS):
@@ -97,7 +98,7 @@ def main():
                 measured = (run.load_field(spec, correct_windows=False) if field
                             else run.load(spec, correct_windows=False))
             if not field:
-                measured = measured[disk]
+                measured = measured[reference_index]
             correction = []
             for j, proj in enumerate(S.PROJS):
                 spin = 'TT' if spec == 'white' else spec
@@ -155,7 +156,7 @@ def main():
                         print(f' partial paired STG subtraction {lo}-{hi}: {r.mean():.6f} '
                               f'+/- {r.std(ddof=1)/np.sqrt(len(r)):.6f}', flush=True)
             outputs[f'{name}_{spec}_correction'] = np.array(correction)
-    for name in ('field', 'disk5'):
+    for name in ('field', 'reference'):
         for spec in ('TT', 'white', 'EE', 'BB'):
             for proj in S.PROJS:
                 if spec == 'BB' and proj == 'ProjSTG':

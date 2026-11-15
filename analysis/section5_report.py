@@ -35,7 +35,7 @@ def run():
         g2=data['anisotropic'][f'sky_field1500d_{proj}']['g2']
         table.append(f'<tr><th>1500d: {proj[4:]}</th><td>{g2:.3g}</td><td>{2*g2:.3g}</td><td>Production analytic C2 taper, W² sky-area weighting.</td></tr>')
     anis=[]
-    for footprint,label in (('disk5','5% disk'),('field1500d','1500d'),('fieldEast','1500d eastern half')):
+    for footprint,label in (('reference','reference footprint'),('field1500d','1500d'),('fieldEast','1500d eastern half')):
         for proj in ('ProjSFL','ProjZEA'):
             s=data['anisotropic'][f'sky_{footprint}_{proj}']
             g=data['anisotropic'][f'grid_{footprint}_{proj}']
@@ -43,17 +43,17 @@ def run():
             anis.append(f'<tr><th>{label}, {proj[4:]}</th>'+''.join(f'<td>{v:+.3f}%</td>' for v in cells)+'</tr>')
     if beam:
         rows=[]
-        for name,label in (('disk5','5% disk'),('field1500d','1500d')):
+        for name,label in (('reference','reference footprint'),('field1500d','1500d')):
             row=beam['response'][name]
             rows.append(f"<tr><th>{label}</th><td>{row['sfl_mean']:.5f}</td><td>{row['sphere_mean']:.5f}</td><td>{100*row['fractional_difference']:+.3f}%</td><td>{100*row['prediction']:+.3f}%</td><td>{100*row['sector_model_max_abs_1000_3000']:.3f} pp</td></tr>")
         bandrows=[]
-        for name,label in (('disk5','5% disk'),('field1500d','1500d')):
+        for name,label in (('reference','reference footprint'),('field1500d','1500d')):
             for band,values in beam['response'][name]['bands'].items():
                 bandrows.append(f"<tr><th>{label}, ℓ={band.replace('_','–')}</th><td>{100*values['measured']:+.3f}%</td><td>{100*values['predicted']:+.3f}%</td></tr>")
         beamtext=f'''<p>A one-arcminute Gaussian applied to the existing SFL Q/U map retains a different response after reprojection to ZEA than the same Gaussian applied on the sphere.
         The first table compares unweighted means of the paired response differences over ten 100-ℓ bins per band.
         The local model reproduces the small azimuthal offset below ℓ=3000; agreement degrades above that, including an unexplained common residual step near ℓ=3600.
-        The cos2χ amplitude of the measured SFL/sphere response relative to the model has zero-intercept slopes {beam['response']['disk5']['quadrupole_amplitude_slope_1000_3000']:.3f} (disk) and {beam['response']['field1500d']['quadrupole_amplitude_slope_1000_3000']:.3f} (field) over ℓ=1000–3000, without ensemble error estimates.</p>
+        The cos2χ amplitude of the measured SFL/sphere response relative to the model has zero-intercept slopes {beam['response']['reference']['quadrupole_amplitude_slope_1000_3000']:.3f} (reference) and {beam['response']['field1500d']['quadrupole_amplitude_slope_1000_3000']:.3f} (field) over ℓ=1000–3000, without ensemble error estimates.</p>
         <table><thead><tr><th>Footprint and band</th><th>Measured SFL/sphere − 1</th><th>Predicted</th></tr></thead><tbody>{''.join(bandrows)}</tbody></table>
         <p>The next table gives the directional figure's bin at ℓ={beam['ell_response']:.0f}, close to the azimuthal zero crossing; it is not the headline agreement test.</p>
         <table><thead><tr><th>Footprint</th><th>SFL-filtered</th><th>Sphere-filtered</th><th>Difference</th><th>Prediction</th><th>Max sector residual, ℓ=1000–3000</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
@@ -63,7 +63,7 @@ def run():
         Filtered/unfiltered ratios measure the end-to-end response, and do not in general cancel a spatially varying sampling operator exactly.</p>'''
         beamtext+=figure('beam_reprojection.png','SFL filtering retains its direction-dependent response on ZEA. The conformal STG panel compares the filter differential with the unfiltered path mismatch. These contain physical and numerical terms that this test does not separate; neither is a calibrated physical B-mode upper limit.')
         brows=[]
-        for name,label in (('disk5','5% disk'),('field1500d','1500d')):
+        for name,label in (('reference','reference footprint'),('field1500d','1500d')):
             b=beam['b_diagnostic'][name+'_ProjSTG']
             brows.append(f"<tr><th>{label}</th><td>{b['sfl_base']:.3g}</td><td>{b['sphere_base']:.3g}</td><td>{b['mismatch']:.3g}</td><td>{b['differential']:.3g}</td><td>{b['cross_mismatch']:.3g}</td><td>{b['mismatch_power_change']:.3g}</td></tr>")
         beamtext+=f'''<h3>Polarization diagnostic</h3><p>A constant local Jacobian gives a common scalar Q/U multiplier and preserves sky E/B.

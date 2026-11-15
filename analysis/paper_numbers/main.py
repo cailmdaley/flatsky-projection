@@ -1,4 +1,4 @@
-"""Every macro of paper/numbers.tex: the disk suite, the 1500d field, and the threads that report into it.
+"""Every macro of paper/numbers.tex: the footprint sweep, the 1500d field, and the threads that report into it.
 
 Not yet a recipe: reads its inputs from fixed paths and writes paper/numbers.tex.
 """
@@ -16,7 +16,7 @@ import theory as T  # noqa: E402
 from macros import WORDS as _WORDS, Macros, f, pct, rng, sci  # noqa: E402,F401
 
 ROOT = Path(__file__).resolve().parents[2]
-MASK = 5                      # PERC[5] = 5%, the reference footprint
+MASK = S.SWEEP.index(S.FIELD)  # the reference footprint, the 1500d field
 L_WALL = 4800.0               # top of the plotted range, not a universal limit
 # Where the forward model is judged cleanly: above the low-l mode-coupling
 # regime and below the l at which near-Nyquist aliasing and the STG floor
@@ -44,7 +44,7 @@ def main():
     th = T.load()
     ell_th, cl_th = th["ell"].astype(float), th["unlensed_EE"]
 
-    # Forward model on the reference disk, absolute C_l.
+    # Forward model on the reference footprint, absolute C_l.
     m_bb = np.empty((len(S.PROJS), len(ell)))
     m_ee = np.empty_like(m_bb)
     for j in range(len(S.PROJS)):
@@ -73,7 +73,7 @@ def main():
     # local slope to mean much, so `nEEtail` is the mean slope on the damping
     # tail, a least-squares fit of ln C on ln l over 3000 < l < 4500;
     # `coefEEtail` the coefficient it implies; `gsqSFLfive` SFL's <g^2> on
-    # the reference disk; `liftEEtail` their product, the expansion's lift.
+    # the reference footprint; `liftEEtail` their product, the expansion's lift.
     tail = (ell_th > 3000) & (ell_th < 4500)
     n_tail = np.polyfit(np.log(ell_th[tail]), np.log(cl_th[tail]), 1)[0]
     coef_tail = n_tail * (n_tail + 2) / 4
@@ -106,7 +106,7 @@ def main():
         M.add(f"BBmodel{short[p]}", f(mm / m_bb[j][sel].mean()))
     orders = np.log10(bb[MASK, jstg].mean(0)[sel].mean() / m_bb[jstg][sel].mean())
     M.add("STGmodelorders", f"{orders:.0f}")
-    # How far the projections' BB actually spreads on this disk, rather than
+    # How far the projections' BB actually spreads on this footprint, rather than
     # a remembered figure.
     lvl = [bb[MASK, j].mean(0)[sel].mean() for j in P.values()]
     M.add("bbdecades", _WORDS[int(round(np.log10(max(lvl) / min(lvl))))])
@@ -140,7 +140,7 @@ def main():
     M.add("cleanBBrange", rng(min(cr), max(cr), 3))
 
     # What FlattenPol's residual rotation is worth in the model: BB/EE with
-    # Delta over BB/EE with the polar angle, mean over L_CLEAN, 5% disk. SFL
+    # Delta over BB/EE with the polar angle, mean over L_CLEAN, reference footprint. SFL
     # carries nearly all of it, ZEA a sliver.
     nod = dict(mom, cell_sin2_2delta=np.zeros_like(mom["cell_sin2_2delta"]))
     for p, nd in (("ProjSFL", 1), ("ProjZEA", 2)):
@@ -200,7 +200,7 @@ def main():
     M.add("fitrms", pct(rms))
     M.add("fitworst", pct(worst))
     M.add("numpairs", f"{n}")
-    M.add("numpairstotal", f"{(len(S.PROJS) - 1) * len(S.PERC)}")
+    M.add("numpairstotal", f"{(len(S.PROJS) - 1) * len(S.SWEEP)}")
     M.add("fitoffset", pct(k / 2 - 1))
     # Spelled as a word, like \bbdecades: all three places the paper quotes it
     # are prose ("across four decades in <g^2>"), where a numeral reads oddly.
@@ -237,13 +237,13 @@ def main():
         M.add(f"band{short[p]}ratio", rf"{ratio.mean():.4f} \pm {ratio.std():.4f}")
         M.add(f"band{short[p]}worst", pct(float(np.max(np.abs(ratio - 1))), 1))
     # ZEA's excess over the model, in units of STG's floor, where the floor is
-    # at least 5% of the model on the disks.
+    # at least 5% of the model on the sweep.
     jz = P["ProjZEA"]
     measurable = keep[..., jz] & (floor > 0.05 * pred[..., jz])
     excess = (meas[..., jz] / pred[..., jz] - 1)[measurable] / (floor / pred[..., jz])[measurable]
     M.add("zeaFloorDisks", rng(excess.min(), excess.max(), 1))
 
-    # The tilts on the reference disk.
+    # The tilts on the reference footprint.
     tilt = meas[1:, MASK, :] / (2 * g2[MASK])
     for p in ("ProjSFL", "ProjBICEP"):
         j = P[p]
@@ -262,10 +262,11 @@ def main():
 
     # ---- 4.4 the cylindrical near-degeneracy -------------------------------
     jS, jB = P["ProjSFL"], P["ProjBICEP"]
-    for name, i in (("small", 0), ("five", 5), ("ten", 6)):
+    last = len(S.SWEEP) - 1
+    for name, i in (("small", 0), ("five", MASK), ("ten", last)):
         M.add(f"sflbicep{name}", pct(abs(g2[i, jB] / g2[i, jS] - 1), 1))
-    M.add("clippedSFL", f(band0[6, jS] / (2 * g2[6, jS]), 2))
-    M.add("clippedBICEP", f(band0[6, jB] / (2 * g2[6, jB]), 2))
+    M.add("clippedSFL", f(band0[last, jS] / (2 * g2[last, jS]), 2))
+    M.add("clippedBICEP", f(band0[last, jB] / (2 * g2[last, jB]), 2))
     M.add("numclipped", f"{len(SL.CLIPPED)}")
 
     # ---- covariance: does the leaked B bin like a sky? ---------------------
@@ -275,8 +276,9 @@ def main():
     M.add("offdiagSTG", f(cov["stg_max"], 2))
     M.add("offdiagnoise", f(cov["noise"], 2))
 
-    # The law off its training set: SPT's 1500d field. Only the two the
-    # prose contrasts; the other two are printed by shear_leakage.report.
+    # The law's prediction on SPT's 1500d field, from its own moments. Only
+    # the two the prose contrasts; the other two are printed by
+    # shear_leakage.report.
     field = _field_1500d()
     for label in ("SFL", "BICEP"):
         M.add(f"tfd{label}", f"${sci(field[label])}$")
@@ -315,8 +317,8 @@ def main():
 
     # ---- the template applied to the simulations (`template_subtraction`) --
     # S_J[E] built per pixel from the grid metric and subtracted from the
-    # polar-reflattened SFL and ZEA QU-leg maps, 20 sims, on the 5% disk and
-    # the 1500d field. Noise-free: `...raw` / `...sub` BB/EE over L_CLEAN and
+    # polar-reflattened SFL and ZEA QU-leg maps, 20 sims, on the production
+    # 1500d field mask (`reference`) and its separable taper (`field`). Noise-free: `...raw` / `...sub` BB/EE over L_CLEAN and
     # `...supp` their ratio. With white E noise of `templatenoise` on the
     # template's input (`...five`: the paper's nominal 5 uK-arcmin):
     # `...subnoise` (raw E) and `...subwiener` (Wiener-filtered E) at
@@ -328,7 +330,7 @@ def main():
     # noisy residual there, and `...lensfrac` the noise residual
     # kernel * N^EE as a fraction of the lensed BB in the same band.
     # `templatecorr`: the noise-free
-    # map-level correlation of S_J[E] with the grid B on SFL's 5% disk.
+    # map-level correlation of S_J[E] with the grid B on SFL's reference mask.
     import template_subtraction as TPL
     lv = TPL.NOISE_LEVELS[0]
     cl_bb_reference = float(th["lensed_BB"][TPL.L_REF[0]:TPL.L_REF[1]].mean())
@@ -337,7 +339,7 @@ def main():
     for proj in ("ProjSFL", "ProjZEA"):
         ts = TPL.summary(TPL.run(proj))
         lab = S.PROJ_LABEL[proj]
-        for m in ("disk", "field"):
+        for m in ("reference", "field"):
             k = f"template{lab}{m}"
             M.add(f"{k}raw", f"${sci(ts[f'{m}_raw'])}$")
             M.add(f"{k}sub", f"${sci(ts[f'{m}_sub'])}$")
@@ -413,8 +415,8 @@ def main():
 #
 # `prose_numbers` writes every macro Sects. 2-5 quote on SPT's 1500d field, on
 # which the spectra figure and the scalar and leakage narrative rest, together
-# with the literature footprints and the HEALPix pixel. The seven disks remain
-# the sweep of Sect. 4.3 and keep their macros in `main`.
+# with the literature footprints and the HEALPix pixel. The seven footprints
+# form the sweep of Sect. 4.3 and keep their macros in `main`.
 #
 # A single dl = 50 band resolves the acoustic oscillation of a ratio to the
 # input, so EE ratios are quoted as ratios of power averaged with a Hann window
@@ -555,7 +557,7 @@ def prose_numbers(M, mom):
     M.add("ZEAleakField", f"${sci(leak_zea)}$")
     M.add("ZEAoverlens", pct(leak_zea / lensed, 0))
 
-    # Power conservation, field and disks; disk pairs as in `main`.
+    # Power conservation, field and sweep; sweep pairs as in `main`.
     d_ee, d_bb = S.load("EE").mean(2), S.load("BB").mean(2)
     d_eb = S.load("EE", leg=S.EB_LEG).mean(2)
     dev = np.abs(((d_ee + d_bb) / d_eb)[:, :, wide].mean(-1) - 1)
@@ -603,7 +605,7 @@ def prose_numbers(M, mom):
     M.add("hpwinmatch", f"${sci(max(ours), 0)}$")
     M.add("hpwinsquare", pct(max(square), 1))
 
-    # ---- ZEA's last band on the 5% disk ------------------------------------
+    # ---- ZEA's last band on the reference footprint ------------------------
     meas = SL.measured_ratios()
     gz = mom["g2"][MASK, P["ProjZEA"]]
     M.add("ZEAlastexcess", pct(meas[-1, MASK, P["ProjZEA"]] / (2 * gz) - 1, 1))
@@ -631,11 +633,11 @@ def _offdiag(ee, bb, ell, lo=500, hi=4800):
 
     out = {}
     for name, arr in (("ee", ee), ("bb", bb)):
-        vals = [per_config(arr, i, j) for i in range(len(S.PERC))
+        vals = [per_config(arr, i, j) for i in range(len(S.SWEEP))
                 for j in range(len(S.PROJS)) if j != jstg]
         out[f"{name}_mean"] = float(np.mean(vals))
         out[f"{name}_max"] = float(np.max(vals))
-    out["stg_max"] = max(per_config(bb, i, jstg) for i in range(len(S.PERC)))
+    out["stg_max"] = max(per_config(bb, i, jstg) for i in range(len(S.SWEEP)))
     # Sampling floor: a sample correlation from n seeds has 1/sqrt(n-1) of
     # noise per entry even when the truth is zero.
     out["noise"] = 1.0 / np.sqrt(S.NSIMS - 1)

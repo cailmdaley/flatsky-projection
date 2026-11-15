@@ -3,12 +3,12 @@
 Why this exists
 ---------------
 The measured high-l excess in SFL-projected EE is caused by the *local shear*
-of the projection, not by sky area and not by mask corners. Area only tracks
-shear in the disk suite because those masks are concentric disks about the
-projection centre, which makes radius and shear degenerate. SPT's real 1500d
-footprint is wide in RA and narrow in declination, so it breaks that
-degeneracy and cannot be read off the disks' area trend. This module computes
-the thing that actually matters, for any mask, in minutes.
+of the projection, not by sky area and not by mask corners. Area tracks shear
+across the footprint sweep only because its rectangles share one shape and
+one centre, which makes size and shear degenerate; a footprint of another
+shape breaks that degeneracy and cannot be read off the sweep's area trend.
+This module computes the thing that actually matters, for any mask, in
+minutes.
 
 The physics, in one line
 ------------------------

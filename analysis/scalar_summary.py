@@ -1,8 +1,9 @@
 """The scalar leg against the coupling matrix: measured closure and diagonal-transfer errors.
 
 Twenty CMB TT skies and twenty independent unit-C_l white skies pass through
-the scalar leg (`scalar_bandpowers`) on the reference disk and the 1500d
-field. Per footprint, sky, projection and band this compares the measured
+the scalar leg (`scalar_bandpowers`) on the sweep's reference footprint,
+read from the sweep, and on the 1500d field, read alone; the reference
+footprint is the 1500d field. Per footprint, sky, projection and band this compares the measured
 bandpowers, simulation windows removed, with the scalar block of the forward
 model (`shear_leakage.coupling_matrix`, TT<-TT) applied to the known input:
 
@@ -26,7 +27,7 @@ Run:  bash env.sh python3 analysis/scalar_summary.py
           --theory-spectra results/fiducial/theory_spectra
           --shear-moments results/fiducial/shear_moments --out <dir>
 Out:  <out>/scalar_summary.npz and <out>/scalar_summary.csv. Arrays are
-      (footprint, sky, projection, seed, band), footprints disk then field,
+      (footprint, sky, projection, seed, band), footprints reference then field,
       skies TT then white.
 """
 
@@ -40,7 +41,7 @@ import shear_leakage as SL
 import spectra as S
 import theory as T
 
-REFERENCE_DISK = "disk_5"
+REFERENCE = S.FIELD
 CLEAN = (1000, 4000)
 
 
@@ -76,8 +77,8 @@ def compute(run):
     th = T.load(run.theory_spectra)
     lp = th['ell'].astype(float)
     inputs = np.stack([th['unlensed_TT'], np.where(lp >= 2, 1., 0.)])
-    disk = S.DISKS.index(REFERENCE_DISK)
-    check_scalar_forward(run, run.moments([REFERENCE_DISK]), lp, inputs)
+    reference = S.SWEEP.index(REFERENCE)
+    check_scalar_forward(run, run.moments([REFERENCE]), lp, inputs)
     # Use the production integer-multipole average on [lo, hi).
     fine = np.arange(run.lmax, dtype=float)
     truth = np.stack([np.interp(fine, lp, cl).reshape(run.nbins, run.delta_l).mean(1)
@@ -86,9 +87,9 @@ def compute(run):
     np.testing.assert_allclose(truth[1, 0], (run.delta_l - 2) / run.delta_l)
     measured, predictions = [], []
     for field in (False, True):
-        mom = run.field_moments() if field else run.moments([REFERENCE_DISK])
+        mom = run.field_moments() if field else run.moments([REFERENCE])
         measured.append(np.stack([run.load_scalar(spec, field=field) if field
-                                  else run.load_scalar(spec)[disk]
+                                  else run.load_scalar(spec)[reference]
                                   for spec in ('TT', 'white')]))
         pred = []
         for j in range(len(S.PROJS)):
@@ -119,7 +120,7 @@ def compute(run):
                * curve[:, :, None, :])[..., clean].mean(-1)
         calibration = it.var(-1, ddof=1) if name == 'diagonal' else 0.
         summary_sems[name] = np.sqrt((iw.var(-1, ddof=1) + calibration) / run.nsims)
-    return dict(ell=run.ell, projections=S.PROJS, footprints=['disk5', 'field1500d'],
+    return dict(ell=run.ell, projections=S.PROJS, footprints=['reference', 'field1500d'],
                 spectra=['TT', 'white'], measured=measured, mean=mean, sem=sem,
                 predicted=predictions, ratio=closure, ratio_sem=sem / predictions,
                 diagonal_white=diagonal_white, diagonal_white_sem=diagonal_sem,

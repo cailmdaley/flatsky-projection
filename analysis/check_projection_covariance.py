@@ -5,6 +5,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'src/stages'))
+from _footprints import DEC_DEG, GRID_PIX, RES_ARCMIN
 from bin_covariance_sims import mask_stub, project_array
 from namaster_spectra import load_mask
 from projection_covariance import counterexample, quadratic_moments
@@ -35,9 +36,9 @@ def test_cropped_projection():
         _, window, _, _ = load_mask(ROOT/'results/highell/field_flatsky_masks', proj, 0)
         stub = mask_stub(proj, window)
         # Compare exact coordinate correspondence, then the actual interpolation.
-        full = maps.FlatSkyMap(3300, 3300, 2*core.G3Units.arcmin,
+        full = maps.FlatSkyMap(GRID_PIX, GRID_PIX, RES_ARCMIN*core.G3Units.arcmin,
                               proj=maps.MapProjection.names[proj],
-                              delta_center=-56*core.G3Units.deg,
+                              delta_center=DEC_DEG*core.G3Units.deg,
                               pol_conv=maps.MapPolConv.COSMO)
         rows, cols = window
         for x, y in ((0, 0), (11, 57), (stub.shape[1]-1, stub.shape[0]-1)):
@@ -59,9 +60,9 @@ def test_cropped_rebin8():
     for proj in ('ProjZEA', 'ProjSFL', 'ProjSTG'):
         mask, window, _, _ = load_mask(ROOT/'results/highell/field_flatsky_masks', proj, 0)
         stub = mask_stub(proj, window)
-        full = maps.FlatSkyMap(3300, 3300, 2*core.G3Units.arcmin,
+        full = maps.FlatSkyMap(GRID_PIX, GRID_PIX, RES_ARCMIN*core.G3Units.arcmin,
                               proj=maps.MapProjection.names[proj],
-                              delta_center=-56*core.G3Units.deg,
+                              delta_center=DEC_DEG*core.G3Units.deg,
                               pol_conv=maps.MapPolConv.COSMO)
         yy, xx = np.nonzero(mask > 0)
         select = rng.choice(len(yy), 512, replace=False)

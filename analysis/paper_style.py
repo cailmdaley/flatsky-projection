@@ -52,7 +52,7 @@ SECONDARY = ["#232323", "#616161", "#9E9E9E"]
 # sizes). One hue, light to dark, per the sequential rule -- a desaturated
 # slate that no projection colour sits near.
 # The light end stops at a mid slate rather than near-white: the smallest
-# disks are drawn over the pale interior of the largest apodized mask, and a
+# footprints are drawn over the pale interior of the largest apodized mask, and a
 # paler line there is a line the reader cannot see.
 MASK_RAMP = ["#93A4B0", "#7C8F9D", "#657A8A", "#4F6678", "#3A5265", "#263E52",
              "#12293C"]

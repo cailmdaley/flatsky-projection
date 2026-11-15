@@ -24,7 +24,7 @@ integrate over.
 
 The centroid matters. Placing cells at their geometric midpoints biases <g^2>
 by 4% for BICEP at n_bins = 64, because BICEP's magnification spans a factor
-of four across the largest disks and g^2 is strongly convex in log s.
+of four across the largest footprints and g^2 is strongly convex in log s.
 Carrying the first moment inside each cell drops that to 1e-4. Bin assignment
 is clipped to edges drawn from a ~200k-pixel subsample; the accumulated log s
 values are not clipped, so a pixel outside the subsampled range still lands

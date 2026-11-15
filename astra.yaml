@@ -132,16 +132,18 @@ outputs:
     description: |
       One apodized mask per footprint, built on the intermediate HEALPix grid
       the maps are synthesized onto, so mask and map share a pixelization
-      before projection. The footprints are SPT's 1500d field (RA -50 to +50
-      deg, dec -70 to -42 deg) and seven disks concentric with the grid,
-      nominally 0.75% to 10% of the sky; their shapes are in
-      src/stages/_footprints.py. The taper is NaMaster's C1 or C2 kernel
+      before projection. The footprints are seven RA/dec rectangles centred
+      on (0, -56 deg), self-similar to SPT's 1500d field (RA -50 to +50 deg,
+      dec -70 to -42 deg), which is the member of scale 1: scale s gives RA
+      half-width 50 s and dec half-width 14 s deg, for s from 0.45 to 1.65,
+      0.77% to 10.06% of the sky (src/stages/_footprints.py). They are the
+      sky-fraction sweep of the paper. The taper is NaMaster's C1 or C2 kernel
       evaluated at each pixel's exact geodesic distance to the boundary. The
       index records each mask's realized sky fraction at three weightings
       (binary, W, W^2).
     decisions: [intermediate_nside, apodization]
     units:
-      footprint: [disk_0p75, disk_1, disk_1p25, disk_1p5, disk_3, disk_5, disk_10, field_1500d]
+      footprint: [rect_0p77, rect_1p36, rect_2p12, field_1500d, rect_5p84, rect_7p81, rect_10p06]
     recipe:
       command: >-
         bash env.sh
@@ -153,10 +155,11 @@ outputs:
         --out {output}
       resources:
         cpus: 2
-        # Two dense Nside-8192 float64 maps (6.4 GB each, binary and
-        # apodized) plus the footprint's pixel vectors and the G3 copy.
-        memory: 24Gi
-        # Masks are written ring-sparse and gzipped, ~80 MB each at Nside 8192.
+        # One dense Nside-8192 float64 map (6.4 GB) plus the footprint's
+        # pixel vectors: 7.2 GB peak and 17 s for rect_0p77, 9.2 GB and 70 s
+        # for rect_10p06.
+        memory: 16Gi
+        # Masks are written ring-sparse and gzipped, tens of MB each.
         disk: 8Gi
         time_limit: 1h
 
@@ -165,7 +168,7 @@ outputs:
     label: "Projected Q/U maps (Q/U leg)"
     description: |
       Q and U synthesized from the alms on the intermediate HEALPix grid,
-      projected onto the 3300 x 3300, 2 arcmin flat-sky grid centred on
+      projected onto the 4500 x 4500, 2 arcmin flat-sky grid centred on
       (0, -56 deg) in each of the four projections, then flattened. This is the
       leg a real flat-sky polarization analysis produces, and the leg that
       carries the E-to-B leakage.
@@ -182,7 +185,6 @@ outputs:
         --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
-        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
         --seeds {units.seed}
         --max-procs 4
         --out {output}
@@ -215,7 +217,6 @@ outputs:
         --projections {units.projection}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
-        --res-arcmin 2 --size-deg 110 --ra-deg 0 --dec-deg -56
         --seeds {units.seed}
         --max-procs 4
         --out {output}
@@ -233,16 +234,16 @@ outputs:
       Each footprint's HEALPix mask projected into each of the four
       projections with the maps' interpolation, then cut to the window
       NaMaster analyses; the window sets the flat-sky Fourier grid and so the
-      bandpowers. A disk's window is a fixed square, the same in every
-      projection, from a hand-maintained table that leaves 1 to 8 deg beyond
-      the apodized disk and clips the outer taper of the small disks. The
-      field's window is the tightest even-sided rectangle around its support
-      in each projection, about three times wider than tall, since a square
-      would multiply the coupling-matrix cost.
+      bandpowers. Each footprint's window is the tightest even-sided
+      rectangle around its support in each projection, two to three times
+      wider than tall, since a square would multiply the coupling-matrix
+      cost. On the 4500-pixel grid every support, taper included, keeps a
+      margin to the grid's edge: at least 172 pixels (5.7 deg), for the
+      largest rectangle in SFL.
     inputs: [healpix_masks]
     decisions: [interpolation]
     units:
-      footprint: [disk_0p75, disk_1, disk_1p25, disk_1p5, disk_3, disk_5, disk_10, field_1500d]
+      footprint: [rect_0p77, rect_1p36, rect_2p12, field_1500d, rect_5p84, rect_7p81, rect_10p06]
     recipe:
       command: >-
         bash env.sh
@@ -251,15 +252,15 @@ outputs:
         --footprint {units.footprint}
         --projections ProjSFL ProjSTG ProjZEA ProjBICEP
         --interpolation {decisions.interpolation}
-        --res-arcmin 2 --size-deg 110
         --max-procs 2
         --out {output}
       resources:
         cpus: 2
-        # One intermediate mask resident plus the 3300^2 flat output; a
-        # seven-disk job's condor-sampled MemoryUsage was 1954 MB.
-        memory: 8Gi
-        disk: 8Gi
+        # One intermediate mask plus the 4500^2 flat outputs: 1.0-2.8 GB
+        # peak and 25 min wall per footprint for the four projections. The
+        # windows are 2-51 MB each.
+        memory: 6Gi
+        disk: 4Gi
         time_limit: 2h
 
   - id: coupling_matrices
@@ -272,16 +273,18 @@ outputs:
       seed and every simulation suite on these masks reuses them.
     inputs: [flatsky_masks]
     decisions: [b_purification, ell_max, bandpower_width]
-    # The build cost spans three orders of magnitude across the footprints:
-    # 11-19 min on 8 cores for disk_0p75, up to 17 h on 8 cores for disk_5,
-    # 29-34 h on 32 cores for disk_10, and 2.0 h (BICEP, 1.4 Mpx window) to
-    # 5.9 h (STG, 2.2 Mpx) on 16 cores for the field, so the resources are
-    # per unit. Threading is 87-92% efficient at 8 and 32 cores. bandpowers
+    # The build cost grows as the square of the window's pixel count: the
+    # field measured 2.0 h (BICEP, 1.4 Mpx window) to 5.9 h (STG, 2.2 Mpx) on
+    # 16 cores, and a 7.3 Mpx window 29-34 h on 32. The windows run from
+    # 0.29 Mpx (rect_0p77, BICEP) to 6.4 Mpx (rect_10p06, STG), so by that
+    # scaling the builds span 0.2 h to ~49 h on 16 cores, and the resources
+    # are per unit, sized for each footprint's largest (STG) window.
+    # Threading is 87-92% efficient at 8 and 32 cores. bandpowers
     # shares the projection axis, so each of its units is staged only its
     # own projection's workspaces.
     units:
       projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
-      footprint: [disk_0p75, disk_1, disk_1p25, disk_1p5, disk_3, disk_5, disk_10, field_1500d]
+      footprint: [rect_0p77, rect_1p36, rect_2p12, field_1500d, rect_5p84, rect_7p81, rect_10p06]
     recipe:
       command: >-
         bash env.sh
@@ -295,30 +298,35 @@ outputs:
         --out {output}
       resources:
         cpus: 8
-        # Peak RSS is 0.3-0.7 GB for disk_0p75 to disk_5 and 1.9 GB for disk_10.
+        # Peak RSS was 0.3-0.7 GB for windows up to 3 Mpx and 1.9 GB at 7.3 Mpx.
         memory: 4Gi
         disk: 4Gi
         time_limit: 2h
         # OSPool's default duration category kills at 20 h; Long at 40 h.
         extra: {classad_JobDurationCategory: Medium}
         per_unit:
-          - when: {footprint: disk_1p5}
+          - when: {footprint: rect_1p36}
             time_limit: 4h
-          - when: {footprint: disk_3}
-            time_limit: 12h
-          - when: {footprint: disk_5}
-            cpus: 16
-            memory: 6Gi
-            time_limit: 16h
-          - when: {footprint: disk_10}
-            cpus: 32
-            memory: 12Gi
-            time_limit: 40h
-            extra: {classad_JobDurationCategory: Long}
+          - when: {footprint: rect_2p12}
+            time_limit: 8h
           - when: {footprint: field_1500d}
             cpus: 16
             memory: 8Gi
             time_limit: 12h
+          - when: {footprint: rect_5p84}
+            cpus: 32
+            memory: 8Gi
+            time_limit: 16h
+          - when: {footprint: rect_7p81}
+            cpus: 32
+            memory: 8Gi
+            time_limit: 30h
+            extra: {classad_JobDurationCategory: Long}
+          - when: {footprint: rect_10p06}
+            cpus: 32
+            memory: 12Gi
+            time_limit: 40h
+            extra: {classad_JobDurationCategory: Long}
 
   - id: bandpowers
     type: data
@@ -336,7 +344,7 @@ outputs:
     # One unit is one (seed, projection) over every footprint and both legs,
     # the axes shared with projected_{qu,eb}, so each grid job is staged only
     # its own ~350 MB of maps. Splitting by footprint would re-ship the same
-    # maps eight times.
+    # maps seven times.
     units:
       seed: 0..20
       projection: [ProjSFL, ProjSTG, ProjZEA, ProjBICEP]
@@ -408,7 +416,6 @@ outputs:
         --projections {units.projection} --seeds {units.seed}
         --interpolation {decisions.interpolation}
         --nside {decisions.intermediate_nside}
-        --res-arcmin 2 --size-deg 110
         --max-procs 4 --out {output}
       resources:
         cpus: 4
@@ -702,13 +709,14 @@ decisions:
       reports bands about 35 wide by its own convention, with neighbouring
       bands up to ~10% correlated (arXiv:1403.3985). Logarithmic
       bins at low ell fall below the kernel width and correlate neighbouring
-      bandpowers. For the smallest apodized disk the azimuthally averaged
-      |FFT|^2 of the mask falls below 1% of its peak by ell ~ 20 and 0.1% by
-      ell ~ 45, so width 50 exceeds every mask's kernel. It also merges 2:1
+      bandpowers. For the smallest footprint, rect_0p77, the azimuthally
+      averaged |FFT|^2 of the flat-sky mask falls below 1% of its peak by
+      ell = 16-26 and 0.1% by ell = 16-41 across the projections, so width 50
+      exceeds every mask's kernel. It also merges 2:1
       into the width-100 bands used to compare band correlations with
       SPT-3G. The coupling-matrix cost does not depend on the bin width
-      (15-26 h on 8 cores for the 5% disk at widths 10 and 50 alike): it is
-      set by the mask's Fourier grid, so the width is a convention, not a
+      (15-26 h on 8 cores for a 3 Mpx window at widths 10 and 50 alike): it
+      is set by the mask's Fourier grid, so the width is a convention, not a
       cost.
     default: d50
     options:
@@ -751,15 +759,13 @@ decisions:
     label: "Mask apodization"
     tags: [masking]
     rationale: |
-      Every footprint mask, and the 1500d field mask that the lensing and
-      spherical-grid suites build for themselves, is tapered with NaMaster's
-      C2 kernel over 2.5 deg. The pure-B estimator takes derivatives of the
+      Every footprint mask is tapered with NaMaster's C2 kernel over 2.5 deg. The pure-B estimator takes derivatives of the
       mask, so the taper must be smooth; a sharp edge also rings in Fourier
       space and mixes power across the coupling kernel. A wider taper
       suppresses this at the cost of sky area, and the masks' index records
-      the realized sky fraction for that reason. 2.5 deg is a quarter of the
-      smallest disk's 10 deg radius, so even that footprint keeps an
-      untapered core.
+      the realized sky fraction for that reason. The smallest rectangle is
+      12.6 deg tall, so even that footprint keeps an untapered core 7.6 deg
+      tall.
     default: c2_2p5deg
     options:
       c2_2p5deg:

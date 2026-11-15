@@ -28,7 +28,7 @@ N_HARM = 12                 # harmonics |n| <= N_HARM of the pi-periodic symbol
 N_PHI = 128                 # samples of phi in [0, pi) for the expansion
 # Overall sign of S_J under this module's conventions (dpsi from `symbol`,
 # E/B with U in the handedness of (x, y)), fixed by `check`: S_J[E] with
-# sign +1 correlates with the grid B at r = 0.999 on SFL's 5% disk, and the
+# sign +1 correlates with the grid B on SFL's reference footprint, and the
 # opposite sign anticorrelates. It is a convention, the same for every
 # projection; the subtracted map is B_grid - TEMPLATE_SIGN * S_J[E].
 TEMPLATE_SIGN = 1.0
@@ -177,11 +177,11 @@ TAPER_DEG = 2.0
 class Grid:
     """Per-projection geometry: polar reflattening, masks, the template's c_2n."""
 
-    def __init__(self, proj, qu_path, disk_mask_path, theory_path):
+    def __init__(self, proj, qu_path, reference_mask_path, theory_path):
         """`qu_path`: any one projected Q/U map of `proj` (only its grid is
-        used); `disk_mask_path`: the flatsky_masks npz of the disk the
-        template covers besides the field; `theory_path`: the theory_spectra
-        output directory."""
+        used); `reference_mask_path`: the flatsky_masks npz of the production
+        footprint the template covers besides the separable field taper;
+        `theory_path`: the theory_spectra output directory."""
         self.proj = proj
         fr = next(core.G3File(str(qu_path)))
         fsm = fr["Q"]
@@ -199,10 +199,10 @@ class Grid:
         del rot, rot_r
         fm = field_masks(alpha, delta)
         del alpha, delta
-        d = np.load(disk_mask_path)
-        lo, hi = int(d["lo"]), int(d["hi"])
-        self.disk = dict(mask=d["mask"], box=(slice(lo, hi), slice(lo, hi)),
-                         lx=float(d["lx_rad"]), ly=float(d["ly_rad"]))
+        d = np.load(reference_mask_path)
+        ylo, yhi, xlo, xhi = (int(d[k]) for k in ("ylo", "yhi", "xlo", "xhi"))
+        self.reference = dict(mask=d["mask"], box=(slice(ylo, yhi), slice(xlo, xhi)),
+                              lx=float(d["lx_rad"]), ly=float(d["ly_rad"]))
         rows, cols = np.nonzero(fm["1500d"])
         pad = int(round(PAD_DEG * DEG / fsm.res))
         fbox = (slice(rows.min() - pad, rows.max() + pad + 1),
@@ -216,11 +216,11 @@ class Grid:
         # over TAPER_DEG outside it: far outside, the grid's shear grows
         # without bound (tan 2dpsi diverges at g = 1/sqrt 2), and a pure-B
         # template there is irrelevant to the masked spectra anyway.
-        r0 = min(lo, fbox[0].start); r1 = max(hi, fbox[0].stop)
-        c0 = min(lo, fbox[1].start); c1 = max(hi, fbox[1].stop)
+        r0 = min(ylo, fbox[0].start); r1 = max(yhi, fbox[0].stop)
+        c0 = min(xlo, fbox[1].start); c1 = max(xhi, fbox[1].stop)
         self.tbox = (slice(r0, r1), slice(c0, c1))
         support = np.zeros(self.shape_of(fsm), bool)
-        support[self.disk["box"]] |= self.disk["mask"] > 0
+        support[self.reference["box"]] |= self.reference["mask"] > 0
         support[fbox] |= self.field["mask"] > 0
         from scipy.ndimage import distance_transform_edt
         dist = distance_transform_edt(~support[self.tbox]) * fsm.res / DEG

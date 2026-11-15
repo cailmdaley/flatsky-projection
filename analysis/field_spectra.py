@@ -1,12 +1,12 @@
 """SPT's 1500d field, simulated: measured leakage against the forward model.
 
-The seven disks are concentric about the projection centre, which makes
-SFL's and BICEP's mask-averaged shear coincide. The 1500d field (RA +-50 deg,
-dec -70 to -42 deg) is wide and short, so it splits them, and the paper's
+The 1500d field (RA +-50 deg, dec -70 to -42 deg) is wide and short, so
+SFL's and BICEP's mask-averaged shear differ on it, and the paper's
 prediction for it -- SFL and BICEP a factor `tfdratio` apart -- rests on the
 forward model alone unless the field is simulated. `bandpowers` carries it
-through the same pipeline and the same projected maps as the disks; this
-script, the `field_spectra` output, compares the result with the model.
+through the same pipeline and the same projected maps as the rest of the
+footprint sweep; this script, the `field_spectra` output, compares the
+result with the model.
 
 What is compared, per projection:
 
@@ -15,7 +15,7 @@ What is compared, per projection:
   same quantity for STG, the pipeline's E-to-B floor on this footprint; and
   the leading-order law 2<g^2> beside it.
 * the floor-subtracted ratio over the forward model, per bin, averaged over
-  `L_CLEAN` -- the disk suite's clean statement (`cleanBBrange`).
+  `L_CLEAN` -- the sweep's clean statement (`cleanBBrange`).
 * EE over the binned input spectrum, measured and modelled.
 
 The model reads the shear moments of the pipeline's own field mask,

@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 """Build NaMaster flat-sky mode-coupling workspaces, per (projection, footprint).
 
-The 2021 pipeline never had a rule for this. Its 35 ``w22_{proj}_disk{i}.fits``
-files under ``resources/masks/coupling_matrices/`` were built by hand, off the
-DAG, and the generating script is gone. This stage is that missing rule,
-reading the flat-sky masks (``project_masks.py``'s
-``mask_{proj}_{footprint}.npz`` outputs) instead of the pickled arrays the 2021 code read directly off disk.
+Reads the flat-sky masks (``project_masks.py``'s ``mask_{proj}_{footprint}.npz``)
+and writes the workspaces every simulation suite on those masks reuses.
 
 Two workspaces per (projection, footprint), not one
 -----------------------------------------------------
 ``namaster_spectra.py`` computes two legs. The Q/U leg builds a genuine
 spin-2 field from Q and U and needs the spin-2 coupling matrix (EE, EB, BE,
-BB) -- that is the ``w22`` file the 2021 script already wrote and read.
+BB) -- the ``w22`` file.
 
 The E/B leg is different in kind, not just in name. Its "E" and "B" maps were
 synthesized *directly* from the E- and B-mode alms with ``hp.alm2map`` used as
@@ -41,8 +38,7 @@ That is why this stage writes ``w00_{proj}_{footprint}.fits`` alongside every
 ``w22_{proj}_{footprint}.fits``: the EB leg cannot be decoupled without it. Both
 workspaces are built from a dummy zero-valued field over the same mask, lx,
 ly and binning -- the coupling matrix depends only on the mask and the field
-spin, never on the map values (this is also why the 2021 script could use an
-all-zero dummy Q/U pair).
+spin, never on the map values.
 
 Resumable: a workspace FITS already on disk is left alone. Written through a
 temporary file and renamed into place, so a kill mid-write cannot leave a
@@ -50,8 +46,9 @@ truncated FITS that a later run mistakes for done.
 
 One pair per grid job
 ---------------------
-The build cost spans three orders of magnitude across the footprints (11
-min on 8 cores for disk_0p75, 33 h on 32 cores for disk_10), so the pairs never share a job. ``--footprint`` names
+The build cost grows roughly as the square of the window's pixel count and
+spans orders of magnitude across the footprints, so the pairs never share a
+job. ``--footprint`` names
 the footprint(s) a unit builds (``astra.yaml`` says ``--projections
 {units.projection} --footprint {units.footprint}``); the manifest is
 written under a coordinate-keyed name so the shards do not collide at the

@@ -82,16 +82,11 @@ def footprint_samples(healpix_masks, footprint, nside=64):
     idx = json.loads((Path(healpix_masks) / f'index_{footprint}.json').read_text())
     (rec,) = idx['masks']
     sample_nside = 1024
-    if rec['shape'] == 'box':
-        ids, values = MM.rect_mask_analytic(sample_nside, idx['ra_deg'], rec['ra_half_deg'],
-                                            rec['dec_min_deg'], rec['dec_max_deg'],
-                                            idx['apotype'], idx['aposize_deg'])
-        m = np.zeros(hp.nside2npix(sample_nside))
-        m[ids] = values
-    else:
-        center = hp.ang2vec(idx['ra_deg'], idx['dec_deg'], lonlat=True)
-        m = MM.apodize_disk_analytic(sample_nside, center, rec['radius_rad'],
-                                     idx['apotype'], idx['aposize_deg'])
+    ids, values = MM.rect_mask_analytic(sample_nside, idx['ra_deg'], rec['ra_half_deg'],
+                                        rec['dec_min_deg'], rec['dec_max_deg'],
+                                        idx['apotype'], idx['aposize_deg'])
+    m = np.zeros(hp.nside2npix(sample_nside))
+    m[ids] = values
     w = hp.ud_grade(m**2, nside)
     ids = np.flatnonzero(w)
     ra, dec = hp.pix2ang(nside, ids, lonlat=True)

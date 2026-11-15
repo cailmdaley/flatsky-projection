@@ -56,10 +56,8 @@ squared (a window multiplies the map, so it enters C_l as window**2):
 * ``healpix_and_flat``: both of the above; over-corrects for the same
   reason.
 
-Resolution and pixel size are fixed for this whole analysis (see the
-README's "Grid and geometry" section and ``astra.yaml``'s resolution-chain
-note), not per-run decisions, so ``INPUT_HEALPIX_NSIDE`` and ``RES_ARCMIN``
-below are constants rather than flags.
+The pixel size is fixed for the whole analysis (``_footprints.RES_ARCMIN``),
+not a per-run decision, so it is a constant rather than a flag.
 
 Footprints
 ----------
@@ -92,14 +90,13 @@ from _decisions import (
     set_threads,
     write_index,
 )
-from _footprints import ordered
+from _footprints import RES_ARCMIN, ordered
 
 LEGS = ("qu", "eb")
 
-# Fixed for the whole analysis (README "Grid and geometry", astra.yaml
-# resolution-chain note) -- not a `_decisions` knob, so not a flag here.
+# The Nside of the healpix_* pixel-window modes, which over-correct and exist
+# for the comparison only.
 INPUT_HEALPIX_NSIDE = 8192
-RES_ARCMIN = 2.0
 
 
 def build_parser() -> argparse.ArgumentParser:

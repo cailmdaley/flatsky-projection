@@ -14,8 +14,8 @@ Run:  bash env.sh python3 analysis/simulation_windows.py
           --flatsky-masks results/fiducial/flatsky_masks
           --lmax l6000 --delta-ell d50 --out results/fiducial/simulation_windows
 Out:  <out>/simulation_windows.npz: one array per `spectra.window_key(spec,
-      field, leg)`, (projection, band) on the field and (disk, projection,
-      band) on the disks, with `ell`, `projs` and `disks`.
+      field, leg)`, (projection, band) on the field and (footprint, projection,
+      band) on the sweep, with `ell`, `projs` and `sweep`.
 """
 import argparse
 from multiprocessing import Pool
@@ -33,7 +33,7 @@ CASES = ([(spec, field, S.QU_LEG) for spec in ('TT', 'WHITE', 'EE', 'BB') for fi
 
 def one(job):
     (spec, field, leg), args = job
-    footprints = [S.FIELD] if field else S.DISKS
+    footprints = [S.FIELD] if field else S.SWEEP
     window = PW.effective_window(spec, footprints, leg, args.theory_spectra, args.healpix_masks,
                                  PW.Sampling.read(args.healpix_masks, args.flatsky_masks),
                                  args.lmax, args.delta_ell)
@@ -57,7 +57,7 @@ def main():
     nbins = args.lmax // args.delta_ell
     args.out.mkdir(parents=True, exist_ok=True)
     np.savez(args.out / 'simulation_windows.npz', ell=(np.arange(nbins) + .5) * args.delta_ell,
-             projs=S.PROJS, disks=S.DISKS, **windows)
+             projs=S.PROJS, sweep=S.SWEEP, **windows)
     print(f"wrote {args.out / 'simulation_windows.npz'}")
 
 

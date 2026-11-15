@@ -55,7 +55,7 @@ def regression(out):
         pseudo_dir = sp.ROOT/'results/highell'/('fine_field_pseudo_spectra' if field else 'fine_pseudo_spectra')
         ws_dir = sp.ROOT/'results/highell'/('field_coupling' if field else 'coupling_matrices')
         for proj in sp.PROJS:
-            for mask in range(1 if field else len(sp.PERC)):
+            for mask in range(1 if field else len(sp.SWEEP)):
                 pol, tt, counts = read_pseudos(pseudo_dir, proj, mask)
                 actual = {}
                 for spin, raw in [(0, tt), (2, pol)]:

@@ -1,7 +1,8 @@
 """Scalar-leg macros: closure of the coupling matrix and diagonal-transfer errors.
 
 Formats the `scalar_summary` output over its summary range (1000 <= l < 4000)
-on the reference disk ("Disk") and the 1500d field ("Field"), per projection:
+on the sweep's reference footprint (macro tag "Disk") and the 1500d field
+("Field"), per projection:
 
   Scalar<fp><proj><TT|White>Ratio{Min,Max,Mean}   measured over forward model
   Scalar<fp><proj>WhiteDiagonal{Min,Max,Mean}Error  white after a TT-calibrated

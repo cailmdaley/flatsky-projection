@@ -5,26 +5,17 @@ Each footprint's mask is reprojected into each flat-sky projection with the
 same maps.maputils.healpix_to_flatsky call the map legs use (project_qu.py,
 project_eb.py, via _project.project_frame), NaNs outside the projection's
 valid domain are zeroed, and the result is cut down to a window -- NaMaster
-analyses that window, not the full 3300x3300 grid.
+analyses that window, not the full grid.
 
-The window comes from the footprint registry (`_footprints.FOOTPRINTS`):
-
-* a disk carries a fixed square `lo:hi`, applied to rows and columns in
-  every projection -- the 2021 hand-maintained table, kept because the cut
-  sets the Fourier grid (Lx, Ly) and therefore the bandpowers.
-* the 1500d field carries none, and gets the tightest box, not necessarily
-  square or centred, that contains every pixel with mask > 1e-6, each side
-  rounded up to even. The field is about three times wider than tall on the
-  grid, and a square window would multiply the coupling-matrix cost, which
-  grows roughly as the square of the window's pixel count. Only the mask's
-  heaviest connected component is kept (`main_footprint`).
-
-Every cut is written with its row and column bounds (`ylo:yhi`, `xlo:xhi`);
-a square cut also carries `lo:hi`, which equal both.
-
-Ported from
-/sptlocal/analysis/pol_project2020/workflow/scripts/project_masks.py and
-resize_masks.py (the cut_frame step, from powerspectra_functions.py).
+The window is the tightest box, not necessarily square or centred, that
+contains every pixel with mask > 1e-6, each side rounded up to even; it sets
+the Fourier grid (Lx, Ly) and therefore the bandpowers. The rectangles are
+about three times wider than tall on the grid, and a square window would
+multiply the coupling-matrix cost, which grows roughly as the square of the
+window's pixel count. Only the mask's heaviest connected component is kept
+(`main_footprint`). Every cut is written with its row and column bounds
+(`ylo:yhi`, `xlo:xhi`) and its margin: the fewest pixels between the support
+and the grid's edge.
 """
 
 from __future__ import annotations
@@ -33,7 +24,7 @@ import argparse
 from pathlib import Path
 
 from _decisions import add_common_args, index_name, parse_interpolation, set_threads, write_index
-from _footprints import DEC_DEG, FOOTPRINTS, RA_DEG, ordered
+from _footprints import DEC_DEG, FOOTPRINTS, GRID_PIX, RA_DEG, RES_ARCMIN, ordered
 from _project import PROJECTIONS_DEFAULT, project_frame
 
 # A pixel above this weight is part of the footprint's support.
@@ -52,8 +43,6 @@ def parse_args(argv=None):
     )
     parser.add_argument("--projections", nargs="+", default=list(PROJECTIONS_DEFAULT))
     parser.add_argument("--interpolation", required=True)
-    parser.add_argument("--res-arcmin", type=float, default=2.0)
-    parser.add_argument("--size-deg", type=float, default=110.0)
     add_common_args(parser, seeds=False)
     return parser.parse_args(argv)
 
@@ -61,10 +50,10 @@ def parse_args(argv=None):
 def main_footprint(mask_arr, threshold=MASK_VALUE_THRESHOLD):
     """`mask_arr` with every component but the heaviest zeroed, and the count dropped.
 
-    A cylindrical grid 110 deg tall centred at dec -56 runs past the south
+    A cylindrical grid 150 deg tall centred at dec -56 runs past the south
     pole, and healpix_to_flatsky wraps those rows onto the far side of the
-    sphere, so a field reaching dec -70 reappears as slivers at the grid's
-    bottom corners. Those are not part of the footprint.
+    sphere, so a footprint reaching far south reappears as slivers at the
+    grid's bottom corners. Those are not part of the footprint.
     """
     import numpy as np
     from scipy import ndimage
@@ -118,20 +107,15 @@ def main(argv=None):
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    res_rad_per_pix = args.res_arcmin / 60.0 * np.pi / 180.0
+    res_rad_per_pix = RES_ARCMIN / 60.0 * np.pi / 180.0
 
     records = []
     for name in footprints:
-        cut = FOOTPRINTS[name].cut
         frame = next(core.G3File(str(Path(args.healpix_masks) / f"mask_{name}.g3.gz")))
 
         for proj in projections:
             flatsky_frame = project_frame(
-                frame, proj,
-                res_arcmin=args.res_arcmin, dec_deg=DEC_DEG,
-                size_deg=args.size_deg, interp=interp_cfg["interp"],
-                rebin=interp_cfg["rebin"],
-            )
+                frame, proj, interp=interp_cfg["interp"], rebin=interp_cfg["rebin"])
             arr = np.array(flatsky_frame["T"], dtype=np.float64)  # copy, decoupled from the G3 buffer
 
             # ApplyMapThreshold (spt3g.mapspectra.basicmaputils) exists in
@@ -143,26 +127,21 @@ def main(argv=None):
             # no-op range; only the NaN -> vcut=0.0 branch ever fires).
             arr[np.isnan(arr)] = 0.0
 
-            if cut is None:
-                arr, dropped = main_footprint(arr)
-                ylo, yhi, xlo, xhi = derived_rect_bounds(arr)
-                extra = {"dropped_pixels": dropped}
-            else:
-                lo, hi = cut
-                ylo, yhi, xlo, xhi = lo, hi, lo, hi
-                extra = {"lo": lo, "hi": hi}
+            arr, dropped = main_footprint(arr)
+            ylo, yhi, xlo, xhi = derived_rect_bounds(arr)
+            margin = min(ylo, xlo, GRID_PIX - yhi, GRID_PIX - xhi)
 
             window = np.ascontiguousarray(arr[ylo:yhi, xlo:xhi])
             lx_rad = (xhi - xlo) * res_rad_per_pix
             ly_rad = (yhi - ylo) * res_rad_per_pix
-            bounds = {"ylo": ylo, "yhi": yhi, "xlo": xlo, "xhi": xhi, **extra}
+            bounds = {"ylo": ylo, "yhi": yhi, "xlo": xlo, "xhi": xhi}
 
             out_path = out_dir / f"mask_{proj}_{name}.npz"
             np.savez(out_path, mask=window, lx_rad=lx_rad, ly_rad=ly_rad, **bounds)
             records.append({
                 "projection": proj, "footprint": name, "path": out_path.name,
                 **bounds, "lx_rad": lx_rad, "ly_rad": ly_rad,
-                "cut": "square" if cut is not None else "rectangular",
+                "dropped_pixels": dropped, "margin_pix": margin,
             })
         del frame
 
@@ -171,8 +150,8 @@ def main(argv=None):
         "interpolation": args.interpolation,
         "interp": interp_cfg["interp"],
         "rebin": interp_cfg["rebin"],
-        "res_arcmin": args.res_arcmin,
-        "size_deg": args.size_deg,
+        "res_arcmin": RES_ARCMIN,
+        "size_pix": GRID_PIX,
         "ra_deg": RA_DEG,
         "dec_deg": DEC_DEG,
         "mask_value_threshold": MASK_VALUE_THRESHOLD,

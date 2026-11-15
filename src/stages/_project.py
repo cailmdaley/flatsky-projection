@@ -13,9 +13,6 @@ away behind a flag here. It stays in ``project_qu.py`` / ``project_eb.py`` as
 an explicit function each script supplies, so the one line that makes the
 Q/U leg leaky and the E/B leg leakage-free is visible at its call site
 instead of buried in a branch.
-
-Ported from ``/sptlocal/analysis/pol_project2020/workflow/scripts/common.py``
-and ``project_QU.py`` / ``project_EB_fullsky.py``.
 """
 
 from __future__ import annotations
@@ -34,11 +31,10 @@ from _decisions import (
     set_threads,
     write_index,
 )
-from _footprints import DEC_DEG, RA_DEG
+from _footprints import DEC_DEG, GRID_PIX, RA_DEG, RES_ARCMIN
 
 __all__ = [
     "PROJECTIONS_DEFAULT",
-    "ALPHA_CENTER_DEG_DEFAULT",
     "Leg",
     "add_project_cli",
     "alm_path",
@@ -48,18 +44,6 @@ __all__ = [
 ]
 
 PROJECTIONS_DEFAULT = ["ProjSFL", "ProjSTG", "ProjZEA", "ProjBICEP"]
-
-# spt3g.maps.FlatSkyMap's alpha_center defaults to 0 deg when the kwarg is
-# omitted -- verified directly against the current build:
-#   FlatSkyMap(10, 10, res, proj=..., delta_center=-56*deg).alpha_center == 0
-# The 2021 common.py's project() accepted ra_deg but never forwarded it to
-# healpix_to_flatsky/FlatSkyMap for exactly this reason: RA 0 is already the
-# map default, and RA 0 is the intended patch centre for this whole project.
-# We keep that behaviour (project_frame below does not accept ra_deg at all)
-# rather than silently reintroducing an alpha_center kwarg that would change
-# the geometry, and record the resolved value in every manifest instead.
-ALPHA_CENTER_DEG_DEFAULT = 0.0
-
 
 @dataclass(frozen=True)
 class Leg:
@@ -78,10 +62,6 @@ def add_project_cli(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--projections", nargs="+", default=list(PROJECTIONS_DEFAULT))
     parser.add_argument("--interpolation", required=True)
     parser.add_argument("--nside", required=True)
-    parser.add_argument("--res-arcmin", type=float, default=2.0)
-    parser.add_argument("--size-deg", type=float, default=110.0)
-    parser.add_argument("--ra-deg", type=float, default=RA_DEG)
-    parser.add_argument("--dec-deg", type=float, default=DEC_DEG)
     add_common_args(parser, seeds=True)
 
 
@@ -93,12 +73,11 @@ def output_path(out_dir, leg: Leg, proj: str, seed: int) -> Path:
     return Path(out_dir) / f"{leg.name}_{proj}_seed{seed:04d}.g3"
 
 
-def project_frame(frame, proj: str, *, res_arcmin: float, dec_deg: float,
-                   size_deg: float, interp: bool, rebin: int):
-    """Reproject every key of a Healpix G3Frame into one flat-sky projection.
+def project_frame(frame, proj: str, *, interp: bool, rebin: int):
+    """Reproject every key of a Healpix G3Frame onto the flat-sky grid of `proj`.
 
-    A direct port of the 2021 pipeline's ``common.project()``. Deliberately
-    has no ``ra_deg`` parameter -- see ``ALPHA_CENTER_DEG_DEFAULT`` above.
+    The grid is `_footprints.GRID_PIX` square pixels of `RES_ARCMIN`,
+    centred on the patch centre.
 
     Heavy imports (``spt3g.core``, ``spt3g.maps``) are deferred to inside this
     function so that importing this module never imports numpy/spt3g before
@@ -106,16 +85,16 @@ def project_frame(frame, proj: str, *, res_arcmin: float, dec_deg: float,
     """
     from spt3g import core, maps
 
-    size_pix = int(round((size_deg * core.G3Units.deg) / (res_arcmin * core.G3Units.arcmin)))
     flatsky_frame = core.G3Frame()
     for key in frame:
         flatsky_frame[key] = maps.maputils.healpix_to_flatsky(
             frame[key],
-            x_len=size_pix,
-            y_len=size_pix,
-            res=res_arcmin * core.G3Units.arcmin,
+            x_len=GRID_PIX,
+            y_len=GRID_PIX,
+            res=RES_ARCMIN * core.G3Units.arcmin,
             proj=maps.MapProjection.names[proj],
-            delta_center=dec_deg * core.G3Units.deg,
+            alpha_center=RA_DEG * core.G3Units.deg,
+            delta_center=DEC_DEG * core.G3Units.deg,
             interp=interp,
             rebin=rebin,
         )
@@ -158,8 +137,6 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    size_pix = int(round((args.size_deg * core.G3Units.deg) / (args.res_arcmin * core.G3Units.arcmin)))
-
     written, skipped = [], []
     for seed in seeds:
         todo = [p for p in projections if not output_path(out_dir, leg, p, seed).exists()]
@@ -180,11 +157,7 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
         for proj in todo:
             out_path = output_path(out_dir, leg, proj, seed)
             flatsky_frame = project_frame(
-                healpix_frame, proj,
-                res_arcmin=args.res_arcmin, dec_deg=args.dec_deg,
-                size_deg=args.size_deg, interp=interp_cfg["interp"],
-                rebin=interp_cfg["rebin"],
-            )
+                healpix_frame, proj, interp=interp_cfg["interp"], rebin=interp_cfg["rebin"])
             postprocess(flatsky_frame)
             core.G3Writer(filename=str(out_path))(flatsky_frame)
             written.append({"projection": proj, "seed": seed})
@@ -208,12 +181,10 @@ def run_leg(leg: Leg, synthesize: Callable, postprocess: Callable, argv=None,
         "interp": interp_cfg["interp"],
         "rebin": interp_cfg["rebin"],
         "nside": nside,
-        "res_arcmin": args.res_arcmin,
-        "size_deg": args.size_deg,
-        "size_pix": size_pix,
-        "ra_deg": args.ra_deg,
-        "dec_deg": args.dec_deg,
-        "alpha_center_deg": ALPHA_CENTER_DEG_DEFAULT,
+        "res_arcmin": RES_ARCMIN,
+        "size_pix": GRID_PIX,
+        "ra_deg": RA_DEG,
+        "dec_deg": DEC_DEG,
         "written_this_run": len(written),
         "skipped_existing": len(skipped),
         "files": files,
