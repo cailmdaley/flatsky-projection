@@ -15,37 +15,35 @@ the same colour:
                            is left out: its BB is the pipeline's numerical
                            floor.
 
-The models are those of `plot_model_residuals`: TT and EE against the
-estimator reference (`residual_estimator_response.py`: the sky read at
-k = l + 1/2 through NaMaster's own coupling), BB and its EE denominator against
-the integer-multipole `shear_leakage.coupling_matrix` model. All are cached
-with the measured bandpowers in the two npz files that script reads. The
-cached measured arrays and the TT/EE reference carry the simulation's own
-pixel windows; both are divided by the same per-projection window (`windowed /
+TT and EE are drawn against the estimator reference
+(`residual_estimator_response`: the coupling-matrix model of the field's
+shear moments, read at k = l + 1/2 through NaMaster's own coupling), BB and
+its EE denominator against the integer-multipole `shear_leakage.coupling_matrix`
+model of `pipeline_windows`, which also carries the measured bandpowers. The
+measured arrays and the TT/EE reference carry the simulation's own pixel
+windows; both are divided by the same per-projection window (`windowed /
 base` in `report_pipeline_windows.py`), so points and lines sit on the input's
-scale and point over line in TT and EE is the residual of
-`plot_model_residuals`.
+scale.
 
 Error bars are drawn only where the standard error of the mean reaches past
 the marker; `print_numbers` reports the largest reach and the model offsets.
 
-Run:  bash env.sh python analysis/plot_spectra_model.py
-Out:  figures/spectra_model.pdf (and .png)
+Run:  bash env.sh python3 analysis/plot_spectra_model.py
+          --pipeline-windows <dir> --residual-estimator-response <dir>
+          --theory-spectra results/fiducial/theory_spectra --out <dir>
+Out:  <out>/spectra_model.pdf, which the paper includes, and
+      <out>/fig_spectra_model.png
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paper_style as PS
-import plot_model_residuals as PMR
 import shear_leakage as SL
 import spectra as S
-
-ROOT = Path(__file__).resolve().parent.parent
-FIGURE = ROOT / "figures" / "spectra_model.pdf"
+import theory as T
 
 ELL_MIN, ELL_MAX = 500.0, 4500.0
 SPECTRA = ("TT", "EE", "BB")
@@ -58,9 +56,17 @@ YLABEL = {"TT": r"$C_\ell^{TT} / C_\ell^{TT,\,\rm in}$",
           "BB": r"$C_\ell^{BB} / C_\ell^{EE}$"}
 
 
-def load_data():
+def load_data(pipeline_windows, residual_estimator_response, theory_spectra):
     """Per spectrum and projection: (seeds x bands measured, bands model)."""
-    win, ref = np.load(PMR.WINDOWS), np.load(PMR.REFERENCE)
+    win = np.load(pipeline_windows / "pipeline_windows.npz")
+    ref = np.load(residual_estimator_response / "residual_estimator_response.npz")
+    ell = win["ell"]
+    th = T.load(theory_spectra)
+    half = (ell[1] - ell[0]) / 2
+
+    def theory(key):
+        """The CAMB spectrum averaged over each bandpower's integer multipoles."""
+        return np.array([th[key][int(l - half):int(l + half)].mean() for l in ell])
 
     def corrected(spec, proj):
         """Measured C_l with the simulation window removed, and its window."""
@@ -72,18 +78,18 @@ def load_data():
     for proj in S.PROJS:
         for spec in ("TT", "EE"):
             meas, window = corrected(spec, proj)
-            cl_in = S.theory(f"unlensed_{spec}")
+            cl_in = theory(f"unlensed_{spec}")
             out[spec][proj] = (meas / cl_in,
                                ref[f"{proj}_{spec}_spherical"] / window / cl_in)
         if proj != SL.FLOOR_PROJ:
             out["BB"][proj] = (
                 corrected("BB", proj)[0] / corrected("EE", proj)[0],
                 win[f"field_BB_{proj}_base"] / win[f"field_EE_{proj}_base"])
-    return dict(ell=S.ELL, ratios=out,
-                lensed=S.theory("lensed_BB") / S.theory("unlensed_EE"))
+    return dict(ell=ell, ratios=out,
+                lensed=theory("lensed_BB") / theory("unlensed_EE"))
 
 
-def plot(plt, d):
+def plot(plt, d, out):
     from matplotlib.lines import Line2D
 
     ell = d["ell"]
@@ -143,10 +149,10 @@ def plot(plt, d):
                         color=c, zorder=z)
     print(f"largest standard error {worst:.2f} pt, marker radius {radius:.2f} pt")
 
-    FIGURE.parent.mkdir(exist_ok=True)
-    fig.savefig(FIGURE)
-    fig.savefig(FIGURE.with_suffix(".png"), dpi=200)
-    print(f"wrote {FIGURE}")
+    out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out / "spectra_model.pdf")
+    fig.savefig(out / "fig_spectra_model.png", dpi=200)
+    print(f"wrote {out / 'spectra_model.pdf'}")
 
 
 def print_numbers(d):
@@ -176,9 +182,13 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    S.add_inputs(ap, "pipeline_windows", "residual_estimator_response", "theory_spectra")
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
     plt.rcParams.update(PS.rc())
-    d = load_data()
-    plot(plt, d)
+    d = load_data(args.pipeline_windows, args.residual_estimator_response, args.theory_spectra)
+    plot(plt, d, args.out)
     print_numbers(d)
 
 

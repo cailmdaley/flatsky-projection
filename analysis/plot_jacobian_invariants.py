@@ -65,6 +65,8 @@ G_VMAX = 0.6          # linear; SFL and BICEP saturate only near the pole
 LOG2MU_MAX = 1.0      # mu in [1/2, 2]
 HATCH_COLOR = "#B5B5B0"
 LIM_DEG = GRID_PIX * RES_ARCMIN / 120  # half the analysis grid's width
+TICKS = [-60, -30, 0, 30, 60]
+TICK_LABELS = ["", "$-30$", "$0$", "$30$", ""]  # the outer ticks unlabelled
 
 # Panels that are identically trivial by construction, named in-panel so a
 # flat field reads as a property of the projection.
@@ -271,8 +273,8 @@ def main():
             ax.set_xlim(-LIM_DEG, LIM_DEG)
             ax.set_ylim(-LIM_DEG, LIM_DEG)
             ax.set_aspect("equal")
-            ax.set_xticks([-60, -30, 0, 30, 60])
-            ax.set_yticks([-60, -30, 0, 30, 60])
+            ax.set_xticks(TICKS)
+            ax.set_yticks(TICKS)
 
         # The column is named in ink; a rule in the projection's colour sits
         # under the name and is the only place the identity hue appears.
@@ -282,13 +284,13 @@ def main():
                                 facecolor=PROJ_COLORS[proj], edgecolor="none",
                                 clip_on=False, zorder=10))
         axg.set_xticklabels([])
-        axm.set_xticklabels(["", "$-20$", "$0$", "$20$", ""])
+        axm.set_xticklabels(TICK_LABELS)
         if j > 0:
             axg.tick_params(labelleft=False)
             axm.tick_params(labelleft=False)
         else:
-            axg.set_yticklabels(["", "$-20$", "$0$", "$20$", ""])
-            axm.set_yticklabels(["", "$-20$", "$0$", "$20$", ""])
+            axg.set_yticklabels(TICK_LABELS)
+            axm.set_yticklabels(TICK_LABELS)
 
     axes[0, 0].set_ylabel(r"$\Delta y$ [deg]", labelpad=1)
     axes[1, 0].set_ylabel(r"$\Delta y$ [deg]", labelpad=1)
