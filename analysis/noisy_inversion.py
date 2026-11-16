@@ -79,7 +79,7 @@ def load(run, proj, sims, workspaces, pixel_arcmin):
             coupled = S.rebin_pseudo(np.asarray(raw[('tt_' if spin == 0 else 'pol_')+kind]), counts, edges)
             cl, _ = decouple_many(response, coupled)
             for spec, i in specs:
-                window = run.simulation_window(spec, field=True)[j]
+                window = run.simulation_window(spec)[S.SWEEP.index(S.FIELD), j]
                 out[spec, kind] = cl[:, i, :run.nbins]/(pix*window)
     return out, seeds, config
 

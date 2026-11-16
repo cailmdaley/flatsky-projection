@@ -24,7 +24,6 @@ import numpy as np
 import paper_style as PS
 import spectra as S
 
-FIELD = 1                    # index of the 1500d field in the summary
 ELL_LO, ELL_HI = 500.0, 4800.0
 ZOOM = 5.0                   # bottom axis half-range, percent
 
@@ -50,10 +49,10 @@ def main():
 
     for j, proj in enumerate(d["projections"]):
         color = PS.PROJ_COLORS[str(proj)]
-        measured = 100 * (d["diagonal_white"][FIELD, j] - 1)
-        model = 100 * (d["predicted_diagonal_white"][FIELD, j] - 1)
-        closure = 100 * (d["full_white"][FIELD, j] - 1)
-        sem = 100 * d["full_white_sem"][FIELD, j]
+        measured = 100 * (d["diagonal_white"][j] - 1)
+        model = 100 * (d["predicted_diagonal_white"][j] - 1)
+        closure = 100 * (d["full_white"][j] - 1)
+        sem = 100 * d["full_white_sem"][j]
         top.plot(ell[keep], measured[keep], color=color, lw=1.1)
         top.plot(ell[keep], model[keep], color=PS.INK, lw=0.5, ls=(0, (3, 2)))
         bot.fill_between(ell[keep], (closure - sem)[keep], (closure + sem)[keep],

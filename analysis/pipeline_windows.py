@@ -93,15 +93,16 @@ def footprint_samples(healpix_masks, footprint, nside=64):
     return ra, dec, w[ids]
 
 
-def flattened_rotation(jac):
-    """Sky-to-eastward-map polarization angle after production COSMO FlattenPol.
+def flattened_rotation(jac, flattening):
+    """Sky-to-eastward-map polarization angle after the `flattening` decision's rotation.
 
-    The residual returned by shear_leakage is in the unflipped pixel frame;
-    it enters with a minus sign here. Gated against actual Q/U reprojection.
+    The polar rotation of J, less the flattening's residual
+    (`shear_leakage.flattening_residual`, zero under `polar`), which is in
+    the unflipped pixel frame and so enters with a minus sign.
     """
     import shear_leakage as SL
     phi=np.arctan2(jac[:,1,0]-jac[:,0,1],jac[:,0,0]+jac[:,1,1])
-    return phi-SL.flattening_residual(jac)
+    return phi-SL.flattening_residual(jac, flattening)
 
 
 def spin_angle(q, rotation, out_angle):
@@ -114,7 +115,7 @@ def spin_angle(q, rotation, out_angle):
 
 
 def response(proj, ell, ell_sky, cl, healpix_masks, footprint, sampling, band_limit,
-             spec='TT', nside=64, nchi=64, aliases=False):
+             flattening, spec='TT', nside=64, nchi=64, aliases=False):
     """Unwindowed and windowed forward spectra using the full local Jacobian.
 
     If aliases=True, additionally sum the nearest reciprocal-grid images.
@@ -129,7 +130,7 @@ def response(proj, ell, ell_sky, cl, healpix_masks, footprint, sampling, band_li
     scale = w * det**2 / np.sum(w * det)
     chi = (np.arange(nchi) + .5) * 2 * np.pi / nchi
     u = np.stack([np.cos(chi), np.sin(chi)], -1)
-    rotation = flattened_rotation(jac)
+    rotation = flattened_rotation(jac, flattening)
     def evaluate(k, out_angle):
         q = np.einsum('pji,cj->pci', jac, k)
         qnorm = np.linalg.norm(q, axis=-1)
@@ -164,7 +165,8 @@ def response(proj, ell, ell_sky, cl, healpix_masks, footprint, sampling, band_li
     return np.array(base), np.array(filtered), np.array(folded)
 
 
-def effective_window(spec, footprints, leg, theory, healpix_masks, sampling, lmax, delta_l):
+def effective_window(spec, footprints, leg, theory, healpix_masks, sampling, lmax, delta_l,
+                     flattening):
     """Production-bin correction for the *known simulation input*, per projection.
 
     Returns (footprint, projection, band). This is R_window C_input / R
@@ -192,7 +194,7 @@ def effective_window(spec, footprints, leg, theory, healpix_masks, sampling, lma
             if spec == 'BB' and proj == 'ProjSTG' and leg == S.QU_LEG:
                 spin = 'EE'
             b, w, _ = response(proj, fine, th['ell'], cl, healpix_masks, footprint,
-                               sampling, lmax, spec=spin, nside=32, nchi=64)
+                               sampling, lmax, flattening, spec=spin, nside=32, nchi=64)
             b = b.reshape(nbins, -1).mean(-1)
             # Production divides the bandpower by the top-hat at ell_eff,
             # rather than dividing the integrand before averaging the bin.

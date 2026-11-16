@@ -10,21 +10,19 @@ The production run
 ------------------
 `bandpowers/bandpowers_{proj}_seed{s:04d}.npz`, one file per (seed,
 projection) holding every footprint by name -- the seven RA/dec rectangles of
-`src/stages/_footprints.py`, SPT's 1500d field among them. The paper studies four projections,
-`paper_style.PROJS`, and every array here is indexed in that order; the run
-also holds a fifth, ProjSIN, which nothing in `analysis/` reads. What it did:
+`src/stages/_footprints.py`, SPT's 1500d field among them -- in the four
+projections of `paper_style.PROJS`, the order every array here uses. What
+the pipeline did (astra.yaml has the full account):
 
-  - Input: HEALPix *unlensed* TQU realizations of the Planck 2018 best-fit
-    cosmology, so the true B is exactly zero and every recovered B bandpower
-    is leakage.
-  - map2alm to the band limit, monopole and dipole filtered. Sky power
-    therefore exists to l = lmax, and any forward model compared to these
-    spectra must be band-limited there.
-  - Synthesized to a flat grid by bilinear interpolation with oversampling,
-    centred on the patch centre of `_footprints`.
-  - spt3g maps.FlattenPol applied: the projection-induced spin-2 rotation is
-    undone before spectra are taken, leaving only the symmetric (shear +
-    magnification) part of the Jacobian.
+  - Input: unlensed Gaussian skies drawn from the CAMB spectra of the
+    `cosmology` decision with B = 0, band-limited at lmax, so every recovered
+    B bandpower is leakage and any forward model compared to these spectra
+    must be band-limited there.
+  - Synthesized on an intermediate HEALPix grid and projected to the flat
+    grid by bilinear interpolation with oversampling, centred on the patch
+    centre of `_footprints`.
+  - Q/U flattened by the `flattening` decision's angle, which removes the
+    projection's rotation and leaves its shear and magnification.
   - Two legs per realization. Leg 0 is QU -- project Q and U, flatten, then
     decompose to E/B on the plane, which is what a real analysis does and what
     carries the leakage. Leg 1 is EB, decomposed on the sphere first.
@@ -195,10 +193,10 @@ class Run:
         return out
 
     def load_field(self, spec="EE", leg=QU_LEG, correct_windows=True):
-        """1500d-field bandpowers as (n_projs, nsims, nbins), QU leg by default."""
+        """The 1500d field's row of `load`, (n_projs, nsims, nbins)."""
         out = self._load([FIELD], spec, leg)[0]
         if correct_windows:
-            out /= self.simulation_window(spec, field=True, leg=leg)[:, None, :]
+            out /= self.simulation_window(spec, leg=leg)[SWEEP.index(FIELD), :, None, :]
         return out
 
     def load_scalar(self, spec="TT", field=False, correct_windows=True):
@@ -220,24 +218,25 @@ class Run:
                     if not np.array_equal(z["ell_eff"], self.ell):
                         raise ValueError(f"{directory}: scalar bins differ from EE")
                     out[:, j, seed] = z["cl"][_rows(z, footprints)]
-        out = out[0] if field else out
         if correct_windows:
-            window = self.simulation_window(spec, field=field)
-            out /= window[:, None, :] if field else window[:, :, None, :]
-        return out
+            window = self.simulation_window(spec)
+            out /= window[[SWEEP.index(FIELD)] if field else slice(None), :, None, :]
+        return out[0] if field else out
 
-    def simulation_window(self, spec="EE", field=False, leg=QU_LEG):
+    def simulation_window(self, spec="EE", leg=QU_LEG):
         """Effective window for the known simulation input, not an arbitrary sky.
 
         Ring interpolation in the sky frame and the exact finite-subsample grid
         average, relative to the continuous top-hat already divided out in
-        production. Shape (n_projs, nbins) on the field, (n_footprints, n_projs,
-        nbins) on the sweep.
+        production. Shape (n_footprints, n_projs, nbins), footprints in
+        registry order.
         """
         with np.load(self.simulation_windows / "simulation_windows.npz") as z:
             if not np.array_equal(z["ell"], self.ell):
                 raise ValueError(f"{self.simulation_windows}: bins differ from the bandpowers'")
-            return z[window_key(spec, field, leg)]
+            if list(z["footprints"]) != SWEEP:
+                raise ValueError(f"{self.simulation_windows}: footprints differ from the registry")
+            return z[window_key(spec, leg)]
 
     # ---- theory -------------------------------------------------------------
 
@@ -281,16 +280,16 @@ class Run:
                 raise ValueError(f"{path}: projections {list(f['projs'])}, expected {PROJS}")
             rows = [list(f["footprints"]).index(name) for name in footprints]
             return {k: f[k][rows] for k in f.files
-                    if k not in ("footprints", "projs", "n_bins")}
+                    if k not in ("footprints", "projs", "n_bins", "flattening")}
 
     def field_moments(self):
         """`moments` of SPT's 1500d field, shaped like one mask (i = 0)."""
         return self.moments([FIELD])
 
 
-def window_key(spec, field, leg):
+def window_key(spec, leg):
     """The array name of one window in `simulation_windows.npz`."""
-    return f"{spec.upper()}_{'field' if field else 'sweep'}_{('qu', 'eb')[leg]}"
+    return f"{spec.upper()}_{('qu', 'eb')[leg]}"
 
 
 def flat_pixwin(ell, res_arcmin, n_phi=512):

@@ -18,9 +18,11 @@ Per (footprint, projection) it stores the exact per-pixel moments
 
 and an (n_bins, n_bins) weight histogram in (log s1, log s2) carrying, per
 occupied cell, the weighted centroid (cell_s1, cell_s2) and the weighted means
-of sin^2(2 Delta) and sin(2 Delta), Delta = `shear_leakage.flattening_residual`.
-Those cells are what `shear_leakage.predicted_spectra` and `coupling_matrix`
-integrate over.
+of sin^2(2 Delta) and sin(2 Delta), Delta =
+`shear_leakage.flattening_residual` of the `flattening` decision: the
+residual rotation the maps' flattening leaves, identically zero under
+`polar`. Those cells are what `shear_leakage.predicted_spectra` and
+`coupling_matrix` integrate over.
 
 The centroid matters. Placing cells at their geometric midpoints biases <g^2>
 by 4% for BICEP at n_bins = 64, because BICEP's magnification spans a factor
@@ -30,12 +32,13 @@ is clipped to edges drawn from a ~200k-pixel subsample; the accumulated log s
 values are not clipped, so a pixel outside the subsampled range still lands
 at its true position.
 
-Run:  systemd-run --user --scope -p MemoryMax=20G bash env.sh python3 \\
-          analysis/shear_moments.py --healpix-masks results/fiducial/healpix_masks \\
+Run:  bash env.sh python3 analysis/shear_moments.py
+          --healpix-masks results/fiducial/healpix_masks --flattening polar
           --out results/fiducial/shear_moments
 Out:  <out>/shear_moments.npz, arrays stacked (footprint, projection, ...) in
       registry and `paper_style.PROJS` order, with `footprints`, `projs`,
-      `n_bins`; and <out>/index.json recording the mask Nside and footprints.
+      `n_bins` and `flattening`; and <out>/index.json recording the mask
+      Nside, the footprints and the flattening.
 """
 
 import argparse
@@ -50,6 +53,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"))
 import geometry as G
 import shear_leakage as SL
+from _decisions import parse_flattening
 from _footprints import FOOTPRINTS
 from paper_style import PROJS
 
@@ -78,11 +82,12 @@ def _bin_edges(proj, alpha, delta, n_bins, pad=0.05):
     return out
 
 
-def footprint_moments(nside, pix, mask, n_bins=N_BINS, chunk=2_000_000):
+def footprint_moments(nside, pix, mask, flattening, n_bins=N_BINS, chunk=2_000_000):
     """Shear moments of one footprint, leading axis in `PROJS` order.
 
     `pix` are the RING indices of the mask's nonzero pixels at `nside` and
     `mask` their apodized weights; every moment is weighted by `mask`^2.
+    `flattening` is the decision's option, which sets the residual rotation.
     """
     import healpy as hp
 
@@ -109,7 +114,7 @@ def footprint_moments(nside, pix, mask, n_bins=N_BINS, chunk=2_000_000):
         for j, proj in enumerate(PROJS):
             jac = G.jacobian(proj, alpha, delta)
             s1, s2 = G.singular_values(jac)
-            sin_2d = np.sin(2 * SL.flattening_residual(jac))
+            sin_2d = np.sin(2 * SL.flattening_residual(jac, flattening))
             det = s1 * s2
             gg = SL.REDUCTIONS["g2"][1](s1, s2)
             out["sum_w2"][j] += w.sum()
@@ -153,22 +158,23 @@ def footprint_moments(nside, pix, mask, n_bins=N_BINS, chunk=2_000_000):
 
 
 def _one(args):
-    name, path = args
+    name, path, flattening = args
     nside, pix, mask = read_mask(path)
     print(f"{name}: Nside {nside}, {pix.size / 1e6:.1f} M pixels", flush=True)
-    return name, nside, footprint_moments(nside, pix, mask)
+    return name, nside, footprint_moments(nside, pix, mask, flattening)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--healpix-masks", type=Path, required=True,
                     help="directory holding mask_<footprint>.g3.gz")
+    ap.add_argument("--flattening", type=parse_flattening, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--procs", type=int, default=4)
     args = ap.parse_args()
 
     names = list(FOOTPRINTS)
-    jobs = [(n, args.healpix_masks / f"mask_{n}.g3.gz") for n in names]
+    jobs = [(n, args.healpix_masks / f"mask_{n}.g3.gz", args.flattening) for n in names]
     with Pool(args.procs) as pool:
         results = pool.map(_one, jobs, chunksize=1)
     (nside,) = {r[1] for r in results}
@@ -176,10 +182,10 @@ def main():
 
     args.out.mkdir(parents=True, exist_ok=True)
     np.savez(args.out / "shear_moments.npz", footprints=names, projs=PROJS,
-             n_bins=N_BINS, **{k: np.stack([m[k] for m in moments]) for k in moments[0]})
+             n_bins=N_BINS, flattening=args.flattening, **{k: np.stack([m[k] for m in moments]) for k in moments[0]})
     (args.out / "index.json").write_text(json.dumps({
         "nside": nside, "n_bins": N_BINS, "footprints": names, "projs": PROJS,
-        "masks": {n: str(p.resolve()) for n, p in jobs},
+        "flattening": args.flattening,
     }, indent=2) + "\n")
     print(f"wrote {args.out / 'shear_moments.npz'}")
 
