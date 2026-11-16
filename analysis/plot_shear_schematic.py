@@ -41,8 +41,9 @@ import spectra as S
 import theory as T
 
 PROJ = "ProjBICEP"
-FIELD_RA = (-50.0, 50.0)
-FIELD_DEC = (-70.0, -42.0)
+_RA_HALF, *_DEC = S.FOOTPRINTS[S.FIELD].box
+FIELD_RA = (G.RA_DEG - _RA_HALF, G.RA_DEG + _RA_HALF)
+FIELD_DEC = tuple(_DEC)
 ROW_DEC = (-44.0, -56.0, -68.0)       # the three points, north to south, at RA 0
 TISSOT_RA = np.linspace(-40, 40, 7)
 TISSOT_DEC = np.linspace(-44, -68, 5)
@@ -124,7 +125,7 @@ def panel_map(ax):
                 centres[d] = (cx, cy)
     ax.set_aspect("equal")
     ax.axis("off")
-    for d in FIELD_DEC + (-56.0,):
+    for d in FIELD_DEC + (G.DEC_DEG,):
         cy = G._xy(fsm, FIELD_RA[0], d)[1, 0]
         ax.text(x.min() - 1.5, cy, rf"${d:.0f}^\circ$", ha="right", va="center")
     return centres
