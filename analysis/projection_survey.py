@@ -17,9 +17,19 @@ coordinates z, where any conformal map has ln k = ln sec(phi) + h with h
 harmonic: the least-squares one (h fitted with harmonic polynomials) and
 Chebyshev's minimax one (h = -ln sec(phi) on the boundary, Laplace solve).
 
-Writes analysis/projection_survey.json and figures/projection_survey.{pdf,png}.
+The field and its centre come from `src/stages/_footprints.py`. The script
+needs PROJ (pyproj) and none of the pipeline's data, so it runs under uv
+from its inline dependencies rather than in the SPT environment.
+
+Run:  uv run analysis/projection_survey.py --out <dir>
+Out:  <out>/projection_survey.json (`field`: each projection's two optima;
+      `paper`: the paper's four at their fixed definitions; `opt`: the two
+      conformal optima) and a diagnostic plot, projection_survey.{pdf,png},
+      that the paper does not include.
 """
+import argparse
 import json
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -29,16 +39,19 @@ from scipy.optimize import minimize
 from scipy.sparse import diags, eye, kron
 from scipy.sparse.linalg import spsolve
 
-ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "stages"))
+from _footprints import DEC_DEG, DEC_HALF_DEG, RA_DEG, RA_HALF_DEG  # noqa: E402
+
 D2R = np.pi / 180
-FIELD = dict(lon=(-50.0, 50.0), lat=(-70.0, -42.0))
-CENTRE_LAT = -56.0
+FIELD = dict(lon=(RA_DEG - RA_HALF_DEG, RA_DEG + RA_HALF_DEG),
+             lat=(DEC_DEG - DEC_HALF_DEG, DEC_DEG + DEC_HALF_DEG))
+CENTRE_LAT = DEC_DEG
 
 PAPER = {  # the paper's four, at their fixed definitions
     "SFL": dict(proj="sinu"),
-    "STG": dict(proj="stere", lat_0=-56),
-    "ZEA": dict(proj="laea", lat_0=-56),
-    "BICEP": dict(proj="eqc", lat_ts=-56),
+    "STG": dict(proj="stere", lat_0=CENTRE_LAT),
+    "ZEA": dict(proj="laea", lat_0=CENTRE_LAT),
+    "BICEP": dict(proj="eqc", lat_ts=CENTRE_LAT),
 }
 
 # shape parameters each family is optimised over (start values; R=1 always)
@@ -65,10 +78,10 @@ CONFORMAL = {"stere", "lcc", "merc", "tmerc", "etmerc", "lagrng", "sterea", "eqe
              "adams_ws2", "guyou", "peirce_q", "lee_os", "mil_os", "eisen", "august", "chamb_no"}
 
 
-def sample(scale=1.0, n_lon=48, n_lat=24):
-    """Area-uniform grid (uniform in lon and sin lat) over the field shrunk by `scale`."""
-    lo = np.array(FIELD["lon"]) * scale
-    la = CENTRE_LAT + (np.array(FIELD["lat"]) - CENTRE_LAT) * scale
+def sample(n_lon=48, n_lat=24):
+    """Area-uniform grid (uniform in lon and sin lat) over the field."""
+    lo = np.array(FIELD["lon"])
+    la = np.array(FIELD["lat"])
     s = np.sin(la * D2R)
     u = (np.arange(n_lon) + 0.5) / n_lon
     v = (np.arange(n_lat) + 0.5) / n_lat
@@ -131,10 +144,10 @@ def objective(params, name, keys, lon, lat, which):
 STARTS = [(0, CENTRE_LAT, 0), (0, 0, 0), (0, 0, 90), (0, -90, 0), (0, -30, 0), (0, CENTRE_LAT, 90)]
 
 
-def optimise(name, which, scale=1.0):
+def optimise(name, which):
     shape0 = SHAPE.get(name, {})
     keys = list(shape0)
-    lon, lat = sample(scale)
+    lon, lat = sample()
     best = None
     for s in STARTS:
         x0 = np.array([*s, *shape0.values()], float)
@@ -147,29 +160,29 @@ def optimise(name, which, scale=1.0):
     if best is None:
         return None
     rot, shape = best.x[:3], dict(zip(keys, best.x[3:]))
-    g, lnmu = invariants(build(name, shape), *sample(scale, 160, 80), rot)
+    g, lnmu = invariants(build(name, shape), *sample(160, 80), rot)
     return dict(rot=[round(float(v), 2) for v in rot],
                 shape={k: round(float(v), 3) for k, v in shape.items()},
                 **metrics(g, lnmu))
 
 
-def paper_four(scale=1.0):
+def paper_four():
     out = {}
     for lab, kw in PAPER.items():
         kw = dict(kw)
-        g, lnmu = invariants(pyproj.Proj(R=1, **kw), *sample(scale, 160, 80))
+        g, lnmu = invariants(pyproj.Proj(R=1, **kw), *sample(160, 80))
         out[lab] = metrics(g, lnmu)
     return out
 
 
-def optimal_conformal(scale=1.0, n=161):
+def optimal_conformal(n=161):
     """Least-squares and Chebyshev (minimax) conformal maps of the field.
 
     Work in Mercator coordinates (x, y); a conformal map has
     ln k = ln sec(phi) + h(x, y) with h harmonic and otherwise free.
     """
-    lo = np.array(FIELD["lon"]) * scale * D2R
-    la = (CENTRE_LAT + (np.array(FIELD["lat"]) - CENTRE_LAT) * scale) * D2R
+    lo = np.array(FIELD["lon"]) * D2R
+    la = np.array(FIELD["lat"]) * D2R
     yb = np.log(np.tan(np.pi / 4 + la / 2))
     x = np.linspace(*lo, n)
     y = np.linspace(*yb, n)
@@ -222,10 +235,10 @@ def candidates():
     return ok
 
 
-def survey(names, scale=1.0):
+def survey(names):
     res = {}
     for nm in names:
-        res[nm] = {w: optimise(nm, w, scale) for w in ("g2", "lnmu")}
+        res[nm] = {w: optimise(nm, w) for w in ("g2", "lnmu")}
         print(nm, {w: (r and (round(r["g2"], 6), round(r["rms_lnmu"], 4))) for w, r in res[nm].items()},
               flush=True)
     return res
@@ -279,11 +292,10 @@ def plot(res, paper, opt, path):
     fig.savefig(path.with_suffix(".png"), dpi=160)
 
 
-if __name__ == "__main__" and "--plot" in __import__("sys").argv:
-    d = json.load(open(ROOT / "analysis" / "projection_survey.json"))
-    plot(d["field"], d["paper"], d["opt"], ROOT / "figures" / "projection_survey")
-elif __name__ == "__main__":
-    out_json = ROOT / "analysis" / "projection_survey.json"
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
     names = candidates()
     print(len(names), "projections project the field:", " ".join(names), flush=True)
     res = survey(names)
@@ -291,11 +303,11 @@ elif __name__ == "__main__":
     opt = optimal_conformal()
     print("paper four:", paper)
     print("optimal conformal:", opt)
-    key = ["lcc", "aea", "eqdc", "stere", "laea", "sinu", "bonne", "merc", "cea", "eqc"]
-    nested = {}
-    for sc in (0.8, 0.65, 0.46):
-        nested[sc] = dict(paper=paper_four(sc), opt=optimal_conformal(sc),
-                          fam=survey([k for k in key if k in names], sc))
-    json.dump(dict(field=res, paper=paper, opt=opt, nested={str(k): v for k, v in nested.items()}),
-              open(out_json, "w"), indent=1)
-    plot(res, paper, opt, ROOT / "figures" / "projection_survey")
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "projection_survey.json").write_text(
+        json.dumps(dict(field=res, paper=paper, opt=opt), indent=1) + "\n")
+    plot(res, paper, opt, args.out / "projection_survey")
+
+
+if __name__ == "__main__":
+    main()

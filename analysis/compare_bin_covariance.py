@@ -10,13 +10,14 @@ independent of one another.
 
 `--widths` are the bin widths compared over the ell ranges `RANGES`;
 `--binwise-widths` the ones also compared bin pair by bin pair, the first of
-which the two diagnostic plots show.
+which the two diagnostic plots show. Each is a bare width or a
+`bandpower_width` option id (`d50`).
 
 Run:  bash env.sh python3 analysis/compare_bin_covariance.py
           --bin-covariance-sims results/fiducial/bin_covariance_sims
           --bin-covariance-flat-controls results/fiducial/bin_covariance_flat_controls
           --fine-coupling-matrices results/fiducial/fine_coupling_matrices
-          --widths 30 50 100 --binwise-widths 50 100 --out <dir>
+          --widths d50 100 --binwise-widths d50 100 --out <dir>
 Out:  <out>/bin_covariance_comparison.json, <out>/moments.npz (per-ensemble
       means, covariances and correlations), comparison.png and binwise.png.
 """
@@ -29,6 +30,7 @@ from astropy.io import fits
 from scipy.linalg import get_lapack_funcs, lu_factor, lu_solve
 
 import spectra as sp
+from _decisions import parse_delta_ell
 
 PROJS = ('ProjZEA', 'ProjSFL', 'ProjSTG')
 SPECS = ('tt', 'ee', 'bb')
@@ -260,8 +262,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sp.add_inputs(p, 'bin_covariance_sims', 'bin_covariance_flat_controls',
                   'fine_coupling_matrices')
-    p.add_argument('--widths', type=int, nargs='+', required=True)
-    p.add_argument('--binwise-widths', type=int, nargs='+', required=True)
+    p.add_argument('--widths', type=parse_delta_ell, nargs='+', required=True)
+    p.add_argument('--binwise-widths', type=parse_delta_ell, nargs='+', required=True)
     p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
