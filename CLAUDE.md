@@ -61,6 +61,11 @@ output into per-unit grid jobs plus a local gather that assembles the
 canonical directory and single manifest; recipes address their shard with
 `{units.<axis>}`. An output without `units:` is one job.
 
+`lc run` passes `--jobs 24` to snakemake, which overrides the profile's
+`jobs: 100`; pass `-j 100` for a wide chain. To stop a driver, send SIGINT to
+the snakemake process (it ignores SIGTERM), `condor_rm` what it leaves queued,
+and delete the unit directories the next run reports as incomplete.
+
 Check the first submission of anything new:
 
 ```bash
