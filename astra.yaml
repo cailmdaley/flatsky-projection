@@ -668,7 +668,8 @@ outputs:
       resources:
         cpus: 3
         # One Nside-8192 footprint's pixels and Jacobians per process, in
-        # 2M-pixel chunks; all seven footprints, 81 M pixels for the largest.
+        # 2M-pixel chunks; all seven footprints, 81 M pixels for the
+        # largest: 6 min on 3 cores.
         memory: 16Gi
         disk: 1Gi
         time_limit: 2h
@@ -781,7 +782,7 @@ outputs:
       resources:
         cpus: 1
         # Four field coupling matrices to ell_max on the integer theory grid
-        # and the alias-image response at five multipoles per band.
+        # and the alias-image response at five multipoles per band: 28 min.
         memory: 8Gi
         disk: 1Gi
         time_limit: 4h
@@ -976,9 +977,10 @@ outputs:
       command: uv run analysis/projection_survey.py --out {output}
       resources:
         cpus: 1
+        # 11 min.
         memory: 2Gi
         disk: 1Gi
-        time_limit: 4h
+        time_limit: 1h
 
   # --- The paper's macros ---------------------------------------------------
   - id: numbers
@@ -1008,6 +1010,8 @@ outputs:
         --out {output}
       resources:
         cpus: 1
+        # About 5 min, most of it the field mask's moments under both
+        # flattening options.
         memory: 8Gi
         disk: 1Gi
         time_limit: 30m
