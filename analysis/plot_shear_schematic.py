@@ -1,22 +1,28 @@
-"""How a map projection becomes a shear, and what the shear does to a spectrum.
+"""How a projection distorts a spectrum, place by place, and what the footprint sums to.
 
-The paper's first figure, drawn with real numbers throughout: the
-SFL Jacobian at one sky position in SPT's 1500d field, chosen so that its shear
-equals the rms shear of SFL on that field, and the unlensed TT spectrum of the
-simulations. The Jacobian varies across the field, so every panel is local:
-it holds for a patch small enough that J is constant.
+The paper's first figure, drawn with real numbers throughout: BICEP's
+equidistant cylindrical grid (standard parallel -56 deg) over SPT's 1500d
+field, and the unlensed EE spectrum of the simulations. BICEP's Jacobian is
+diagonal and depends on declination alone -- the identity on the standard
+parallel, compressed east-west to the north, stretched to the south -- so one
+column of the field carries every deformation the footprint has, and there is
+no rotation for flattening to remove.
 
-  (a) The grid's square pixels are parallelograms on the sky: the same lattice
-      drawn both ways, with a sky circle and the ellipse J makes of it.
-  (b) The grid ring |l| = const reads the sky's Fourier plane on the ellipse
-      of radius l rho(chi), drawn with R undone, as after flattening. One mode
-      shows the direction offset delta psi.
-  (c) The grid value at l is the direction average of C(l rho(chi)) over the
-      band l s2 to l s1, marked for one multipole. Averaged at every l, the
-      spectrum loses its acoustic peaks. Drawn as D_l on logarithmic axes, as
-      in the spectra figure.
+Left to right:
+  map     The field on the grid, with Tissot's indicatrix: the ellipses that
+          equal small sky circles become. Three are drawn in ink, one per row.
+  rows    One small sky circle and its image on the grid, labelled with that
+          point's shear g and magnification mu. The stripes are the crests of
+          one E-mode plane wave; the ticks are its polarization, parallel to the
+          wavevector on the sky. The grid shears the crests but carries the
+          ticks unrotated, so they no longer meet the crests at right angles:
+          the grid reads part of the E mode as B.
+  local   Each point's EE spectrum on the grid, mu < cos^2(2 dpsi) C(l rho) >
+          over mode direction (Eq. forward at one position), against the input.
+  field   The same quantity averaged over the footprint with the forward
+          model's weight (sky area x |det J|, top-hat mask), against the input.
 
-One colour rule across the panels: teal is the sky, ink is the grid.
+One colour rule: teal is the sky, ink is the grid.
 
 Run:  bash env.sh python3 analysis/plot_shear_schematic.py
           --theory-spectra results/fiducial/theory_spectra --out <dir>
@@ -34,177 +40,125 @@ import paper_style as PS
 import spectra as S
 import theory as T
 
-PROJ = "ProjSFL"
-POINT = (26.26, G.DEC_DEG)           # (alpha, delta) in deg; g is the field's rms
-ELL_BAND = 2000.0                    # the multipole whose band panel (c) marks
-ELL_RANGE = (300.0, 4800.0)
-LATTICE_N = 6                        # pixels on a side in panel (a)
-LATTICE_PITCH = 1 / 3                # pixel side, in units of the circle's radius
-PIXEL_LW = 0.5
-CHI_MODE = np.deg2rad(-45.0)         # the mode drawn in panel (b)
+PROJ = "ProjBICEP"
+FIELD_RA = (-50.0, 50.0)
+FIELD_DEC = (-70.0, -42.0)
+ROW_DEC = (-44.0, -56.0, -68.0)       # the three points, north to south, at RA 0
+TISSOT_RA = np.linspace(-40, 40, 7)
+TISSOT_DEC = np.linspace(-44, -68, 5)
+TISSOT_R = 2.3                        # indicatrix radius on the sky, deg
+
+K_ANGLE = np.deg2rad(45.0)            # the plane wave's direction on the sky
+CREST_SPACING = 0.62                  # in units of the sky circle's radius
+TICK = 0.3
+
+ELL_RANGE = (300.0, 4500.0)
+N_CHI = 720
 
 SKY = "#009988"
 GRID = PS.SECONDARY[0]
-AXIS = PS.SECONDARY[2]
-BAND = "#E4E4E4"
+FAINT = PS.SECONDARY[2]
 
 
-def decompose(J):
-    """The polar decomposition J = R Sigma, as the numbers the figure draws."""
-    U, s, Vt = np.linalg.svd(J)
-    R = U @ Vt
-    return dict(
-        J=J, U=U, V=Vt.T, s1=s[0], s2=s[1], mu=s[0] * s[1],
-        g=(s[0] - s[1]) / (s[0] + s[1]),
-        rot=np.arctan2(R[1, 0], R[0, 0]),
-        u1=np.arctan2(U[1, 0], U[0, 0]) % np.pi,
-    )
+def local_ee(ell, J, ell_th, cl):
+    """|det J| < cos^2(2 dpsi) C(|J^T l|) > over the grid mode's direction."""
+    phi = (np.arange(N_CHI) + 0.5) / N_CHI * 2 * np.pi
+    lhat = np.stack([np.cos(phi), np.sin(phi)])
+    q = J.T @ lhat
+    rho = np.hypot(*q)
+    dpsi = np.arctan2(q[1], q[0]) - phi
+    kernel = np.cos(2 * dpsi) ** 2
+    c = np.interp(ell[:, None] * rho[None, :], ell_th, cl)
+    return abs(np.linalg.det(J)) * (kernel * c).mean(axis=1)
 
 
-def ellipse(a, b, tilt, n=361):
+def invariants(J):
+    s1, s2 = G.singular_values(J)
+    return (s1 - s2) / (s1 + s2), s1 * s2
+
+
+def circle(n=361):
     t = np.linspace(0, 2 * np.pi, n)
-    x, y = a * np.cos(t), b * np.sin(t)
-    return (x * np.cos(tilt) - y * np.sin(tilt),
-            x * np.sin(tilt) + y * np.cos(tilt))
+    return np.stack([np.cos(t), np.sin(t)])
 
 
-def rho(chi, s1, s2):
-    return np.sqrt(s1**2 * np.cos(chi)**2 + s2**2 * np.sin(chi)**2)
+def plane_wave(J, ax, x0, color):
+    """Crests and polarization ticks of one E mode, inside the unit circle,
+    mapped by J; the ticks keep their sky orientation."""
+    k = np.array([np.cos(K_ANGLE), np.sin(K_ANGLE)])
+    t = np.array([-k[1], k[0]])
+    for off in (-CREST_SPACING, 0.0, CREST_SPACING):
+        half = np.sqrt(1 - off**2)
+        ends = off * k[:, None] + np.outer(t, [-half, half])
+        x, y = J @ ends
+        ax.plot(x + x0, y, color=color, lw=0.6, solid_capstyle="butt")
+        for s in np.arange(-1, 2) * 0.48 * half:
+            c = J @ (off * k + s * t)
+            tx, ty = 0.5 * TICK * k
+            ax.plot([c[0] - tx + x0, c[0] + tx + x0], [c[1] - ty, c[1] + ty],
+                    color=color, lw=1.1, solid_capstyle="round")
 
 
-def delta_psi(chi, s1, s2):
-    return np.arctan2(s2 * np.sin(chi), s1 * np.cos(chi)) - chi
+def panel_map(ax):
+    """The 1500d field on BICEP's grid, with Tissot's indicatrix."""
+    ra_edge = np.linspace(*FIELD_RA, 101)
+    dec_edge = np.linspace(*FIELD_DEC, 51)
+    ra = np.concatenate([ra_edge, np.full(51, FIELD_RA[1]), ra_edge[::-1],
+                         np.full(51, FIELD_RA[0])])
+    dec = np.concatenate([np.full(101, FIELD_DEC[0]), dec_edge,
+                          np.full(101, FIELD_DEC[1]), dec_edge[::-1]])
+    fsm = G._flat_map(PROJ)
+    x, y = G._xy(fsm, ra, dec)
+    ax.plot(x, y, color=PS.RULE, lw=0.6)
+
+    centres = {}
+    for d in TISSOT_DEC:
+        for a in TISSOT_RA:
+            J = G.jacobian(PROJ, a, d)[0]
+            cx, cy = G._xy(fsm, a, d)[:, 0]
+            ex, ey = TISSOT_R * (J @ circle())
+            hot = a == 0 and d in ROW_DEC
+            ax.plot(ex + cx, ey + cy, color=GRID if hot else FAINT,
+                    lw=0.9 if hot else 0.5)
+            if hot:
+                centres[d] = (cx, cy)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    for d in FIELD_DEC + (-56.0,):
+        cy = G._xy(fsm, FIELD_RA[0], d)[1, 0]
+        ax.text(x.min() - 1.5, cy, rf"${d:.0f}^\circ$", ha="right", va="center")
+    return centres
 
 
-def direction_mean(ell, s1, s2, ell_th, cl, n_chi=720):
-    """< C(l rho(chi)) >_chi, the bracket of the scalar ratio equation."""
-    chi = (np.arange(n_chi) + 0.5) / n_chi * 2 * np.pi
-    return np.interp(ell * rho(chi, s1, s2), ell_th, cl).mean()
-
-
-def arrow(ax, p, q, color, lw=PS.LW, ms=7):
-    ax.annotate("", xy=q, xytext=p, zorder=4,
-                arrowprops=dict(arrowstyle="-|>,head_width=0.16,head_length=0.32",
-                                color=color, lw=lw, shrinkA=0, shrinkB=0,
-                                mutation_scale=ms))
-
-
-def arc(ax, r, a, b, color, lw=PS.LW_REF):
-    t = np.linspace(a, b, 40)
-    ax.plot(r * np.cos(t), r * np.sin(t), color=color, lw=lw, solid_capstyle="butt")
-
-
-def lattice(n, pitch, T):
-    """Segments of an n x n square lattice centred on 0, each mapped by T."""
-    t = np.linspace(-n / 2, n / 2, 2) * pitch
-    edges = (np.arange(n + 1) - n / 2) * pitch
-    for e in edges:
-        for pts in (np.array([t, [e, e]]), np.array([[e, e], t])):
-            yield T @ pts
-
-
-def panel_sky_to_grid(ax, d):
-    """(a): the grid's pixels and one sky circle, on the sky and on the grid."""
-    ax.set_xlim(-1.45, 4.05)
-    ax.set_ylim(-1.75, 1.87)
+def panel_row(ax, J, cx_grid):
+    ax.plot(*circle(), color=SKY, lw=1.2)
+    plane_wave(np.eye(2), ax, 0.0, SKY)
+    ex, ey = J @ circle()
+    ax.plot(ex + cx_grid, ey, color=GRID, lw=1.2)
+    plane_wave(J, ax, cx_grid, GRID)
+    ax.annotate("", xy=(cx_grid - 1.75, 0), xytext=(1.2, 0),
+                arrowprops=dict(arrowstyle="-|>,head_width=0.15,head_length=0.3",
+                                color=GRID, lw=0.8, shrinkA=0, shrinkB=0))
+    g, mu = invariants(J)
+    ax.text(cx_grid + 1.72, 0, f"$g = {g:.2f}$\n$\\mu = {mu:.2f}$",
+            ha="left", va="center", linespacing=1.3)
     ax.set_aspect("equal")
     ax.axis("off")
 
-    cx = 2.75
-    J, Jinv = d["J"], np.linalg.inv(d["J"])
 
-    for x, y in lattice(LATTICE_N, LATTICE_PITCH, Jinv):
-        ax.plot(x, y, color=GRID, lw=PIXEL_LW, solid_capstyle="round")
-    for x, y in lattice(LATTICE_N, LATTICE_PITCH, np.eye(2)):
-        ax.plot(x + cx, y, color=GRID, lw=PIXEL_LW, solid_capstyle="round")
-
-    ax.plot(*ellipse(1, 1, 0), color=SKY, lw=1.5 * PS.LW)
-    gx, gy = ellipse(d["s1"], d["s2"], d["u1"])
-    ax.plot(gx + cx, gy, color=SKY, lw=1.5 * PS.LW)
-
-    arrow(ax, (1.32, 0), (cx - 1.12, 0), GRID, ms=8)
-    ax.text(0.5 * (1.32 + cx - 1.12), 0.1, r"$J$", ha="center", va="bottom")
-    bottom = -1.1
-    ax.text(0, bottom, "sky", ha="center", va="top")
-    ax.text(cx, bottom, "grid", ha="center", va="top")
-
-
-def panel_fourier(ax, d):
-    """(b): the grid ring and the sky ellipse it reads, R undone."""
-    ax.set_xlim(-1.42, 1.42)
-    ax.set_ylim(-1.42, 1.42)
-    ax.set_aspect("equal")
-    ax.axis("off")
-
-    s1, s2, tilt = d["s1"], d["s2"], d["u1"]
-    ax.plot(*ellipse(1, 1, 0), color=GRID, lw=1.5 * PS.LW)
-    ax.plot(*ellipse(s1, s2, tilt), color=SKY, lw=1.5 * PS.LW)
-
-    a2 = tilt + np.pi / 2
-    for s, a in ((s1, tilt), (s2, a2)):
-        ax.plot([0, s * np.cos(a)], [0, s * np.sin(a)], color=AXIS,
-                lw=PS.LW_REF, ls=(0, (2, 2)), zorder=1)
-    ax.text(1.03 * s1 * np.cos(tilt), 1.03 * s1 * np.sin(tilt) + 0.02,
-            r"$\ell s_1$", ha="left", va="bottom")
-    ax.text(0.62 * s2 * np.cos(a2) + 0.16 * np.cos(tilt),
-            0.62 * s2 * np.sin(a2) + 0.16 * np.sin(tilt) + 0.08,
-            r"$\ell s_2$", ha="center", va="center")
-
-    # The mode and its sky partner, at azimuth chi from the major axis.
-    a_ell = tilt + CHI_MODE
-    a_sky = a_ell + delta_psi(CHI_MODE, s1, s2)
-    r_sky = rho(CHI_MODE, s1, s2)
-    arrow(ax, (0, 0), (np.cos(a_ell), np.sin(a_ell)), GRID, ms=8)
-    arrow(ax, (0, 0), (r_sky * np.cos(a_sky), r_sky * np.sin(a_sky)), SKY, ms=8)
-
-    r_chi = 0.34
-    arc(ax, r_chi, a_ell, tilt, PS.INK_SOFT)
-    mid = 0.5 * (a_ell + tilt)
-    ax.text(1.28 * r_chi * np.cos(mid), 1.28 * r_chi * np.sin(mid), r"$\chi$",
-            ha="left", va="center")
-
-    r_dp = 0.72
-    arc(ax, r_dp, a_ell, a_sky, PS.INK_SOFT)
-    mid = 0.5 * (a_ell + a_sky)
-    ax.annotate(r"$\delta\psi$", xy=(r_dp * np.cos(mid), r_dp * np.sin(mid)),
-                xytext=(0.47, -0.36), ha="center", va="center",
-                arrowprops=dict(arrowstyle="-", color=PS.INK_SOFT, lw=0.5,
-                                shrinkA=1, shrinkB=1))
-
-    ax.text(-1.4, 1.38, "grid ring\n" r"$|\ell| = {\rm const}$",
-            ha="left", va="top", linespacing=1.15)
-    ax.text(-1.4, -1.38, "sky ellipse\n" r"$\ell\,\rho(\chi)$",
-            ha="left", va="bottom", linespacing=1.15)
-
-
-def panel_spectrum(plt, ax, d, ell_th, cl):
-    """(c): the sky spectrum, one band, and the spectrum averaged over its band."""
-    s1, s2 = d["s1"], d["s2"]
-    m = (ell_th >= ELL_RANGE[0]) & (ell_th <= ELL_RANGE[1])
-    ell = ell_th[m]
-    smooth = d["mu"] * np.array([direction_mean(l, s1, s2, ell_th, cl) for l in ell])
-    weight = ell * (ell + 1) / (2 * np.pi)
-
-    lo, hi = ELL_BAND * s2, ELL_BAND * s1
-    ax.axvspan(lo, hi, color=BAND, lw=0, zorder=0)
-    sky, = ax.plot(ell, weight * cl[m], color=SKY, lw=PS.LW)
-    grid, = ax.plot(ell, weight * smooth, color=GRID, lw=1.5 * PS.LW)
-    ax.plot(ELL_BAND, np.interp(ELL_BAND, ell, weight * smooth), "o", mfc="white",
-            mec=GRID, ms=4, mew=0.9, zorder=5)
-    ax.set_xlim(*ELL_RANGE)
+def spectrum_axes(plt, ax, labels):
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_xlim(*ELL_RANGE)
+    ax.yaxis.set_minor_formatter(plt.NullFormatter())
     ax.grid(False)
-    ax.set_xlabel(r"$\ell$")
-    ax.set_ylabel(r"$D_\ell^{TT}$ [$\mu{\rm K}^2$]")
     ax.set_xticks([500, 1000, 2000, 4000])
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
     ax.xaxis.set_minor_formatter(plt.NullFormatter())
-    for x, ha, name, pad in ((lo, "right", r"$\ell s_2$", 0.98), (hi, "left", r"$\ell s_1$", 1.02)):
-        ax.text(pad * x, 0.015, name, ha=ha, va="bottom",
-                transform=ax.get_xaxis_transform())
-    ax.legend([sky, grid], ["sky", "direction average"],
-              loc="upper right", handlelength=1.4)
+    if labels:
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:g}$"))
+        ax.set_xlabel(r"$\ell$")
+    else:
+        ax.xaxis.set_major_formatter(plt.NullFormatter())
 
 
 def main():
@@ -217,30 +171,90 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    d = decompose(G.jacobian(PROJ, *POINT)[0])
-    print(f"{PROJ} at (alpha, delta) = {POINT}: g = {d['g']:.4f}, s1 = {d['s1']:.4f}, "
-          f"s2 = {d['s2']:.4f}, mu = {d['mu']:.4f}, "
-          f"rotation = {np.degrees(d['rot']):.2f} deg, "
-          f"delta psi at chi = {np.degrees(CHI_MODE):.0f} deg: "
-          f"{np.degrees(delta_psi(CHI_MODE, d['s1'], d['s2'])):.2f} deg")
-
     plt.rcParams.update(PS.rc())
     th = T.load(args.theory_spectra)
     ell_th = th["ell"].astype(float)
-    cl = th["unlensed_TT"]
+    cl = th["unlensed_EE"]
+    ell = np.geomspace(*ELL_RANGE, 400)
+    dl = ell * (ell + 1) / (2 * np.pi)
+    sky = dl * np.interp(ell, ell_th, cl)
 
-    W, H = PS.TEXT_W, 2.3
+    # The footprint: BICEP's J depends on declination alone, so one column of
+    # the field, weighted by sky area x |det J| (Eq. forward), is the whole of it.
+    decs = np.linspace(*FIELD_DEC, 113)
+    jac = G.jacobian(PROJ, np.zeros_like(decs), decs)
+    w = np.cos(np.deg2rad(decs)) * np.abs(np.linalg.det(jac))
+    field = dl * np.average([local_ee(ell, J, ell_th, cl) for J in jac],
+                            axis=0, weights=w)
+    rows = [G.jacobian(PROJ, 0.0, d)[0] for d in ROW_DEC]
+    local = [dl * local_ee(ell, J, ell_th, cl) for J in rows]
+    for d, J in zip(ROW_DEC, rows):
+        g, mu = invariants(J)
+        print(f"{PROJ} at dec {d:+.0f}: g = {g:.4f}, mu = {mu:.4f}")
+    g_field = invariants(jac)[0]
+    print(f"field rms g = {np.sqrt(np.average(g_field**2, weights=w)):.4f}")
+
+    W, H = PS.TEXT_W, 2.35
     fig = plt.figure(figsize=(W, H))
 
     def axes(x, y, w, h):
         return fig.add_axes([x / W, y / H, w / W, h / H])
 
-    panel_sky_to_grid(axes(0.0, 0.1, 2.3, 2.1), d)
-    panel_fourier(axes(2.18, 0.1, 2.0, 2.0), d)
-    panel_spectrum(plt, axes(4.72, 0.34, 2.46, 1.88), d, ell_th, cl)
+    row_h = 0.62
+    row_y = [H - 0.12 - row_h - i * (row_h + 0.11) for i in range(3)]
+    ylim = (min(sky.min(), field.min()) * 0.7, max(sky.max(), field.max()) * 1.5)
 
-    for x, s in ((0.0, "(a)"), (2.2, "(b)"), (4.2, "(c)")):
-        fig.text(x / W, 0.995, s, ha="left", va="top")
+    map_ax = axes(0.36, H / 2 - 0.45, 1.3, 0.9)
+    centres = panel_map(map_ax)
+    map_xmax = map_ax.dataLim.x1
+
+    cx_grid, x_hi = 3.2, 6.7
+    row_axes = []
+    for i, J in enumerate(rows):
+        ax = axes(1.86, row_y[i], row_h / 2.3 * (x_hi + 1.15), row_h)
+        ax.set_xlim(-1.15, x_hi)
+        ax.set_ylim(-1.15, 1.15)
+        panel_row(ax, J, cx_grid)
+        row_axes.append(ax)
+    row_axes[0].text(0, 1.2, "sky", ha="center", va="bottom")
+    row_axes[0].text(cx_grid, 1.2, "grid", ha="center", va="bottom")
+
+    # Leader lines from the map's marked indicatrices to the rows' sky circles.
+    for d, ax in zip(ROW_DEC, row_axes):
+        p = fig.transFigure.inverted().transform(map_ax.transData.transform(
+            (map_xmax + 1.5, centres[d][1])))
+        q = fig.transFigure.inverted().transform(ax.transData.transform((-1.3, 0)))
+        fig.add_artist(plt.Line2D([p[0], q[0]], [p[1], q[1]], color=FAINT,
+                                  lw=0.5, transform=fig.transFigure))
+
+    mini = []
+    for i, spec in enumerate(local):
+        ax = axes(4.08, row_y[i] + 0.04, 1.0, row_h - 0.08)
+        ax.plot(ell, sky, color=SKY, lw=0.7)
+        ax.plot(ell, spec, color=GRID, lw=1.0)
+        spectrum_axes(plt, ax, labels=(i == 2))
+        ax.set_ylim(*ylim)
+        ax.yaxis.set_major_formatter(plt.NullFormatter())
+        mini.append(ax)
+
+    big = axes(5.38, 0.36, 1.42, H - 0.48)
+    s, = big.plot(ell, sky, color=SKY, lw=0.8)
+    f, = big.plot(ell, field, color=GRID, lw=1.5)
+    big.set_ylim(*ylim)
+    spectrum_axes(plt, big, labels=True)
+    big.yaxis.tick_right()
+    big.yaxis.set_label_position("right")
+    big.set_ylabel(r"$D_\ell^{EE}$ [$\mu{\rm K}^2$]")
+    big.legend([s, f], ["sky", "grid, footprint average"], loc="lower left",
+               handlelength=1.4)
+
+    # The three local spectra converge on the footprint average.
+    tip = fig.transFigure.inverted().transform(
+        big.transAxes.transform((-0.03, 0.5)))
+    for ax in mini:
+        p = fig.transFigure.inverted().transform(ax.transAxes.transform((1.03, 0.5)))
+        fig.add_artist(plt.Line2D([p[0], tip[0]], [p[1], tip[1]], color=FAINT,
+                                  lw=0.5, transform=fig.transFigure))
 
     args.out.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out / "shear_schematic.pdf")

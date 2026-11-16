@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "projcoupling"
+version = "0.1.0"
+description = "Coupling matrix of a map projection for flat-sky CMB power spectra"
+requires-python = ">=3.9"
+dependencies = ["numpy", "scipy"]
+
+[project.optional-dependencies]
+wcs = ["astropy"]
+namaster = ["pymaster"]
+test = ["pytest", "astropy"]
+
+[tool.setuptools]
+packages = ["projcoupling"]
