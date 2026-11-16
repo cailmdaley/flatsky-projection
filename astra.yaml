@@ -632,6 +632,624 @@ outputs:
         disk: 4Gi
         time_limit: 6h
 
+  # ===========================================================================
+  # ANALYSIS: the letter's numbers and figures
+  # ===========================================================================
+  # Everything below reads the pipeline's outputs and is cheap next to it. It
+  # runs with lc's default local executor, not on the grid: the survey runs
+  # under uv (it needs PROJ, which the SPT environment lacks) and the paper
+  # under the host's pdflatex. Every script takes each upstream output as
+  # --<output-id> DIR and writes under --out; a numbers output writes
+  # <id>.tex (the \newcommands paper/main.tex inputs) and <id>.json.
+
+  # --- Geometry and the simulation's own windows ----------------------------
+  - id: shear_moments
+    type: data
+    label: "Shear moments of every footprint"
+    description: |
+      The mask-squared-weighted distribution of each projection's local
+      Jacobian over each footprint, evaluated on every pixel of the
+      pipeline's own HEALPix masks: <g^2>, <(s1/s2 - 1)^2> and <ln^2(s1/s2)>,
+      <g^2> under the |det J| and |det J|^2 weights and with a 0.5 deg polar
+      cap removed, the extremes of the singular values, and a 64 x 64
+      histogram in (log s1, log s2) carrying each cell's weighted centroid
+      and the mean residual rotation the flattening decision leaves (zero
+      under polar). The leakage law BB/EE = 2<g^2>, the forward model's
+      coupling matrix and every footprint statement in the paper read the
+      footprints through this one file.
+    inputs: [healpix_masks]
+    decisions: [flattening]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/shear_moments.py
+        --healpix-masks {inputs.healpix_masks}
+        --flattening {decisions.flattening}
+        --procs {resources.cpus} --out {output}
+      resources:
+        cpus: 3
+        # One Nside-8192 footprint's pixels and Jacobians per process, in
+        # 2M-pixel chunks; all seven footprints, 81 M pixels for the largest.
+        memory: 16Gi
+        disk: 1Gi
+        time_limit: 2h
+
+  - id: simulation_windows
+    type: data
+    label: "Simulation windows for the known input"
+    description: |
+      The windows the simulation itself puts on the bandpowers, relative to
+      the flat-sky top-hat the pipeline already divides out: HEALPix ring
+      interpolation in the sky frame and the finite-subsample rebin average
+      in the map frame, integrated with the known input spectrum over the
+      full local Jacobian of each footprint and projection, on the
+      production bins, with the spin blocks rotated by the flattening
+      decision's angle. One window per spectrum (TT, the white scalar sky,
+      EE and BB on both legs), footprint and projection; set to one above
+      the grid's axis Nyquist multipole, where the model does not apply.
+      Every bandpower the paper quotes is divided by these. The synthesis
+      Nside, pixel size and rebin factor come from the masks' index files.
+    inputs: [theory_spectra, healpix_masks, flatsky_masks]
+    decisions: [ell_max, bandpower_width, flattening]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/simulation_windows.py
+        --theory-spectra {inputs.theory_spectra}
+        --healpix-masks {inputs.healpix_masks}
+        --flatsky-masks {inputs.flatsky_masks}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --flattening {decisions.flattening}
+        --procs {resources.cpus} --out {output}
+      resources:
+        cpus: 3
+        memory: 4Gi
+        disk: 1Gi
+        time_limit: 1h
+
+  - id: mask_contours
+    type: data
+    label: "Footprint contours on each projection's grid"
+    description: |
+      The W = 0.5 contours of the seven footprint masks as each projection's
+      grid holds them, from the pipeline's own flat-sky masks (mean-pooled
+      4 x 4 before contouring), in map-plane degrees from the grid centre,
+      with the pooled image of the largest footprint. Figure 2 draws the
+      largest footprint's contour.
+    inputs: [flatsky_masks]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/mask_contours.py
+        --flatsky-masks {inputs.flatsky_masks} --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 15m
+
+  # --- The 1500d field and the sweep against the forward model --------------
+  - id: field_spectra
+    type: data
+    label: "1500d-field spectra against the forward model"
+    description: |
+      The simulated 1500d field against the forward model, per projection:
+      seed-mean EE and BB on both legs with their scatter, the binned input
+      spectrum, band BB/EE over 1000 < ell < 3000 with STG's floor
+      subtracted and its error, the SFL/BICEP ratio of the field's leakage
+      with a delta-method error, <g^2> of the field mask, and the forward
+      model's BB and EE. The field macros of `numbers` read it. Also writes a
+      diagnostic figure, field_1500d.pdf, that the paper does not include.
+    inputs: [bandpowers, simulation_windows, theory_spectra, shear_moments]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/field_spectra.py
+        --bandpowers {inputs.bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 15m
+
+  - id: pipeline_windows
+    type: data
+    label: "Window-corrected field model and production spectra"
+    description: |
+      For the 1500d field, each projection and TT, the white sky, EE and BB:
+      the coupling-matrix forward model of the shear moments on the
+      production bins, multiplied by the ring-interpolation and rebin
+      windows integrated over the full local Jacobian (spin blocks rotated
+      by the flattening decision's angle), with the folded reciprocal-grid
+      images normalized alike; the production bandpowers with no simulation
+      window removed; and their ratios to the model. The footprint sampling
+      Nside 64 and the alias images are literal recipe arguments: the
+      paper's evaluation of the window integral.
+    inputs: [theory_spectra, healpix_masks, flatsky_masks, shear_moments, bandpowers, scalar_bandpowers]
+    decisions: [flattening]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/report_pipeline_windows.py
+        --theory-spectra {inputs.theory_spectra}
+        --healpix-masks {inputs.healpix_masks}
+        --flatsky-masks {inputs.flatsky_masks}
+        --shear-moments {inputs.shear_moments}
+        --bandpowers {inputs.bandpowers}
+        --scalar-bandpowers {inputs.scalar_bandpowers}
+        --flattening {decisions.flattening}
+        --nside 64 --aliases --out {output}
+      resources:
+        cpus: 1
+        # Four field coupling matrices to ell_max on the integer theory grid
+        # and the alias-image response at five multipoles per band.
+        memory: 8Gi
+        disk: 1Gi
+        time_limit: 4h
+
+  - id: residual_estimator_response
+    type: data
+    label: "Forward model through NaMaster's radial response"
+    description: |
+      The 1500d field's coupling-matrix model per projection, carrying the
+      windows of pipeline_windows, coupled and decoupled with the production
+      field workspaces: read at integer multipoles, and at k = l + 1/2, the
+      spherical reference against which TT and EE are compared. The
+      unbinned windowed model is evaluated to l = 8000, beyond the corner of
+      the grid's Fourier plane, a choice of this output.
+    inputs: [pipeline_windows, theory_spectra, shear_moments, coupling_matrices, flatsky_masks]
+    decisions: [ell_max, bandpower_width]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/residual_estimator_response.py
+        --pipeline-windows {inputs.pipeline_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --coupling-matrices {inputs.coupling_matrices}
+        --flatsky-masks {inputs.flatsky_masks}
+        --lmax {decisions.ell_max} --delta-ell {decisions.bandpower_width}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 6Gi
+        disk: 1Gi
+        time_limit: 30m
+
+  - id: residual_summary
+    type: data
+    label: "Field residuals on independent skies"
+    description: |
+      The 260 independent skies of bin_covariance_sims, decoupled with the
+      production field workspaces, against the window-corrected model
+      (integer bins) and the spherical estimator reference, over
+      1000 <= ell < 4000 for SFL, STG and ZEA: band-mean residuals with their
+      errors, Hotelling tests of the mean against each reference, and the
+      largest single-bin residual; and, on the 20 production skies, BICEP
+      minus ZEA in EE. Written as residual_summary.json.
+    inputs: [pipeline_windows, residual_estimator_response, bin_covariance_sims, coupling_matrices, flatsky_masks]
+    decisions: [bandpower_width]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/residual_summary.py
+        --pipeline-windows {inputs.pipeline_windows}
+        --residual-estimator-response {inputs.residual_estimator_response}
+        --bin-covariance-sims {inputs.bin_covariance_sims}
+        --coupling-matrices {inputs.coupling_matrices}
+        --flatsky-masks {inputs.flatsky_masks}
+        --delta-ell {decisions.bandpower_width}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 4Gi
+        disk: 1Gi
+        time_limit: 30m
+
+  - id: scalar_summary
+    type: data
+    label: "Scalar leg against the coupling matrix"
+    description: |
+      CMB TT skies and independent unit-C_ell white skies through the scalar
+      leg on the 1500d field, against the scalar block of the forward model
+      applied to the known input, per projection and band: measured over
+      model for both skies; the white bandpower recovered by a diagonal
+      transfer function calibrated on the TT skies, measured and predicted;
+      measured white over the coupling matrix applied to the white input;
+      and the standard errors of their means over 1000 <= ell < 4000.
+      Written as scalar_summary.npz and the same table as scalar_summary.csv.
+    inputs: [scalar_bandpowers, simulation_windows, theory_spectra, shear_moments]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/scalar_summary.py
+        --scalar-bandpowers {inputs.scalar_bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 15m
+
+  - id: leakage_second_order
+    type: data
+    label: "The leakage law at large shear"
+    description: |
+      SFL on the two largest rectangles, rect_7p81 and rect_10p06, where the
+      local shear reaches 0.5-0.6: per band, measured BB/EE with STG's floor
+      subtracted and its error over seeds, against the forward model, the
+      leading-order law 2<g^2>, and the exact local kernel
+      2<g^2 (1 - 3 g^2 / 4)>. It tests whether the second-order terms the
+      forward model keeps are the ones the measurement needs. The paper
+      quotes none of it yet. Written as leakage_second_order.json, with a
+      diagnostic plot.
+    inputs: [bandpowers, simulation_windows, theory_spectra, shear_moments]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/leakage_second_order.py
+        --bandpowers {inputs.bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 15m
+
+  # --- Bandpower covariance, the noisy inversion, the projection survey -----
+  - id: bin_covariance_comparison
+    type: data
+    label: "Projected against homogeneous bandpower covariance"
+    description: |
+      The 260 projected 1500d skies against the 256 homogeneous controls,
+      per chart (ZEA, SFL, STG), spectrum and estimator (coupled, and
+      decoupled through the width-five response aggregated exactly): the
+      ratio of band means, of fractional variances, and the correlation of
+      bins one, two and four apart, over several ell ranges, with
+      delete-one-sky jackknife errors. Two widths: bandpower_width, and 100,
+      written literally as the width of Balkenhol et al.'s Table III, which
+      the paper compares with. Written as bin_covariance_comparison.json,
+      with moments.npz and two diagnostic plots.
+    inputs: [bin_covariance_sims, bin_covariance_flat_controls, fine_coupling_matrices]
+    decisions: [bandpower_width]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/compare_bin_covariance.py
+        --bin-covariance-sims {inputs.bin_covariance_sims}
+        --bin-covariance-flat-controls {inputs.bin_covariance_flat_controls}
+        --fine-coupling-matrices {inputs.fine_coupling_matrices}
+        --widths {decisions.bandpower_width} 100
+        --binwise-widths {decisions.bandpower_width} 100
+        --out {output}
+      resources:
+        cpus: 2
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 30m
+
+  - id: noisy_inversion_summary
+    type: data
+    label: "Inverting the response on noisy skies"
+    description: |
+      The response inverted on the 260 noisy SPT-3G-like lensed 1500d skies,
+      split-cross and noise-free, per chart: one amplitude per 500-wide band
+      over 500-4000 of the beamed lensed TT, EE and BB, fitted through the
+      scalar block and the joint EE/BB system with the exterior at its
+      model, with equal and scatter weights; per-band and combined biases
+      and the variance relative to ZEA's, with jackknife errors. The beam
+      and noise depth come from the sims. Written as
+      noisy_inversion_summary.json, with amplitudes.npz and two diagnostic
+      plots.
+    inputs: [noisy_inversion_sims, fine_coupling_matrices, flatsky_masks, bandpowers,
+             simulation_windows, theory_spectra, shear_moments]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/noisy_inversion.py
+        --noisy-inversion-sims {inputs.noisy_inversion_sims}
+        --fine-coupling-matrices {inputs.fine_coupling_matrices}
+        --flatsky-masks {inputs.flatsky_masks}
+        --bandpowers {inputs.bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --out {output}
+      resources:
+        cpus: 4
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 30m
+
+  - id: projection_survey
+    type: data
+    label: "127 projections of the 1500d field"
+    description: |
+      Every PROJ projection that maps the unapodized 1500d rectangle,
+      sampled uniformly in area, with its aspect (centre and heading) and
+      shape parameters optimized twice, once for <g^2> and once for the
+      variance of ln mu; the paper's four at their fixed definitions; and
+      the least-squares and Chebyshev conformal optima, solved in Mercator
+      coordinates. Needs no pipeline data. Runs under uv from the script's
+      inline dependencies, since the SPT environment has no PROJ. Written
+      as projection_survey.json, with a diagnostic plot.
+    recipe:
+      command: uv run analysis/projection_survey.py --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 4h
+
+  # --- The paper's macros ---------------------------------------------------
+  - id: numbers
+    type: table
+    label: "The law, the 1500d field and the theory"
+    description: |
+      The macros of numbers.tex: the leakage coefficient fitted over every
+      sheared (footprint, projection) pair and its scatter; SFL's and
+      BICEP's measured-over-modelled BB/EE band by band; on the 1500d field,
+      the SFL/BICEP leakage ratio measured and from 2<g^2>, Hann-averaged EE
+      over the input, the STG floor and the leakage against lensed BB;
+      power conservation between the legs over every footprint; the damping
+      tail's slope and the lift it implies; the run's band limit and the
+      field's sky fraction; and what spt3g's flattening angle would add to
+      SFL's modelled leakage, computed from the field mask under both
+      options.
+    inputs: [bandpowers, simulation_windows, theory_spectra, shear_moments, healpix_masks, field_spectra]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/main.py
+        --bandpowers {inputs.bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --healpix-masks {inputs.healpix_masks}
+        --field-spectra {inputs.field_spectra}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 8Gi
+        disk: 1Gi
+        time_limit: 30m
+
+  - id: scalar_numbers
+    type: table
+    label: "Diagonal-transfer macros"
+    description: |
+      The macros of scalar_numbers.tex, on the 1500d field over
+      1000 <= ell < 4000: the white bandpower's error after a TT-calibrated
+      diagonal transfer function (SFL's mean, and the worst of SFL, STG and
+      ZEA), and the worst error of the coupling matrix applied to the white
+      input.
+    inputs: [scalar_summary]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/scalar_numbers.py
+        --scalar-summary {inputs.scalar_summary} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 5m
+
+  - id: residual_numbers
+    type: table
+    label: "Field residual macros"
+    description: |
+      The macros of residual_numbers.tex: the worst TT and EE band-mean
+      residual of the independent skies against the spherical reference,
+      STG's worst EE bin, the range of SFL's and ZEA's EE p-values, SFL's
+      and ZEA's BB residual on the integer-bin model, and BICEP minus ZEA in
+      EE on the production skies.
+    inputs: [residual_summary]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/residual_numbers.py
+        --residual-summary {inputs.residual_summary} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 5m
+
+  - id: covariance_numbers
+    type: table
+    label: "Bandpower covariance macros"
+    description: |
+      The macros of covariance_numbers.tex: the number of projected skies;
+      SFL's TT, EE and BB fractional-variance ratio to the controls over
+      3500-4800 at the bandpower width; and ZEA's adjacent-bin correlation
+      in TT and EE over 2000-3000 at width 100, for the SPT comparison.
+      Refuses an incomplete ensemble.
+    inputs: [bin_covariance_comparison]
+    decisions: [bandpower_width]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/covariance_numbers.py
+        --bin-covariance-comparison {inputs.bin_covariance_comparison}
+        --delta-ell {decisions.bandpower_width} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 5m
+
+  - id: noisy_numbers
+    type: table
+    label: "Noisy-inversion macros"
+    description: |
+      The macros of noisy_numbers.tex, scatter-weighted estimator on the
+      split-cross spectra: the number of skies, STG's and SFL's variance
+      cost relative to ZEA, and ZEA's and SFL's BB bias in units of the
+      input lensed BB.
+    inputs: [noisy_inversion_summary]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/noisy_numbers.py
+        --noisy-inversion-summary {inputs.noisy_inversion_summary} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 5m
+
+  - id: survey_numbers
+    type: table
+    label: "Projection-survey macros"
+    description: |
+      The macros of survey_numbers.tex: STG's spread in ln mu over the best
+      Lambert conformal conic's, ZEA's <g^2> over the best Albers conic's,
+      the conic's excess over the least-squares conformal optimum, and SFL's
+      <g^2> over SFL with the field moved onto its equator.
+    inputs: [projection_survey]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/paper_numbers/survey_numbers.py
+        --projection-survey {inputs.projection_survey} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 5m
+
+  # --- The paper's figures --------------------------------------------------
+  - id: fig_shear_schematic
+    type: figure
+    label: "Figure 1: a projection as a lens"
+    description: |
+      BICEP's grid over the 1500d field with Tissot's indicatrix; at three
+      points, a sky circle and its image on the grid, with that point's g
+      and mu and one E-mode plane wave whose polarization the grid no
+      longer reads at right angles to its crests; each point's EE read on
+      the grid against the input; and the footprint average. Writes
+      shear_schematic.pdf, which the paper includes, and
+      fig_shear_schematic.png.
+    inputs: [theory_spectra]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/plot_shear_schematic.py
+        --theory-spectra {inputs.theory_spectra} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 10m
+
+  - id: fig_jacobian_invariants
+    type: figure
+    label: "Figure 2: shear and magnification of the four projections"
+    description: |
+      The local shear g and magnification mu of SFL, STG, ZEA and BICEP over
+      the grid, relative to the sky, with the 1500d field's edge and the
+      largest footprint's contour on every panel and the sky a projection
+      cannot reach hatched. Writes jacobian_invariants.pdf, which the paper
+      includes, and fig_jacobian_invariants.png.
+    inputs: [mask_contours]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/plot_jacobian_invariants.py
+        --mask-contours {inputs.mask_contours} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 10m
+
+  - id: fig_spectra_model
+    type: figure
+    label: "Figure 3: spectra on the 1500d field and the coupling matrix"
+    description: |
+      TT and EE over the input and BB/EE on the 1500d field, the mean of the
+      20 skies per bandpower as points and the coupling matrix applied to
+      the input as lines, per projection, with the lensed BB/EE for scale;
+      simulation windows divided out of both. Writes spectra_model.pdf,
+      which the paper includes, and fig_spectra_model.png.
+    inputs: [pipeline_windows, residual_estimator_response, theory_spectra]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/plot_spectra_model.py
+        --pipeline-windows {inputs.pipeline_windows}
+        --residual-estimator-response {inputs.residual_estimator_response}
+        --theory-spectra {inputs.theory_spectra} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 10m
+
+  - id: fig_shear_leakage
+    type: figure
+    label: "Figure 4: E-to-B leakage against 2<g^2>"
+    description: |
+      Measured BB/EE over 1000 < ell < 3000 against <g^2> for every sheared
+      (footprint, projection) pair, with the line BB/EE = 2<g^2>, and the
+      residual about it by footprint size with the fitted coefficient's rms
+      band. Also prints the full leakage report (the law, the STG floor, the
+      reductions and weights, the band-by-band test against the forward
+      model). Writes shear_leakage.pdf, which the paper includes, and
+      fig_shear_leakage.png.
+    inputs: [bandpowers, simulation_windows, theory_spectra, shear_moments]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/shear_leakage.py
+        --bandpowers {inputs.bandpowers}
+        --simulation-windows {inputs.simulation_windows}
+        --theory-spectra {inputs.theory_spectra}
+        --shear-moments {inputs.shear_moments}
+        --out {output}
+      resources:
+        cpus: 1
+        memory: 2Gi
+        disk: 1Gi
+        time_limit: 15m
+
+  - id: fig_transfer_error
+    type: figure
+    label: "Figure 5: what a diagonal transfer function misses"
+    description: |
+      On the 1500d field, per projection: the white bandpower's error after
+      a TT-calibrated diagonal transfer function, measured and from the
+      forward model alone, and the white sky's residual against the full
+      coupling matrix with its standard error. Writes transfer_error.pdf,
+      which the paper includes, and fig_transfer_error.png.
+    inputs: [scalar_summary]
+    recipe:
+      command: >-
+        bash env.sh python3 analysis/plot_transfer_error.py
+        --scalar-summary {inputs.scalar_summary} --out {output}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 10m
+
+  # --- The paper --------------------------------------------------------------
+  - id: paper
+    type: report
+    label: "The letter"
+    description: |
+      paper/main.tex compiled against the numbers and figure outputs, with
+      paper/legacy_numbers.tex, the hand-kept macros from analyses outside
+      this spec. The build is the gate: it fails if main.tex inputs a file
+      or includes a figure that neither these outputs nor paper/ hold, or
+      quotes a macro no input file defines, and it lists the macros the
+      outputs make that the prose does not quote. Writes main.pdf.
+    inputs: [numbers, scalar_numbers, residual_numbers, covariance_numbers, noisy_numbers,
+             survey_numbers, fig_shear_schematic, fig_jacobian_invariants, fig_spectra_model,
+             fig_shear_leakage, fig_transfer_error]
+    recipe:
+      command: >-
+        python3 paper/build.py --out {output}
+        {inputs.numbers} {inputs.scalar_numbers} {inputs.residual_numbers}
+        {inputs.covariance_numbers} {inputs.noisy_numbers} {inputs.survey_numbers}
+        {inputs.fig_shear_schematic} {inputs.fig_jacobian_invariants}
+        {inputs.fig_spectra_model} {inputs.fig_shear_leakage} {inputs.fig_transfer_error}
+      resources:
+        cpus: 1
+        memory: 1Gi
+        disk: 1Gi
+        time_limit: 10m
+
 # ---------------------------------------------------------------------------
 # DECISIONS
 # ---------------------------------------------------------------------------
