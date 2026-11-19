@@ -1435,9 +1435,11 @@ decisions:
       polar:
         label: "Polar-decomposition angle"
         description: "Removes the projection's rotation exactly; the maps carry the shear alone."
+        insights: [projected_shear_needs_rotation]
       spt3g:
         label: "spt3g flatten_pol"
         description: "The library's averaged angle; adds a second-order rotation in sheared projections."
+        insights: [projected_shear_needs_rotation]
 
   b_purification:
     label: "B-mode purification"
@@ -1486,3 +1488,299 @@ decisions:
       healpix_and_flat:
         label: "HEALPix and flat-sky windows"
         description: "Both windows; over-corrects for the same reason."
+
+# ---------------------------------------------------------------------------
+# PRIOR INSIGHTS
+# ---------------------------------------------------------------------------
+# The literature the paper leans on, limited to passages the citation audit
+# (paper/citation_audit/quotes.json) verified verbatim against stored source
+# text. Each is tagged with the Introduction's mode of use it belongs to.
+# Quotes are written as the source renders them (ℓ, B, E-to-B), not in the
+# manuscript's LaTeX.
+prior_insights:
+  flat_tools_need_a_plane:
+    claim: >-
+      DES Y3 wavelet-phase-harmonic statistics are measured on flat
+      gnomonic patches because the wavelet package works only in two
+      dimensions.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [flat-sky-practice]
+    evidence:
+      - id: gatti24
+        doi: "10.1103/PhysRevD.109.063534"
+        quote:
+          exact: "works on a two-dimensional projection"
+
+  pipelines_move_maps_between_grids:
+    claim: >-
+      An SPT-3G lensing pipeline reprojects maps from a Lambert grid to an
+      equirectangular one and back to apply its transfer-function weights.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [moving-maps-between-grids]
+    evidence:
+      - id: ge24
+        doi: "10.1103/PhysRevD.111.083534"
+        quote:
+          exact: "projecting from a Lambert to an Equirectangular pixelization, applying some weights, then projecting back"
+
+  projection_costs_information:
+    claim: >-
+      When simulations and data pass through the same projection, its
+      distortion does not bias simulation-based inference but can make the
+      compression suboptimal.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: jeffrey25
+        doi: "10.1093/mnras/stae2629"
+        quote:
+          exact: "makes the compression potentially suboptimal"
+
+  lambert_correlates_bins:
+    claim: >-
+      In SPT-3G's 2018 temperature spectra the Lambert azimuthal equal-area
+      projection, which does not preserve angles, increases bin-to-bin
+      correlations at high ℓ.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: balkenhol23
+        doi: "10.1103/PhysRevD.108.023510"
+        quote:
+          exact: "does not preserve angles and leads to increasing bin-to-bin correlations at high ℓ"
+
+  projection_correlation_hard_to_model:
+    claim: >-
+      SPT-3G D1 found projection-induced excess bin correlations at high ℓ
+      hard to compute analytically, and moved its spectra to full spherical
+      harmonic transforms.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: spt3gd1
+        doi: "10.1103/7wt3-9v2y"
+        quote:
+          exact: "projection effects were causing excess correlation between power spectrum bins at high ℓ, in a manner that is difficult to compute analytically"
+
+  projected_shear_needs_rotation:
+    claim: >-
+      Projecting a spin-two shear field without correcting its orientation
+      generates substantial B modes; Euclid mass-map preparation rotates it
+      and takes the residual as negligible.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: pires20
+        doi: "10.1051/0004-6361/201936865"
+        quote:
+          exact: "can generate substantial B modes"
+
+  conformal_projection_best_for_mass_maps:
+    claim: >-
+      For weak-lensing convergence maps, the conformal stereographic
+      projection performed best among the planar projections compared.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: wallis17
+        doi: "10.1093/mnras/stab3235"
+        quote:
+          exact: "The stereographic projection, which is conformal and so preserves local angles, is the most effective planar projection."
+
+  large_patch_projection_leaks:
+    claim: >-
+      Neural-network recovery of CMB polarization maps meets significant
+      E-to-B leakage when larger sky regions are projected onto a plane.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: casas23
+        doi: "10.1088/1475-7516/2025/10/063"
+        quote:
+          exact: "significant E-to-B leakage when projecting larger sky regions onto a flat plane"
+
+  other_projections_distort_less:
+    claim: >-
+      BICEP/Keck, whose RA/Dec grid leaks E into B under Fourier transform,
+      note that other map projections distort significantly less.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [known-consequences]
+    evidence:
+      - id: bk7
+        doi: "10.3847/0004-637X/825/1/66"
+        quote:
+          exact: "other map projections will have significantly lower distortion"
+
+  partial_sky_sht_matches_fft:
+    claim: >-
+      Partial-sky spherical harmonic transforms now cost about as much as,
+      or less than, the 2D FFT at the same resolution, even on small fields.
+    created_at: "2026-11-19T00:00:00Z"
+    tags: [move-to-sphere]
+    evidence:
+      - id: carron26
+        doi: "10.48550/arXiv.2603.17166"
+        quote:
+          exact: "comparable or sometimes lower cost than the 2D FFT at the same resolution"
+
+# ---------------------------------------------------------------------------
+# FINDINGS
+# ---------------------------------------------------------------------------
+# The paper's claims. Numbers are quoted as the macro lines the cited output
+# writes, never retyped.
+findings:
+  projection_is_a_lens:
+    claim: >-
+      A projection acts on the sky as a lens with shear and magnification
+      fixed in closed form by its Jacobian: the shear averages scalar spectra
+      over a band of multipoles, and a parameter-free coupling matrix built
+      from the Jacobian and the mask predicts the projected TT, EE and BB of
+      the 1500d field in the mean on independent skies.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: field_model
+        artifact: fig_spectra_model
+      - id: field_residuals
+        artifact: residual_numbers
+        quote:
+          exact: "\\newcommand{\\residEECleanWorst}{0.05\\%}"
+      - id: field_band_average
+        artifact: numbers
+        quote:
+          exact: "\\newcommand{\\EEboxSFLfourK}{2.14}"
+
+  leakage_law:
+    claim: >-
+      The shear turns a fraction 2<g^2> of EE into BB, <g^2> being the mean
+      squared shear under the squared mask; a fit of the coefficient over
+      every sheared footprint and projection, across four decades in <g^2>,
+      returns close to the derived 2.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: law_fit
+        artifact: numbers
+        quote:
+          exact: "\\newcommand{\\fitcoef}{2.0178}"
+      - id: law_figure
+        artifact: fig_shear_leakage
+      - id: law_shear_moments
+        artifact: shear_moments
+
+  leakage_law_second_order:
+    claim: >-
+      SFL's measured BB/EE over 2<g^2> rises with sky fraction, to +3.8% on
+      the largest rectangle (rect_10p06, 1000 < ell < 3000), where the local
+      shear reaches 0.5-0.6; the coupling matrix, which keeps the
+      second-order terms, reproduces it to about 0.1%. ZEA and BICEP stay
+      within the fit's scatter.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: second_order_bands
+        artifact: leakage_second_order
+      - id: residual_by_footprint
+        artifact: fig_shear_leakage
+
+  covariance_mostly_unaffected:
+    claim: >-
+      The coupling matrix maps means, not covariances. On ZEA and STG the
+      TT and EE fractional variances stay within a few percent of
+      homogeneous controls, while SFL's are inflated several-fold at high
+      ell; ZEA's adjacent-band correlations are consistent with zero, so
+      projection alone does not produce the bin correlations SPT-3G reports
+      on Lambert maps.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: zea_adjacent_correlation
+        artifact: covariance_numbers
+        quote:
+          exact: "\\newcommand{\\covZEATTSPTAdjacent}{-0.016}"
+      - id: sfl_variance_inflation
+        artifact: covariance_numbers
+        quote:
+          exact: "\\newcommand{\\covSFLEEHighVariance}{3.87}"
+      - id: variance_ratios
+        artifact: bin_covariance_comparison
+
+  conformal_no_leak_equal_area_no_magnification:
+    claim: >-
+      Conformal projections do not leak and equal-area projections do not
+      magnify: STG's BB on the 1500d field is a numerical floor while its
+      magnification lowers EE, and ZEA's EE stays close to the input while
+      it leaks a fraction of the lensed BB.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: stg_floor
+        artifact: numbers
+        quote:
+          exact: "\\newcommand{\\floorField}{$4.9\\times10^{-8}$}"
+      - id: zea_ee
+        artifact: numbers
+        quote:
+          exact: "\\newcommand{\\EEboxZEAdev}{1\\%}"
+      - id: jacobian_maps
+        artifact: fig_jacobian_invariants
+
+  diagonal_transfer_function_fails:
+    claim: >-
+      Decoupling a projection needs the full coupling matrix: a diagonal
+      transfer function calibrated on CMB simulations carries the CMB's
+      acoustic phase and mis-corrects a white spectrum on SFL and STG, and
+      barely on ZEA, while the matrix applied to the white input matches its
+      bandpowers.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: transfer_error
+        artifact: scalar_numbers
+        quote:
+          exact: "\\newcommand{\\tfSFLworst}{53\\%}"
+      - id: transfer_figure
+        artifact: fig_transfer_error
+
+  choose_rather_than_correct:
+    claim: >-
+      Decoupling restores the mean of a sheared grid's spectra but not their
+      variance: on noisy lensed skies ZEA's corrected BB is unbiased and
+      SFL's is off by a few percent of the lensed BB, from its lowest band,
+      yet SFL's corrected spectra cost several times ZEA's variance, and far
+      more in B, where the leaked E's sample variance remains, whereas STG
+      costs almost none. A projection is better chosen than corrected.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: sfl_b_cost
+        artifact: noisy_numbers
+        quote:
+          exact: "\\newcommand{\\noisyCostSFLBB}{$52 \\pm 4$}"
+      - id: stg_cost
+        artifact: noisy_numbers
+        quote:
+          exact: "\\newcommand{\\noisyCostSTGEE}{$1.03 \\pm 0.04$}"
+      - id: inversion_summary
+        artifact: noisy_inversion_summary
+
+  projection_survey_corollary:
+    claim: >-
+      Among 127 PROJ projections optimized for the 1500d field, conics fit a
+      band in declination best within each class (the Lambert conformal
+      conic over STG, the Albers equal-area conic over ZEA), and a
+      projection's aspect matters more than its family, but the gains are
+      factors of a few and do not change the choice of class.
+    created_at: "2026-11-19T00:00:00Z"
+    derived: true
+    evidence:
+      - id: survey_conformal
+        artifact: survey_numbers
+        quote:
+          exact: "\\newcommand{\\surveyLCCoverSTG}{2.2}"
+      - id: survey_equal_area
+        artifact: survey_numbers
+        quote:
+          exact: "\\newcommand{\\surveyZEAoverAEA}{3.1}"
+      - id: survey_full
+        artifact: projection_survey
