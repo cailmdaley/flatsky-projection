@@ -89,10 +89,12 @@ def main():
     pdflatex = ("pdflatex", "-halt-on-error", "-interaction=nonstopmode", str(PAPER / "main.tex"))
     latex(out, env, *pdflatex)
     latex(out, env, "bibtex", "main")
-    latex(out, env, *pdflatex)
-    latex(out, env, *pdflatex)
+    for i in range(5):
+        latex(out, env, *pdflatex)
+        log = (out / "main.log").read_text(errors="replace")
+        if i >= 1 and "Rerun to get" not in log:
+            break
 
-    log = (out / "main.log").read_text(errors="replace")
     problems = [line for line in log.splitlines()
                 if re.search(r"(Reference|Citation) .* undefined", line)]
     if problems:
