@@ -119,9 +119,8 @@ def atomic_save(path: Path, **arrays) -> None:
 
     Both ``np.save`` and ``np.savez`` append their extension only if the
     filename doesn't already end with it, so the ``.tmp.npy`` / ``.tmp.npz``
-    naming below is safe -- matching the crash-safety pattern already used
-    for this project's mask cache (``analysis/crawford_masks.cached_arrays``)
-    and for this stage's sibling, ``coupling_matrices.atomic_write_workspace``.
+    naming below is safe -- the crash-safety pattern of this stage's sibling,
+    ``coupling_matrices.atomic_write_workspace``.
     """
     if path.suffix == ".npy":
         (value,) = arrays.values()

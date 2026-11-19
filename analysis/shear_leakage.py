@@ -383,40 +383,6 @@ def predicted_spectra(mom, i, j, ell, ell_theory, cl_theory, *, band_limit, n_ch
     return R["BB<-EE"] @ cl, R["EE<-EE"] @ cl
 
 
-def diagonal_transfer_error(R, ell, ell_prime, cl_cal, cl_test, per_band=1):
-    """What a diagonal transfer function gets wrong about a spectrum it was not
-    calibrated on.
-
-    A pipeline that calibrates on simulations of `cl_cal` sees the forward
-    model only through its bandpower ratio F_b = <R C_cal>_b / <C_cal>_b and
-    undoes it by dividing the observed bandpower by F_b. Applied to a sky
-    `cl_test`, whose observed bandpower is <R C_test>_b, that returns
-    <R C_test>_b / F_b; the fractional error of that estimate of <C_test>_b is
-    returned, one entry per band. A band is `per_band` consecutive rows of
-    `R`, which is one block of `coupling_matrix(..., ell, ell_prime)`; spectra
-    live on `ell_prime`.
-
-    F_b inherits the acoustic peaks: smearing over the band of sky l' fills
-    troughs and clips peaks, so the error oscillates with the input spectrum's
-    phase about a smooth offset, and a single l samples an arbitrary phase.
-
-    Two identities pin the scalar block for smooth inputs. A constant
-    (white) spectrum maps to int W^2 |det J|^2 / int W^2 |det J|, the footprint
-    mean of |det J| under the estimator's weight, below the band limit. And
-    C ~ l^-2 (D_l constant) passes through unchanged for any J: the azimuthal
-    mean of r^-2 is 1 / (s1 s2), because r^-2 dchi / (s1 s2) is the uniform
-    measure in the sky azimuth, so one power of |det J| cancels. The spin
-    blocks keep the second identity up to their kernel's footprint mean,
-    which is the same over sky azimuth as over plane azimuth. For an
-    equal-area projection white and l^-2 inputs therefore give the same error.
-    """
-    def band(x):
-        return x.reshape(-1, per_band).mean(-1)
-    cal = band(np.interp(ell, ell_prime, cl_cal))
-    test = band(np.interp(ell, ell_prime, cl_test))
-    transfer = band(R @ cl_cal) / cal
-    return band(R @ cl_test) / (transfer * test) - 1
-
 
 def predicted_ratios(run, mom, bands=BANDS, n_chi=128, verbose=True):
     """Band-averaged BB/EE from `predicted_spectra`, same bands as the data,

@@ -59,12 +59,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "stages"
 from _footprints import FIELD, FOOTPRINTS, SWEEP  # noqa: E402,F401
 from _footprints import FSKY_PERCENT as _FSKY_PERCENT  # noqa: E402
 
-PROJ_KIND = {
-    "ProjSFL": "pseudocylindrical, equal-area",
-    "ProjSTG": "conformal",
-    "ProjZEA": "zenithal equal-area",
-    "ProjBICEP": "cylindrical",
-}
 # The sweep's unapodized sky fractions, in percent, in registry order.
 FSKY_PERCENT = np.array(_FSKY_PERCENT)
 
@@ -154,11 +148,6 @@ class Run:
     def ell(self):
         """Bin midpoints, which are NmtBinFlat's effective multipoles here."""
         return 0.5 * (self.bin_lo + self.bin_hi).astype(float)
-
-    def ell_eff(self):
-        """The NmtBinFlat effective multipoles as written by the run."""
-        with np.load(self.bandpowers / f"bandpowers_{PROJS[0]}_seed0000.npz") as z:
-            return z["ell_eff"]
 
     # ---- bandpowers ---------------------------------------------------------
 
@@ -327,88 +316,6 @@ def rebin_pseudo(pseudo, counts, edges):
     return np.stack([(pseudo[..., lo:hi] * counts[lo:hi]).sum(axis=-1) / weight
                      for lo, hi, weight in zip(edges[:-1], edges[1:], weights)], axis=-1)
 
-
-def decouple_fine(path, delta_ell, *, workspace=None, masks_dir=None, cache_dir=None):
-    """Return TT, EE, BB bandpowers from a saved finest pseudo-spectrum.
-
-    ``delta_ell`` is a positive integer; the last bin ends at stored lmax.
-    Supply ``workspace`` as a directory of w00/w22 FITS files at this width
-    or a finer width whose bins partition these bins exactly, or
-    ``masks_dir`` and ``cache_dir`` to build and cache a workspace for this
-    width. Workspace construction can take hours and should run on the grid.
-    The flat pixel window is divided out after decoupling, as in production.
-    Only the QU leg is stored by the finest pseudo-spectrum stage.
-    """
-    import pymaster as nmt
-    from namaster_spectra import compute_pixel_window, load_mask
-    from coupling_matrices import atomic_write_workspace
-
-    if int(delta_ell) != delta_ell or delta_ell < 1:
-        raise ValueError('delta_ell must be a positive integer')
-    with np.load(path) as z:
-        counts, pol, tt = z['counts'], z['pol'], z['tt']
-        proj, footprint = str(z['projection']), str(z['footprint'])
-        purify_b = bool(z['purify_b'])
-        geometry = tuple(float(z[k]) for k in ('nx', 'ny', 'lx_rad', 'ly_rad'))
-        mask_hash = str(z['mask_sha256'])
-    lmax = len(counts)
-    edges = np.unique(np.r_[np.arange(0, lmax, int(delta_ell)), lmax])
-    pseudo_pol = rebin_pseudo(pol, counts, edges)
-    pseudo_tt = rebin_pseudo(tt, counts, edges)
-    bins = nmt.NmtBinFlat(edges[:-1].astype(float), edges[1:].astype(float))
-    target = (Path(workspace) if workspace is not None else
-              Path(cache_dir) / f'd{int(delta_ell)}' / proj / mask_hash)
-    target.mkdir(parents=True, exist_ok=True)
-    result = {}
-    for spin, pseudo in [(0, pseudo_tt), (2, pseudo_pol)]:
-        ws_path = target / f'w{spin}{spin}_{proj}_{footprint}.fits'
-        w = nmt.NmtWorkspaceFlat()
-        if ws_path.exists():
-            w.read_from(str(ws_path))
-        elif masks_dir is not None:
-            mask, _, lx, ly = load_mask(Path(masks_dir), proj, footprint)
-            f = nmt.NmtFieldFlat(lx, ly, mask, None, spin=spin,
-                                 purify_b=purify_b if spin == 2 else False)
-            w.compute_coupling_matrix(f, f, bins)
-            import hashlib
-            if hashlib.sha256(mask.tobytes()).hexdigest() != mask_hash:
-                raise ValueError('masks_dir mask differs from the stored pseudo-spectrum mask')
-            atomic_write_workspace(w, ws_path)
-            from astropy.io import fits
-            with fits.open(ws_path, mode='update') as hdus:
-                hdus[0].header['MASKHASH'] = mask_hash
-        else:
-            raise FileNotFoundError(f'{ws_path}; supply matching workspaces or masks_dir')
-        # Flat workspaces interleave spectra within each bin in their FITS MCM.
-        from astropy.io import fits
-        with fits.open(ws_path) as hdus:
-            stored_geometry = tuple(hdus['FS_INFO'].header[k] for k in ('NX', 'NY', 'LX', 'LY'))
-            if not np.allclose(geometry, stored_geometry, rtol=1e-12, atol=0):
-                raise ValueError(f'{ws_path}: workspace geometry differs from pseudo-spectrum')
-            if hdus[0].header.get('MASKHASH', mask_hash) != mask_hash:
-                raise ValueError(f'{ws_path}: workspace mask differs from pseudo-spectrum')
-            stored_edges = hdus['BINS_SUMMARY'].data
-            source_edges = np.r_[stored_edges.field(0), stored_edges.field(1)[-1]]
-            if spin == 2 and bool(hdus[0].header['PURE_B1']) != purify_b:
-                raise ValueError(f'{ws_path}: workspace purification differs from pseudo-spectrum')
-            same_bins = np.array_equal(source_edges, edges)
-            if not same_bins:
-                matrix = rebin_flat_response(hdus['MCM_BINNED'].data, source_edges,
-                                             edges, counts, 1 if spin == 0 else 4)
-        if same_bins:
-            cl = w.decouple_cell(pseudo)
-        else:
-            from scipy.linalg import solve
-            cl = solve(matrix, pseudo.T.reshape(-1)).reshape(-1, pseudo.shape[0]).T
-        if not np.isfinite(cl).all():
-            raise ValueError(f'{ws_path}: nonfinite decoupled spectrum')
-        if spin == 0:
-            result['tt'] = cl[0]
-        else:
-            result.update(ee=cl[0], bb=cl[3])
-    ell = bins.get_effective_ells()
-    window = compute_pixel_window('flat_only', bins, ell, lmax)
-    return dict(ell_eff=ell, **{key: value / window for key, value in result.items()})
 
 
 def rebin_flat_response(matrix, source_edges, target_edges, counts, ncls):

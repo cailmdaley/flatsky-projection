@@ -44,8 +44,9 @@ test the model passes.
 
 Note on polarization
 --------------------
-The pipeline applies spt3g's FlattenPol, which undoes the projection-induced
-*rotation* of the polarization basis. It does not and cannot undo the shear:
+The pipeline flattens Q/U by the polar-decomposition angle psi_R (the
+`flattening` decision), which undoes the projection-induced *rotation* of
+the polarization basis. It does not and cannot undo the shear:
 a sheared spin-2 field is not a rotated spin-2 field. So E stays mixed into B
 at order (q - 1), which is why the BB panel scales as (q - 1)^2.
 """
@@ -141,118 +142,6 @@ def singular_values(jac):
     return s1, s2
 
 
-def shear_and_magnification(proj, alpha_deg, delta_deg, **kw):
-    """Convenience: (magnification s1*s2, shear ratio s1/s2) over sky positions."""
-    s1, s2 = singular_values(jacobian(proj, alpha_deg, delta_deg, **kw))
-    return s1 * s2, s1 / s2
 
 
-def _inv2x2(m):
-    """Inverse of a stack of 2x2 matrices, closed form."""
-    m = np.asarray(m, dtype=float)
-    a, b, c, d = m[..., 0, 0], m[..., 0, 1], m[..., 1, 0], m[..., 1, 1]
-    det = a * d - b * c
-    out = np.empty_like(m)
-    out[..., 0, 0], out[..., 0, 1] = d, -b
-    out[..., 1, 0], out[..., 1, 1] = -c, a
-    return out / det[..., None, None]
 
-
-def relative_jacobian(proj_to, proj_from, alpha_deg, delta_deg,
-                      to_kw=None, from_kw=None, step_deg=0.02):
-    """A = J_to . J_from^-1 -- how one map plane stretches relative to another.
-
-    Use this whenever the *input* field is defined on a map plane rather than
-    on the sky. Crawford's simulation is the case that forces it: he draws a
-    Gaussian random field directly on a ZEA grid, declares it to be the proj5
-    map, and reprojects it to proj0. The sky field is then a derived object,
-    and the only operator that acts is the plane-to-plane map C = Z . S^-1.
-
-    Writing h = g . C for the SFL map h and the ZEA map g, the same derivation
-    as in the module docstring gives P_h(k) = |det A| P_g(A^T k) with
-    A = C^-1 = J_S . J_Z^-1. So `A` slots straight into `project_spectrum` in
-    place of a single-projection Jacobian, and the predicted ratio
-    P_proj0 / P_proj5 needs no separate model of the sky spectrum at all --
-    the denominator *is* the input spectrum, exactly.
-
-    Doing it this way removes an approximation. Modelling P_SFL/P_sky and
-    P_ZEA/P_sky separately and dividing is only equal to the composite when
-    ZEA is exactly isotropic; over the 1500d footprint it is isotropic to
-    about 2%, so the two agree at that level, and the composite is the one
-    that is right by construction.
-    """
-    j_to = jacobian(proj_to, alpha_deg, delta_deg, step_deg=step_deg,
-                    **(to_kw or {}))
-    j_from = jacobian(proj_from, alpha_deg, delta_deg, step_deg=step_deg,
-                      **(from_kw or {}))
-    return j_to @ _inv2x2(j_from)
-
-
-def project_spectrum(ell, s1, s2, ell_theory, cl_theory,
-                     band_limit=None, n_psi=64):
-    """P_plane(l) for one (s1, s2), on the grid `ell`. Shape broadcasts.
-
-    Implements P_plane(l) = s1 s2 < P_sky(l * r(psi)) >_psi with
-    r(psi) = sqrt(s1^2 cos^2 psi + s2^2 sin^2 psi), the azimuthal average that
-    NaMaster's |l| binning performs for us.
-
-    `band_limit` sets P_sky = 0 above that multipole: the sims' own band limit
-    from map2alm; leaving it out inflates the top bandpowers.
-    Quarter period suffices -- r(psi) has period pi and is symmetric about
-    psi = pi/2.
-    """
-    ell = np.atleast_1d(np.asarray(ell, dtype=float))
-    s1 = np.atleast_1d(np.asarray(s1, dtype=float))
-    s2 = np.atleast_1d(np.asarray(s2, dtype=float))
-
-    psi = (np.arange(n_psi) + 0.5) * (np.pi / 2 / n_psi)
-    cos2, sin2 = np.cos(psi) ** 2, np.sin(psi) ** 2
-
-    cl = np.asarray(cl_theory, dtype=float).copy()
-    if band_limit is not None:
-        cl = np.where(np.asarray(ell_theory) > band_limit, 0.0, cl)
-
-    # (n_pix, 1, n_psi) stretch factors -> (n_pix, n_ell)
-    r = np.sqrt(s1[:, None] ** 2 * cos2 + s2[:, None] ** 2 * sin2)
-    ell_sky = ell[None, :, None] * r[:, None, :]
-    sampled = np.interp(ell_sky, ell_theory, cl, left=cl[0], right=0.0)
-    return (s1 * s2)[:, None] * sampled.mean(axis=-1)
-
-
-def predicted_spectrum(ell, s1, s2, weights, ell_theory, cl_theory,
-                       band_limit=None, n_bins=48, n_psi=64, chunk=400):
-    """Mask-weighted P_plane(l) over a whole footprint.
-
-    `weights` should be the mask *squared* (NaMaster's pseudo-Cl estimator
-    weights the map by the apodized mask, so power is weighted by mask^2).
-
-    Pixels are first collapsed onto a weighted 2D histogram in (log s1, log s2)
-    so cost is set by `n_bins`, not by the number of pixels; at n_bins = 48 the
-    binning error is well under 0.1%, far below anything we quote.
-    """
-    s1 = np.asarray(s1, dtype=float)
-    s2 = np.asarray(s2, dtype=float)
-    w = np.asarray(weights, dtype=float)
-    good = (w > 0) & np.isfinite(s1) & np.isfinite(s2)
-    s1, s2, w = s1[good], s2[good], w[good]
-
-    counts, e1, e2 = np.histogram2d(
-        np.log(s1), np.log(s2), bins=n_bins, weights=w)
-    c1 = np.exp(0.5 * (e1[:-1] + e1[1:]))
-    c2 = np.exp(0.5 * (e2[:-1] + e2[1:]))
-    g1, g2 = np.meshgrid(c1, c2, indexing="ij")
-
-    occupied = counts > 0
-    o1, o2, ow = g1[occupied], g2[occupied], counts[occupied]
-
-    # project_spectrum materialises an (n_cell, n_ell, n_psi) array. Over a
-    # real footprint that is tens of gigabytes if `ell` is sampled finely, so
-    # walk `ell` in chunks -- the result is identical, the peak is bounded.
-    ell = np.atleast_1d(np.asarray(ell, dtype=float))
-    out = np.empty(ell.size)
-    for i in range(0, ell.size, chunk):
-        sl = slice(i, i + chunk)
-        spec = project_spectrum(ell[sl], o1, o2, ell_theory, cl_theory,
-                                band_limit=band_limit, n_psi=n_psi)
-        out[sl] = np.average(spec, axis=0, weights=ow)
-    return out

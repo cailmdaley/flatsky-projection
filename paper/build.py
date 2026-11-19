@@ -8,8 +8,9 @@ is given on TeX's search path and compiles main.tex in `--out` as paper.pdf.
 
 The gate, before and during the build:
 
-  * every `\\input` and every figure main.tex names must exist in paper/ or in
-    one of the given directories, each name in exactly one place;
+  * every `\\input` main.tex names must exist in paper/ or in one of the given
+    directories, and every figure in one of the given directories, each name
+    in exactly one place, so no copy in paper/ can shadow an output;
   * pdflatex runs with -halt-on-error, so a macro that no `\\input` file
     defines stops the build ("Undefined control sequence"), and the log is
     checked for undefined references and citations.
@@ -56,7 +57,8 @@ def gate(dirs):
         for macro in re.findall(r"\\newcommand\{\\([A-Za-z]+)\}", path.read_text()):
             defined[macro] = name
     for name in re.findall(r"\\includegraphics(?:\[[^]]*\])?\{([^}]+)\}", main):
-        locate(name, dirs)
+        if locate(name, [PAPER, *dirs]) == PAPER:
+            raise SystemExit(f"gate: figure {name} is in paper/, not made by an output")
     used = set(re.findall(r"\\([A-Za-z]+)", main))
     return sorted((m, f) for m, f in defined.items() if m not in used)
 
