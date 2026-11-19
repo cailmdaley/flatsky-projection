@@ -4,7 +4,7 @@ main.tex `\\input`s its macro files and `\\includegraphics` its figures by bare
 name. Every such file is made by an output of astra.yaml (`numbers`,
 `scalar_numbers`, ..., `fig_*`), except `legacy_numbers.tex`, which is kept by
 hand beside main.tex. This script puts paper/ and the output directories it
-is given on TeX's search path and compiles main.tex in `--out`.
+is given on TeX's search path and compiles main.tex in `--out` as paper.pdf.
 
 The gate, before and during the build:
 
@@ -19,7 +19,7 @@ quotes, which is not an error.
 
 Run:  python3 paper/build.py --out <dir> results/fiducial/numbers results/fiducial/fig_shear_leakage ...
       (any directories: `results/fiducial/*/` works)
-Out:  <out>/main.pdf and the LaTeX auxiliaries beside it.
+Out:  <out>/paper.pdf and the LaTeX auxiliaries beside it.
 """
 
 import argparse
@@ -64,7 +64,7 @@ def gate(dirs):
 def latex(out, env, *args):
     run = subprocess.run(args, cwd=out, env=env, capture_output=True, text=True)
     if run.returncode:
-        log = (out / "main.log").read_text(errors="replace") if args[0] == "pdflatex" else run.stdout
+        log = (out / "paper.log").read_text(errors="replace") if args[0] == "pdflatex" else run.stdout
         lines = log.splitlines()
         # Each TeX error and the two lines of context that name the culprit.
         errors = [line for i, line in enumerate(lines) if line.startswith("!")
@@ -86,12 +86,13 @@ def main():
     out = args.out.resolve()
     search = os.pathsep.join(map(str, [PAPER, *dirs])) + os.pathsep
     env = dict(os.environ, TEXINPUTS=search, BIBINPUTS=search, BSTINPUTS=search)
-    pdflatex = ("pdflatex", "-halt-on-error", "-interaction=nonstopmode", str(PAPER / "main.tex"))
+    pdflatex = ("pdflatex", "-halt-on-error", "-interaction=nonstopmode", "-jobname=paper",
+                str(PAPER / "main.tex"))
     latex(out, env, *pdflatex)
-    latex(out, env, "bibtex", "main")
+    latex(out, env, "bibtex", "paper")
     for i in range(5):
         latex(out, env, *pdflatex)
-        log = (out / "main.log").read_text(errors="replace")
+        log = (out / "paper.log").read_text(errors="replace")
         if i >= 1 and "Rerun to get" not in log:
             break
 
@@ -99,7 +100,7 @@ def main():
                 if re.search(r"(Reference|Citation) .* undefined", line)]
     if problems:
         raise SystemExit("gate: " + "\n".join(problems))
-    print(f"wrote {out / 'main.pdf'}")
+    print(f"wrote {out / 'paper.pdf'}")
 
 
 if __name__ == "__main__":

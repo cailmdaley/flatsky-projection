@@ -2,7 +2,7 @@
 
 Each numbers output collects its macros in a `Macros` and calls `write`,
 which puts `<output_id>.tex` (the `\\newcommand`s `paper/main.tex` inputs) and
-`<output_id>.json` (macro name to value string) under the output directory.
+`<output_id>.json` (one row per macro: name and value string) under the output directory.
 Every macro the code computes is written; whether the prose quotes it is the
 paper gate's business, not the writer's.
 """
@@ -57,5 +57,6 @@ class Macros(dict):
             raise ValueError("LaTeX control sequences must be alphabetic")
         out.mkdir(parents=True, exist_ok=True)
         (out / f"{output_id}.tex").write_text(self.tex(output_id))
-        (out / f"{output_id}.json").write_text(json.dumps(self, indent=2) + "\n")
+        rows = [{"macro": k, "value": v} for k, v in self.items()]
+        (out / f"{output_id}.json").write_text(json.dumps(rows, indent=2) + "\n")
         print(f"wrote {out / output_id}.tex  ({len(self)} macros)")

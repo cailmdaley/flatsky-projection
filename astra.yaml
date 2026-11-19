@@ -985,6 +985,7 @@ outputs:
   # --- The paper's macros ---------------------------------------------------
   - id: numbers
     type: table
+    format: json
     label: "The law, the 1500d field and the theory"
     description: |
       The macros of numbers.tex: the leakage coefficient fitted over every
@@ -1018,6 +1019,7 @@ outputs:
 
   - id: scalar_numbers
     type: table
+    format: json
     label: "Diagonal-transfer macros"
     description: |
       The macros of scalar_numbers.tex, on the 1500d field over
@@ -1038,6 +1040,7 @@ outputs:
 
   - id: residual_numbers
     type: table
+    format: json
     label: "Field residual macros"
     description: |
       The macros of residual_numbers.tex: the worst TT and EE band-mean
@@ -1058,6 +1061,7 @@ outputs:
 
   - id: covariance_numbers
     type: table
+    format: json
     label: "Bandpower covariance macros"
     description: |
       The macros of covariance_numbers.tex: the number of projected skies;
@@ -1080,6 +1084,7 @@ outputs:
 
   - id: noisy_numbers
     type: table
+    format: json
     label: "Noisy-inversion macros"
     description: |
       The macros of noisy_numbers.tex, scatter-weighted estimator on the
@@ -1099,6 +1104,7 @@ outputs:
 
   - id: survey_numbers
     type: table
+    format: json
     label: "Projection-survey macros"
     description: |
       The macros of survey_numbers.tex: STG's spread in ln mu over the best
@@ -1119,6 +1125,7 @@ outputs:
   # --- The paper's figures --------------------------------------------------
   - id: fig_shear_schematic
     type: figure
+    format: png
     label: "Figure 1: a projection as a lens"
     description: |
       BICEP's grid over the 1500d field with Tissot's indicatrix; at three
@@ -1141,6 +1148,7 @@ outputs:
 
   - id: fig_jacobian_invariants
     type: figure
+    format: png
     label: "Figure 2: shear and magnification of the four projections"
     description: |
       The local shear g and magnification mu of SFL, STG, ZEA and BICEP over
@@ -1161,6 +1169,7 @@ outputs:
 
   - id: fig_spectra_model
     type: figure
+    format: png
     label: "Figure 3: spectra on the 1500d field and the coupling matrix"
     description: |
       TT and EE over the input and BB/EE on the 1500d field, the mean of the
@@ -1183,6 +1192,7 @@ outputs:
 
   - id: fig_shear_leakage
     type: figure
+    format: png
     label: "Figure 4: E-to-B leakage against 2<g^2>"
     description: |
       Measured BB/EE over 1000 < ell < 3000 against <g^2> for every sheared
@@ -1209,6 +1219,7 @@ outputs:
 
   - id: fig_transfer_error
     type: figure
+    format: png
     label: "Figure 5: what a diagonal transfer function misses"
     description: |
       On the 1500d field, per projection: the white bandpower's error after
@@ -1230,6 +1241,7 @@ outputs:
   # --- The paper --------------------------------------------------------------
   - id: paper
     type: report
+    format: pdf
     label: "The letter"
     description: |
       paper/main.tex compiled against the numbers and figure outputs, with
@@ -1237,7 +1249,7 @@ outputs:
       this spec. The build is the gate: it fails if main.tex inputs a file
       or includes a figure that neither these outputs nor paper/ hold, or
       quotes a macro no input file defines, and it lists the macros the
-      outputs make that the prose does not quote. Writes main.pdf.
+      outputs make that the prose does not quote. Writes paper.pdf.
     inputs: [numbers, scalar_numbers, residual_numbers, covariance_numbers, noisy_numbers,
              survey_numbers, fig_shear_schematic, fig_jacobian_invariants, fig_spectra_model,
              fig_shear_leakage, fig_transfer_error]
