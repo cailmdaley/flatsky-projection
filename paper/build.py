@@ -2,8 +2,7 @@
 
 main.tex `\\input`s its macro files and `\\includegraphics` its figures by bare
 name. Every such file is made by an output of astra.yaml (`numbers`,
-`scalar_numbers`, ..., `fig_*`), except `legacy_numbers.tex`, which is kept by
-hand beside main.tex. This script puts paper/ and the output directories it
+`scalar_numbers`, ..., `fig_*`). This script puts paper/ and the output directories it
 is given on TeX's search path and compiles main.tex in `--out` as paper.pdf.
 
 The gate, before and during the build:

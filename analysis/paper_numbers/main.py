@@ -7,12 +7,14 @@ Named main.py because a module called `numbers` shadows the standard library.
                          liftEEtailField: SFL's <g^2> on the field and the
                          lift of the damping tail it implies at leading order.
   the run                lmaxrun, fieldfsky (the field mask's binary sky
-                         fraction), cleanlo/cleanhi (the band where the model
+                         fraction), sweepfskylo/sweepfskyhi (the smallest and
+                         largest sweep rectangle's), cleanlo/cleanhi (the band where the model
                          is judged), hannwidth (the Hann window's full width).
   the law                fitcoef, fitrms, fitworst, fitoffset, decades: the
                          coefficient of BB/EE = k <g^2> fitted over every
                          sheared (footprint, projection) pair of the sweep,
-                         its scatter, and the span in <g^2>.
+                         its scatter, and the span in <g^2>; bbEePiresTAN, the
+                         law's BB/EE for a 10 deg gnomonic square, in closed form.
   band by band           band<SFL|BICEP>ratio: measured over forward-modelled
                          BB/EE in the narrow bands, mean and spread, where the
                          measurement is clear of the STG floor.
@@ -116,6 +118,11 @@ def macros(run, healpix_masks, fd):
     M.add("lmaxrun", f"{run.lmax}")
     idx = json.loads((healpix_masks / f"index_{S.FIELD}.json").read_text())
     M.add("fieldfsky", pct(idx["masks"][0]["fsky_binary"], 1))
+    sweep = sorted(
+        json.loads(p.read_text())["masks"][0]["fsky_binary"]
+        for p in healpix_masks.glob("index_rect_*.json"))
+    M.add("sweepfskylo", pct(sweep[0], 2))
+    M.add("sweepfskyhi", pct(sweep[-1], 1))
     M.add("cleanlo", f"{L_CLEAN[0]}")
     M.add("cleanhi", f"{L_CLEAN[1]}")
     M.add("hannwidth", f"{2 * L_HANN:.0f}")
@@ -133,6 +140,16 @@ def macros(run, healpix_masks, fd):
     M.add("fitoffset", pct(k / 2 - 1))
     # Spelled as a word: the prose reads "across four decades in <g^2>".
     M.add("decades", WORDS[int(round(np.log10(g2[keep].max() / g2[keep].min())))])
+
+    # ---- a small gnomonic patch, in closed form ------------------------------
+    # The gnomonic projection stretches radially by sec^2(theta) and
+    # tangentially by sec(theta), so its shear is g = tan^2(theta/2). Averaged
+    # over a 10 deg square on the tangent plane, as used for weak-lensing mass
+    # maps, the law gives BB/EE = 2<g^2>.
+    half = np.radians(5.0)
+    x = np.linspace(-half, half, 2001)
+    theta = np.arctan(np.hypot(*np.meshgrid(x, x)))
+    M.add("bbEePiresTAN", sci(2 * np.mean(np.tan(theta / 2) ** 4)))
 
     # ---- band by band ------------------------------------------------------
     # The narrow bands up to the clean edge (BANDS[0] is their union), every
@@ -154,7 +171,6 @@ def macros(run, healpix_masks, fd):
     M.add("tfdratiomeas", f"{fd['sfl_bicep']:.2f}")
     lensed = float(th["lensed_BB"][L_LENSED] / th["lensed_EE"][L_LENSED])
     M.add("lensedBBEE", f"${sci(lensed)}$")
-    M.add("tfdSFLoverlens", f"{2 * g2_field[lab['SFL']] / lensed:.0f}")
 
     cl, ee, bb = fd["cl_ee"], fd["ee_mean"], fd["bb_mean"]
     for label, centres in (("SFL", (3000., 4000.)), ("STG", (3000., 4000.)), ("BICEP", (4000.,))):
@@ -177,8 +193,11 @@ def macros(run, healpix_masks, fd):
     low = (ell > 500) & (ell < 3000)
     levels = [bb[j][low].mean() for j in lab.values()]
     M.add("bbdecadesField", WORDS[int(round(np.log10(max(levels) / min(levels))))])
-    zea_leak = band(bb[lab["ZEA"]], *SL.BANDS[0]) / band(ee[lab["ZEA"]], *SL.BANDS[0])
-    M.add("ZEAoverlens", pct(zea_leak / lensed, 0))
+    # Both leaks are measured BB/EE over the same band, against lensed BB/EE.
+    def leak(name):
+        return band(bb[lab[name]], *SL.BANDS[0]) / band(ee[lab[name]], *SL.BANDS[0])
+    M.add("tfdSFLoverlens", f"{leak('SFL') / lensed:.0f}")
+    M.add("ZEAoverlens", pct(leak("ZEA") / lensed, 0))
 
     # ---- power conservation ------------------------------------------------
     # The shear only rotates E into B, so (EE + BB) on the QU leg equals EE on

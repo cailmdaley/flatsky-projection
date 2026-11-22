@@ -21,15 +21,13 @@
 \newcommand{\vbell}{\vb*{\ell}}
 \newcommand{\gsq}{\expval{g^2}}
 % Every measured number in this paper is a macro made by an output of
-% astra.yaml, except those in legacy_numbers.tex; paper/build.py compiles
-% against the outputs.
+% astra.yaml; paper/build.py compiles against the outputs.
 \input{numbers}
 \input{scalar_numbers}
 \input{covariance_numbers}
 \input{residual_numbers}
 \input{noisy_numbers}
 \input{survey_numbers}
-\input{legacy_numbers}
 
 
 
@@ -51,7 +49,7 @@
 We show that a projection acts on a map as a lens whose shear $g$ and magnification $\mu$ are known in closed form at every point before anything is observed.
 The shear averages a power spectrum over a band of multipoles, washing out the acoustic peaks and lifting the damping tail, and it turns the direction of every Fourier mode, so that a fraction $2\gsq$ of $EE$ appears as $BB$, with $\gsq$ the mean squared shear under the mask.
 Folding the local geometry over the mask gives a mode-coupling matrix that predicts the projected spectrum of any input.
-On simulations projected four ways onto the SPT 1500d field and onto smaller footprints, it reproduces mean $TT$ and $EE$ to \residEECleanWorst\ with no free parameters, and the leakage coefficient fits to $\fitcoef$ over \decades\ decades in $\gsq$.
+On simulations projected four ways onto the SPT 1500d field and onto smaller footprints, it reproduces the mean $TT$, $EE$ and $BB$ to a few tenths of a percent with no free parameters, and the leakage coefficient fits to $\fitcoef$ over \decades\ decades in $\gsq$.
 Equal-area projections do not magnify and conformal projections do not shear, so the stereographic projection does not leak and the zenithal equal-area projection barely distorts temperature and $E$.
 The coupling matrix composes with the mask's own, so the mean distortion of any grid can be decoupled; its variance cannot, and decoupling the Sanson--Flamsteed projection's leakage on noisy SPT-3G-like skies multiplies the variance of a $B$-mode amplitude by \noisyCostSFLBB.
 A projection is better chosen than corrected.}
@@ -171,7 +169,7 @@ The rotation to remove is that of $R$, and its angle has a closed form in the de
     \psi_R = \atantwo \qty(\pdv*{\theta}{x} - \sin\theta\,\pdv*{\phi}{y},\, -\pdv*{\theta}{y} - \sin\theta\,\pdv*{\phi}{x}),
 \end{equation}
 which follows from requiring $R(\psi)^{T}J$ to be symmetric.
-\CD{The simulations are being rerun with this flattening angle; the current numbers use \texttt{spt3g\_software}'s average of the tilts of north and east, which differs from $\psi_R$ at $\order{g^2}$ and adds leakage at $\order{g^4}$, \flattenSFLfield\ of SFL's on the 1500d field.}
+Our simulations flatten by $\psi_R$; \texttt{spt3g\_software}'s average of the tilts of north and east differs from it at $\order{g^2}$ and would add leakage at $\order{g^4}$, \flattenSFLfield\ of SFL's on the 1500d field.
 
 Flattening leaves the stretch $\Sigma$, which misaligns modes.
 A plane wave $\vbell$ on the grid comes from the sky mode $J^{T}\vbell$, whose direction differs from that of $\vbell$ by
@@ -224,13 +222,11 @@ $T$ is projected as a scalar, and 20 skies with a white spectrum test a spectrum
 A further \covNumProjected\ skies set the band means and covariances for SFL, STG and ZEA.
 All of these skies are noise-free, since an instrument's noise is binned in grid pixels and never passes through the projection; the noisy tests of Sect.~\ref{sec:discussion} state their configuration.
 
-The footprints are rectangles in right ascension and declination centred on the grid: SPT's 1500d field, $\pm\SI{50}{\degree}$ in RA and \SIrange{-70}{-42}{\degree} in declination, \fieldfsky\ of the sky, and a nested sequence of smaller and larger rectangles from 0.75\% to 10\% of the sky.
-\CD{The sweep currently uses seven disks; the rectangles are in the rerun.}
+The footprints are rectangles in right ascension and declination centred on the grid: SPT's 1500d field, $\pm\SI{50}{\degree}$ in RA and \SIrange{-70}{-42}{\degree} in declination, \fieldfsky\ of the sky, and a nested sequence of smaller and larger rectangles from \sweepfskylo\ to \sweepfskyhi\ of the sky.
 Masks have a \SI{2.5}{\degree} C2 apodization.
 We estimate spectra with NaMaster \citep{alonso19} in its flat-sky mode, with $B$-mode purification, in bands of $\Delta\ell = 50$.
 Pixel and interpolation windows are computed from each Jacobian and divided out, with no fit, and we compare spectra over $\cleanlo < \ell < \cleanhi$, below the multipoles where power aliased from above the grid's Nyquist frequency and the estimator's numerical $B$ floor enter.
-The analysis is an ASTRA specification run with \texttt{lightcone} on the Open Science Pool, so every bandpower and number in this paper can be rerun from its recipe.
-\CD{Public repository URL to add.}
+The analysis is an ASTRA specification run with \texttt{lightcone} on the Open Science Pool, so every bandpower and number in this paper can be rerun from its recipe at \url{https://github.com/cailmdaley/flatsky-projection}.
 
 \section{Results} \label{sec:results}
 
@@ -246,8 +242,10 @@ SFL leaks \tfdSFLoverlens\ times the lensed $BB/EE$ of \lensedBBEE\ at $\ell = 1
 Projection moves power between $E$ and $B$ without creating it: the $EE+BB$ of the $Q/U$ leg equals the $EE$ of the $E/B$ leg to \powerconserveAll.
 
 The coupling matrix follows every oscillation in phase and amplitude.
-On the \covNumProjected\ independent skies the band means over $\cleanlo < \ell < \cleanhi$ lie within \residTTCleanWorst\ of it in $TT$ and \residEECleanWorst\ in $EE$ for SFL, STG and ZEA, and the $BB$ of SFL and ZEA within \residSFLBBInteger\ and \residZEABBInteger.
-Single $EE$ bands miss by up to \residSTGEEMaxBin, enough for full-covariance tests to reject $EE$ at $p$ of \residEEFitPRange, so $\mathcal{R}$ is exact in the mean and good to a few tenths of a percent band by band.
+On the \covNumProjected\ independent skies, with $\mathcal{R}$ read at $k = \ell + 1/2$, the band means over $\cleanlo < \ell < \cleanhi$ lie within \residTTCleanWorst\ of it in $TT$ and \residEECleanWorst\ in $EE$ for SFL, STG and ZEA; read at integer $\ell$, they miss by up to \residTTEEIntegerWorst.
+The $BB$ of SFL and ZEA follows the integer reading, within \residSFLBBInteger\ and \residZEABBInteger, and misses the half-integer one by \residZEABBSpherical\ for ZEA.
+Where the flat-sky estimator samples a multipole is a property of the estimator, not of the projection, and it limits the test: $\mathcal{R}$ predicts the means to a few tenths of a percent.
+Below that the residuals are significant: STG's $EE$ sits at \residSTGEESpherical, single $EE$ bands miss by up to \residEEMaxBin, and full-covariance tests reject $EE$ in all three projections, at $p \leq \residEEFitPMax$.
 BICEP, with its 20 skies, matches ZEA's residual by paired seeds to \residBICEPZEAEE\ in $EE$.
 
 \begin{figure*}
@@ -289,7 +287,7 @@ SPT-3G reports bin-to-bin correlations of up to 40\% on ZEA maps \citep{balkenho
 
 Shear leaks and magnification rescales, and no projection avoids both, so the choice follows the science.
 For $B$-mode work the conformal STG does not leak: its $BB/EE$ on the 1500d field is the numerical floor, \floorField.
-Its magnification costs \EEboxSTGfourK\ of the input $EE$ near $\ell = 4000$, a known and invertible scalar distortion.
+Its magnification leaves \EEboxSTGfourK\ of the input $EE$ near $\ell = 4000$, a known and invertible scalar distortion.
 For temperature and $E$ the equal-area ZEA barely distorts, staying within \EEboxZEAdev\ of the input $EE$, while leaking \ZEAoverlens\ of the lensed $BB/EE$.
 The cylindrical projections are the worst choice for both.
 Within each class, the shape of the footprint sets the best projection.
@@ -320,7 +318,7 @@ We decouple the joint $EE$/$BB$ system on \noisySkies\ lensed skies of the 1500d
 The means come back: ZEA's corrected $BB$ is unbiased to $\noisyBBBiasZEA \pm \noisyBBBiasZEAError$ of the lensed $BB$, and SFL's is off by $\noisyBBBiasSFL \pm \noisyBBBiasSFLError$, from $500 < \ell < 1000$, where $\mathcal{R}$ underpredicts its leak.
 The variances do not.
 Relative to ZEA, decoupling STG costs \noisyCostSTGTT\ in $TT$ variance and \noisyCostSTGEE\ in $EE$, whereas decoupling SFL costs \noisyCostSFLTT\ and \noisyCostSFLEE, as undoing a band average amplifies noise, and \noisyCostSFLBB\ in the $B$ amplitude, since subtracting a leaked mean leaves the sample variance of the leaked $E$ in $B$.
-Only a map-level template of the leaked $B$, the grid's $E$ multiplied by $\tan 2\delta\psi$ from the local Jacobian, removes that variance, and only where $E$ is signal-dominated: on SFL at this noise it lowers the scatter of $BB$ near $\ell = 1000$ by a factor of \maskedTemplateStdGainRounded\ \maskedTemplateStdGainInterval\ and gives no significant gain over $2000 < \ell < 3000$.
+Only a map-level template of the leaked $B$, the grid's $E$ multiplied by $\tan 2\delta\psi$ from the local Jacobian, can remove that variance, and only where $E$ is signal-dominated.
 A projection is better chosen than corrected.
 
 \subsection{Beyond power spectra} \label{subsec:flatsky}
@@ -328,14 +326,14 @@ A projection is better chosen than corrected.
 The same Jacobian reaches every flat-sky operation.
 A beam or filter applied on a sheared grid acts on the sky as $F(J^{-T}\vb*{q})$, anisotropic and varying with position, and reprojecting afterwards does not undo it, so filtering belongs on the least sheared grid in a chain.
 A compact source on a sheared grid is an ellipse, and an isotropic matched filter recovers $\sqrt{1-g^2}$ of its amplitude.
-A lensing quadratic estimator reads the metric $JJ^{T}$ and acquires a mean field and a changed response; on SFL the curl mean field over $2 \leq L < 30$ has rms $\qeSFLCurlMeanRMS$ in convergence.
+A lensing quadratic estimator reads the metric $JJ^{T}$, so on a sheared grid it acquires a mean field and a changed response.
 Equation~\eqref{eq:law_footprint} quantifies small patches too: a gnomonic \ang{10} square, as used for weak-lensing mass maps \citep{pires20}, leaks $BB/EE = \bbEePiresTAN$, and averaging per-patch spectra averages $\gsq$ over patches.
 The transform, not the grid, decides whether an analysis is flat: ACT's equidistant cylindrical maps, analysed with spherical harmonic transforms on the grid's rows \citep{choi20, naess25, louis25}, are never remapped and do not leak, and a perfect resampler onto a non-conformal grid still does \citep{ge24}.
 
 \section{Conclusions} \label{sec:conclusions}
 
 A map projection is a lens whose shear and magnification follow in closed form from its definition.
-The shear averages a spectrum over a band of multipoles and leaks a fraction $2\gsq$ of $EE$ into $BB$, and a parameter-free coupling matrix built from the Jacobian and the mask predicts both, matching simulations of four projections in the mean to \residEECleanWorst\ and the leakage coefficient to \fitoffset.
+The shear averages a spectrum over a band of multipoles and leaks a fraction $2\gsq$ of $EE$ into $BB$, and a parameter-free coupling matrix built from the Jacobian and the mask predicts both, matching simulations of four projections in the mean to a few tenths of a percent and the leakage coefficient to \fitoffset.
 Conformal projections do not leak and equal-area projections do not magnify: STG suits $B$-mode work and ZEA temperature and $E$.
 Any grid's mean distortion can be decoupled with the matrix, but a sheared grid's variance cannot, so a projection is better chosen than corrected.
 

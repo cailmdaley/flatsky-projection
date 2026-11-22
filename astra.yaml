@@ -1244,12 +1244,11 @@ outputs:
     format: pdf
     label: "The letter"
     description: |
-      paper/main.tex compiled against the numbers and figure outputs, with
-      paper/legacy_numbers.tex, the hand-kept macros from analyses outside
-      this spec. The build is the gate: it fails if main.tex inputs a file
-      or includes a figure that neither these outputs nor paper/ hold, or
-      quotes a macro no input file defines, and it lists the macros the
-      outputs make that the prose does not quote. Writes paper.pdf.
+      paper/main.tex compiled against the numbers and figure outputs. The
+      build is the gate: it fails if main.tex inputs a file or includes a
+      figure that neither these outputs nor paper/ hold, or quotes a macro no
+      input file defines, and it lists the macros the outputs make that the
+      prose does not quote. Writes paper.pdf.
     inputs: [numbers, scalar_numbers, residual_numbers, covariance_numbers, noisy_numbers,
              survey_numbers, fig_shear_schematic, fig_jacobian_invariants, fig_spectra_model,
              fig_shear_leakage, fig_transfer_error]
